@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { FiMenu, FiX, FiArrowRight } from 'react-icons/fi'
+import { FiMenu, FiX, FiArrowRight, FiUser, FiLogOut } from 'react-icons/fi'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { NAV_LINKS } from '../data/site'
+import { useAuth } from '../context/AuthContext'
+
+function accountHome(role) {
+  if (role === 'admin') return { to: '/admin', label: 'Admin' }
+  return { to: '/portal', label: 'Portal' }
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const { isAuthenticated, user, logout } = useAuth()
+  const account = isAuthenticated ? accountHome(user?.role) : null
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -54,12 +62,31 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-4 lg:flex">
           <ThemeToggle />
-          <Link
-            to="/login"
-            className="text-sm font-medium text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors"
-          >
-            Login
-          </Link>
+          {account ? (
+            <>
+              <Link
+                to={account.to}
+                className="flex items-center gap-1.5 text-sm font-medium text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors"
+              >
+                <FiUser className="h-4 w-4" /> {account.label}
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                aria-label="Log out"
+                className="flex items-center gap-1.5 text-sm font-medium text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors"
+              >
+                <FiLogOut className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="text-sm font-medium text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors"
+            >
+              Login
+            </Link>
+          )}
           <Link
             to="/contact"
             className="group inline-flex items-center gap-1.5 rounded-full bg-ink-900 dark:bg-gold-400 px-5 py-2.5 text-sm font-semibold text-white dark:text-ink-950 transition-transform hover:scale-105"
@@ -100,13 +127,32 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setOpen(false)}
-              className="text-base font-medium text-ink-700 dark:text-ink-100"
-            >
-              Login
-            </Link>
+            {account ? (
+              <>
+                <Link
+                  to={account.to}
+                  onClick={() => setOpen(false)}
+                  className="text-base font-medium text-ink-700 dark:text-ink-100"
+                >
+                  {account.label}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { logout(); setOpen(false) }}
+                  className="text-left text-base font-medium text-ink-700 dark:text-ink-100"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="text-base font-medium text-ink-700 dark:text-ink-100"
+              >
+                Login
+              </Link>
+            )}
             <Link
               to="/contact"
               onClick={() => setOpen(false)}

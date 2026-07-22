@@ -1,15 +1,36 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCheck,
+  FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCheck, FiStar,
 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import SectionHeading from '../components/SectionHeading'
-import { SERVICES, STATS, TECH_STACK, PROCESS, CONTACT } from '../data/site'
+import { SkeletonGrid } from '../components/states/Skeleton'
+import { ErrorState, EmptyState } from '../components/states/StateViews'
+import { useHomeData } from '../hooks/useHomeData'
+import { wakeServer } from '../lib/health'
+import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 
-const ICONS = { FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer }
+const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
 
 export default function Home() {
+  const { state, reload } = useHomeData()
+
+  useEffect(() => {
+    wakeServer()
+  }, [])
+
+  const projectsDelivered = state.stats.data?.projects_delivered
+  const displayStats = [
+    { value: projectsDelivered != null ? `${projectsDelivered}+` : '—', label: 'Projects Delivered' },
+    { value: '24/7', label: 'Client Support' },
+    { value: '100%', label: 'Custom-Built Solutions' },
+    { value: '∞', label: 'Languages Supported' },
+  ]
+
+  const demoStatus = state.projectStatus.data
+
   return (
     <div className="overflow-hidden">
       {/* HERO */}
@@ -93,7 +114,7 @@ export default function Home() {
               <div className="animate-float rounded-3xl border border-gold-400/30 bg-white/60 dark:bg-ink-900/60 p-6 shadow-2xl backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-ink-200 dark:border-ink-700 pb-4">
                   <span className="text-xs font-semibold uppercase tracking-widest text-gold-500">
-                    Project Status
+                    {demoStatus?.project_name ?? 'Project Status'}
                   </span>
                   <span className="flex h-2.5 w-2.5 animate-glow rounded-full bg-gold-400" />
                 </div>
@@ -101,7 +122,7 @@ export default function Home() {
                   {[
                     { label: 'Discovery', value: 100 },
                     { label: 'Design', value: 100 },
-                    { label: 'Development', value: 72 },
+                    { label: demoStatus?.phase ?? 'Development', value: demoStatus?.percent_complete ?? 72 },
                     { label: 'AI Integration', value: 48 },
                   ].map((row) => (
                     <div key={row.label}>
@@ -153,7 +174,7 @@ export default function Home() {
       {/* STATS */}
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-          {STATS.map((s, i) => (
+          {displayStats.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.08} className="text-center">
               <p className="font-display text-3xl font-extrabold text-gradient-gold sm:text-4xl">{s.value}</p>
               <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">{s.label}</p>
@@ -169,30 +190,105 @@ export default function Home() {
           title="Full-spectrum digital engineering"
           description="From the first pixel to the last line of enterprise code, we build the systems that let brands compete and win online."
         />
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map((s, i) => {
-            const Icon = ICONS[s.icon]
-            return (
-              <Reveal key={s.title} delay={i * 0.07}>
-                <div className="group h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7 transition-all hover:-translate-y-1.5 hover:border-gold-400/60 hover:shadow-xl hover:shadow-gold-500/5">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500 transition-colors group-hover:bg-gold-400 group-hover:text-ink-950">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-5 font-display text-lg font-semibold text-ink-900 dark:text-white">
-                    {s.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">
-                    {s.description}
-                  </p>
-                </div>
-              </Reveal>
+        <div className="mt-14">
+          {state.services.status === 'loading' && <SkeletonGrid count={4} columns="sm:grid-cols-2 lg:grid-cols-3" />}
+          {state.services.status === 'error' && (
+            <ErrorState message={state.services.error} onRetry={() => reload(['services'])} />
+          )}
+          {state.services.status === 'success' && (
+            state.services.data.length === 0 ? (
+              <EmptyState title="Services coming soon" description="We're setting up our service catalog." />
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {state.services.data.map((s, i) => {
+                  const Icon = ICON_CYCLE[i % ICON_CYCLE.length]
+                  return (
+                    <Reveal key={s.id ?? s.slug} delay={i * 0.07}>
+                      <Link
+                        to={s.slug ? `/services#${s.slug}` : '/services'}
+                        className="group block h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7 transition-all hover:-translate-y-1.5 hover:border-gold-400/60 hover:shadow-xl hover:shadow-gold-500/5"
+                      >
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500 transition-colors group-hover:bg-gold-400 group-hover:text-ink-950">
+                          {s.icon_url ? (
+                            <img src={s.icon_url} alt="" className="h-6 w-6" />
+                          ) : (
+                            <Icon className="h-6 w-6" />
+                          )}
+                        </div>
+                        <h3 className="mt-5 font-display text-lg font-semibold text-ink-900 dark:text-white">
+                          {s.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+                          {s.short_description}
+                        </p>
+                      </Link>
+                    </Reveal>
+                  )
+                })}
+              </div>
             )
-          })}
+          )}
+        </div>
+      </section>
+
+      {/* FEATURED WORK */}
+      <section className="bg-ink-50 dark:bg-ink-900/40 py-20">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Selected Work"
+            title="Results our clients can point to"
+            description="A sample of recent engagements — real metrics, real outcomes."
+          />
+          <div className="mt-14">
+            {state.featuredWork.status === 'loading' && (
+              <SkeletonGrid count={3} columns="sm:grid-cols-2 lg:grid-cols-3" />
+            )}
+            {state.featuredWork.status === 'error' && (
+              <ErrorState message={state.featuredWork.error} onRetry={() => reload(['featuredWork'])} />
+            )}
+            {state.featuredWork.status === 'success' && (
+              state.featuredWork.data.length === 0 ? (
+                <EmptyState title="New case studies coming soon" description="Check back shortly for featured work." />
+              ) : (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {state.featuredWork.data.map((w, i) => (
+                    <Reveal key={w.id ?? w.slug} delay={i * 0.08}>
+                      <Link
+                        to={`/portfolio/${w.slug}`}
+                        className="group block h-full overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 transition-all hover:-translate-y-1.5 hover:border-gold-400/60"
+                      >
+                        {w.cover_image_url && (
+                          <div className="aspect-video w-full overflow-hidden bg-ink-100 dark:bg-ink-800">
+                            <img
+                              src={w.cover_image_url}
+                              alt={w.title}
+                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                            />
+                          </div>
+                        )}
+                        <div className="p-6">
+                          <span className="text-xs font-semibold uppercase tracking-widest text-gold-500">
+                            {w.category}
+                          </span>
+                          <h3 className="mt-2 font-display text-lg font-semibold text-ink-900 dark:text-white">
+                            {w.title}
+                          </h3>
+                          <p className="mt-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+                            {w.short_description}
+                          </p>
+                        </div>
+                      </Link>
+                    </Reveal>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
         </div>
       </section>
 
       {/* PROCESS */}
-      <section className="bg-ink-50 dark:bg-ink-900/40 py-20">
+      <section className="py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading
             eyebrow="Our Process"
@@ -216,6 +312,54 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+        <SectionHeading
+          eyebrow="Client Voices"
+          title="What it's like to work with us"
+        />
+        <div className="mt-14">
+          {state.testimonials.status === 'loading' && (
+            <SkeletonGrid count={3} columns="sm:grid-cols-2 lg:grid-cols-3" />
+          )}
+          {state.testimonials.status === 'error' && (
+            <ErrorState message={state.testimonials.error} onRetry={() => reload(['testimonials'])} />
+          )}
+          {state.testimonials.status === 'success' && state.testimonials.data.length > 0 && (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {state.testimonials.data.map((t, i) => (
+                <Reveal key={t.id} delay={i * 0.08}>
+                  <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7">
+                    <div className="flex items-center gap-1 text-gold-400">
+                      {Array.from({ length: t.rating ?? 5 }).map((_, idx) => (
+                        <FiStar key={idx} className="h-4 w-4 fill-current" />
+                      ))}
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-ink-600 dark:text-ink-200">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                    <div className="mt-5 flex items-center gap-3">
+                      {t.avatar_url ? (
+                        <img src={t.avatar_url} alt={t.client_name} className="h-9 w-9 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-400/10 text-sm font-semibold text-gold-500">
+                          {t.client_name?.[0]}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-semibold text-ink-900 dark:text-white">{t.client_name}</p>
+                        {t.company && <p className="text-xs text-ink-400">{t.company}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          )}
+          {/* Empty testimonials list is hidden gracefully — no section shown at all */}
         </div>
       </section>
 

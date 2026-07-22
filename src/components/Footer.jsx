@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom'
 import { FiMail, FiPhone, FiLinkedin, FiGithub, FiTwitter } from 'react-icons/fi'
 import Logo from './Logo'
+import NewsletterForm from './forms/NewsletterForm'
 import { CONTACT, NAV_LINKS, TECH_STACK } from '../data/site'
 
 export default function Footer() {
   return (
     <footer className="border-t border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-950">
       <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
             <Logo size="md" />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500 dark:text-ink-300">
@@ -70,6 +71,18 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
+          </div>
+
+          <div>
+            <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-ink-900 dark:text-white">
+              Stay Updated
+            </h4>
+            <p className="mt-4 text-sm text-ink-500 dark:text-ink-300">
+              Occasional notes on web, AI, and engineering — no spam.
+            </p>
+            <div className="mt-4">
+              <NewsletterForm source="footer" />
+            </div>
           </div>
         </div>
 
