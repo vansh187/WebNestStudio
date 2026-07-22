@@ -14,7 +14,6 @@ import { signupSchema, loginSchema, otpSchema } from '../schemas/leadSchemas'
 
 function roleHome(role) {
   if (role === 'admin') return '/admin'
-  if (role === 'client') return '/portal'
   return '/'
 }
 
