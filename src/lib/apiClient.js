@@ -1,7 +1,10 @@
 import axios from 'axios'
 import { getAccessToken, getRefreshToken, setSession, clearSession } from './tokenStore'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
+// Falls back to the known production backend if VITE_API_BASE_URL isn't set on the
+// hosting platform (e.g. a missing env var in Vercel/Netlify build settings) — otherwise
+// axios defaults to a relative path on the current origin, which has no /api routes.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://webneststudiobackend.onrender.com'
 
 // Render free-tier cold start can take 30-50s on the very first request of a session.
 const COLD_START_TIMEOUT = 60000
