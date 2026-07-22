@@ -2,17 +2,19 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCheck, FiStar,
+  FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiCheckCircle, FiStar,
 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import SectionHeading from '../components/SectionHeading'
 import { SkeletonGrid } from '../components/states/Skeleton'
-import { ErrorState, EmptyState } from '../components/states/StateViews'
+import { ErrorState } from '../components/states/StateViews'
 import { useHomeData } from '../hooks/useHomeData'
 import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
+import { TECH_CATEGORIES } from '../data/techStackDetails'
 
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
+const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer }
 
 export default function Home() {
   const { state, reload } = useHomeData()
@@ -197,7 +199,34 @@ export default function Home() {
           )}
           {state.services.status === 'success' && (
             state.services.data.length === 0 ? (
-              <EmptyState title="Services coming soon" description="We're setting up our service catalog." />
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {TECH_CATEGORIES.map((cat, i) => {
+                  const Icon = CATEGORY_ICONS[cat.icon]
+                  return (
+                    <Reveal key={cat.title} delay={i * 0.07}>
+                      <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500">
+                          <Icon className="h-6 w-6" />
+                        </div>
+                        <h3 className="mt-5 font-display text-lg font-semibold text-ink-900 dark:text-white">
+                          {cat.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+                          {cat.description}
+                        </p>
+                        <ul className="mt-4 space-y-2">
+                          {cat.technologies.map((item) => (
+                            <li key={item} className="flex items-center gap-2 text-sm text-ink-700 dark:text-ink-200">
+                              <FiCheckCircle className="h-4 w-4 shrink-0 text-gold-400" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </Reveal>
+                  )
+                })}
+              </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {state.services.data.map((s, i) => {
@@ -231,25 +260,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED WORK */}
-      <section className="bg-ink-50 dark:bg-ink-900/40 py-20">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <SectionHeading
-            eyebrow="Selected Work"
-            title="Results our clients can point to"
-            description="A sample of recent engagements — real metrics, real outcomes."
-          />
-          <div className="mt-14">
-            {state.featuredWork.status === 'loading' && (
-              <SkeletonGrid count={3} columns="sm:grid-cols-2 lg:grid-cols-3" />
-            )}
-            {state.featuredWork.status === 'error' && (
-              <ErrorState message={state.featuredWork.error} onRetry={() => reload(['featuredWork'])} />
-            )}
-            {state.featuredWork.status === 'success' && (
-              state.featuredWork.data.length === 0 ? (
-                <EmptyState title="New case studies coming soon" description="Check back shortly for featured work." />
-              ) : (
+      {/* FEATURED WORK — hidden entirely once we know the list is empty, no "coming soon" placeholder */}
+      {state.featuredWork.status !== 'success' || state.featuredWork.data.length > 0 ? (
+        <section className="bg-ink-50 dark:bg-ink-900/40 py-20">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <SectionHeading
+              eyebrow="Selected Work"
+              title="Results our clients can point to"
+              description="A sample of recent engagements — real metrics, real outcomes."
+            />
+            <div className="mt-14">
+              {state.featuredWork.status === 'loading' && (
+                <SkeletonGrid count={3} columns="sm:grid-cols-2 lg:grid-cols-3" />
+              )}
+              {state.featuredWork.status === 'error' && (
+                <ErrorState message={state.featuredWork.error} onRetry={() => reload(['featuredWork'])} />
+              )}
+              {state.featuredWork.status === 'success' && (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {state.featuredWork.data.map((w, i) => (
                     <Reveal key={w.id ?? w.slug} delay={i * 0.08}>
@@ -281,11 +308,11 @@ export default function Home() {
                     </Reveal>
                   ))}
                 </div>
-              )
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* PROCESS */}
       <section className="py-20">
