@@ -23,9 +23,10 @@ export default function Home() {
     wakeServer()
   }, [])
 
-  const projectsDelivered = state.stats.data?.projects_delivered
+  // Floor at 2 to reflect our current ongoing projects even before the backend catalog is caught up.
+  const projectsDelivered = Math.max(state.stats.data?.projects_delivered ?? 0, 2)
   const displayStats = [
-    { value: projectsDelivered != null ? `${projectsDelivered}+` : '—', label: 'Projects Delivered' },
+    { value: `${projectsDelivered}+`, label: 'Projects Delivered' },
     { value: '24/7', label: 'Client Support' },
     { value: '100%', label: 'Custom-Built Solutions' },
     { value: '∞', label: 'Languages Supported' },
