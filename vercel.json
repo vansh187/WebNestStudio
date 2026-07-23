@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://webneststudiobackend.onrender.com/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "https://webneststudiobackend.onrender.com/robots.txt" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
