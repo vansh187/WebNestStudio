@@ -6,6 +6,32 @@ import { Skeleton } from '../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../components/states/StateViews'
 import { getBlogPostBySlug } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
+import { FALLBACK_POSTS } from '../data/blogContent'
+
+// Injects BlogPosting structured data so search engines can better understand
+// authorship and publish dates — part of the E-E-A-T signals Google's ranking
+// systems weigh for article content.
+function useBlogStructuredData(post) {
+  useEffect(() => {
+    if (!post) return undefined
+
+    const script = document.createElement('script')
+    script.type = 'application/ld+json'
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.excerpt,
+      datePublished: post.published_at,
+      dateModified: post.updated_at || post.published_at,
+      author: { '@type': 'Organization', name: 'WebNest Studio' },
+      publisher: { '@type': 'Organization', name: 'WebNest Studio' },
+      keywords: (post.tags || []).join(', '),
+    })
+    document.head.appendChild(script)
+    return () => document.head.removeChild(script)
+  }, [post])
+}
 
 export default function BlogDetail() {
   const { slug } = useParams()
@@ -22,7 +48,13 @@ export default function BlogDetail() {
       .catch((err) => {
         if (cancelled) return
         if (err.response?.status === 404) {
-          setState('not-found')
+          const fallback = FALLBACK_POSTS.find((p) => p.slug === slug)
+          if (fallback) {
+            setPost(fallback)
+            setState('success')
+          } else {
+            setState('not-found')
+          }
         } else {
           setError(getErrorDetail(err, 'Could not load this post.'))
           setState('error')
@@ -30,6 +62,8 @@ export default function BlogDetail() {
       })
     return () => { cancelled = true }
   }, [slug, reloadKey])
+
+  useBlogStructuredData(state === 'success' ? post : null)
 
   if (state === 'not-found') {
     return (

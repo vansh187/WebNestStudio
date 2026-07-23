@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { FiArrowUpRight } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import { SkeletonGrid } from '../components/states/Skeleton'
-import { ErrorState, EmptyState } from '../components/states/StateViews'
+import { ErrorState } from '../components/states/StateViews'
 import ResourceDownloadForm from '../components/forms/ResourceDownloadForm'
 import NewsletterForm from '../components/forms/NewsletterForm'
 import { getBlogPosts } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
+import { FALLBACK_POSTS } from '../data/blogContent'
 
 export default function Blog() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -26,7 +27,14 @@ export default function Blog() {
     return () => { cancelled = true }
   }, [tag, reloadKey])
 
-  const allTags = [...new Set((posts || []).flatMap((p) => p.tags || []))]
+  // Live backend posts win once published; curated fallback content keeps the page
+  // (and its SEO value) populated in the meantime rather than showing an empty state.
+  const displayPosts = posts && posts.length > 0 ? posts : FALLBACK_POSTS
+  const visiblePosts = useMemo(
+    () => (tag ? displayPosts.filter((p) => (p.tags || []).includes(tag)) : displayPosts),
+    [displayPosts, tag]
+  )
+  const allTags = [...new Set(displayPosts.flatMap((p) => p.tags || []))]
 
   return (
     <div>
@@ -56,12 +64,9 @@ export default function Blog() {
 
             {posts === null && !error && <SkeletonGrid count={4} columns="sm:grid-cols-1" />}
             {error && <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />}
-            {posts && posts.length === 0 && (
-              <EmptyState title="No posts yet" description="We're working on our first articles — check back soon." />
-            )}
-            {posts && posts.length > 0 && (
+            {posts !== null && !error && (
               <div className="space-y-6">
-                {posts.map((p, i) => (
+                {visiblePosts.map((p, i) => (
                   <Reveal key={p.id ?? p.slug} delay={i * 0.06}>
                     <Link
                       to={`/blog/${p.slug}`}
