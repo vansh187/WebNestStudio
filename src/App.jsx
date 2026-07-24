@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
@@ -27,6 +28,7 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
+          <Analytics />
           <SlowRequestBanner />
           <BrowserRouter>
             <Routes>
