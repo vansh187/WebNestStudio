@@ -48,10 +48,11 @@ export default function ChatWidget() {
           type="button"
           onClick={openPanel}
           aria-label="Open AI Page Builder chat"
-          whileHover={{ scale: 1.05 }}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-gold-400 text-ink-950 shadow-xl shadow-gold-500/20"
+          whileHover={{ scale: 1.08, rotate: -2 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-gold-300 to-gold-500 text-ink-950 shadow-xl shadow-gold-500/40 ring-4 ring-white/40 dark:ring-ink-950/40"
         >
-          <CodingIcon className="h-7 w-7" />
+          <CodingIcon className="h-11 w-11" />
         </motion.button>
       </div>
 
