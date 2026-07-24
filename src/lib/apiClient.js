@@ -11,6 +11,12 @@ const COLD_START_TIMEOUT = 60000
 const WARM_TIMEOUT = 10000
 const SLOW_REQUEST_THRESHOLD = 5000
 
+// AI Page Builder calls hit Gemini (with a Groq fallback) and can easily exceed the normal
+// 10s warm timeout — a successful generation commonly takes 10-20s+. Matches /api/generate
+// and /api/generate/{id}/refine.
+const AI_BUILDER_PATHS = ['/api/generate']
+const AI_BUILDER_TIMEOUT = 45000
+
 let hasCompletedFirstRequest = false
 const slowListeners = new Set()
 let pendingSlowCount = 0
@@ -47,7 +53,12 @@ async function performRefresh() {
 }
 
 api.interceptors.request.use((config) => {
-  config.timeout = hasCompletedFirstRequest ? WARM_TIMEOUT : COLD_START_TIMEOUT
+  const isAiBuilderCall = AI_BUILDER_PATHS.some((p) => config.url?.includes(p))
+  config.timeout = isAiBuilderCall
+    ? AI_BUILDER_TIMEOUT
+    : hasCompletedFirstRequest
+      ? WARM_TIMEOUT
+      : COLD_START_TIMEOUT
 
   const token = getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
