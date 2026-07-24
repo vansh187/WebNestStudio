@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FiMail, FiPhone, FiLinkedin, FiGithub, FiTwitter } from 'react-icons/fi'
+import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
 import { CONTACT, NAV_LINKS, TECH_STACK } from '../data/site'
@@ -16,16 +16,15 @@ export default function Footer() {
               enterprise software — where brands go digital.
             </p>
             <div className="mt-5 flex gap-3">
-              {[FiLinkedin, FiGithub, FiTwitter].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  aria-label="Social link"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 dark:border-ink-700 text-ink-500 dark:text-ink-300 hover:border-gold-400 hover:text-gold-500 transition-colors"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              <a
+                href={CONTACT.instagramHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WebNest Studio on Instagram"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 dark:border-ink-700 text-ink-500 dark:text-ink-300 hover:border-gold-400 hover:text-gold-500 transition-colors"
+              >
+                <FiInstagram className="h-4 w-4" />
+              </a>
             </div>
           </div>
 

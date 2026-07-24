@@ -4,6 +4,7 @@ export const CONTACT = {
   email: 'webneststudio19@gmail.com',
   emailHref: 'mailto:webneststudio19@gmail.com',
   whatsappHref: 'https://wa.me/917276971875?text=Hi%2C%20I%27d%20like%20a%20free%20consultation.',
+  instagramHref: 'https://www.instagram.com/webneststudio112026',
 }
 
 export const NAV_LINKS = [
