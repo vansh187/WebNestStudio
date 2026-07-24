@@ -19,7 +19,7 @@ function AuthPrompt() {
         Sign in to build your page
       </p>
       <p className="max-w-xs text-sm text-ink-500 dark:text-ink-300">
-        The AI Page Builder saves your generations to your account, so you'll need to log in first.
+        WebNestAi saves your generations to your account, so you'll need to log in first.
       </p>
       <Link
         to="/login"
@@ -87,7 +87,7 @@ export default function ChatPanel({ onClose }) {
               <CodingIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-display text-sm font-bold text-ink-900 dark:text-white">AI Page Builder</p>
+              <p className="font-display text-sm font-bold text-ink-900 dark:text-white">WebNestAi</p>
               <p className="text-xs text-ink-400">WebNest Studio</p>
             </div>
           </div>
