@@ -104,9 +104,12 @@ api.interceptors.response.use(
       clearSession()
     }
 
-    // 403 while authenticated means the token's role claim is stale — force a clean re-login
-    // rather than showing a confusing permissions error (per API integration guide, Section 9).
-    if (status === 403 && getAccessToken()) {
+    // 403 on an /api/admin/* call while authenticated means the token's role claim is stale —
+    // force a clean re-login rather than showing a confusing permissions error (per API
+    // integration guide, Section 9). Scoped to admin routes only: other endpoints (e.g. AI
+    // Page Builder generation-ownership checks) can legitimately 403 without the token being
+    // stale, and forcing a logout there would be a confusing over-reaction.
+    if (status === 403 && getAccessToken() && path.startsWith('/api/admin')) {
       clearSession()
       if (typeof window !== 'undefined') window.location.assign('/login')
     }
