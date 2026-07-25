@@ -8,7 +8,7 @@ import Reveal from '../components/Reveal'
 import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { signup as signupApi } from '../api/auth'
+import { signup as signupApi, resendOtp } from '../api/auth'
 import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
 import { signupSchema, loginSchema, otpSchema } from '../schemas/leadSchemas'
 
@@ -265,12 +265,17 @@ function OtpForm({ email, purpose, onVerified, onSwitchToLogin }) {
     setResending(true)
     setBanner(null)
     try {
-      // No dedicated resend-OTP endpoint exists yet — best-effort re-trigger via signup.
-      await signupApi({ full_name: 'Resend', email, password: 'Placeholder123' })
-      toast.info('If this account needs a new code, it has been sent.')
+      const result = await resendOtp({ email, purpose })
+      toast.info(result?.message || 'A new verification code has been sent to your email.')
     } catch (error) {
-      if (error.response?.status === 409) {
-        toast.info('A code was already sent to this email — check your inbox.')
+      const status = error.response?.status
+      if (status === 429) {
+        // Cooldown in effect — surface the backend's "wait Ns" message directly.
+        setBanner(getErrorDetail(error, 'Please wait before requesting another code.'))
+      } else if (status === 404) {
+        setBanner('No account found with this email.')
+      } else if (status === 422) {
+        setBanner(getErrorDetail(error, 'This account is already verified.'))
       } else {
         toast.error(getErrorDetail(error, 'Could not resend the code.'))
       }
