@@ -62,3 +62,12 @@ export const loginSchema = z.object({
 export const otpSchema = z.object({
   otp_code: z.string().length(6, 'Enter the 6-digit code'),
 })
+
+export const forgotPasswordEmailSchema = z.object({
+  email,
+})
+
+export const resetPasswordSchema = z.object({
+  otp_code: z.string().length(6, 'Enter the 6-digit code'),
+  new_password: z.string().min(8, 'Must be at least 8 characters').max(72, 'Must be under 72 characters'),
+})

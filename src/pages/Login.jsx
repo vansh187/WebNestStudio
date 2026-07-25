@@ -8,9 +8,11 @@ import Reveal from '../components/Reveal'
 import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { signup as signupApi, resendOtp } from '../api/auth'
+import { signup as signupApi, resendOtp, resetPassword } from '../api/auth'
 import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
-import { signupSchema, loginSchema, otpSchema } from '../schemas/leadSchemas'
+import {
+  signupSchema, loginSchema, otpSchema, forgotPasswordEmailSchema, resetPasswordSchema,
+} from '../schemas/leadSchemas'
 
 function roleHome(role) {
   if (role === 'admin') return '/admin'
@@ -33,7 +35,7 @@ function Banner({ message, tone = 'error', action }) {
   )
 }
 
-function LoginForm({ onSwitchToSignup, onNeedsVerification }) {
+function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword }) {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -79,6 +81,12 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification }) {
 
       <PasswordField register={register} error={errors.password} />
 
+      <div className="-mt-3 text-right">
+        <button type="button" onClick={onForgotPassword} className="text-sm font-semibold text-gold-500 hover:underline">
+          Forgot password?
+        </button>
+      </div>
+
       <button
         type="submit"
         disabled={isSubmitting}
@@ -102,19 +110,19 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification }) {
   )
 }
 
-function PasswordField({ register, error }) {
+function PasswordField({ register, error, name = 'password', label = 'Password' }) {
   const [showPassword, setShowPassword] = useState(false)
   return (
     <div>
-      <label htmlFor="password" className="text-sm font-medium text-ink-700 dark:text-ink-200">
-        Password
+      <label htmlFor={name} className="text-sm font-medium text-ink-700 dark:text-ink-200">
+        {label}
       </label>
       <div className="relative mt-2">
         <FiLock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
         <input
-          id="password"
+          id={name}
           type={showPassword ? 'text' : 'password'}
-          {...register('password')}
+          {...register(name)}
           placeholder="••••••••"
           className="w-full rounded-xl border border-ink-200 dark:border-ink-700 bg-transparent py-3 pl-11 pr-11 text-sm text-ink-900 dark:text-white placeholder:text-ink-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30"
         />
@@ -329,6 +337,152 @@ function OtpForm({ email, purpose, onVerified, onSwitchToLogin }) {
   )
 }
 
+function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
+  const toast = useToast()
+  const [step, setStep] = useState('email') // 'email' | 'reset'
+  const [email, setEmail] = useState('')
+  const [banner, setBanner] = useState(null)
+  const [resending, setResending] = useState(false)
+
+  const emailForm = useForm({ resolver: zodResolver(forgotPasswordEmailSchema) })
+  const resetForm = useForm({ resolver: zodResolver(resetPasswordSchema) })
+
+  const onSendCode = async ({ email: submittedEmail }) => {
+    setBanner(null)
+    try {
+      await resendOtp({ email: submittedEmail, purpose: 'password_reset' })
+      setEmail(submittedEmail)
+      setStep('reset')
+      toast.info('A verification code has been sent to your email.')
+    } catch (error) {
+      const status = error.response?.status
+      if (status === 404) {
+        emailForm.setError('email', { type: 'server', message: 'No account found with this email' })
+      } else if (status === 429) {
+        setBanner(getErrorDetail(error, 'Please wait before requesting another code.'))
+      } else {
+        setBanner(getErrorDetail(error, 'Could not send a verification code.'))
+      }
+    }
+  }
+
+  const onResetPassword = async ({ otp_code, new_password }) => {
+    setBanner(null)
+    try {
+      await resetPassword({ email, otp_code, new_password })
+      toast.info('Your password has been updated. Please sign in.')
+      onDone()
+    } catch (error) {
+      setBanner(getErrorDetail(error, 'Invalid or expired code.'))
+    }
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    setBanner(null)
+    try {
+      await resendOtp({ email, purpose: 'password_reset' })
+      toast.info('A new verification code has been sent to your email.')
+    } catch (error) {
+      setBanner(getErrorDetail(error, 'Could not resend the code.'))
+    } finally {
+      setResending(false)
+    }
+  }
+
+  if (step === 'email') {
+    return (
+      <form onSubmit={emailForm.handleSubmit(onSendCode)} className="mt-8 space-y-5">
+        <Banner message={banner} />
+        <p className="text-sm text-ink-500 dark:text-ink-300">
+          Enter your account email and we'll send you a verification code to reset your password.
+        </p>
+        <div>
+          <label htmlFor="forgot_email" className="text-sm font-medium text-ink-700 dark:text-ink-200">
+            Email Address
+          </label>
+          <div className="relative mt-2">
+            <FiMail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input
+              id="forgot_email"
+              type="email"
+              {...emailForm.register('email')}
+              placeholder="jane@company.com"
+              className="w-full rounded-xl border border-ink-200 dark:border-ink-700 bg-transparent py-3 pl-11 pr-4 text-sm text-ink-900 dark:text-white placeholder:text-ink-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30"
+            />
+          </div>
+          {emailForm.formState.errors.email && (
+            <p className="mt-1.5 text-xs font-medium text-red-500">{emailForm.formState.errors.email.message}</p>
+          )}
+        </div>
+        <button
+          type="submit"
+          disabled={emailForm.formState.isSubmitting}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink-900 dark:bg-gold-400 px-6 py-3.5 text-sm font-semibold text-white dark:text-ink-950 transition-transform hover:scale-[1.02] disabled:opacity-60"
+        >
+          {emailForm.formState.isSubmitting ? <FiLoader className="h-4 w-4 animate-spin" /> : 'Send Code'}
+        </button>
+        <p className="text-center text-sm">
+          <button type="button" onClick={onSwitchToLogin} className="text-ink-500 hover:underline dark:text-ink-300">
+            Back to sign in
+          </button>
+        </p>
+      </form>
+    )
+  }
+
+  return (
+    <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="mt-8 space-y-5">
+      <Banner message={banner} />
+      <p className="text-sm text-ink-500 dark:text-ink-300">
+        Enter the 6-digit code sent to <span className="font-semibold text-ink-900 dark:text-white">{email}</span>{' '}
+        along with your new password.
+      </p>
+      <div>
+        <label htmlFor="reset_otp_code" className="text-sm font-medium text-ink-700 dark:text-ink-200">
+          Verification Code
+        </label>
+        <input
+          id="reset_otp_code"
+          type="text"
+          inputMode="numeric"
+          maxLength={6}
+          {...resetForm.register('otp_code')}
+          placeholder="123456"
+          className="mt-2 w-full rounded-xl border border-ink-200 dark:border-ink-700 bg-transparent px-4 py-3 text-center text-lg tracking-[0.5em] text-ink-900 dark:text-white placeholder:tracking-normal placeholder:text-ink-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30"
+        />
+        {resetForm.formState.errors.otp_code && (
+          <p className="mt-1.5 text-xs font-medium text-red-500">{resetForm.formState.errors.otp_code.message}</p>
+        )}
+      </div>
+
+      <PasswordField register={resetForm.register} error={resetForm.formState.errors.new_password} name="new_password" />
+      <p className="-mt-3 text-xs text-ink-400">Must be 8–72 characters.</p>
+
+      <button
+        type="submit"
+        disabled={resetForm.formState.isSubmitting}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink-900 dark:bg-gold-400 px-6 py-3.5 text-sm font-semibold text-white dark:text-ink-950 transition-transform hover:scale-[1.02] disabled:opacity-60"
+      >
+        {resetForm.formState.isSubmitting ? <FiLoader className="h-4 w-4 animate-spin" /> : 'Update Password'}
+      </button>
+      <div className="flex items-center justify-between text-sm">
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={resending}
+          className="font-semibold text-gold-500 hover:underline disabled:opacity-60"
+        >
+          {resending ? 'Resending…' : 'Resend code'}
+        </button>
+        <button type="button" onClick={onSwitchToLogin} className="text-ink-500 hover:underline dark:text-ink-300">
+          Back to sign in
+        </button>
+      </div>
+    </form>
+  )
+}
+
 export default function Login() {
   const [view, setView] = useState('login')
   const [pendingEmail, setPendingEmail] = useState('')
@@ -338,6 +492,7 @@ export default function Login() {
     login: { title: 'Welcome back', subtitle: 'Sign in to track your project and collaborate with our team.' },
     signup: { title: 'Create your account', subtitle: 'Join WebNest Studio to start and follow your project.' },
     otp: { title: 'Verify your email', subtitle: 'One quick step before you can sign in.' },
+    forgot: { title: 'Reset your password', subtitle: 'We\'ll email you a code to confirm it\'s you.' },
   }
 
   return (
@@ -363,6 +518,7 @@ export default function Login() {
             <LoginForm
               onSwitchToSignup={() => setView('signup')}
               onNeedsVerification={(email) => { setPendingEmail(email); setPurpose('login'); setView('otp') }}
+              onForgotPassword={() => setView('forgot')}
             />
           )}
 
@@ -378,6 +534,13 @@ export default function Login() {
               email={pendingEmail}
               purpose={purpose}
               onVerified={() => setView('login')}
+              onSwitchToLogin={() => setView('login')}
+            />
+          )}
+
+          {view === 'forgot' && (
+            <ForgotPasswordForm
+              onDone={() => setView('login')}
               onSwitchToLogin={() => setView('login')}
             />
           )}
