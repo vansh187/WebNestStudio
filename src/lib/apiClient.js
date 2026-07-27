@@ -15,8 +15,13 @@ const SLOW_REQUEST_THRESHOLD = 5000
 // easily exceed the normal 10s warm timeout — a successful generation or chat turn
 // commonly takes 10-20s+. Matches /api/generate, /api/generate/{id}/refine, and
 // every /api/chat/* endpoint (thread messages, plan generation).
+// Needs enough headroom to cover a cold Render backend (up to ~60s, see
+// COLD_START_TIMEOUT) PLUS the LLM's own generation time on top of that — 45s was
+// observed cutting off real requests around ~44-45s (client-side abort, shown as
+// "(canceled)" in devtools with no HTTP status, since the server never got to respond
+// in time), not a server-side failure.
 const AI_BUILDER_PATHS = ['/api/generate', '/api/chat']
-const AI_BUILDER_TIMEOUT = 45000
+const AI_BUILDER_TIMEOUT = 90000
 
 let hasCompletedFirstRequest = false
 const slowListeners = new Set()
