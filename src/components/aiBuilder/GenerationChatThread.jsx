@@ -30,6 +30,13 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
   const [status, setStatus] = useState({ type: initialThread ? 'idle' : 'starting' })
   const [limitStatus, setLimitStatus] = useState(null)
 
+  // Synchronous lock against a second send firing while one is already in flight
+  // (rapid double-click, Enter immediately followed by a button click, etc).
+  // PromptInput's `disabled` prop alone isn't enough here - it's driven by React
+  // state, which only takes effect on the next render, leaving a real window where
+  // two send attempts can both pass the disabled check before either commits.
+  const sendInFlightRef = useRef(false)
+
   // ChatPanel doesn't memoize onThreadCreated, so it's a new function reference on
   // every one of its re-renders - read it through a ref instead of a dep so this
   // effect doesn't re-fire (and re-create a thread) on unrelated parent re-renders.
@@ -115,52 +122,60 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
     setStatus({ type: 'error', message: detail || 'Something went wrong. Please try again.', onRetry: retry })
   }
 
-  const submit = async (text) => {
-    if (!threadId) return
+  // Shared by both the initial send and the "Try again" retry button (which calls
+  // this directly via status.onRetry, bypassing submit() entirely) - the in-flight
+  // lock has to live here to cover both call sites.
+  const attemptSend = async (text, revertOptimisticMessage) => {
+    if (sendInFlightRef.current) return
+    sendInFlightRef.current = true
     setStatus({ type: 'loading' })
+    try {
+      const data = await sendMessage(threadId, text)
+      setMode(data.mode)
+
+      const assistantMessage = {
+        role: 'assistant',
+        content: data.reply,
+        html_snapshot: data.mode === 'page_builder' ? data.html : undefined,
+        created_at: new Date().toISOString(),
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+      setStatus({ type: 'idle' })
+
+      if (data.mode === 'page_builder' && data.html) {
+        setActiveHtml(data.html)
+      }
+
+      if (data.mode === 'enquiry') {
+        // collected_fields only ever fills in over time per the API guide, but merge
+        // defensively rather than blindly overwrite in case a turn omits a value.
+        setCollectedFields((prev) => ({
+          ...prev,
+          ...Object.fromEntries(Object.entries(data.collected_fields || {}).filter(([, v]) => v != null)),
+        }))
+        setReadyForPlan(Boolean(data.ready_for_plan))
+      }
+
+      getChatLimitStatus().then(setLimitStatus).catch(() => {})
+    } catch (error) {
+      await handleApiError(error, { retry: () => attemptSend(text, revertOptimisticMessage), revertOptimisticMessage, context: 'send-message' })
+    } finally {
+      sendInFlightRef.current = false
+    }
+  }
+
+  const submit = async (text) => {
+    if (!threadId || sendInFlightRef.current) return
     const userMessage = { role: 'user', content: text, created_at: new Date().toISOString() }
     setMessages((prev) => [...prev, userMessage])
     const revertOptimisticMessage = () => setMessages((prev) => prev.filter((m) => m !== userMessage))
-
-    const attempt = async () => {
-      try {
-        const data = await sendMessage(threadId, text)
-        setMode(data.mode)
-
-        const assistantMessage = {
-          role: 'assistant',
-          content: data.reply,
-          html_snapshot: data.mode === 'page_builder' ? data.html : undefined,
-          created_at: new Date().toISOString(),
-        }
-        setMessages((prev) => [...prev, assistantMessage])
-        setStatus({ type: 'idle' })
-
-        if (data.mode === 'page_builder' && data.html) {
-          setActiveHtml(data.html)
-        }
-
-        if (data.mode === 'enquiry') {
-          // collected_fields only ever fills in over time per the API guide, but merge
-          // defensively rather than blindly overwrite in case a turn omits a value.
-          setCollectedFields((prev) => ({
-            ...prev,
-            ...Object.fromEntries(Object.entries(data.collected_fields || {}).filter(([, v]) => v != null)),
-          }))
-          setReadyForPlan(Boolean(data.ready_for_plan))
-        }
-
-        getChatLimitStatus().then(setLimitStatus).catch(() => {})
-      } catch (error) {
-        await handleApiError(error, { retry: () => attempt(), revertOptimisticMessage, context: 'send-message' })
-      }
-    }
-
-    await attempt()
+    await attemptSend(text, revertOptimisticMessage)
   }
 
+  const generatePlanInFlightRef = useRef(false)
   const handleGeneratePlan = async () => {
-    if (!threadId) return
+    if (!threadId || generatePlanInFlightRef.current) return
+    generatePlanInFlightRef.current = true
     setGeneratingPlan(true)
     try {
       const data = await generatePlan(threadId)
@@ -169,6 +184,7 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
       await handleApiError(error, { context: 'generate-plan' })
     } finally {
       setGeneratingPlan(false)
+      generatePlanInFlightRef.current = false
     }
   }
 
