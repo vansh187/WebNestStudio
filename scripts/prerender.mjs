@@ -26,7 +26,6 @@
 // existing FALLBACK_POSTS/FALLBACK_FAQS "backend down is not a hard failure" pattern).
 
 import { preview } from 'vite'
-import { chromium } from 'playwright'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -35,6 +34,29 @@ const SITE_URL = 'https://webneststudio.co.in'
 const BACKEND_TIMEOUT_MS = 60000 // matches apiClient.js's COLD_START_TIMEOUT for Render free-tier cold starts
 const PER_ROUTE_TIMEOUT_MS = 15000
 const DIST_DIR = path.resolve(process.cwd(), 'dist')
+
+// Vercel's build container is a minimal Amazon Linux image missing the shared
+// libraries (libnss3, libatk, libx11, ...) a normal desktop-Linux Chromium needs to
+// even launch - full Playwright's bundled browser exits immediately there (exit
+// code 127). @sparticuz/chromium ships a build compiled specifically to run in that
+// kind of constrained/serverless environment. Locally (and in any other CI), the
+// full `playwright` package with its own bundled browser works fine and needs no
+// special handling - only swap to the serverless build when actually on Vercel.
+async function launchBrowser() {
+  if (process.env.VERCEL) {
+    const [{ chromium }, sparticuzChromium] = await Promise.all([
+      import('playwright-core'),
+      import('@sparticuz/chromium').then((m) => m.default),
+    ])
+    return chromium.launch({
+      args: sparticuzChromium.args,
+      executablePath: await sparticuzChromium.executablePath(),
+      headless: true,
+    })
+  }
+  const { chromium } = await import('playwright')
+  return chromium.launch()
+}
 
 // Mirrors the public (non-auth, non-admin) branch of src/App.jsx exactly. /login, /portal,
 // and /admin/* are deliberately excluded - noindexed or auth-gated, no reason to prerender.
@@ -104,7 +126,7 @@ async function main() {
   const server = await preview({ preview: { port: 4174, strictPort: true } })
   const baseOrigin = server.resolvedUrls.local[0].replace(/\/$/, '')
 
-  const browser = await chromium.launch()
+  const browser = await launchBrowser()
   const page = await browser.newPage()
 
   // Sequential on purpose - a single shared page/browser context keeps this simple
