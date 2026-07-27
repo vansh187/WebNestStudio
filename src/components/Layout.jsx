@@ -12,6 +12,11 @@ const ORGANIZATION_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: SITE_NAME,
+  // Tells Google this is the same brand under the spelling/spacing variants
+  // people actually search for - the correct, non-spammy way to broaden brand-
+  // name match. There's no legitimate way to force-rank for every case/spacing
+  // combination beyond this; Google already normalizes case when matching queries.
+  alternateName: ['Webnest', 'Webnest Studio', 'WebnestStudio', 'WebNest'],
   url: SITE_URL,
   logo: `${SITE_URL}/favicon.png`,
   email: CONTACT.email,
