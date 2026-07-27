@@ -10,6 +10,7 @@ import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
 import { getUtmParams } from '../lib/utm'
 import { contactSchema, startProjectSchema, consultationSchema } from '../schemas/leadSchemas'
 import { useToast } from '../context/ToastContext'
+import { useSeo } from '../hooks/useSeo'
 
 const TABS = [
   { key: 'contact_form', label: 'Send a Message' },
@@ -215,6 +216,13 @@ const FORM_COMPONENTS = {
 }
 
 export default function Contact() {
+  useSeo({
+    title: 'Contact Us',
+    description:
+      'Get in touch with WebNest Studio to start a project, book a free consultation, or ask a question — we reply within one business day.',
+    path: '/contact',
+  })
+
   const [tab, setTab] = useState('contact_form')
   const ActiveForm = FORM_COMPONENTS[tab]
 

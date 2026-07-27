@@ -1,7 +1,11 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { FiArrowLeft } from 'react-icons/fi'
+import { useSeo } from '../hooks/useSeo'
 
 export default function NotFound() {
+  const location = useLocation()
+  useSeo({ title: 'Page Not Found', noindex: true, path: location.pathname })
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-6 text-center">
       <p className="font-display text-8xl font-extrabold text-gradient-gold">404</p>

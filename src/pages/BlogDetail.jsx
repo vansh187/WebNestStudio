@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkBreaks from 'remark-breaks'
@@ -9,6 +9,7 @@ import { ErrorState, NotFoundState } from '../components/states/StateViews'
 import { getBlogPostBySlug } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
+import { useSeo, useStructuredData, SITE_NAME } from '../hooks/useSeo'
 
 const MARKDOWN_COMPONENTS = {
   h1: ({ children }) => <h2 className="mt-10 mb-4 font-display text-2xl font-bold text-ink-900 dark:text-white">{children}</h2>,
@@ -37,73 +38,6 @@ const MARKDOWN_COMPONENTS = {
       {children}
     </pre>
   ),
-}
-
-// Meta title/description/keywords only exist on live backend posts (null until the
-// SEO migration backfills them, or on manually-created admin posts) - always fall
-// back to title/excerpt so the <head> is never left blank.
-function useBlogSeo(post) {
-  useEffect(() => {
-    if (!post) return undefined
-
-    const title = post.meta_title || post.title
-    const description = post.meta_description || post.excerpt
-    const previousTitle = document.title
-    if (title) document.title = `${title} | WebNest Studio`
-
-    const restoreFns = []
-    function upsertMeta(content, selectorAttr, selectorValue) {
-      if (!content) return
-      let el = document.head.querySelector(`meta[${selectorAttr}="${selectorValue}"]`)
-      const wasCreated = !el
-      if (!el) {
-        el = document.createElement('meta')
-        el.setAttribute(selectorAttr, selectorValue)
-        document.head.appendChild(el)
-      }
-      const previousContent = el.getAttribute('content')
-      el.setAttribute('content', content)
-      restoreFns.push(() => {
-        if (wasCreated) el.remove()
-        else if (previousContent !== null) el.setAttribute('content', previousContent)
-      })
-    }
-
-    upsertMeta(description, 'name', 'description')
-    upsertMeta(title, 'property', 'og:title')
-    upsertMeta(description, 'property', 'og:description')
-    if (post.keywords?.length) upsertMeta(post.keywords.join(', '), 'name', 'keywords')
-
-    return () => {
-      document.title = previousTitle
-      restoreFns.forEach((restore) => restore())
-    }
-  }, [post])
-}
-
-// Injects BlogPosting structured data so search engines can better understand
-// authorship and publish dates — part of the E-E-A-T signals Google's ranking
-// systems weigh for article content.
-function useBlogStructuredData(post) {
-  useEffect(() => {
-    if (!post) return undefined
-
-    const script = document.createElement('script')
-    script.type = 'application/ld+json'
-    script.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
-      headline: post.title,
-      description: post.excerpt,
-      datePublished: post.published_at,
-      dateModified: post.updated_at || post.published_at,
-      author: { '@type': 'Organization', name: 'WebNest Studio' },
-      publisher: { '@type': 'Organization', name: 'WebNest Studio' },
-      keywords: (post.tags || []).join(', '),
-    })
-    document.head.appendChild(script)
-    return () => document.head.removeChild(script)
-  }, [post])
 }
 
 export default function BlogDetail() {
@@ -136,8 +70,31 @@ export default function BlogDetail() {
     return () => { cancelled = true }
   }, [slug, reloadKey])
 
-  useBlogStructuredData(state === 'success' ? post : null)
-  useBlogSeo(state === 'success' ? post : null)
+  const livePost = state === 'success' ? post : null
+  useSeo({
+    title: livePost?.meta_title || livePost?.title,
+    description: livePost?.meta_description || livePost?.excerpt,
+    path: `/blog/${slug}`,
+    image: livePost?.cover_image_url,
+    type: 'article',
+    keywords: livePost?.keywords,
+  })
+  // Injects BlogPosting structured data so search engines can better understand
+  // authorship and publish dates — part of the E-E-A-T signals Google's ranking
+  // systems weigh for article content. Memoized on livePost so the <script> tag
+  // isn't torn down and rebuilt on every unrelated re-render.
+  const blogSchema = useMemo(() => livePost && {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: livePost.title,
+    description: livePost.excerpt,
+    datePublished: livePost.published_at,
+    dateModified: livePost.updated_at || livePost.published_at,
+    author: { '@type': 'Organization', name: SITE_NAME },
+    publisher: { '@type': 'Organization', name: SITE_NAME },
+    keywords: (livePost.tags || []).join(', '),
+  }, [livePost])
+  useStructuredData(blogSchema)
 
   if (state === 'not-found') {
     return (

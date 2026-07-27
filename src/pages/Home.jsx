@@ -12,12 +12,20 @@ import { useHomeData } from '../hooks/useHomeData'
 import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
+import { useSeo } from '../hooks/useSeo'
 
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
 const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer }
 
 export default function Home() {
   const { state, reload } = useHomeData()
+
+  useSeo({
+    title: 'Website Development, AI Implementation & Full-Stack Engineering',
+    description:
+      'WebNest Studio is an IT consultancy specializing in custom website development, AI implementation, and full-stack engineering — where brands go digital.',
+    path: '/',
+  })
 
   useEffect(() => {
     wakeServer()

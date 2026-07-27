@@ -13,6 +13,7 @@ import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
 import {
   signupSchema, loginSchema, otpSchema, forgotPasswordEmailSchema, resetPasswordSchema,
 } from '../schemas/leadSchemas'
+import { useSeo } from '../hooks/useSeo'
 
 function roleHome(role) {
   if (role === 'admin') return '/admin'
@@ -484,6 +485,8 @@ function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
 }
 
 export default function Login() {
+  useSeo({ title: 'Login', noindex: true, path: '/login' })
+
   const [view, setView] = useState('login')
   const [pendingEmail, setPendingEmail] = useState('')
   const [purpose, setPurpose] = useState('signup')

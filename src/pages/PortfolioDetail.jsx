@@ -6,6 +6,7 @@ import { Skeleton } from '../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../components/states/StateViews'
 import { getPortfolioBySlug } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
+import { useSeo } from '../hooks/useSeo'
 
 export default function PortfolioDetail() {
   const { slug } = useParams()
@@ -13,6 +14,15 @@ export default function PortfolioDetail() {
   const [state, setState] = useState('loading')
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+
+  const liveItem = state === 'success' ? item : null
+  useSeo({
+    title: liveItem?.title,
+    description: liveItem?.short_description,
+    path: `/portfolio/${slug}`,
+    image: liveItem?.cover_image_url,
+    type: 'article',
+  })
 
   useEffect(() => {
     let cancelled = false

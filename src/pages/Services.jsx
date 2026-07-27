@@ -10,6 +10,7 @@ import { ErrorState } from '../components/states/StateViews'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
 import { getServices } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
+import { useSeo } from '../hooks/useSeo'
 
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
 const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer }
@@ -19,6 +20,13 @@ const LANGUAGES = [
 ]
 
 export default function Services() {
+  useSeo({
+    title: 'Services',
+    description:
+      'Custom website development, AI implementation, full-stack engineering, enterprise databases, API integration, and WebLogic deployment — explore what WebNest Studio builds.',
+    path: '/services',
+  })
+
   const [services, setServices] = useState(null)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)

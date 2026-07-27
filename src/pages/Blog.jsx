@@ -9,10 +9,21 @@ import NewsletterForm from '../components/forms/NewsletterForm'
 import { getBlogPosts } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
+import { useSeo } from '../hooks/useSeo'
 
 export default function Blog() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tag = searchParams.get('tag') || ''
+
+  useSeo({
+    title: tag ? `${tag} Articles` : 'Blog',
+    description:
+      'Notes on web development, AI, and engineering from the WebNest Studio team — fresh, SEO-optimized articles published regularly.',
+    // Always canonicalize tag-filtered views back to the plain list - the tag
+    // filter is a client-side view, not a distinct indexable page, so this
+    // avoids Google treating every ?tag= combination as duplicate content.
+    path: '/blog',
+  })
   const [posts, setPosts] = useState(null)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)

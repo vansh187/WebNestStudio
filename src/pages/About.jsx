@@ -1,6 +1,7 @@
 import { FiCompass, FiTarget, FiFlag, FiHeart, FiZap, FiShield } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import SectionHeading from '../components/SectionHeading'
+import { useSeo } from '../hooks/useSeo'
 
 const PILLARS = [
   {
@@ -30,6 +31,13 @@ const VALUES = [
 ]
 
 export default function About() {
+  useSeo({
+    title: 'About Us',
+    description:
+      "WebNest Studio's vision, mission, and engineering-first values — the team behind websites, AI systems, and enterprise software built to perform, not just look good.",
+    path: '/about',
+  })
+
   return (
     <div>
       <section className="bg-grid relative px-6 py-20 text-center lg:px-8">

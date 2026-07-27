@@ -7,28 +7,7 @@ import { ErrorState } from '../components/states/StateViews'
 import { getFaqs } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_FAQS } from '../data/faqContent'
-
-// Injects FAQPage structured data so search engines can render rich-result snippets
-// for these questions — a direct, measurable SEO lever beyond on-page copy alone.
-function useFaqStructuredData(faqs) {
-  useEffect(() => {
-    if (!faqs || faqs.length === 0) return undefined
-
-    const script = document.createElement('script')
-    script.type = 'application/ld+json'
-    script.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: faqs.map((f) => ({
-        '@type': 'Question',
-        name: f.question,
-        acceptedAnswer: { '@type': 'Answer', text: f.answer },
-      })),
-    })
-    document.head.appendChild(script)
-    return () => document.head.removeChild(script)
-  }, [faqs])
-}
+import { useSeo, useStructuredData } from '../hooks/useSeo'
 
 function FaqItem({ faq }) {
   const [open, setOpen] = useState(false)
@@ -50,6 +29,13 @@ function FaqItem({ faq }) {
 }
 
 export default function Faqs() {
+  useSeo({
+    title: 'FAQs',
+    description:
+      'Answers to common questions about working with WebNest Studio — pricing, process, timelines, and the technology stack behind every project.',
+    path: '/faqs',
+  })
+
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get('category') || ''
   const [faqs, setFaqs] = useState(null)
@@ -75,7 +61,22 @@ export default function Faqs() {
   )
   const categories = [...new Set(displayFaqs.map((f) => f.category).filter(Boolean))]
 
-  useFaqStructuredData(error ? null : visibleFaqs)
+  // Injects FAQPage structured data so search engines can render rich-result snippets
+  // for these questions — a direct, measurable SEO lever beyond on-page copy alone.
+  const faqSchema = useMemo(() => {
+    const faqs = error ? null : visibleFaqs
+    if (!faqs || faqs.length === 0) return null
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    }
+  }, [error, visibleFaqs])
+  useStructuredData(faqSchema)
 
   return (
     <div>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { FiArrowRight, FiExternalLink } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import { ONGOING_PROJECTS } from '../data/ongoingProjects'
+import { useSeo } from '../hooks/useSeo'
 
 function LivePreviewCard({ project, delay }) {
   return (
@@ -42,6 +43,13 @@ function LivePreviewCard({ project, delay }) {
 }
 
 export default function Portfolio() {
+  useSeo({
+    title: 'Our Work',
+    description:
+      "See what WebNest Studio is building right now — live, ongoing projects you can browse in production, not just static case studies.",
+    path: '/portfolio',
+  })
+
   return (
     <div>
       <section className="mx-auto max-w-7xl px-6 pt-20 lg:px-8">
