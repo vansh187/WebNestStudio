@@ -33,9 +33,11 @@ function upsertTag(selector, create, content) {
  */
 export function useSeo({ title, description, path = '', image, type = 'website', noindex = false, keywords }) {
   useEffect(() => {
-    // Some titles (e.g. a backend-supplied blog meta_title) already end with the
-    // site name - don't double it up into "... | WebNest Studio | WebNest Studio".
-    const alreadyBranded = title?.toLowerCase().includes(SITE_NAME.toLowerCase())
+    // Some titles (e.g. a backend-supplied blog meta_title) already end with some
+    // form of the brand name - sometimes the full site name, sometimes just
+    // "Webnest" without "Studio" - so match on the brand word alone rather than
+    // the exact SITE_NAME string, or we double it up into "... | Webnest | WebNest Studio".
+    const alreadyBranded = title?.toLowerCase().includes('webnest')
     const fullTitle = title ? (alreadyBranded ? title : `${title} | ${SITE_NAME}`) : document.title
     const canonicalUrl = `${SITE_URL}${path}`
     const previousTitle = document.title
@@ -131,14 +133,45 @@ export function useSeo({ title, description, path = '', image, type = 'website',
   }, [title, description, path, image, type, noindex, keywords])
 }
 
-/** Injects a JSON-LD script tag for the lifetime of the calling component. */
+// Tracks how many mounted useStructuredData() instances currently depend on each
+// schema @type, so the tag is only removed once nothing needs it anymore - see
+// useStructuredData's cleanup below for why a plain "did I create it" flag isn't enough.
+const structuredDataRefCounts = new Map()
+
+/**
+ * Injects a JSON-LD script tag for the lifetime of the calling component.
+ *
+ * Reuses an existing tag for the same schema `@type` if one's already present
+ * (e.g. baked into a prerendered static HTML snapshot for this route, or another
+ * mounted component using the same @type) instead of appending a duplicate -
+ * React's createRoot() only replaces the #root subtree, so anything a prerender
+ * pass put in <head> is still there when the client-side app boots and re-runs
+ * this hook. Reference-counted per @type so that if two components ever share a
+ * schema type concurrently, one unmounting doesn't delete the tag out from under
+ * the other still-mounted one.
+ */
 export function useStructuredData(data) {
   useEffect(() => {
     if (!data) return undefined
-    const script = document.createElement('script')
-    script.type = 'application/ld+json'
+    const schemaType = data['@type']
+    let script = document.head.querySelector(`script[type="application/ld+json"][data-schema-type="${schemaType}"]`)
+    if (!script) {
+      script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.setAttribute('data-schema-type', schemaType)
+      document.head.appendChild(script)
+    }
     script.text = JSON.stringify(data)
-    document.head.appendChild(script)
-    return () => document.head.removeChild(script)
+    structuredDataRefCounts.set(schemaType, (structuredDataRefCounts.get(schemaType) || 0) + 1)
+
+    return () => {
+      const remaining = (structuredDataRefCounts.get(schemaType) || 1) - 1
+      if (remaining <= 0) {
+        structuredDataRefCounts.delete(schemaType)
+        script.remove()
+      } else {
+        structuredDataRefCounts.set(schemaType, remaining)
+      }
+    }
   }, [data])
 }

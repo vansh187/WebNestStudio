@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FiX } from 'react-icons/fi'
 import CodingIcon from './CodingIcon'
-import ChatPanel from './ChatPanel'
+
+// Deferred until the user actually opens the panel - pulls in its own markdown
+// rendering and generation UI, which shouldn't load on every page for every visitor.
+const ChatPanel = lazy(() => import('./ChatPanel'))
 
 const NOTIFICATION_TEXT = 'Design the static page of your website with WebNest Studio'
 
@@ -56,7 +59,11 @@ export default function ChatWidget() {
         </motion.button>
       </div>
 
-      {open && <ChatPanel onClose={() => setOpen(false)} />}
+      {open && (
+        <Suspense fallback={null}>
+          <ChatPanel onClose={() => setOpen(false)} />
+        </Suspense>
+      )}
     </>
   )
 }
