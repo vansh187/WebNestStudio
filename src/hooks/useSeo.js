@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 
 export const SITE_NAME = 'WebNest Studio'
-export const SITE_URL = 'https://webneststudio.co.in'
+// The apex domain 308-redirects here - canonical/OG URLs must point to the domain
+// that actually serves the page, not one that immediately redirects away from it.
+export const SITE_URL = 'https://www.webneststudio.co.in'
 
 function upsertTag(selector, create, content) {
   if (!content) return null
