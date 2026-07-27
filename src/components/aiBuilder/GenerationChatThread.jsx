@@ -1,47 +1,87 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { FiLoader } from 'react-icons/fi'
 import ChatMessage from './ChatMessage'
 import PromptInput from './PromptInput'
 import GenerationStatus from './GenerationStatus'
 import PagePreview from './PagePreview'
 import DownloadBar from './DownloadBar'
-import { generatePage, refineGeneration, getLimitStatus, getGenerationDetail } from '../../api/aiBuilder'
+import CollectedFieldsCard from './CollectedFieldsCard'
+import PlanResult from './PlanResult'
+import { startThread, sendMessage, generatePlan, getChatLimitStatus } from '../../api/chat'
+import { getErrorDetail } from '../../lib/apiClient'
 import { useToast } from '../../context/ToastContext'
 
-const GREETING = {
+const FALLBACK_GREETING = {
   role: 'assistant',
-  content: "Hi, How can I help you in design the website pages.",
+  content: 'Hi! How can I help you today?',
+  created_at: new Date().toISOString(),
 }
-
-const REJECTED_MESSAGE = 'I am only made to generate the enhanced HTML pages for websites.'
 
 export default function GenerationChatThread({ initialThread, onThreadCreated, onGoToHistory }) {
   const toast = useToast()
-  const [generationId, setGenerationId] = useState(initialThread?.generation_id ?? null)
+  const [threadId, setThreadId] = useState(initialThread?.thread_id ?? null)
+  const [mode, setMode] = useState(initialThread?.mode ?? 'undecided')
   const [messages, setMessages] = useState(initialThread?.messages ?? [])
-  const [activeHtml, setActiveHtml] = useState(initialThread?.latest_html ?? null)
-  const [status, setStatus] = useState({ type: 'idle' })
+  const [activeHtml, setActiveHtml] = useState(null)
+  const [collectedFields, setCollectedFields] = useState(null)
+  const [readyForPlan, setReadyForPlan] = useState(false)
+  const [plan, setPlan] = useState(null)
+  const [generatingPlan, setGeneratingPlan] = useState(false)
+  const [status, setStatus] = useState({ type: initialThread ? 'idle' : 'starting' })
   const [limitStatus, setLimitStatus] = useState(null)
 
-  // Fetched once on mount only — submit() already refreshes this after every successful
-  // generate/refine, so also depending on `generationId` here would double-fetch on the
-  // new-thread transition (generationId changes as a *result* of that same submit).
+  // ChatPanel doesn't memoize onThreadCreated, so it's a new function reference on
+  // every one of its re-renders - read it through a ref instead of a dep so this
+  // effect doesn't re-fire (and re-create a thread) on unrelated parent re-renders.
+  const onThreadCreatedRef = useRef(onThreadCreated)
+  onThreadCreatedRef.current = onThreadCreated
+
+  // A thread must exist server-side before any message can be sent - kick that off
+  // immediately for a brand-new chat. Resumed threads (from history) already have one.
+  // initialThread itself never changes across this component's lifetime (a new/
+  // selected thread always gets a fresh instance via ChatPanel's sessionKey remount).
   useEffect(() => {
-    getLimitStatus()
-      .then(setLimitStatus)
-      .catch(() => {})
+    if (initialThread) return undefined
+    let cancelled = false
+
+    const begin = async () => {
+      setStatus({ type: 'starting' })
+      try {
+        const data = await startThread()
+        if (cancelled) return
+        setThreadId(data.thread_id)
+        setMode(data.mode)
+        setMessages([{ role: 'assistant', content: data.reply, created_at: new Date().toISOString() }])
+        setStatus({ type: 'idle' })
+        onThreadCreatedRef.current?.(data.thread_id)
+      } catch (error) {
+        if (cancelled) return
+        setStatus({
+          type: 'error',
+          message: getErrorDetail(error, "Couldn't start a new chat. Please try again."),
+          onRetry: begin,
+        })
+      }
+    }
+
+    begin()
+    return () => { cancelled = true }
+  }, [initialThread])
+
+  useEffect(() => {
+    getChatLimitStatus().then(setLimitStatus).catch(() => {})
   }, [])
 
   // Every error from this API is just { detail: "..." } — the HTTP status code alone
-  // tells us which case we're in (per AI_PAGE_BUILDER_API.md), there is no error-code field.
-  const handleApiError = async (error, { retry, revertOptimisticMessage } = {}) => {
+  // tells us which case we're in, per CHATBOT_API.md's error table.
+  const handleApiError = async (error, { retry, revertOptimisticMessage, context } = {}) => {
     const detail = error.response?.data?.detail
     const httpStatus = error.response?.status
 
     if (httpStatus === 429) {
       revertOptimisticMessage?.()
-      // The error body has no reset_at — pull a fresh one from limit-status.
       try {
-        const fresh = await getLimitStatus()
+        const fresh = await getChatLimitStatus()
         setLimitStatus(fresh)
         setStatus({ type: 'rate-limited', resetAt: fresh.reset_at })
       } catch {
@@ -49,87 +89,98 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
       }
       return
     }
-    if (httpStatus === 422) {
-      revertOptimisticMessage?.()
-      setStatus({ type: 'error', message: REJECTED_MESSAGE })
-      return
-    }
-    if (httpStatus === 400) {
-      revertOptimisticMessage?.()
-      setStatus({ type: 'error', message: detail || 'That prompt is empty or too long.', onRetry: retry })
+    if (httpStatus === 409 && context === 'generate-plan') {
+      // Not ready yet - the API guide says to treat this as "keep chatting", not a
+      // hard error, so it never shows up as a scary error card.
+      toast.info(detail || 'A few more details are needed before your plan is ready.')
       return
     }
     if (httpStatus === 403 || httpStatus === 404) {
-      toast.error(httpStatus === 404 ? 'That generation could not be found.' : "That generation isn't yours to view.")
-      onGoToHistory()
+      revertOptimisticMessage?.()
+      toast.error(httpStatus === 404 ? 'That conversation could not be found.' : "That conversation isn't yours to view.")
+      onGoToHistory?.()
+      return
+    }
+    if (httpStatus === 400 || httpStatus === 422) {
+      revertOptimisticMessage?.()
+      setStatus({ type: 'error', message: detail || 'That message could not be sent.', onRetry: retry })
       return
     }
     if (httpStatus === 503) {
       revertOptimisticMessage?.()
-      setStatus({
-        type: 'error',
-        message: detail || 'High demand right now, please try again shortly.',
-        onRetry: retry,
-      })
+      setStatus({ type: 'error', message: detail || 'High demand right now, please try again shortly.', onRetry: retry })
       return
     }
     revertOptimisticMessage?.()
-    setStatus({
-      type: 'error',
-      message: detail || 'Something went wrong. Please try again.',
-      onRetry: retry,
-    })
+    setStatus({ type: 'error', message: detail || 'Something went wrong. Please try again.', onRetry: retry })
   }
 
   const submit = async (text) => {
+    if (!threadId) return
     setStatus({ type: 'loading' })
     const userMessage = { role: 'user', content: text, created_at: new Date().toISOString() }
     setMessages((prev) => [...prev, userMessage])
     const revertOptimisticMessage = () => setMessages((prev) => prev.filter((m) => m !== userMessage))
 
     const attempt = async () => {
-      const isRefine = Boolean(generationId)
       try {
-        const data = isRefine
-          ? await refineGeneration(generationId, text)
-          : await generatePage(text)
+        const data = await sendMessage(threadId, text)
+        setMode(data.mode)
 
-        // Optimistic label for a snappy feel — resynced with the backend's actual
-        // stored content just below, per the frontend spec's recommended pattern.
         const assistantMessage = {
           role: 'assistant',
-          content: isRefine ? text : 'Generated page',
-          html_snapshot: data.html,
-          provider_used: data.provider_used,
+          content: data.reply,
+          html_snapshot: data.mode === 'page_builder' ? data.html : undefined,
           created_at: new Date().toISOString(),
         }
         setMessages((prev) => [...prev, assistantMessage])
-        setActiveHtml(data.html)
         setStatus({ type: 'idle' })
 
-        if (!isRefine) {
-          setGenerationId(data.generation_id)
-          onThreadCreated(data.generation_id)
+        if (data.mode === 'page_builder' && data.html) {
+          setActiveHtml(data.html)
         }
 
-        getLimitStatus().then(setLimitStatus).catch(() => {})
+        if (data.mode === 'enquiry') {
+          // collected_fields only ever fills in over time per the API guide, but merge
+          // defensively rather than blindly overwrite in case a turn omits a value.
+          setCollectedFields((prev) => ({
+            ...prev,
+            ...Object.fromEntries(Object.entries(data.collected_fields || {}).filter(([, v]) => v != null)),
+          }))
+          setReadyForPlan(Boolean(data.ready_for_plan))
+        }
 
-        // Background resync so message content/order exactly matches what's persisted.
-        getGenerationDetail(data.generation_id)
-          .then((detail) => {
-            setMessages(detail.messages)
-            setActiveHtml((current) => (current === data.html ? detail.latest_html : current))
-          })
-          .catch(() => {})
+        getChatLimitStatus().then(setLimitStatus).catch(() => {})
       } catch (error) {
-        await handleApiError(error, { retry: () => attempt(), revertOptimisticMessage })
+        await handleApiError(error, { retry: () => attempt(), revertOptimisticMessage, context: 'send-message' })
       }
     }
 
     await attempt()
   }
 
-  const displayMessages = messages.length === 0 ? [GREETING] : messages
+  const handleGeneratePlan = async () => {
+    if (!threadId) return
+    setGeneratingPlan(true)
+    try {
+      const data = await generatePlan(threadId)
+      setPlan(data)
+    } catch (error) {
+      await handleApiError(error, { context: 'generate-plan' })
+    } finally {
+      setGeneratingPlan(false)
+    }
+  }
+
+  if (status.type === 'starting') {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <FiLoader className="h-6 w-6 animate-spin text-gold-500" />
+      </div>
+    )
+  }
+
+  const displayMessages = messages.length === 0 ? [FALLBACK_GREETING] : messages
 
   return (
     <div className="flex h-full flex-col">
@@ -144,7 +195,7 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
         ))}
       </div>
 
-      {activeHtml && (
+      {mode === 'page_builder' && activeHtml && (
         <div className="space-y-2 border-t border-ink-200 dark:border-ink-800 p-3">
           <PagePreview html={activeHtml} />
           <div className="flex justify-end">
@@ -153,17 +204,35 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
         </div>
       )}
 
+      {mode === 'enquiry' && (collectedFields || plan) && (
+        <div className="space-y-3 border-t border-ink-200 dark:border-ink-800 p-3">
+          {collectedFields && <CollectedFieldsCard fields={collectedFields} />}
+          {readyForPlan && (
+            <button
+              type="button"
+              onClick={handleGeneratePlan}
+              disabled={generatingPlan}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink-900 dark:bg-gold-400 px-3.5 py-2.5 text-sm font-semibold text-white dark:text-ink-950 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {generatingPlan && <FiLoader className="h-4 w-4 animate-spin" />}
+              {plan ? 'Regenerate My Plan' : 'Generate My Plan'}
+            </button>
+          )}
+          <PlanResult plan={plan} />
+        </div>
+      )}
+
       <div className="space-y-2 border-t border-ink-200 dark:border-ink-800 p-3">
         <GenerationStatus status={status} />
         {limitStatus && limitStatus.remaining <= 1 && status.type !== 'rate-limited' && (
           <p className="text-xs text-ink-400">
-            {limitStatus.remaining} of {limitStatus.limit} free generations left this period.
+            {limitStatus.remaining} of {limitStatus.limit} messages left this period.
           </p>
         )}
         <PromptInput
-          mode={generationId ? 'refine' : 'new'}
+          mode={mode}
           onSubmit={submit}
-          disabled={status.type === 'loading' || status.type === 'rate-limited'}
+          disabled={!threadId || status.type === 'loading' || status.type === 'rate-limited'}
         />
       </div>
     </div>

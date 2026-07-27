@@ -6,7 +6,7 @@ import HistorySidebar from './HistorySidebar'
 import GenerationChatThread from './GenerationChatThread'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
-import { getGenerationDetail } from '../../api/aiBuilder'
+import { getThread } from '../../api/chat'
 import { getErrorDetail } from '../../lib/apiClient'
 
 function AuthPrompt() {
@@ -53,12 +53,12 @@ export default function ChatPanel({ onClose }) {
   const selectThread = async (id) => {
     setLoadingThread(true)
     try {
-      const data = await getGenerationDetail(id)
+      const data = await getThread(id)
       setThreadData(data)
       setActiveId(id)
       setSessionKey((k) => k + 1)
     } catch (error) {
-      toast.error(getErrorDetail(error, 'Could not load that generation.'))
+      toast.error(getErrorDetail(error, 'Could not load that conversation.'))
       startNew()
     } finally {
       setLoadingThread(false)
@@ -96,7 +96,7 @@ export default function ChatPanel({ onClose }) {
               <button
                 type="button"
                 onClick={startNew}
-                aria-label="New generation"
+                aria-label="New chat"
                 className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-ink-900 dark:hover:text-white sm:hidden"
               >
                 <FiPlus className="h-5 w-5" />

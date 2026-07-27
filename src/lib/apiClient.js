@@ -11,10 +11,11 @@ const COLD_START_TIMEOUT = 60000
 const WARM_TIMEOUT = 10000
 const SLOW_REQUEST_THRESHOLD = 5000
 
-// AI Page Builder calls hit Gemini (with a Groq fallback) and can easily exceed the normal
-// 10s warm timeout — a successful generation commonly takes 10-20s+. Matches /api/generate
-// and /api/generate/{id}/refine.
-const AI_BUILDER_PATHS = ['/api/generate']
+// AI Page Builder / unified chatbot calls hit Gemini (with a Groq fallback) and can
+// easily exceed the normal 10s warm timeout — a successful generation or chat turn
+// commonly takes 10-20s+. Matches /api/generate, /api/generate/{id}/refine, and
+// every /api/chat/* endpoint (thread messages, plan generation).
+const AI_BUILDER_PATHS = ['/api/generate', '/api/chat']
 const AI_BUILDER_TIMEOUT = 45000
 
 let hasCompletedFirstRequest = false

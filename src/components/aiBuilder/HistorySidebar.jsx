@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
 import { FiPlus, FiMessageSquare } from 'react-icons/fi'
 import { Skeleton } from '../states/Skeleton'
-import { getHistory } from '../../api/aiBuilder'
+import { getThreads } from '../../api/chat'
 import { getErrorDetail } from '../../lib/apiClient'
+
+const MODE_LABELS = {
+  undecided: 'New chat',
+  page_builder: 'Page builder',
+  enquiry: 'Project enquiry',
+}
 
 function relativeTime(iso) {
   const diffMs = Date.now() - new Date(iso).getTime()
@@ -21,8 +27,8 @@ export default function HistorySidebar({ activeId, onSelect, onNew, refreshKey }
 
   useEffect(() => {
     let cancelled = false
-    getHistory()
-      .then((data) => { if (!cancelled) setThreads(data.generations || []) })
+    getThreads()
+      .then((data) => { if (!cancelled) setThreads(data.threads || []) })
       .catch((err) => { if (!cancelled) setError(getErrorDetail(err, 'Could not load history.')) })
     return () => { cancelled = true }
   }, [refreshKey])
@@ -35,7 +41,7 @@ export default function HistorySidebar({ activeId, onSelect, onNew, refreshKey }
           onClick={onNew}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink-900 dark:bg-gold-400 px-3 py-2 text-sm font-semibold text-white dark:text-ink-950"
         >
-          <FiPlus className="h-4 w-4" /> New generation
+          <FiPlus className="h-4 w-4" /> New chat
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-2">
@@ -46,23 +52,25 @@ export default function HistorySidebar({ activeId, onSelect, onNew, refreshKey }
         )}
         {error && <p className="p-2 text-xs text-red-500">{error}</p>}
         {threads && threads.length === 0 && (
-          <p className="p-3 text-xs text-ink-400">No generations yet — start your first one below.</p>
+          <p className="p-3 text-xs text-ink-400">No conversations yet — start your first one below.</p>
         )}
         {threads && threads.map((t) => (
           <button
-            key={t.generation_id}
+            key={t.thread_id}
             type="button"
-            onClick={() => onSelect(t.generation_id)}
+            onClick={() => onSelect(t.thread_id)}
             className={`mb-1 flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-              activeId === t.generation_id
+              activeId === t.thread_id
                 ? 'bg-gold-400/10 text-gold-500'
                 : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-900'
             }`}
           >
             <FiMessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium">{t.title}</span>
-              <span className="block text-xs text-ink-400">{relativeTime(t.updated_at)}</span>
+              <span className="block truncate font-medium">{MODE_LABELS[t.mode] || 'Chat'}</span>
+              <span className="block text-xs text-ink-400">
+                {relativeTime(t.updated_at)} · {t.message_count} msg{t.message_count === 1 ? '' : 's'}
+              </span>
             </span>
           </button>
         ))}

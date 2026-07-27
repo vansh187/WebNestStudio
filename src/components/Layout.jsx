@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import ChatWidget from './aiBuilder/ChatWidget'
+import ErrorBoundary from './ErrorBoundary'
 import { useStructuredData, SITE_NAME, SITE_URL } from '../hooks/useSeo'
 import { CONTACT } from '../data/site'
 
@@ -34,7 +35,11 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
-      <ChatWidget />
+      {/* Isolated boundary: if the chat widget crashes, the rest of the site keeps
+          working normally - it just quietly disappears instead of taking the page down. */}
+      <ErrorBoundary fallback={() => null}>
+        <ChatWidget />
+      </ErrorBoundary>
     </div>
   )
 }

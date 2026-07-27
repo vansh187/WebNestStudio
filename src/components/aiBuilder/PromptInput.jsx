@@ -8,19 +8,25 @@ const EXAMPLE_PROMPTS = [
 ]
 
 const MODE_CONFIG = {
-  new: {
-    placeholder: "Describe the page you want — e.g. 'Landing page for a bakery, warm colors, hero section, menu, contact form'",
+  // Mode is undecided until the first real message - the backend classifies intent
+  // from whatever gets typed, so this placeholder covers both paths at once.
+  undecided: {
+    placeholder: "Describe the page you want, or tell me about a project you'd like to plan — e.g. 'Landing page for a bakery' or 'I need an e-commerce site built'",
     maxLength: 500,
   },
-  refine: {
+  page_builder: {
     placeholder: "Describe the change you want — e.g. 'make the header dark blue'",
     maxLength: 300,
   },
+  enquiry: {
+    placeholder: 'Tell me more about your project...',
+    maxLength: 500,
+  },
 }
 
-export default function PromptInput({ mode, onSubmit, disabled }) {
+export default function PromptInput({ mode = 'undecided', onSubmit, disabled }) {
   const [value, setValue] = useState('')
-  const config = MODE_CONFIG[mode]
+  const config = MODE_CONFIG[mode] ?? MODE_CONFIG.undecided
   const trimmed = value.trim()
   const overLimit = value.length > config.maxLength
 
@@ -32,7 +38,7 @@ export default function PromptInput({ mode, onSubmit, disabled }) {
 
   return (
     <div className="space-y-2">
-      {mode === 'new' && (
+      {mode === 'undecided' && (
         <div className="flex flex-wrap gap-1.5">
           {EXAMPLE_PROMPTS.map((p) => (
             <button
