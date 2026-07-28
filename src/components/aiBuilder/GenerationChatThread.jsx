@@ -200,7 +200,7 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {displayMessages.map((m, i) => (
           <ChatMessage
             key={i}
@@ -209,36 +209,36 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
             onSelectSnapshot={setActiveHtml}
           />
         ))}
+
+        {mode === 'page_builder' && activeHtml && (
+          <div className="space-y-2 border-t border-ink-200 dark:border-ink-800 pt-3">
+            <PagePreview html={activeHtml} />
+            <div className="flex justify-end">
+              <DownloadBar html={activeHtml} disabled={status.type === 'loading'} />
+            </div>
+          </div>
+        )}
+
+        {mode === 'enquiry' && (collectedFields || plan) && (
+          <div className="space-y-3 border-t border-ink-200 dark:border-ink-800 pt-3">
+            {collectedFields && <CollectedFieldsCard fields={collectedFields} />}
+            {readyForPlan && (
+              <button
+                type="button"
+                onClick={handleGeneratePlan}
+                disabled={generatingPlan}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink-900 dark:bg-gold-400 px-3.5 py-2.5 text-sm font-semibold text-white dark:text-ink-950 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {generatingPlan && <FiLoader className="h-4 w-4 animate-spin" />}
+                {plan ? 'Regenerate My Plan' : 'Generate My Plan'}
+              </button>
+            )}
+            <PlanResult plan={plan} />
+          </div>
+        )}
       </div>
 
-      {mode === 'page_builder' && activeHtml && (
-        <div className="space-y-2 border-t border-ink-200 dark:border-ink-800 p-3">
-          <PagePreview html={activeHtml} />
-          <div className="flex justify-end">
-            <DownloadBar html={activeHtml} disabled={status.type === 'loading'} />
-          </div>
-        </div>
-      )}
-
-      {mode === 'enquiry' && (collectedFields || plan) && (
-        <div className="space-y-3 border-t border-ink-200 dark:border-ink-800 p-3">
-          {collectedFields && <CollectedFieldsCard fields={collectedFields} />}
-          {readyForPlan && (
-            <button
-              type="button"
-              onClick={handleGeneratePlan}
-              disabled={generatingPlan}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink-900 dark:bg-gold-400 px-3.5 py-2.5 text-sm font-semibold text-white dark:text-ink-950 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {generatingPlan && <FiLoader className="h-4 w-4 animate-spin" />}
-              {plan ? 'Regenerate My Plan' : 'Generate My Plan'}
-            </button>
-          )}
-          <PlanResult plan={plan} />
-        </div>
-      )}
-
-      <div className="space-y-2 border-t border-ink-200 dark:border-ink-800 p-3">
+      <div className="shrink-0 space-y-2 border-t border-ink-200 dark:border-ink-800 p-3">
         <GenerationStatus status={status} />
         {limitStatus && limitStatus.remaining <= 1 && status.type !== 'rate-limited' && (
           <p className="text-xs text-ink-400">
@@ -249,6 +249,7 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
           mode={mode}
           onSubmit={submit}
           disabled={!threadId || status.type === 'loading' || status.type === 'rate-limited'}
+          showInitialOptions={mode === 'undecided' && !messages.some((m) => m.role === 'user')}
         />
       </div>
     </div>

@@ -1,10 +1,21 @@
 import { useState } from 'react'
-import { FiSend } from 'react-icons/fi'
+import { FiSend, FiClipboard, FiLayout } from 'react-icons/fi'
 
-const EXAMPLE_PROMPTS = [
-  'Landing page for a bakery, warm colors, hero section, menu, contact form',
-  'Portfolio page for a photographer, dark theme, image grid',
-  'SaaS pricing page with 3 tiers and a FAQ section',
+const INITIAL_OPTIONS = [
+  {
+    key: 'enquiry',
+    label: 'Enquiry for the Project',
+    description: 'Describe your requirements and get a cost & timeline plan',
+    Icon: FiClipboard,
+    message: "I'd like to make an enquiry for a project. I'll describe my requirements.",
+  },
+  {
+    key: 'page_builder',
+    label: 'Design Sample of Static Page',
+    description: 'Get page suggestions and preview a generated design',
+    Icon: FiLayout,
+    message: 'I want to design a sample static webpage. Please suggest some page options.',
+  },
 ]
 
 const MODE_CONFIG = {
@@ -19,12 +30,12 @@ const MODE_CONFIG = {
     maxLength: 300,
   },
   enquiry: {
-    placeholder: 'Tell me more about your project...',
+    placeholder: 'Describe your project and requirements...',
     maxLength: 500,
   },
 }
 
-export default function PromptInput({ mode = 'undecided', onSubmit, disabled }) {
+export default function PromptInput({ mode = 'undecided', onSubmit, disabled, showInitialOptions }) {
   const [value, setValue] = useState('')
   const config = MODE_CONFIG[mode] ?? MODE_CONFIG.undecided
   const trimmed = value.trim()
@@ -36,23 +47,29 @@ export default function PromptInput({ mode = 'undecided', onSubmit, disabled }) 
     setValue('')
   }
 
+  if (mode === 'undecided' && showInitialOptions) {
+    return (
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {INITIAL_OPTIONS.map(({ key, label, description, Icon, message }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onSubmit(message)}
+            disabled={disabled}
+            className="flex flex-col items-start gap-1 rounded-xl border border-ink-200 dark:border-ink-700 p-3 text-left transition-colors hover:border-gold-400 hover:bg-gold-400/5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold text-ink-900 dark:text-white">
+              <Icon className="h-4 w-4 text-gold-500" /> {label}
+            </span>
+            <span className="text-xs text-ink-500 dark:text-ink-300">{description}</span>
+          </button>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-2">
-      {mode === 'undecided' && (
-        <div className="flex flex-wrap gap-1.5">
-          {EXAMPLE_PROMPTS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setValue(p)}
-              disabled={disabled}
-              className="rounded-full border border-ink-200 dark:border-ink-700 px-2.5 py-1 text-xs text-ink-500 hover:border-gold-400 hover:text-gold-500 dark:text-ink-300 disabled:opacity-50"
-            >
-              {p.length > 36 ? `${p.slice(0, 36)}…` : p}
-            </button>
-          ))}
-        </div>
-      )}
       <div className="flex items-end gap-2">
         <textarea
           value={value}
