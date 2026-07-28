@@ -7,7 +7,7 @@ import CodingIcon from './CodingIcon'
 // rendering and generation UI, which shouldn't load on every page for every visitor.
 const ChatPanel = lazy(() => import('./ChatPanel'))
 
-const NOTIFICATION_TEXT = 'Design the static page of your website with WebNest Studio'
+const NOTIFICATION_TEXT = "Hi, I'm WebNestAi. Need a Website, Mobile App, or AI Solutions? Tell us your requirement — I'll handle the rest."
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)

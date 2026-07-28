@@ -17,6 +17,19 @@ const FALLBACK_GREETING = {
   created_at: new Date().toISOString(),
 }
 
+// Picking one of the two initial options only decides which local UI mode to show -
+// it deliberately does NOT round-trip a canned message through sendMessage. The
+// backend classifies mode from message content, and a meta-message like "please
+// suggest some page options" reads as an enquiry to it (mentions "options"/"project")
+// rather than a page-build request. Setting mode locally and asking our own
+// clarifying question sidesteps that misclassification; the backend only classifies
+// once the user's real, concrete description comes in - which is what worked
+// reliably before this two-button UI existed.
+const INTENT_PROMPTS = {
+  enquiry: 'Tell me a bit about your project — what you\'re building, the goal, key pages/features you need, your budget range, and timeline. I\'ll use that to put together a plan.',
+  page_builder: 'Here are some popular static page types I can design: Landing Page, Portfolio, Pricing Page, Product/Service Showcase, or a Coming Soon page. Tell me which one (plus any style or color preferences) and I\'ll build it for you.',
+}
+
 export default function GenerationChatThread({ initialThread, onThreadCreated, onGoToHistory }) {
   const toast = useToast()
   const [threadId, setThreadId] = useState(initialThread?.thread_id ?? null)
@@ -164,6 +177,11 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
     }
   }
 
+  const handleSelectIntent = (key) => {
+    setMode(key)
+    setMessages((prev) => [...prev, { role: 'assistant', content: INTENT_PROMPTS[key], created_at: new Date().toISOString() }])
+  }
+
   const submit = async (text) => {
     if (!threadId || sendInFlightRef.current) return
     const userMessage = { role: 'user', content: text, created_at: new Date().toISOString() }
@@ -248,6 +266,7 @@ export default function GenerationChatThread({ initialThread, onThreadCreated, o
         <PromptInput
           mode={mode}
           onSubmit={submit}
+          onSelectIntent={handleSelectIntent}
           disabled={!threadId || status.type === 'loading' || status.type === 'rate-limited'}
           showInitialOptions={mode === 'undecided' && !messages.some((m) => m.role === 'user')}
         />
