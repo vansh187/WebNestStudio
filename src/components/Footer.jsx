@@ -63,7 +63,7 @@ export default function Footer() {
               <li>
                 <a
                   href={CONTACT.emailHref}
-                  className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-300 hover:text-gold-500 transition-colors break-all"
+                  className="flex items-center gap-2 text-xs sm:text-sm text-ink-500 dark:text-ink-300 hover:text-gold-500 transition-colors whitespace-nowrap"
                 >
                   <FiMail className="h-4 w-4 shrink-0" />
                   {CONTACT.email}
