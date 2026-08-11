@@ -1,8 +1,8 @@
 export const CONTACT = {
   phone: '+91 72769 71875',
   phoneHref: 'tel:+917276971875',
-  email: 'webneststudio19@gmail.com',
-  emailHref: 'mailto:webneststudio19@gmail.com',
+  email: 'vansh.duggal@webneststudio.co.in',
+  emailHref: 'mailto:vansh.duggal@webneststudio.co.in',
   whatsappHref: 'https://wa.me/917276971875?text=Hi%2C%20I%27d%20like%20a%20free%20consultation.',
   instagramHref: 'https://www.instagram.com/webneststudio112026',
 }
