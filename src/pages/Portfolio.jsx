@@ -22,6 +22,11 @@ function LivePreviewCard({ project, delay }) {
             className="pointer-events-none absolute left-0 top-0 h-[400%] w-[400%] origin-top-left scale-[0.25] border-0"
           />
           <div className="absolute inset-0 bg-transparent transition-colors group-hover:bg-ink-950/5" />
+          {project.logo && (
+            <div className="absolute left-4 top-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-ink-200 bg-white p-1.5 shadow-md dark:border-ink-800">
+              <img src={project.logo} alt={`${project.name} logo`} className="h-full w-full object-contain" />
+            </div>
+          )}
         </div>
         <div className="flex items-start justify-between gap-3 p-6">
           <div>

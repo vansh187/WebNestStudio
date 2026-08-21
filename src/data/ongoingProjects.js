@@ -9,4 +9,10 @@ export const ONGOING_PROJECTS = [
     url: 'https://www.vstitchbyanjalinanda.com',
     description: 'A custom tailoring and fashion brand website in progress, blending elegant design with easy client booking.',
   },
+  {
+    name: 'DivineVisionInfra',
+    url: 'https://divinevisioninfra.com/',
+    logo: '/logos/divinevisioninfra.png',
+    description: 'An infrastructure and real estate brand website, built to reflect trust and scale.',
+  },
 ]
