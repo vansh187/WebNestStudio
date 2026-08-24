@@ -29,7 +29,7 @@ import { preview } from 'vite'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-const BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend.onrender.com'
+const BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
 // Must match src/hooks/useSeo.js's SITE_URL exactly - this is what the canonical-tag
 // wait-check below compares against. The apex domain 308-redirects to www, so this
 // has to be the www form (the domain that actually serves the page).
