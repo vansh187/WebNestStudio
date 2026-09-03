@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiCheckCircle, FiStar,
+  FiExternalLink,
 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import SectionHeading from '../components/SectionHeading'
@@ -12,6 +13,7 @@ import { useHomeData } from '../hooks/useHomeData'
 import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
+import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import { useSeo } from '../hooks/useSeo'
 
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
@@ -165,6 +167,43 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* MILESTONE ANNOUNCEMENT — first delivered project */}
+      {DELIVERED_PROJECTS.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pb-16 lg:px-8 lg:pb-20">
+          <Reveal>
+            <a
+              href={DELIVERED_PROJECTS[0].url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl border border-emerald-400/30 bg-gradient-to-r from-emerald-400/10 via-gold-400/5 to-transparent p-6 transition-all hover:border-emerald-400/60 hover:shadow-lg hover:shadow-emerald-500/10 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="flex items-start gap-4 sm:items-center">
+                <span className="relative flex h-3 w-3 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
+                </span>
+                <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-500">
+                    <FiCheckCircle className="h-3.5 w-3.5" />
+                    First Project Delivered
+                  </span>
+                  <p className="mt-2 font-display text-lg font-bold text-ink-900 dark:text-white">
+                    {DELIVERED_PROJECTS[0].name} is now live in production
+                  </p>
+                  <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">
+                    {DELIVERED_PROJECTS[0].phase ?? 'Now shipped.'} — see how it turned out.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-ink-900 dark:bg-gold-400 px-5 py-2.5 text-xs font-semibold text-white dark:text-ink-950 transition-transform group-hover:scale-105 sm:self-center">
+                Visit Live Site
+                <FiExternalLink className="h-3.5 w-3.5" />
+              </span>
+            </a>
+          </Reveal>
+        </section>
+      )}
 
       {/* MARQUEE */}
       <section className="border-y border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40 py-6">
