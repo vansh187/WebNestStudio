@@ -51,8 +51,8 @@ export default function Home() {
         <div className="pointer-events-none absolute -top-40 right-[-10%] h-[36rem] w-[36rem] rounded-full bg-gold-400/20 blur-[120px]" />
         <div className="pointer-events-none absolute top-1/3 -left-40 h-[28rem] w-[28rem] rounded-full bg-gold-600/10 blur-[100px]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-16 lg:px-8 lg:pb-32 lg:pt-24">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
+        <div className="relative mx-auto max-w-7xl px-6 pb-12 pt-8 lg:px-8 lg:pb-16 lg:pt-12">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
             <div>
               <motion.span
                 initial={{ opacity: 0, y: 12 }}
@@ -67,7 +67,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1 }}
-                className="mt-6 font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
+                className="mt-4 font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
               >
                 Where Brands <span className="text-gradient-gold">Go Digital.</span>
               </motion.h1>
@@ -76,7 +76,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
-                className="mt-6 max-w-xl text-lg leading-relaxed text-ink-500 dark:text-ink-300"
+                className="mt-4 max-w-xl text-lg leading-relaxed text-ink-500 dark:text-ink-300"
               >
                 WebNest Studio designs and engineers websites, AI-powered products, and
                 enterprise software that make your brand impossible to ignore — built on
@@ -87,7 +87,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.3 }}
-                className="mt-9 flex flex-wrap items-center gap-4"
+                className="mt-6 flex flex-wrap items-center gap-4"
               >
                 <Link
                   to="/contact"
@@ -108,7 +108,7 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
-                className="mt-10 flex flex-wrap gap-x-8 gap-y-3"
+                className="mt-6 flex flex-wrap gap-x-8 gap-y-3"
               >
                 {['Any language, any stack', 'Dark & light experiences', 'AI-first engineering'].map((t) => (
                   <span key={t} className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-300">
@@ -124,14 +124,14 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative mx-auto w-full max-w-md"
             >
-              <div className="animate-float rounded-3xl border border-gold-400/30 bg-white/60 dark:bg-ink-900/60 p-6 shadow-2xl backdrop-blur-xl">
-                <div className="flex items-center justify-between border-b border-ink-200 dark:border-ink-700 pb-4">
+              <div className="animate-float rounded-3xl border border-gold-400/30 bg-white/60 dark:bg-ink-900/60 p-5 shadow-2xl backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-ink-200 dark:border-ink-700 pb-3">
                   <span className="text-xs font-semibold uppercase tracking-widest text-gold-500">
                     {demoStatus?.project_name ?? 'Project Status'}
                   </span>
                   <span className="flex h-2.5 w-2.5 animate-glow rounded-full bg-gold-400" />
                 </div>
-                <div className="mt-5 space-y-4">
+                <div className="mt-4 space-y-3">
                   {[
                     { label: 'Discovery', value: 100 },
                     { label: 'Design', value: 100 },
@@ -152,11 +152,11 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 grid grid-cols-3 gap-2">
+                <div className="mt-4 grid grid-cols-3 gap-2">
                   {['React', 'Python', 'Java'].map((t) => (
                     <span
                       key={t}
-                      className="rounded-lg border border-ink-200 dark:border-ink-700 py-2 text-center text-xs font-semibold text-ink-600 dark:text-ink-200"
+                      className="rounded-lg border border-ink-200 dark:border-ink-700 py-1.5 text-center text-xs font-semibold text-ink-600 dark:text-ink-200"
                     >
                       {t}
                     </span>
