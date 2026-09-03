@@ -69,9 +69,10 @@ export default function LaunchAnnouncementModal() {
                 type="button"
                 onClick={close}
                 aria-label="Close announcement"
-                className="absolute right-3.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-ink-950/60 text-white/80 shadow-lg backdrop-blur-md transition-colors hover:border-gold-400/50 hover:text-gold-300"
+                className="group absolute right-3.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-full border border-gold-400/40 bg-ink-950/70 text-gold-300/90 shadow-[0_0_0_1px_rgba(212,175,55,0.15),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all duration-300 hover:border-gold-400 hover:text-ink-950 hover:shadow-[0_0_18px_rgba(212,175,55,0.45)]"
               >
-                <FiX className="h-4 w-4" />
+                <span className="absolute inset-0 scale-0 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 transition-transform duration-300 group-hover:scale-100" />
+                <FiX className="relative h-4 w-4" />
               </button>
 
               <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-ink-950/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-300 shadow-lg backdrop-blur-md">
