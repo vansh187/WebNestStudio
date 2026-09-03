@@ -6,6 +6,7 @@ import {
   FiExternalLink,
 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
+import LaunchAnnouncementModal from '../components/LaunchAnnouncementModal'
 import SectionHeading from '../components/SectionHeading'
 import { SkeletonGrid } from '../components/states/Skeleton'
 import { ErrorState } from '../components/states/StateViews'
@@ -46,6 +47,8 @@ export default function Home() {
 
   return (
     <div className="overflow-hidden">
+      <LaunchAnnouncementModal />
+
       {/* HERO */}
       <section className="relative bg-grid text-ink-900 dark:text-white">
         <div className="pointer-events-none absolute -top-40 right-[-10%] h-[36rem] w-[36rem] rounded-full bg-gold-400/20 blur-[120px]" />
