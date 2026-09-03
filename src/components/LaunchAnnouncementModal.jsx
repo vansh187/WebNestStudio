@@ -4,22 +4,14 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { FiX, FiExternalLink, FiArrowRight } from 'react-icons/fi'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 
-const DISMISSED_KEY = 'wns_announcement_dismissed_v1'
-
 export default function LaunchAnnouncementModal() {
   const [open, setOpen] = useState(false)
   const project = DELIVERED_PROJECTS[0]
 
   useEffect(() => {
     if (!project) return
-    let dismissed = false
-    try {
-      dismissed = localStorage.getItem(DISMISSED_KEY) === '1'
-    } catch {}
-    if (!dismissed) {
-      const timer = setTimeout(() => setOpen(true), 500)
-      return () => clearTimeout(timer)
-    }
+    const timer = setTimeout(() => setOpen(true), 500)
+    return () => clearTimeout(timer)
   }, [project])
 
   useEffect(() => {
@@ -29,9 +21,6 @@ export default function LaunchAnnouncementModal() {
 
   function close() {
     setOpen(false)
-    try {
-      localStorage.setItem(DISMISSED_KEY, '1')
-    } catch {}
   }
 
   if (!project) return null
