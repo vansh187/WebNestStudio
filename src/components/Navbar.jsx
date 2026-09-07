@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { FiMenu, FiX, FiArrowRight, FiUser, FiLogOut } from 'react-icons/fi'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { NAV_LINKS } from '../data/site'
 import { useAuth } from '../context/AuthContext'
+
+// Pulls in the card UI + newsletter form - only loaded once a visitor opens it.
+const VisitingCardModal = lazy(() => import('./VisitingCardModal'))
+
+// The "Visiting Card" entry opens an in-site overlay instead of navigating, so
+// visitors can grab our details without leaving the page. The /card route still
+// works for QR scans and shared links.
+const CARD_PATH = '/card'
 
 function accountHome(role) {
   if (role === 'admin') return { to: '/admin', label: 'Admin' }
@@ -14,6 +22,11 @@ function accountHome(role) {
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [cardOpen, setCardOpen] = useState(false)
+  // Latch: mount the modal on first open and keep it mounted so its
+  // close animation can play out instead of being cut off by unmount.
+  const [cardMounted, setCardMounted] = useState(false)
+  const openCard = () => { setCardMounted(true); setCardOpen(true) }
   const { isAuthenticated, user, logout } = useAuth()
   const account = isAuthenticated ? accountHome(user?.role) : null
 
@@ -42,22 +55,33 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-6 xl:flex 2xl:gap-8">
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.to === '/'}
-              className={({ isActive }) =>
-                `whitespace-nowrap text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'text-gold-500'
-                    : 'text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          {NAV_LINKS.map((link) =>
+            link.to === CARD_PATH ? (
+              <button
+                key={link.to}
+                type="button"
+                onClick={openCard}
+                className="whitespace-nowrap text-sm font-medium text-ink-600 transition-colors hover:text-gold-500 dark:text-ink-200 dark:hover:text-gold-400"
+              >
+                {link.label}
+              </button>
+            ) : (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === '/'}
+                className={({ isActive }) =>
+                  `whitespace-nowrap text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'text-gold-500'
+                      : 'text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400'
+                  }`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ),
+          )}
         </div>
 
         <div className="hidden items-center gap-4 xl:flex">
@@ -112,21 +136,32 @@ export default function Navbar() {
       {open && (
         <div className="xl:hidden border-t border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 px-6 py-4">
           <div className="flex flex-col gap-4">
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.to === '/'}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `text-base font-medium ${
-                    isActive ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'
-                  }`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
+            {NAV_LINKS.map((link) =>
+              link.to === CARD_PATH ? (
+                <button
+                  key={link.to}
+                  type="button"
+                  onClick={() => { setOpen(false); openCard() }}
+                  className="text-left text-base font-medium text-ink-700 dark:text-ink-100"
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.to === '/'}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `text-base font-medium ${
+                      isActive ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'
+                    }`
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              ),
+            )}
             {account ? (
               <>
                 <Link
@@ -163,6 +198,12 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
+      )}
+
+      {cardMounted && (
+        <Suspense fallback={null}>
+          <VisitingCardModal open={cardOpen} onClose={() => setCardOpen(false)} />
+        </Suspense>
       )}
     </header>
   )
