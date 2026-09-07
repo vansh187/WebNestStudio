@@ -41,14 +41,14 @@ export default function Navbar() {
           <Logo size="md" />
         </Link>
 
-        <div className="hidden items-center gap-6 lg:flex">
+        <div className="hidden items-center gap-6 xl:flex 2xl:gap-8">
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.to === '/'}
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors ${
+                `whitespace-nowrap text-sm font-medium transition-colors ${
                   isActive
                     ? 'text-gold-500'
                     : 'text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400'
@@ -60,7 +60,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden items-center gap-4 xl:flex">
           <ThemeToggle />
           {account ? (
             <>
@@ -96,7 +96,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 lg:hidden">
+        <div className="flex items-center gap-3 xl:hidden">
           <ThemeToggle />
           <button
             type="button"
@@ -110,7 +110,7 @@ export default function Navbar() {
       </nav>
 
       {open && (
-        <div className="lg:hidden border-t border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 px-6 py-4">
+        <div className="xl:hidden border-t border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 px-6 py-4">
           <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) => (
               <NavLink
