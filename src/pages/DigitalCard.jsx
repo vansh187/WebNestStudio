@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiArrowRight,
+  FiDownload,
   FiDownloadCloud,
   FiGlobe,
   FiInstagram,
@@ -10,6 +11,7 @@ import {
   FiShare2,
 } from 'react-icons/fi'
 import { FaWhatsapp } from 'react-icons/fa'
+import QRCode from 'qrcode'
 import Reveal from '../components/Reveal'
 import NewsletterForm from '../components/forms/NewsletterForm'
 import { useSeo, SITE_URL } from '../hooks/useSeo'
@@ -106,6 +108,35 @@ export default function DigitalCard() {
   })
 
   const [shared, setShared] = useState(false)
+  const [qr, setQr] = useState('')
+
+  useEffect(() => {
+    let active = true
+    QRCode.toDataURL(CARD_URL, {
+      width: 512,
+      margin: 1,
+      color: { dark: '#0a0b0f', light: '#ffffff' },
+    })
+      .then((dataUrl) => {
+        if (active) setQr(dataUrl)
+      })
+      .catch(() => {
+        /* QR is a nice-to-have - the rest of the card still works without it */
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const downloadQr = () => {
+    if (!qr) return
+    const a = document.createElement('a')
+    a.href = qr
+    a.download = 'webnest-studio-card-qr.png'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
 
   const handleShare = async () => {
     const shareData = {
@@ -156,6 +187,45 @@ export default function DigitalCard() {
                     Founder
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* QR code - point a phone camera here to open this card */}
+            <div className="flex flex-col items-center gap-3 border-b border-white/10 px-4 py-6 sm:px-5">
+              <div className="rounded-2xl bg-white p-3 shadow-lg shadow-black/30">
+                {qr ? (
+                  <img
+                    src={qr}
+                    alt="QR code linking to the WebNest Studio digital card"
+                    className="h-40 w-40"
+                    width="160"
+                    height="160"
+                  />
+                ) : (
+                  <div className="h-40 w-40 animate-pulse rounded-lg bg-ink-100" />
+                )}
+              </div>
+              <p className="text-center text-[0.68rem] text-ink-300">
+                Scan to open this card — or share it below
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={downloadQr}
+                  disabled={!qr}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-[0.72rem] font-semibold text-ink-200 transition-colors hover:border-gold-300/50 hover:text-gold-200 disabled:opacity-50"
+                >
+                  <FiDownload className="h-3.5 w-3.5" />
+                  Download QR
+                </button>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-[0.72rem] font-semibold text-ink-200 transition-colors hover:border-gold-300/50 hover:text-gold-200"
+                >
+                  <FiShare2 className="h-3.5 w-3.5" />
+                  {shared ? 'Link copied' : 'Share card'}
+                </button>
               </div>
             </div>
 
@@ -243,19 +313,11 @@ export default function DigitalCard() {
               </div>
             </div>
 
-            {/* Share + footer */}
-            <div className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-4">
+            {/* Footer */}
+            <div className="border-t border-white/10 px-5 py-4 text-center">
               <Link to="/" className="text-[0.68rem] text-ink-400 transition-colors hover:text-gold-300">
                 webneststudio.co.in
               </Link>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-[0.68rem] font-semibold text-ink-200 transition-colors hover:border-gold-300/50 hover:text-gold-200"
-              >
-                <FiShare2 className="h-3.5 w-3.5" />
-                {shared ? 'Link copied' : 'Share card'}
-              </button>
             </div>
           </div>
         </Reveal>

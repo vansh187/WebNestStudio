@@ -41,7 +41,7 @@ export default function Navbar() {
           <Logo size="md" />
         </Link>
 
-        <div className="hidden items-center gap-8 lg:flex">
+        <div className="hidden items-center gap-6 lg:flex">
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.to}

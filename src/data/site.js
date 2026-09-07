@@ -14,6 +14,7 @@ export const NAV_LINKS = [
   { label: 'Work', to: '/portfolio' },
   { label: 'Blog', to: '/blog' },
   { label: 'FAQs', to: '/faqs' },
+  { label: 'Visiting Card', to: '/card' },
   { label: 'Contact', to: '/contact' },
 ]
 

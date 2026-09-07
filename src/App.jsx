@@ -20,8 +20,11 @@ import BlogDetail from './pages/BlogDetail'
 import Faqs from './pages/Faqs'
 import Contact from './pages/Contact'
 import Login from './pages/Login'
-import DigitalCard from './pages/DigitalCard'
 import NotFound from './pages/NotFound'
+
+// Split out of the main bundle - only visitors who actually open /card should
+// pay for the QR-code library it pulls in.
+const DigitalCard = lazy(() => import('./pages/DigitalCard'))
 
 // Auth-gated, never needed by anonymous visitors or crawlers - split out of the
 // main bundle so public/marketing pages don't pay for admin+portal code weight.
