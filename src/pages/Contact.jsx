@@ -244,7 +244,7 @@ export default function Contact() {
 
       <section className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-5">
-          <Reveal className="lg:col-span-2">
+          <div className="min-w-0 lg:col-span-2">
             <div className="h-full space-y-6">
               <a
                 href={CONTACT.phoneHref}
@@ -294,10 +294,13 @@ export default function Contact() {
                 </div>
               </div>
             </div>
-          </Reveal>
+          </div>
 
-          <Reveal delay={0.1} className="lg:col-span-3">
-            <div className="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-8">
+          {/* Not wrapped in <Reveal>: this is the primary purpose of the page, so
+              it must never depend on a scroll-in-view animation firing to become
+              visible (that was leaving the form invisible on some mobile browsers). */}
+          <div className="min-w-0 lg:col-span-3">
+            <div className="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-6 sm:p-8">
               <div className="mb-8 flex flex-wrap gap-2 border-b border-ink-200 dark:border-ink-800 pb-4">
                 {TABS.map((t) => (
                   <button
@@ -316,7 +319,7 @@ export default function Contact() {
               </div>
               <ActiveForm key={tab} />
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
     </div>
