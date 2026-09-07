@@ -149,11 +149,13 @@ export default function DigitalCard() {
         await navigator.share(shareData)
         return
       }
-      await navigator.clipboard.writeText(CARD_URL)
-      setShared(true)
-      setTimeout(() => setShared(false), 2000)
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(CARD_URL)
+        setShared(true)
+        setTimeout(() => setShared(false), 2000)
+      }
     } catch {
-      /* user dismissed the share sheet - nothing to do */
+      /* user dismissed the share sheet, or clipboard blocked - nothing to do */
     }
   }
 

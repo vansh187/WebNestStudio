@@ -97,7 +97,14 @@ function App() {
                   </Route>
 
                   <Route path="login" element={<Login />} />
-                  <Route path="card" element={<DigitalCard />} />
+                  <Route
+                    path="card"
+                    element={(
+                      <ErrorBoundary fallback={() => <AppCrashedFallback />}>
+                        <DigitalCard />
+                      </ErrorBoundary>
+                    )}
+                  />
 
                   <Route
                     path="admin"
