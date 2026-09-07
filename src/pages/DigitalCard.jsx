@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiArrowRight,
@@ -11,7 +11,6 @@ import {
   FiShare2,
 } from 'react-icons/fi'
 import { FaWhatsapp } from 'react-icons/fa'
-import QRCode from 'qrcode'
 import Reveal from '../components/Reveal'
 import NewsletterForm from '../components/forms/NewsletterForm'
 import { useSeo, SITE_URL } from '../hooks/useSeo'
@@ -19,6 +18,11 @@ import { CONTACT } from '../data/site'
 import logoMark from '../assets/logo.png'
 
 const CARD_URL = `${SITE_URL}/card`
+
+// Rendered by a public QR image service (goqr.me) rather than a bundled library -
+// keeps the build lean and dependency-free. Sends `Access-Control-Allow-Origin: *`,
+// so the Download button can fetch it as a blob for a real file save.
+const QR_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=0&data=${encodeURIComponent(CARD_URL)}`
 
 // vCard 3.0 - opens the native "Add Contact" sheet on iOS/Android and imports
 // cleanly into Google/Apple/Outlook contacts on desktop.
@@ -108,34 +112,25 @@ export default function DigitalCard() {
   })
 
   const [shared, setShared] = useState(false)
-  const [qr, setQr] = useState('')
+  const [qrFailed, setQrFailed] = useState(false)
 
-  useEffect(() => {
-    let active = true
-    QRCode.toDataURL(CARD_URL, {
-      width: 512,
-      margin: 1,
-      color: { dark: '#0a0b0f', light: '#ffffff' },
-    })
-      .then((dataUrl) => {
-        if (active) setQr(dataUrl)
-      })
-      .catch(() => {
-        /* QR is a nice-to-have - the rest of the card still works without it */
-      })
-    return () => {
-      active = false
+  const downloadQr = async () => {
+    try {
+      const res = await fetch(QR_SRC)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'webnest-studio-card-qr.png'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      // Blob fetch blocked - fall back to just opening the image so the
+      // visitor can save it manually.
+      window.open(QR_SRC, '_blank', 'noopener,noreferrer')
     }
-  }, [])
-
-  const downloadQr = () => {
-    if (!qr) return
-    const a = document.createElement('a')
-    a.href = qr
-    a.download = 'webnest-studio-card-qr.png'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
   }
 
   const handleShare = async () => {
@@ -194,32 +189,35 @@ export default function DigitalCard() {
 
             {/* QR code - point a phone camera here to open this card */}
             <div className="flex flex-col items-center gap-3 border-b border-white/10 px-4 py-6 sm:px-5">
-              <div className="rounded-2xl bg-white p-3 shadow-lg shadow-black/30">
-                {qr ? (
+              {!qrFailed && (
+                <div className="rounded-2xl bg-white p-3 shadow-lg shadow-black/30">
                   <img
-                    src={qr}
+                    src={QR_SRC}
                     alt="QR code linking to the WebNest Studio digital card"
                     className="h-40 w-40"
                     width="160"
                     height="160"
+                    loading="lazy"
+                    onError={() => setQrFailed(true)}
                   />
-                ) : (
-                  <div className="h-40 w-40 animate-pulse rounded-lg bg-ink-100" />
-                )}
-              </div>
+                </div>
+              )}
               <p className="text-center text-[0.68rem] text-ink-300">
-                Scan to open this card — or share it below
+                {qrFailed
+                  ? 'Share or save this card using the buttons below.'
+                  : 'Scan to open this card — or share it below'}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={downloadQr}
-                  disabled={!qr}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-[0.72rem] font-semibold text-ink-200 transition-colors hover:border-gold-300/50 hover:text-gold-200 disabled:opacity-50"
-                >
-                  <FiDownload className="h-3.5 w-3.5" />
-                  Download QR
-                </button>
+                {!qrFailed && (
+                  <button
+                    type="button"
+                    onClick={downloadQr}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-[0.72rem] font-semibold text-ink-200 transition-colors hover:border-gold-300/50 hover:text-gold-200"
+                  >
+                    <FiDownload className="h-3.5 w-3.5" />
+                    Download QR
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleShare}

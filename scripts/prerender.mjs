@@ -63,7 +63,9 @@ async function launchBrowser() {
 
 // Mirrors the public (non-auth, non-admin) branch of src/App.jsx exactly. /login, /portal,
 // and /admin/* are deliberately excluded - noindexed or auth-gated, no reason to prerender.
-const STATIC_ROUTES = ['/', '/about', '/our-story', '/services', '/portfolio', '/blog', '/faqs', '/contact', '/card']
+// /card is deliberately excluded - it's a dynamic interactive card whose QR image
+// loads from a third-party service at runtime, so there's nothing useful to snapshot.
+const STATIC_ROUTES = ['/', '/about', '/our-story', '/services', '/portfolio', '/blog', '/faqs', '/contact']
 
 async function fetchJson(url) {
   const controller = new AbortController()
