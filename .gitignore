@@ -15,6 +15,12 @@ dist-ssr
 .env.*
 !.env.example
 
+# Local screenshot / scratch files
+/nav-*.png
+/contact-*.png
+/card-modal-*.png
+/_shot.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
