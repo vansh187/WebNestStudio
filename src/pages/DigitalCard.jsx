@@ -155,7 +155,7 @@ export default function DigitalCard() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-ink-950 px-5 py-10 text-white sm:px-6 sm:py-14">
+    <div className="relative min-h-screen overflow-x-clip bg-ink-950 px-5 py-10 text-white sm:px-6 sm:py-14">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(230,172,62,0.18),transparent_38%),radial-gradient(circle_at_85%_85%,rgba(230,172,62,0.12),transparent_40%),linear-gradient(160deg,rgba(5,6,9,0.96),rgba(18,21,30,0.9))]" />
 
       <div className="relative mx-auto w-full max-w-md">
