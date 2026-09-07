@@ -11,6 +11,7 @@ import SlowRequestBanner from './components/SlowRequestBanner'
 import ErrorBoundary from './components/ErrorBoundary'
 import Home from './pages/Home'
 import About from './pages/About'
+import OurStory from './pages/OurStory'
 import Services from './pages/Services'
 import Portfolio from './pages/Portfolio'
 import PortfolioDetail from './pages/PortfolioDetail'
@@ -72,6 +73,7 @@ function App() {
                   <Route element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path="about" element={<About />} />
+                    <Route path="our-story" element={<OurStory />} />
                     <Route path="services" element={<Services />} />
                     <Route path="portfolio" element={<Portfolio />} />
                     <Route path="portfolio/:slug" element={<PortfolioDetail />} />

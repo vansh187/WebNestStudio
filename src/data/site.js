@@ -3,13 +3,13 @@ export const CONTACT = {
   phoneHref: 'tel:+917276971875',
   email: 'vansh.duggal@webneststudio.co.in',
   emailHref: 'mailto:vansh.duggal@webneststudio.co.in',
-  whatsappHref: 'https://wa.me/917276971875?text=Hi%2C%20I%27d%20like%20a%20free%20consultation.',
+  whatsappHref: 'https://wa.me/917276971875?text=Hello%20WebNest%20Studio%2C%20I%27d%20like%20to%20discuss%20a%20premium%20digital%20experience%20for%20my%20brand.%20Please%20share%20the%20next%20steps.',
   instagramHref: 'https://www.instagram.com/webneststudio112026',
 }
 
 export const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'About', to: '/about' },
+  { label: 'Our Story', to: '/our-story' },
   { label: 'Services', to: '/services' },
   { label: 'Work', to: '/portfolio' },
   { label: 'Blog', to: '/blog' },

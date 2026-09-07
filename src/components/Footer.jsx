@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
+import { FaWhatsapp } from 'react-icons/fa'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
 import { CONTACT, NAV_LINKS, TECH_STACK } from '../data/site'
@@ -8,8 +9,8 @@ export default function Footer() {
   return (
     <footer className="border-t border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-950">
       <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-5">
-          <div className="md:col-span-2">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.55fr_minmax(21rem,1.35fr)_minmax(18rem,1fr)]">
+          <div className="md:col-span-2 lg:col-span-1">
             <Logo size="md" />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500 dark:text-ink-300">
               WebNest Studio is an IT consultancy building websites, AI-driven products, and
@@ -25,10 +26,19 @@ export default function Footer() {
               >
                 <FiInstagram className="h-4 w-4" />
               </a>
+              <a
+                href={CONTACT.whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Message WebNest Studio on WhatsApp"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 text-ink-500 transition-colors hover:border-gold-400 hover:text-gold-500 dark:border-ink-700 dark:text-ink-300"
+              >
+                <FaWhatsapp className="h-4 w-4" />
+              </a>
             </div>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-ink-900 dark:text-white">
               Navigate
             </h4>
@@ -46,7 +56,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-ink-900 dark:text-white">
               Get in Touch
             </h4>
@@ -63,7 +73,7 @@ export default function Footer() {
               <li>
                 <a
                   href={CONTACT.emailHref}
-                  className="flex items-center gap-2 text-xs sm:text-sm text-ink-500 dark:text-ink-300 hover:text-gold-500 transition-colors whitespace-nowrap"
+                  className="flex min-w-0 items-center gap-2 whitespace-nowrap text-xs text-ink-500 transition-colors hover:text-gold-500 dark:text-ink-300 sm:text-sm"
                 >
                   <FiMail className="h-4 w-4 shrink-0" />
                   {CONTACT.email}
@@ -72,14 +82,14 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-ink-900 dark:text-white">
               Stay Updated
             </h4>
             <p className="mt-4 text-sm text-ink-500 dark:text-ink-300">
               Occasional notes on web, AI, and engineering — no spam.
             </p>
-            <div className="mt-4">
+            <div className="mt-4 max-w-sm">
               <NewsletterForm source="footer" />
             </div>
           </div>
