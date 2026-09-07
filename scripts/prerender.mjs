@@ -63,7 +63,7 @@ async function launchBrowser() {
 
 // Mirrors the public (non-auth, non-admin) branch of src/App.jsx exactly. /login, /portal,
 // and /admin/* are deliberately excluded - noindexed or auth-gated, no reason to prerender.
-const STATIC_ROUTES = ['/', '/about', '/services', '/portfolio', '/blog', '/faqs', '/contact']
+const STATIC_ROUTES = ['/', '/about', '/our-story', '/services', '/portfolio', '/blog', '/faqs', '/contact', '/card']
 
 async function fetchJson(url) {
   const controller = new AbortController()

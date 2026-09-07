@@ -20,6 +20,7 @@ import BlogDetail from './pages/BlogDetail'
 import Faqs from './pages/Faqs'
 import Contact from './pages/Contact'
 import Login from './pages/Login'
+import DigitalCard from './pages/DigitalCard'
 import NotFound from './pages/NotFound'
 
 // Auth-gated, never needed by anonymous visitors or crawlers - split out of the
@@ -93,6 +94,7 @@ function App() {
                   </Route>
 
                   <Route path="login" element={<Login />} />
+                  <Route path="card" element={<DigitalCard />} />
 
                   <Route
                     path="admin"

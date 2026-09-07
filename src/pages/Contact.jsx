@@ -140,10 +140,9 @@ function StartProjectForm() {
         </FormField>
         <FormField label="Budget Range" name="budget_range" as="select" register={register} error={errors.budget_range} defaultValue="">
           <option value="" disabled>Select…</option>
-          <option>Under $5k</option>
-          <option>$5k-$10k</option>
-          <option>$10k-$25k</option>
-          <option>$25k+</option>
+          <option>Below ₹1 lakh</option>
+          <option>₹1 lakh – ₹2 lakh</option>
+          <option>Above ₹2 lakh</option>
         </FormField>
         <FormField label="Timeline" name="timeline" as="select" register={register} error={errors.timeline} defaultValue="">
           <option value="" disabled>Select…</option>
