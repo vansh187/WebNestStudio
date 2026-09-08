@@ -18,18 +18,37 @@ export const NAV_LINKS = [
   { label: 'Contact', to: '/contact' },
 ]
 
-export const FOOTER_LINKS = [
-  { label: 'Home', to: '/' },
-  { label: 'Our Story', to: '/our-story' },
-  { label: 'Services', to: '/services' },
-  { label: 'Work', to: '/portfolio' },
-  { label: 'Blog', to: '/blog' },
-  { label: 'FAQs', to: '/faqs' },
-  { label: 'Playground', to: '/playground' },
-  { label: 'Make a Project', to: '/projects' },
-  { label: 'Visiting Card', to: '/card' },
-  { label: 'Contact', to: '/contact' },
+// Grouped for the footer so the nav reads as tidy categories, not one long list.
+export const FOOTER_SECTIONS = [
+  {
+    title: 'Company',
+    links: [
+      { label: 'Home', to: '/' },
+      { label: 'Our Story', to: '/our-story' },
+      { label: 'Services', to: '/services' },
+      { label: 'Work', to: '/portfolio' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Blog', to: '/blog' },
+      { label: 'FAQs', to: '/faqs' },
+      { label: 'Visiting Card', to: '/card' },
+      { label: 'Contact', to: '/contact' },
+    ],
+  },
+  {
+    title: 'Platform',
+    links: [
+      { label: 'Playground', to: '/playground' },
+      { label: 'Make a Project', to: '/projects' },
+    ],
+  },
 ]
+
+// Flat list kept for any consumer that just wants every footer link.
+export const FOOTER_LINKS = FOOTER_SECTIONS.flatMap((s) => s.links)
 
 export const TECH_STACK = [
   { name: 'React', category: 'Frontend' },

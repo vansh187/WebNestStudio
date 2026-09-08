@@ -3,13 +3,13 @@ import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
 import { FaWhatsapp } from 'react-icons/fa'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
-import { CONTACT, FOOTER_LINKS, TECH_STACK } from '../data/site'
+import { CONTACT, FOOTER_SECTIONS, TECH_STACK } from '../data/site'
 
 export default function Footer() {
   return (
     <footer className="border-t border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-950">
       <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.55fr_minmax(21rem,1.35fr)_minmax(18rem,1fr)]">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1fr_1.15fr_minmax(19rem,1.15fr)_minmax(17rem,1fr)]">
           <div className="md:col-span-2 lg:col-span-1">
             <Logo size="md" />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500 dark:text-ink-300">
@@ -38,22 +38,26 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="min-w-0">
-            <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-ink-900 dark:text-white">
-              Navigate
-            </h4>
-            <ul className="mt-4 space-y-2.5">
-              {FOOTER_LINKS.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-sm text-ink-500 dark:text-ink-300 hover:text-gold-500 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="grid min-w-0 grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-2">
+            {FOOTER_SECTIONS.map((section) => (
+              <div key={section.title} className="min-w-0">
+                <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-ink-900 dark:text-white">
+                  {section.title}
+                </h4>
+                <ul className="mt-4 space-y-2.5">
+                  {section.links.map((link) => (
+                    <li key={link.to}>
+                      <Link
+                        to={link.to}
+                        className="text-sm text-ink-500 dark:text-ink-300 hover:text-gold-500 transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
           <div className="min-w-0">
