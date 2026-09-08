@@ -65,7 +65,9 @@ async function launchBrowser() {
 // and /admin/* are deliberately excluded - noindexed or auth-gated, no reason to prerender.
 // /card is deliberately excluded - it's a dynamic interactive card whose QR image
 // loads from a third-party service at runtime, so there's nothing useful to snapshot.
-const STATIC_ROUTES = ['/', '/about', '/our-story', '/services', '/portfolio', '/blog', '/faqs', '/contact']
+// /playground is public + indexable (the online compiler). /projects and /s/:shareId
+// are auth-gated / dynamic - deliberately excluded, like /login, /portal, /admin/*.
+const STATIC_ROUTES = ['/', '/about', '/our-story', '/services', '/portfolio', '/blog', '/faqs', '/contact', '/playground']
 
 async function fetchJson(url) {
   const controller = new AbortController()

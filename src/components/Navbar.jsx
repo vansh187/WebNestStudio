@@ -112,7 +112,7 @@ export default function Navbar() {
             </Link>
           )}
           <Link
-            to="/contact"
+            to="/projects"
             className="group inline-flex items-center gap-1.5 rounded-full bg-ink-900 dark:bg-gold-400 px-5 py-2.5 text-sm font-semibold text-white dark:text-ink-950 transition-transform hover:scale-105"
           >
             Start a Project
@@ -189,7 +189,7 @@ export default function Navbar() {
               </Link>
             )}
             <Link
-              to="/contact"
+              to="/projects"
               onClick={() => setOpen(false)}
               className="inline-flex items-center justify-center gap-1.5 rounded-full bg-ink-900 dark:bg-gold-400 px-5 py-3 text-sm font-semibold text-white dark:text-ink-950"
             >
