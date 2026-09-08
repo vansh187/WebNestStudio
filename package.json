@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
+    "@monaco-editor/react": "^4.7.0",
     "@vercel/analytics": "^2.0.1",
     "axios": "^1.18.1",
     "framer-motion": "^12.42.2",
+    "monaco-editor": "^0.56.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.82.0",

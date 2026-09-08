@@ -23,6 +23,12 @@ const SLOW_REQUEST_THRESHOLD = 5000
 const AI_BUILDER_PATHS = ['/api/generate', '/api/chat']
 const AI_BUILDER_TIMEOUT = 90000
 
+// Online compiler: server waits up to ~20s per JDoodle call (+ a 1.2s burst retry),
+// on top of a possible Render free-tier cold start (up to ~60s, see COLD_START_TIMEOUT).
+// The normal 10s warm timeout cuts real runs off; 60s covers a cold-plus-slow run.
+const COMPILER_PATHS = ['/api/compiler']
+const COMPILER_TIMEOUT = 60000
+
 let hasCompletedFirstRequest = false
 const slowListeners = new Set()
 let pendingSlowCount = 0
@@ -59,12 +65,14 @@ async function performRefresh() {
 }
 
 api.interceptors.request.use((config) => {
-  const isAiBuilderCall = AI_BUILDER_PATHS.some((p) => config.url?.includes(p))
-  config.timeout = isAiBuilderCall
-    ? AI_BUILDER_TIMEOUT
-    : hasCompletedFirstRequest
-      ? WARM_TIMEOUT
-      : COLD_START_TIMEOUT
+  const url = config.url ?? ''
+  if (AI_BUILDER_PATHS.some((p) => url.includes(p))) {
+    config.timeout = AI_BUILDER_TIMEOUT
+  } else if (COMPILER_PATHS.some((p) => url.includes(p))) {
+    config.timeout = COMPILER_TIMEOUT
+  } else {
+    config.timeout = hasCompletedFirstRequest ? WARM_TIMEOUT : COLD_START_TIMEOUT
+  }
 
   const token = getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
@@ -99,7 +107,11 @@ api.interceptors.response.use(
     const isAuthFreePath = AUTH_FREE_PATHS.some((p) => path.startsWith(p))
 
     // Auto-retry once on 503 (DB temporarily unavailable) after a short backoff.
-    if (status === 503 && !config._retried503) {
+    // Skipped for the compiler: a 503 there means the execution engine is down or
+    // unconfigured (per BACKEND_API_CODING_PLATFORM.md), which a 2s retry won't fix -
+    // fail fast so the user sees the message immediately.
+    const isCompilerCall = COMPILER_PATHS.some((p) => path.includes(p))
+    if (status === 503 && !config._retried503 && !isCompilerCall) {
       config._retried503 = true
       await new Promise((r) => setTimeout(r, 2000))
       return api(config)

@@ -26,6 +26,14 @@ import NotFound from './pages/NotFound'
 // pay for the QR-code library it pulls in.
 const DigitalCard = lazy(() => import('./pages/DigitalCard'))
 
+// Coding platform - Monaco + its language workers are heavy, and only visitors who
+// open the playground / a project should pay for that chunk. Lazy for the same reason
+// as /card and admin below.
+const Playground = lazy(() => import('./pages/coding/Playground'))
+const ProjectsList = lazy(() => import('./pages/coding/ProjectsList'))
+const ProjectWorkspace = lazy(() => import('./pages/coding/ProjectWorkspace'))
+const SharedSnippet = lazy(() => import('./pages/coding/SharedSnippet'))
+
 // Auth-gated, never needed by anonymous visitors or crawlers - split out of the
 // main bundle so public/marketing pages don't pay for admin+portal code weight.
 const ClientPortal = lazy(() => import('./pages/portal/ClientPortal'))
@@ -85,6 +93,42 @@ function App() {
                     <Route path="blog/:slug" element={<BlogDetail />} />
                     <Route path="faqs" element={<Faqs />} />
                     <Route path="contact" element={<Contact />} />
+                    <Route
+                      path="playground"
+                      element={(
+                        <ErrorBoundary>
+                          <Playground />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="s/:shareId"
+                      element={(
+                        <ErrorBoundary>
+                          <SharedSnippet />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="projects"
+                      element={(
+                        <ProtectedRoute>
+                          <ErrorBoundary>
+                            <ProjectsList />
+                          </ErrorBoundary>
+                        </ProtectedRoute>
+                      )}
+                    />
+                    <Route
+                      path="projects/:id"
+                      element={(
+                        <ProtectedRoute>
+                          <ErrorBoundary>
+                            <ProjectWorkspace />
+                          </ErrorBoundary>
+                        </ProtectedRoute>
+                      )}
+                    />
                     <Route
                       path="portal"
                       element={(

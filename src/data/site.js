@@ -13,7 +13,20 @@ export const NAV_LINKS = [
   { label: 'Services', to: '/services' },
   { label: 'Work', to: '/portfolio' },
   { label: 'Blog', to: '/blog' },
+  { label: 'Playground', to: '/playground' },
+  { label: 'Visiting Card', to: '/card' },
+  { label: 'Contact', to: '/contact' },
+]
+
+export const FOOTER_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Our Story', to: '/our-story' },
+  { label: 'Services', to: '/services' },
+  { label: 'Work', to: '/portfolio' },
+  { label: 'Blog', to: '/blog' },
   { label: 'FAQs', to: '/faqs' },
+  { label: 'Playground', to: '/playground' },
+  { label: 'Make a Project', to: '/projects' },
   { label: 'Visiting Card', to: '/card' },
   { label: 'Contact', to: '/contact' },
 ]

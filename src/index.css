@@ -57,6 +57,11 @@ body {
   background-color: var(--color-ink-950);
 }
 
+:root {
+  /* Height of the sticky global navbar — coding-workspace sticky bars offset by this. */
+  --nav-h: 72px;
+}
+
 ::selection {
   background-color: var(--color-gold-400);
   color: var(--color-ink-950);

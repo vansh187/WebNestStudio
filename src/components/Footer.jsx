@@ -3,7 +3,7 @@ import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
 import { FaWhatsapp } from 'react-icons/fa'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
-import { CONTACT, NAV_LINKS, TECH_STACK } from '../data/site'
+import { CONTACT, FOOTER_LINKS, TECH_STACK } from '../data/site'
 
 export default function Footer() {
   return (
@@ -43,7 +43,7 @@ export default function Footer() {
               Navigate
             </h4>
             <ul className="mt-4 space-y-2.5">
-              {NAV_LINKS.map((link) => (
+              {FOOTER_LINKS.map((link) => (
                 <li key={link.to}>
                   <Link
                     to={link.to}
