@@ -25,6 +25,7 @@ export const adminPortfolio = crudResource('portfolio')
 export const adminTestimonials = crudResource('testimonials')
 export const adminFaqs = crudResource('faqs')
 export const adminBlog = crudResource('blog')
+export const adminCodelabProblems = crudResource('codelab/problems')
 
 // Client project status (upsert)
 export const upsertProjectStatus = (clientUserId, payload) =>

@@ -1,4 +1,4 @@
-import { adminServices, adminPortfolio, adminTestimonials, adminFaqs, adminBlog } from '../../api/admin'
+import { adminServices, adminPortfolio, adminTestimonials, adminFaqs, adminBlog, adminCodelabProblems } from '../../api/admin'
 
 export const RESOURCE_CONFIGS = {
   services: {
@@ -74,6 +74,24 @@ export const RESOURCE_CONFIGS = {
       { name: 'content', label: 'Content', type: 'textarea', required: true },
       { name: 'cover_image_url', label: 'Cover Image URL', type: 'text' },
       { name: 'tags', label: 'Tags (comma-separated)', type: 'tags' },
+      { name: 'is_published', label: 'Published', type: 'checkbox', default: true },
+    ],
+  },
+  codelab: {
+    title: 'CodeLab Problems',
+    api: adminCodelabProblems,
+    hasSlug: true,
+    columns: ['title', 'slug', 'track', 'difficulty', 'is_published'],
+    fields: [
+      { name: 'title', label: 'Title', type: 'text', required: true },
+      { name: 'slug', label: 'Slug', type: 'text', required: true, hint: 'lowercase letters, numbers, dashes' },
+      { name: 'track', label: 'Track', type: 'select', options: ['python', 'web'], required: true },
+      { name: 'language', label: 'Language', type: 'select', options: ['python', 'web'], required: true },
+      { name: 'difficulty', label: 'Difficulty', type: 'select', options: ['easy', 'medium', 'hard'], required: true },
+      { name: 'points', label: 'Points', type: 'number', default: 20, min: 1 },
+      { name: 'topics', label: 'Topics (comma-separated)', type: 'tags' },
+      { name: 'statement', label: 'Statement', type: 'textarea', required: true },
+      { name: 'starter_code', label: 'Starter Code', type: 'textarea' },
       { name: 'is_published', label: 'Published', type: 'checkbox', default: true },
     ],
   },

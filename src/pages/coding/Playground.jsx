@@ -6,31 +6,40 @@ import { useToast } from '../../context/ToastContext'
 import { useCodeRunner } from '../../hooks/useCodeRunner'
 import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
-import { listLanguages, createProject, createShare, toCodePayload } from '../../api/coding'
+import { WEB_FILES, PYTHON_FILES, cloneFiles } from '../../data/codelabDefaults'
+import { createProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 
-const STORAGE_KEY = 'wns-playground'
+const STORAGE_KEY = 'wns-codelab-playground'
 
 function loadSession() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    if (parsed && typeof parsed.source === 'string' && typeof parsed.language === 'string') {
-      return { language: parsed.language, source: parsed.source, stdin: parsed.stdin ?? '' }
+    if (parsed && typeof parsed.language === 'string') {
+      const language = parsed.language === 'javascript' ? 'web' : parsed.language
+      const fallback = language === 'web' ? WEB_FILES : PYTHON_FILES
+      return {
+        language,
+        source: parsed.source ?? '',
+        files: cloneFiles(parsed.files, fallback),
+        selectedFile: parsed.selectedFile,
+        stdin: parsed.stdin ?? '',
+      }
     }
   } catch {
-    /* private mode / corrupt value — fall through */
+    return null
   }
   return null
 }
 
 export default function Playground() {
   useSeo({
-    title: 'Online Compiler & Playground',
+    title: 'Webnest CodeLab',
     description:
-      'Write, run and share code in Python, JavaScript, Java and more — right in your browser. No install, no setup.',
-    path: '/playground',
+      'Write and run HTML, CSS, JavaScript and Python in the browser with Webnest CodeLab.',
+    path: '/codelab',
   })
 
   const navigate = useNavigate()
@@ -40,50 +49,45 @@ export default function Playground() {
   const runner = useCodeRunner()
 
   const session = useMemo(loadSession, [])
-  const [languages, setLanguages] = useState(LANGUAGES)
-  const [language, setLanguage] = useState(session?.language ?? 'python')
-  const [source, setSource] = useState(session?.source ?? getLanguage(session?.language ?? 'python').defaultSnippet)
+  const [language, setLanguage] = useState(session?.language ?? 'web')
+  const [files, setFiles] = useState(session?.files ?? cloneFiles(WEB_FILES, WEB_FILES))
+  const [selectedFile, setSelectedFile] = useState(session?.selectedFile ?? files[0]?.name ?? 'index.html')
+  const [source, setSource] = useState(session?.source ?? getLanguage(session?.language ?? 'web').defaultSnippet)
   const [stdin, setStdin] = useState(session?.stdin ?? '')
   const [touched, setTouched] = useState(Boolean(session))
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-    listLanguages()
-      .then((data) => {
-        if (!cancelled && Array.isArray(data) && data.length) setLanguages(data)
-      })
-      .catch(() => {
-        /* keep the bundled fallback list */
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ language, source, stdin }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ language, source, files, selectedFile, stdin }))
     } catch {
-      /* ignore quota / private mode */
+      /* Storage can fail in private mode; the editor should keep working. */
     }
-  }, [language, source, stdin])
+  }, [language, source, files, selectedFile, stdin])
 
   const handleLanguageChange = useCallback(
     (next) => {
       setLanguage(next)
       if (!touched) {
-        const snippet = (languages.find((l) => l.id === next) ?? getLanguage(next)).defaultSnippet
+        const snippet = getLanguage(next).defaultSnippet
         if (snippet != null) setSource(snippet)
       }
+      const nextFiles = next === 'web' ? cloneFiles(WEB_FILES, WEB_FILES) : cloneFiles(PYTHON_FILES, PYTHON_FILES)
+      setFiles(nextFiles)
+      setSelectedFile(nextFiles[0]?.name ?? 'main.py')
     },
-    [touched, languages],
+    [touched],
   )
 
   const handleSourceChange = useCallback((value) => {
     setTouched(true)
     setSource(value)
+  }, [])
+
+  const handleFileChange = useCallback((fileName, value) => {
+    setTouched(true)
+    setFiles((items) => items.map((file) => (file.name === fileName ? { ...file, content: value } : file)))
   }, [])
 
   const requireLogin = useCallback(
@@ -94,46 +98,51 @@ export default function Playground() {
     [toast, navigate, location],
   )
 
-  const currentLang = useCallback(
-    () => languages.find((l) => l.id === language) ?? getLanguage(language),
-    [languages, language],
-  )
+  const currentLang = useCallback(() => getLanguage(language), [language])
 
   const handleSave = useCallback(async () => {
     if (!isAuthenticated) {
-      requireLogin('Log in to save your project.')
+      requireLogin('Log in to save your CodeLab project.')
       return
     }
     setSaving(true)
     try {
       const lang = currentLang()
+      const activeSource = files.find((file) => file.name === selectedFile)?.content ?? source
       const project = await createProject({
-        title: 'Untitled project',
+        title: 'Untitled CodeLab project',
         language,
-        ...toCodePayload({ source, fileName: mainFileName(lang), extra: { stdin } }),
+        ...toCodePayload({
+          source: activeSource,
+          fileName: mainFileName(lang),
+          files,
+          extra: { stdin },
+        }),
       })
-      toast.success('Project created.')
+      toast.success('CodeLab project created.')
       navigate(`/projects/${project.id}`)
     } catch (err) {
-      toast.error(getErrorDetail(err, 'Could not save your project.'))
+      toast.error(getErrorDetail(err, 'Could not save your CodeLab project.'))
     } finally {
       setSaving(false)
     }
-  }, [isAuthenticated, requireLogin, currentLang, language, source, stdin, toast, navigate])
+  }, [isAuthenticated, requireLogin, currentLang, language, source, files, selectedFile, stdin, toast, navigate])
 
   const handleShare = useCallback(async () => {
     if (!isAuthenticated) {
-      requireLogin('Log in to share your code.')
+      requireLogin('Log in to share your CodeLab work.')
       return
     }
     setSharing(true)
     try {
       const lang = currentLang()
+      const activeSource = files.find((file) => file.name === selectedFile)?.content ?? source
       const { url } = await createShare({
         language,
         ...toCodePayload({
-          source,
+          source: activeSource,
           fileName: mainFileName(lang),
+          files,
           extra: { stdin, stdout: runner.result?.stdout },
         }),
       })
@@ -141,7 +150,7 @@ export default function Playground() {
       try {
         await navigator.clipboard.writeText(fullUrl)
       } catch {
-        /* clipboard blocked — the toast still tells them it worked */
+        /* Clipboard can be blocked; sharing still succeeded. */
       }
       toast.success('Share link copied to clipboard.')
     } catch (err) {
@@ -149,24 +158,28 @@ export default function Playground() {
     } finally {
       setSharing(false)
     }
-  }, [isAuthenticated, requireLogin, currentLang, language, source, stdin, runner.result, toast])
+  }, [isAuthenticated, requireLogin, currentLang, language, source, files, selectedFile, stdin, runner.result, toast])
 
   return (
     <CodingWorkspace
-      eyebrow="Playground"
-      title="Online compiler"
-      subtitle="Write code, run it, and share the result. No account needed to run."
-      languages={languages}
+      eyebrow="Webnest CodeLab"
+      title="Browser coding playground"
+      subtitle="Run Web projects and Python locally in your browser. No compiler server needed."
+      languages={LANGUAGES}
       language={language}
       onLanguageChange={handleLanguageChange}
       source={source}
       onSourceChange={handleSourceChange}
+      files={files}
+      selectedFile={selectedFile}
+      onSelectFile={setSelectedFile}
+      onFileChange={handleFileChange}
       stdin={stdin}
       onStdinChange={setStdin}
       runner={runner}
       onSave={handleSave}
       saving={saving}
-      saveLabel="Save as project"
+      saveLabel="Save project"
       onShare={handleShare}
       sharing={sharing}
     />

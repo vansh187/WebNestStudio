@@ -4,29 +4,33 @@ import { EmptyState } from '../states/StateViews'
 
 const STATUS_STYLES = {
   success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500',
+  failed: 'border-red-500/30 bg-red-500/10 text-red-500',
   compile_error: 'border-red-500/30 bg-red-500/10 text-red-500',
   runtime_error: 'border-red-500/30 bg-red-500/10 text-red-500',
   timeout: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
   rate_limited: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
+  stopped: 'border-ink-300 bg-ink-100 text-ink-500 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-200',
   internal_error: 'border-red-500/30 bg-red-500/10 text-red-500',
 }
 
 const STATUS_LABELS = {
   success: 'Success',
+  failed: 'Failed',
   compile_error: 'Compile error',
   runtime_error: 'Runtime error',
   timeout: 'Timed out',
   rate_limited: 'Rate limited',
-  internal_error: 'Server error',
+  stopped: 'Stopped',
+  internal_error: 'Runner error',
 }
 
-// Shown when a non-success run produced no readable output.
 const STATUS_HINTS = {
   compile_error: 'Your code did not compile.',
+  failed: 'One or more checks failed.',
   runtime_error: 'Your program exited with an error.',
   timeout: 'Execution timed out before it finished.',
-  rate_limited: 'The runner is busy or the daily limit was reached — try again later.',
-  internal_error: 'The runner hit an error. Try again in a moment.',
+  rate_limited: 'The runner is busy. Try again later.',
+  internal_error: 'The local runner hit an error. Try again in a moment.',
 }
 
 function Stream({ label, text, tone = 'default' }) {
@@ -62,12 +66,10 @@ function RunningIndicator({ since }) {
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-300">
         <FiLoader className="h-4 w-4 animate-spin text-gold-500" />
-        Running your code… {elapsed > 0 && <span className="tabular-nums text-ink-400">{elapsed}s</span>}
+        Running your code... {elapsed > 0 && <span className="tabular-nums text-ink-400">{elapsed}s</span>}
       </div>
       {elapsed >= 4 && (
-        <p className="text-[11px] text-ink-400">
-          First run can take up to a minute while the server wakes up — after that, runs are fast.
-        </p>
+        <p className="text-[11px] text-ink-400">Python can take a moment while Pyodide loads in your browser.</p>
       )}
     </div>
   )
@@ -82,8 +84,9 @@ export default function OutputPanel({
   className = '',
 }) {
   const compileText = result?.compile?.stderr || result?.compile?.stdout
-  const nothingPrinted =
-    result && !result.stdout && !result.stderr && !compileText
+
+  const runtimeMs = result?.runtime_ms ?? result?.wall_time_ms ?? result?.time_ms
+  const nothingPrinted = result && !result.stdout && !result.stderr && !compileText
 
   return (
     <div
@@ -99,11 +102,7 @@ export default function OutputPanel({
               {STATUS_LABELS[result.status] ?? result.status}
             </span>
             {typeof result.exit_code === 'number' && <span>exit {result.exit_code}</span>}
-            {(() => {
-              // JDoodle often omits CPU time, so prefer the measured round-trip.
-              const ms = result.wall_time_ms || result.time_ms
-              return ms ? <span>{ms} ms</span> : null
-            })()}
+            {runtimeMs ? <span>{runtimeMs} ms</span> : null}
           </div>
         )}
       </div>

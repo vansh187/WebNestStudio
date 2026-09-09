@@ -1,372 +1,549 @@
-# Coding Platform — Backend API Specification
+# Webnest CodeLab Phase 1 - Backend Team Handoff
 
-> Hand-off document for the **backend team**. Pairs with `FRONTEND_CODING_PLATFORM.md`
-> (same API contract — build in parallel).
+This document is for the backend team. It is based on `Webnest_CodeLab_Phase_1_Technical_Implementation_v3.docx`, treated as product/source material only.
 
-## 1. Goal
+## 1. Phase 1 Decision
 
-Support a new in-browser coding platform on the WebNestStudio site:
+Phase 1 code execution is browser-first:
 
-- An **online compiler**: run user-submitted code in Java, Python, JavaScript and more, return output.
-- **Saved projects**: authenticated users store code and resume later (with frequent autosave writes).
-- **Share links**: immutable, public, read-only snapshots of code + its output.
+- HTML, CSS, and JavaScript run in a sandboxed browser iframe or worker.
+- Python runs in the browser through Pyodide/WebAssembly in a Web Worker.
+- The backend must not run visitor code with `exec`, shell, subprocess, Docker, Judge0, JDoodle, JDK, GCC, or G++ for Phase 1.
+- Java and C++ execution are Phase 2 and require a separate isolated runner service later.
 
-First release = compiler + projects + share. Structured practice problems / submission grading are a later phase and are **not** specified here.
+Backend responsibility for Phase 1 is the lightweight learning-platform layer: authenticated persistence, problem catalog, submissions, progress, streaks, XP, study materials, quizzes, bookmarks, notes, and admin publishing.
 
-## 2. Conventions (keep consistent with the current backend)
+## 2. Existing API Conventions
 
-- All endpoints under the existing base URL (frontend `VITE_API_BASE_URL` → `https://webneststudiobackend-n00h.onrender.com`).
-- Auth: existing scheme — `Authorization: Bearer <accessToken>`, with the refresh-token flow already in place. New signups are role `client`; **any authenticated user** may use the coding features (no new role needed).
-- Error responses unchanged:
-  - General: `{ "detail": "human readable message" }` with an appropriate 4xx/5xx.
-  - Validation: `422` with `{ "errors": [{ "loc": ["body", "field"], "msg": "..." }] }` (the frontend maps `loc`/`msg` to form fields).
-- CORS must allow the site origin(s) (prod domain + any preview/localhost used).
-- Timestamps ISO-8601 UTC.
+- Base URL is consumed by the frontend as `VITE_API_BASE_URL`.
+- Auth uses the existing bearer-token flow: `Authorization: Bearer <accessToken>`.
+- Public catalog endpoints may be readable without auth; user-specific progress requires auth.
+- Timestamps must be ISO-8601 UTC.
+- General error shape:
 
-## 3. Endpoint overview
+```json
+{ "detail": "Human readable message." }
+```
 
-| Method | Path | Auth | Notes |
+- Validation error shape:
+
+```json
+{
+  "errors": [
+    { "loc": ["body", "title"], "msg": "Title is required." }
+  ]
+}
+```
+
+- Prefer `404` for authenticated resources not owned by the caller.
+- No raw emails, tokens, secrets, client IPs, or private notes should leak through public endpoints.
+
+## 3. Endpoint Summary
+
+| Method | Path | Auth | Purpose |
 |---|---|---|---|
-| GET | `/api/compiler/languages` | public | supported languages/versions |
-| POST | `/api/compiler/execute` | public, **rate-limited** | run code |
-| GET | `/api/projects` | required | list caller's projects (paginated) |
-| POST | `/api/projects` | required | create |
-| GET | `/api/projects/:id` | required, owner | fetch one |
-| PUT | `/api/projects/:id` | required, owner | partial update (**autosave**) |
-| DELETE | `/api/projects/:id` | required, owner | delete |
-| POST | `/api/shares` | required | create immutable snapshot |
-| GET | `/api/shares/:shareId` | public | fetch snapshot |
-| GET | `/api/me/coding-stats` | required | *(optional)* dashboard counts |
+| GET | `/api/codelab/tracks` | public | List learning/coding tracks |
+| GET | `/api/codelab/problems` | optional | List/filter published coding problems |
+| GET | `/api/codelab/problems/:slug` | optional | Fetch one problem with starter files and public test examples |
+| POST | `/api/codelab/submissions` | required | Store a browser-evaluated submission result |
+| GET | `/api/codelab/submissions/me` | required | Current user's submission history |
+| GET | `/api/codelab/dashboard` | required | Progress, streak, XP, recent activity |
+| GET | `/api/courses` | optional | List study courses |
+| GET | `/api/courses/:slug` | optional | Course syllabus and progress |
+| GET | `/api/lessons/:id` | optional | Lesson content and attached practice |
+| POST | `/api/lessons/:id/progress` | required | Update lesson progress |
+| POST | `/api/lessons/:id/bookmark` | required | Toggle bookmark |
+| POST | `/api/lessons/:id/notes` | required | Create/update learner note |
+| POST | `/api/quizzes/:id/submit` | required | Store quiz attempt |
+| GET | `/api/dashboard/learning` | required | Unified learning dashboard |
+| POST/PUT | `/api/admin/codelab/problems` | admin | Create/update problem |
+| POST/PUT | `/api/admin/courses` | admin | Create/update course/module/lesson content |
 
-## 4. Languages
+## 4. Tracks
 
-### `GET /api/compiler/languages` — public
+### `GET /api/codelab/tracks`
 
-Returns the list the compiler UI renders in its language picker.
-
-```json
-[
-  {
-    "id": "python",
-    "label": "Python 3",
-    "version": "3.12.0",
-    "monacoId": "python",
-    "fileExtension": "py",
-    "defaultSnippet": "print(\"Hello, World!\")"
-  },
-  {
-    "id": "javascript",
-    "label": "JavaScript (Node)",
-    "version": "20.11.1",
-    "monacoId": "javascript",
-    "fileExtension": "js",
-    "defaultSnippet": "console.log(\"Hello, World!\");"
-  },
-  {
-    "id": "java",
-    "label": "Java",
-    "version": "21.0.2",
-    "monacoId": "java",
-    "fileExtension": "java",
-    "defaultSnippet": "public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, World!\");\n  }\n}"
-  }
-]
-```
-
-- `id` — stable slug the frontend sends back in `execute` / project `language`.
-- `monacoId` — Monaco Editor language id for syntax highlighting (`python`, `javascript`, `java`, `c`, `cpp`, `typescript`, `go`, `ruby`, …).
-- `defaultSnippet` — starter "Hello, World!" shown when a user picks the language.
-- Suggested initial set: JavaScript (Node), Python 3, Java, C, C++, TypeScript, Go, Ruby. Expand freely — the engines below support 40–60+.
-
-## 5. Execute code
-
-### `POST /api/compiler/execute` — public, rate-limited
-
-The core endpoint. Runs code in a sandbox and returns the result **synchronously**.
-
-**Request**
-
-```json
-{
-  "language": "python",
-  "version": "3.12.0",
-  "files": [{ "name": "main.py", "content": "print(input())" }],
-  "stdin": "hello\n",
-  "args": []
-}
-```
-
-- `language` (required) — an `id` from `/api/compiler/languages`.
-- `version` (optional) — if omitted, use the language's default.
-- `files` (required) — array of `{ name, content }`. The frontend MVP always sends exactly one file; design for N. Accept a `source` string as an alias for a single unnamed file if convenient.
-- `stdin` (optional) — string piped to the program's standard input.
-- `args` (optional) — command-line arguments.
-
-**Response — HTTP 200 whenever execution actually ran** (compile errors and runtime errors are 200 with a `status`; reserve non-200 for rate limiting, malformed requests, and infrastructure failures):
-
-```json
-{
-  "status": "success",
-  "stdout": "hello\n",
-  "stderr": "",
-  "exit_code": 0,
-  "signal": null,
-  "compile": { "stdout": "", "stderr": "", "exit_code": 0 },
-  "time_ms": 38,
-  "wall_time_ms": 140,
-  "truncated": false
-}
-```
-
-- `status` ∈ `success | compile_error | runtime_error | timeout | rate_limited | internal_error`
-  - `compile_error` — compilation failed (details in `compile.stderr`); `stdout`/`stderr` empty.
-  - `runtime_error` — program ran and exited non-zero or was killed by a signal.
-  - `timeout` — CPU or wall-clock limit hit; return whatever partial `stdout` was captured.
-- `compile` — object for compiled languages (Java, C, C++, Go, TypeScript…); `null` for interpreted ones.
-- `signal` — signal name/number if the process was killed, else `null`.
-- `time_ms` — CPU time of the program run; `wall_time_ms` — total wall time including queue/compile.
-- `truncated` — `true` if `stdout` or `stderr` was cut at the cap.
-
-**Non-200 cases**
-
-- `429` when rate-limited: `{ "detail": "Too many runs, try again in a minute." }` (frontend also accepts a 200 with `status: "rate_limited"` — pick one and document it).
-- `422` for validation (`language` unknown, missing `files`, oversized payload).
-- `413` if the body exceeds the size cap.
-- `503` for engine unavailable (the frontend retries `503` once automatically).
-
-### 5.1 Sandbox requirements (hard requirements — the platform is publicly runnable)
-
-| Limit | Value (tune as needed) |
-|---|---|
-| CPU time per run | ~5 s |
-| Wall time per run | ~10 s (kill + clean up on exceed) |
-| Memory | ~256 MB |
-| Processes / threads | capped (e.g. 64) |
-| Output per stream | ~64 KB, then stop capturing and set `truncated` |
-| Request body / total source | ~128 KB (reject larger) |
-| Filesystem | ephemeral, isolated per run, wiped after |
-| **Network from executed code** | **disabled** |
-| Concurrency | bounded worker pool + queue; shed load with `503` rather than melting |
-
-Rate limits:
-
-- Anonymous (per client IP): ~20 runs/min, ~200/day.
-- Authenticated (per user): ~120 runs/min.
-- Consider a small global ceiling to protect the box.
-
-Also: log executions for abuse investigation (see `coding_executions` in §9); never echo the raw client IP back in responses.
-
-### 5.2 Execution engine — JDoodle (in use)
-
-The frontend only calls `/api/compiler/execute` and expects §5's contract. The runtime
-engine is the **hosted JDoodle Compiler API** (`https://api.jdoodle.com/v1/execute`).
-
-Env vars (backend only — never expose the secret to the client):
-
-```text
-JDOODLE_CLIENT_ID=...
-JDOODLE_CLIENT_SECRET=...
-```
-
-When these are unset, `/api/compiler/execute` returns `503` with
-`{ "detail": "Compiler engine is not configured." }` (frontend shows a user-friendly
-message and does **not** retry).
-
-**Request mapping** — JDoodle takes a single `script` string, not a files array:
-
-| Our request | JDoodle request |
-|---|---|
-| `source` (or `files[0].content` flattened) | `script` |
-| `language` (our id) | `language` (JDoodle id) + `versionIndex` — keep a lookup table |
-| `stdin` | `stdin` |
-| — | `clientId`, `clientSecret` |
-
-Multi-file is not supported on the standard JDoodle plan — flatten `files` to the first
-file's content. `args` is not supported — ignore it (or prepend to `stdin` if needed).
-
-**Response mapping** — JDoodle returns one combined `output` stream (no separate
-stdout/stderr, no exit code/signal):
-
-| JDoodle field | Our field |
-|---|---|
-| `output` | `stdout` (put the whole thing here; on a compile failure, move it to `compile.stderr` and leave `stdout` empty) |
-| `cpuTime` (seconds, string) | `time_ms` = `round(cpuTime * 1000)` |
-| `memory` | pass through as `memory` (optional, non-contract) |
-| `compilationStatus == 0` | `status = "compile_error"`, `compile = { stderr: output, exit_code: 1 }` |
-| `statusCode == 429` or `error` ~ "limit reached" | `status = "rate_limited"` → return HTTP **429** `{ "detail": "..." }` |
-| `error` present (auth / credits / bad request) | `status = "internal_error"` → HTTP **503** |
-| JDoodle signals a non-zero program exit | `status = "runtime_error"`, `exit_code = 1` |
-| otherwise | `status = "success"`, `exit_code = 0` |
-
-Set `stderr: ""`, `signal: null`, `wall_time_ms` = measured round-trip, `truncated` per §5.1 caps.
-The frontend has a matching `normalizeExecuteResult()` as a fallback, but the backend
-should still emit the canonical shape.
-
-**JDoodle limits to be aware of:** the free tier is ~200 executions/day total (across all
-users) — track usage and surface a clear message when exhausted; a per-user rate limit
-(§5.1) on top protects the shared quota. JDoodle itself has no cold start; the Render
-free-tier **API** process still does (~30–50 s first request), which the frontend already
-handles with a "waking up" banner + `wakeServer()` prefetch.
-
-## 6. Projects
-
-Owner-scoped. All require auth. `:id` not owned by the caller → `404` (preferred) or `403`.
-
-### `GET /api/projects?limit=&cursor=`
+Response:
 
 ```json
 {
   "items": [
-    { "id": "prj_a1b2", "title": "Fibonacci", "language": "python",
-      "updated_at": "2026-09-08T10:12:00Z", "created_at": "2026-09-01T09:00:00Z" }
+    {
+      "id": "python",
+      "label": "Python",
+      "runner": "pyodide",
+      "description": "Python practice with browser-side execution."
+    },
+    {
+      "id": "web",
+      "label": "Web Development",
+      "runner": "iframe",
+      "description": "HTML, CSS, and JavaScript challenges."
+    }
+  ]
+}
+```
+
+Recommended Phase 1 tracks: `python`, `web`. Study courses may include Java, Advanced Java, Spring, Spring Boot, React, SQL, and database design even when those are not executable in CodeLab yet.
+
+## 5. Problems API
+
+### `GET /api/codelab/problems`
+
+Query params:
+
+| Param | Example | Notes |
+|---|---|---|
+| `track` | `python` | Optional |
+| `language` | `python` | Optional |
+| `topic` | `loops` | Optional |
+| `difficulty` | `easy` | Optional: `easy`, `medium`, `hard` |
+| `status` | `solved` | Optional; only meaningful when auth is present |
+| `limit` | `20` | Default 20, max 100 |
+| `cursor` | `eyJ...` | Optional pagination cursor |
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": "prob_001",
+      "slug": "python-list-sum",
+      "title": "List Sum",
+      "track": "python",
+      "language": "python",
+      "difficulty": "easy",
+      "topics": ["lists", "loops"],
+      "points": 20,
+      "estimated_minutes": 10,
+      "status": "not_started",
+      "solved_count": 128
+    }
   ],
   "next_cursor": null
 }
 ```
 
-- `limit` default 20, max 100. Cursor-based or offset pagination — return `next_cursor` (null when done). Order by `updated_at` desc.
+`status` for anonymous users may be omitted or returned as `not_started`.
 
-### `POST /api/projects`
-
-Request:
-
-```json
-{ "title": "Fibonacci", "language": "python",
-  "files": [{ "name": "main.py", "content": "..." }], "stdin": "" }
-```
-
-- Accept `source` (string) as an alias for `files: [{ name: "<default>", content }]`.
-- `title` 1–80 chars; `language` must be a known id.
-- Enforce a per-user project cap (e.g. 100) → `422`/`403` with `detail`.
-
-Response: the full project object (below), `201`.
-
-### `GET /api/projects/:id`
-
-Full project object:
-
-```json
-{
-  "id": "prj_a1b2",
-  "title": "Fibonacci",
-  "description": "",
-  "language": "python",
-  "files": [{ "name": "main.py", "content": "..." }],
-  "stdin": "",
-  "is_public": false,
-  "share_id": null,
-  "created_at": "2026-09-01T09:00:00Z",
-  "updated_at": "2026-09-08T10:12:00Z"
-}
-```
-
-### `PUT /api/projects/:id` — autosave target
-
-Partial update. Any subset of:
-
-```json
-{ "title": "...", "description": "...", "language": "...",
-  "files": [{ "name": "main.py", "content": "..." }], "stdin": "..." }
-```
-
-- Called frequently (debounced ~1.5 s while typing). Must be cheap: update only provided fields, bump `updated_at`. Idempotent.
-- Return the updated full project object (or `200` with it).
-- Validate `files` size against the per-project cap (~256 KB total).
-
-### `DELETE /api/projects/:id`
-
-`204` on success. Deleting a project does **not** delete shares already created from it (shares are independent snapshots).
-
-## 7. Shares (immutable snapshots)
-
-### `POST /api/shares` — auth required
-
-Request:
-
-```json
-{
-  "project_id": "prj_a1b2",
-  "title": "Fibonacci",
-  "language": "python",
-  "files": [{ "name": "main.py", "content": "..." }],
-  "stdin": "",
-  "stdout": "0 1 1 2 3 5 8\n"
-}
-```
-
-- `project_id` optional (link back for analytics); everything else is copied into the snapshot at creation time.
-- Accept `source` alias for single-file.
-- `stdout` optional — the captured output at share time, shown read-only on the share page.
+### `GET /api/codelab/problems/:slug`
 
 Response:
 
 ```json
-{ "share_id": "s7Kq2mA9", "url": "/s/s7Kq2mA9" }
-```
-
-- `share_id` — short, URL-safe, unguessable (≥ 8 chars random). `url` is a site-relative path; the frontend prepends the origin.
-- Optional per-user creation rate limit (e.g. 60/hour).
-
-### `GET /api/shares/:shareId` — public
-
-```json
 {
-  "share_id": "s7Kq2mA9",
-  "title": "Fibonacci",
+  "id": "prob_001",
+  "slug": "python-list-sum",
+  "title": "List Sum",
+  "track": "python",
   "language": "python",
-  "files": [{ "name": "main.py", "content": "..." }],
-  "stdin": "",
-  "stdout": "0 1 1 2 3 5 8\n",
-  "created_at": "2026-09-08T10:20:00Z",
-  "author_display_name": "Vansh"
+  "difficulty": "easy",
+  "points": 20,
+  "statement": "Read numbers and print their sum.",
+  "constraints": ["Input contains space-separated integers."],
+  "hints": ["Split the input string before converting values."],
+  "starter_files": [
+    { "name": "main.py", "language": "python", "content": "nums = input().split()\n" }
+  ],
+  "examples": [
+    { "input": "1 2 3\n", "expected_output": "6\n", "explanation": "1 + 2 + 3 = 6" }
+  ],
+  "public_tests": [
+    { "id": "tc_public_1", "input": "1 2 3\n", "expected_output": "6\n", "weight": 1 }
+  ],
+  "user_progress": {
+    "status": "in_progress",
+    "best_score": 60,
+    "attempts": 2,
+    "last_activity_at": "2026-09-09T12:00:00Z"
+  }
 }
 ```
 
-- Immutable: editing the source project later does **not** change this snapshot.
-- `author_display_name` optional; omit if you don't want to expose it. No emails.
-- Unknown id → `404` `{ "detail": "Share not found." }`.
+Hidden tests should never return `input` or `expected_output` to the client unless they are intentionally public.
 
-## 8. Contract quick-reference (must match the frontend `src/api/coding.js`)
+## 6. Submissions API
 
-```
-GET    /api/compiler/languages
-POST   /api/compiler/execute      { language, version?, files:[{name,content}]|source, stdin?, args? }
-                                  -> { status, stdout, stderr, exit_code, signal, compile|null, time_ms, wall_time_ms, truncated }
-GET    /api/projects?limit=&cursor=   -> { items:[{id,title,language,updated_at,created_at}], next_cursor }
-POST   /api/projects              { title, language, files|source, stdin? }        -> project
-GET    /api/projects/:id                                                            -> project
-PUT    /api/projects/:id          { title?, description?, language?, files?, stdin? } -> project
-DELETE /api/projects/:id                                                            -> 204
-POST   /api/shares                { project_id?, title?, language, files|source, stdin?, stdout? } -> { share_id, url }
-GET    /api/shares/:shareId                                                         -> share snapshot
+### `POST /api/codelab/submissions`
 
-project  = { id, title, description, language, files:[{name,content}], stdin, is_public, share_id, created_at, updated_at }
-status   = success | compile_error | runtime_error | timeout | rate_limited | internal_error
-errors   = general { detail }  |  validation 422 { errors:[{loc,msg}] }
-```
+The frontend executes Phase 1 code in the browser and sends the result for persistence. Backend stores the attempt, updates progress, awards XP once on first solve, and recalculates streaks.
 
-## 9. Suggested data model
-
-- **`coding_projects`**: `id` (pk), `owner_user_id` (fk, indexed), `title`, `description`, `language`, `stdin`, `is_public` (bool, default false), `share_id` (nullable — most recent share), `created_at`, `updated_at`.
-- **project files**: JSON column `files` on `coding_projects` **or** a **`coding_project_files`** table (`project_id` fk, `name`, `content`, `ordinal`). JSON is simplest for the single-file MVP.
-- **`coding_shares`**: `id` (pk), `share_id` (unique, indexed), `project_id` (nullable fk), `owner_user_id` (nullable fk), `title`, `language`, `files` (JSON), `stdin`, `stdout`, `created_at`. Rows are immutable after insert.
-- **`coding_executions`** *(optional, for rate-limiting + abuse)*: `id`, `user_id` (nullable), `ip_hash`, `language`, `status`, `time_ms`, `created_at`. Prune periodically.
-
-## 10. Optional — `GET /api/me/coding-stats`
+Request:
 
 ```json
-{ "projects_count": 7, "last_activity_at": "2026-09-08T10:12:00Z" }
+{
+  "problem_id": "prob_001",
+  "language": "python",
+  "files": [
+    { "name": "main.py", "language": "python", "content": "print(sum(map(int, input().split())))" }
+  ],
+  "result": {
+    "status": "passed",
+    "score": 100,
+    "passed_tests": 5,
+    "total_tests": 5,
+    "stdout": "6\n",
+    "stderr": "",
+    "runtime_ms": 42
+  }
+}
 ```
 
-Used for a dashboard header. Not required for launch.
+Response:
 
-## 11. Build checklist
+```json
+{
+  "id": "sub_001",
+  "problem_id": "prob_001",
+  "status": "solved",
+  "score": 100,
+  "passed_tests": 5,
+  "total_tests": 5,
+  "xp_awarded": 20,
+  "best_score": 100,
+  "attempts": 3,
+  "submitted_at": "2026-09-09T12:10:00Z"
+}
+```
 
-- [ ] `GET /api/compiler/languages` returns the agreed set with `monacoId` + `defaultSnippet`.
-- [ ] `POST /api/compiler/execute` wired to JDoodle (§5.2 mapping) with `JDOODLE_CLIENT_ID`/`SECRET` set, §5.1 limits enforced; returns the canonical response shape and `status` values, and a clear message when the daily JDoodle quota is exhausted.
-- [ ] Anonymous + authenticated rate limits in place; `429`/`503` behave as documented.
-- [ ] Executed code has **no network access** and cannot escape the sandbox or see other runs.
-- [ ] Projects CRUD, owner-scoped, with cheap frequent `PUT` for autosave and a per-user cap.
-- [ ] Shares: immutable snapshots, unguessable ids, public `GET`, no PII beyond optional display name.
-- [ ] CORS allows the site origin(s); errors use the existing `{ detail }` / `422 { errors }` shapes.
-- [ ] Execution service runs always-on (not on a cold-starting free tier).
+Allowed submission result statuses: `passed`, `failed`, `runtime_error`, `timeout`, `manual_review`.
+
+Security note: do not trust client-side pass/fail as a high-stakes grading authority. For Phase 1 it is acceptable for learning progress, but store enough metadata for audit and future server-side validation.
+
+### `GET /api/codelab/submissions/me`
+
+Query params: `problem_id`, `limit`, `cursor`.
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": "sub_001",
+      "problem": { "id": "prob_001", "slug": "python-list-sum", "title": "List Sum" },
+      "language": "python",
+      "status": "solved",
+      "score": 100,
+      "passed_tests": 5,
+      "total_tests": 5,
+      "submitted_at": "2026-09-09T12:10:00Z"
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+## 7. Dashboard API
+
+### `GET /api/codelab/dashboard`
+
+Response:
+
+```json
+{
+  "summary": {
+    "problems_total": 50,
+    "attempted": 24,
+    "solved": 21,
+    "completion_percent": 42,
+    "xp": 860,
+    "current_streak": 6,
+    "best_streak": 9
+  },
+  "track_progress": [
+    { "track": "python", "label": "Python", "solved": 14, "total": 20, "completion_percent": 70 },
+    { "track": "web", "label": "Web Development", "solved": 7, "total": 30, "completion_percent": 23 }
+  ],
+  "difficulty_progress": [
+    { "difficulty": "easy", "solved": 12, "total": 18 },
+    { "difficulty": "medium", "solved": 8, "total": 22 },
+    { "difficulty": "hard", "solved": 1, "total": 10 }
+  ],
+  "continue_learning": {
+    "type": "problem",
+    "slug": "python-list-manipulation",
+    "title": "List Manipulation",
+    "track": "python",
+    "difficulty": "medium"
+  },
+  "recent_activity": [
+    {
+      "type": "submission",
+      "title": "Palindrome Checker",
+      "track": "python",
+      "status": "solved",
+      "score": 100,
+      "xp": 40,
+      "created_at": "2026-09-09T11:00:00Z"
+    }
+  ],
+  "achievements": [
+    { "id": "first_solve", "label": "First Problem Solved", "earned_at": "2026-09-02T08:30:00Z" }
+  ]
+}
+```
+
+## 8. Study Material APIs
+
+### `GET /api/courses`
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": "course_java_core",
+      "slug": "java-core",
+      "title": "Java - Core",
+      "level": "beginner",
+      "description": "Java syntax, OOP, collections, exceptions, and fundamentals.",
+      "lessons_count": 48,
+      "completion_percent": 0
+    }
+  ]
+}
+```
+
+### `GET /api/courses/:slug`
+
+Response:
+
+```json
+{
+  "id": "course_python",
+  "slug": "python",
+  "title": "Python",
+  "level": "beginner",
+  "modules": [
+    {
+      "id": "mod_python_basics",
+      "title": "Python Basics",
+      "order": 1,
+      "completion_percent": 40,
+      "lessons": [
+        {
+          "id": "lesson_001",
+          "title": "Variables and Types",
+          "order": 1,
+          "status": "completed",
+          "estimated_minutes": 8
+        }
+      ]
+    }
+  ]
+}
+```
+
+### `GET /api/lessons/:id`
+
+Response:
+
+```json
+{
+  "id": "lesson_001",
+  "course_slug": "python",
+  "module_id": "mod_python_basics",
+  "title": "Variables and Types",
+  "content": {
+    "format": "html",
+    "body": "<h2>Variables</h2><p>...</p>"
+  },
+  "resources": [
+    { "type": "code", "language": "python", "content": "name = 'Webnest'\nprint(name)" }
+  ],
+  "practice": [
+    { "type": "problem", "slug": "python-variables", "title": "Variables Practice" }
+  ],
+  "progress": {
+    "status": "in_progress",
+    "completed_percent": 50,
+    "bookmarked": true,
+    "note": "Review string formatting."
+  }
+}
+```
+
+### `POST /api/lessons/:id/progress`
+
+Request:
+
+```json
+{
+  "status": "completed",
+  "completed_percent": 100,
+  "time_spent_seconds": 420
+}
+```
+
+Response:
+
+```json
+{
+  "lesson_id": "lesson_001",
+  "status": "completed",
+  "completed_percent": 100,
+  "updated_at": "2026-09-09T12:30:00Z"
+}
+```
+
+### `POST /api/lessons/:id/bookmark`
+
+Request:
+
+```json
+{ "bookmarked": true }
+```
+
+Response:
+
+```json
+{ "lesson_id": "lesson_001", "bookmarked": true }
+```
+
+### `POST /api/lessons/:id/notes`
+
+Request:
+
+```json
+{ "note": "Revise the difference between list and tuple." }
+```
+
+Response:
+
+```json
+{
+  "lesson_id": "lesson_001",
+  "note": "Revise the difference between list and tuple.",
+  "updated_at": "2026-09-09T12:35:00Z"
+}
+```
+
+### `POST /api/quizzes/:id/submit`
+
+Request:
+
+```json
+{
+  "answers": [
+    { "question_id": "q1", "answer": "B" },
+    { "question_id": "q2", "answer": true }
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "attempt_id": "quiz_attempt_001",
+  "quiz_id": "quiz_001",
+  "score": 80,
+  "total": 100,
+  "passed": true,
+  "xp_awarded": 10,
+  "submitted_at": "2026-09-09T12:40:00Z",
+  "feedback": [
+    { "question_id": "q1", "correct": true, "explanation": "..." }
+  ]
+}
+```
+
+### `GET /api/dashboard/learning`
+
+May return the same shape as `/api/codelab/dashboard` plus course/lesson/quiz progress:
+
+```json
+{
+  "summary": {
+    "courses_enrolled": 4,
+    "lessons_completed": 32,
+    "problems_solved": 21,
+    "quizzes_passed": 8,
+    "xp": 860,
+    "current_streak": 6
+  },
+  "course_progress": [
+    { "course_slug": "python", "title": "Python", "completion_percent": 58 }
+  ],
+  "continue_learning": {
+    "type": "lesson",
+    "lesson_id": "lesson_001",
+    "title": "Variables and Types",
+    "course_slug": "python"
+  },
+  "recent_activity": []
+}
+```
+
+## 9. Admin APIs
+
+Admin endpoints can follow existing admin patterns, but must support:
+
+- Draft/published status for courses, modules, lessons, quizzes, and problems.
+- Ordered modules, lessons, examples, tests, and topic mappings.
+- Rich lesson content: headings, code blocks, callouts, images/diagrams, downloadable resources.
+- Problem metadata: track, language, difficulty, points, topics, starter files, examples, public tests, hidden tests.
+- Publish/unpublish without deleting historical learner progress.
+
+Minimum admin request for a problem:
+
+```json
+{
+  "title": "List Sum",
+  "slug": "python-list-sum",
+  "track": "python",
+  "language": "python",
+  "difficulty": "easy",
+  "points": 20,
+  "status": "published",
+  "topics": ["lists", "loops"],
+  "statement": "Read numbers and print their sum.",
+  "starter_files": [
+    { "name": "main.py", "language": "python", "content": "nums = input().split()\n" }
+  ],
+  "test_cases": [
+    { "input": "1 2 3\n", "expected_output": "6\n", "is_hidden": false, "weight": 1 }
+  ]
+}
+```
+
+## 10. Data Model
+
+Recommended tables:
+
+- `codelab_tracks`: `id`, `label`, `runner`, `description`, `display_order`, `status`.
+- `codelab_topics`: `id`, `name`, `track`, `slug`, `display_order`.
+- `codelab_problems`: `id`, `slug`, `title`, `track`, `language`, `difficulty`, `statement`, `constraints`, `hints`, `starter_files`, `points`, `status`, `created_at`, `updated_at`.
+- `codelab_test_cases`: `id`, `problem_id`, `input`, `expected_output`, `is_hidden`, `weight`, `display_order`.
+- `codelab_submissions`: `id`, `user_id`, `problem_id`, `language`, `files`, `result`, `score`, `passed_tests`, `total_tests`, `submitted_at`.
+- `codelab_user_progress`: `user_id`, `problem_id`, `status`, `best_score`, `attempts`, `solved_at`, `last_activity_at`.
+- `codelab_user_stats`: `user_id`, `xp`, `current_streak`, `best_streak`, `solved_count`, `updated_at`.
+- `courses`: `id`, `slug`, `title`, `level`, `description`, `status`, `display_order`.
+- `course_modules`: `id`, `course_id`, `title`, `display_order`, `status`.
+- `lessons`: `id`, `module_id`, `title`, `content`, `estimated_minutes`, `status`, `display_order`.
+- `lesson_problem_map`: `lesson_id`, `problem_id`.
+- `quizzes`, `quiz_questions`, `quiz_attempts`.
+- `user_course_progress`, `user_lesson_progress`, `user_bookmarks`, `user_notes`.
+
+## 11. Scoring Rules
+
+- Easy: 20 XP, Medium: 40 XP, Hard: 70 XP.
+- Award completion XP only once per user/problem.
+- Later successful attempts may update `best_score`, but must not repeat completion XP.
+- A streak increments once per calendar day with qualifying lesson, quiz, or problem activity.
+- Dashboard completion percentages are based on published content only.
+
+## 12. Backend Checklist
+
+- [ ] Do not expose or build a Phase 1 public compiler endpoint.
+- [ ] Implement the problem catalog and detail endpoints.
+- [ ] Implement submissions, progress, dashboard, streak, and XP persistence.
+- [ ] Implement study course, lesson, bookmark, notes, quiz, and learning dashboard APIs.
+- [ ] Implement admin create/edit/publish workflows.
+- [ ] Validate payloads and return the documented `{ detail }` and `422 { errors }` shapes.
+- [ ] Owner-scope all user progress, notes, bookmarks, and submission history.
+- [ ] Keep hidden tests hidden from public/user problem responses.
+- [ ] Add indexes for `slug`, `track`, `difficulty`, `user_id`, `problem_id`, and activity timestamps.
