@@ -5,12 +5,13 @@ import { NotFoundState } from '../../components/states/StateViews'
 
 export default function CourseDetail() {
   const { courseSlug } = useParams()
-  const course = SAMPLE_COURSES.find((item) => item.slug === courseSlug)
+  const normalizedSlug = courseSlug === 'java' ? 'java-core' : courseSlug
+  const course = SAMPLE_COURSES.find((item) => item.slug === normalizedSlug)
 
   useSeo({
     title: course?.title ? `${course.title} | Learn` : 'Course',
     description: course?.description || 'Study a static Webnest CodeLab course.',
-    path: `/learn/${courseSlug || ''}`,
+    path: `/learn/${normalizedSlug || ''}`,
   })
 
   if (!course) return <NotFoundState title="Course not found" backTo="/learn" backLabel="Back to courses" />
