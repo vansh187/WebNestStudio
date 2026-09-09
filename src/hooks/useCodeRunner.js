@@ -1,91 +1,137 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { executeCode } from '../api/coding'
-import { getErrorDetail } from '../lib/apiClient'
+import { runWebPreview } from '../lib/codelab/webPreview'
 
-// Turns an execute() failure into a human message. Covers every non-200 the
-// backend documents (429 / 413 / 422 / 503) plus client-side timeout / offline.
-function describeRunError(err) {
-  if (err?.code === 'ECONNABORTED' || /timeout/i.test(err?.message ?? '')) {
-    return 'The run took too long and was stopped. Try again — the server may have been waking up.'
-  }
-  if (err?.response) {
-    const { status, data } = err.response
-    if (status === 429) return getErrorDetail(err, 'Too many runs right now — wait a minute and try again.')
-    if (status === 413) return getErrorDetail(err, 'Your code is too large to run.')
-    if (status === 503) {
-      // Don't leak the backend's dev-facing detail ("Set PISTON_BASE_URL…") to users.
-      const detail = String(data?.detail ?? '')
-      if (/not configured|piston/i.test(detail)) {
-        return 'The code runner is still being set up on the server. Please check back soon.'
-      }
-      return 'The code runner is temporarily unavailable. Please try again in a moment.'
-    }
-    return getErrorDetail(err, 'Could not run your code. Please try again.')
-  }
-  return 'Could not reach the server. Check your connection and try again.'
+const RUN_TIMEOUT_MS = 10000
+
+function describeLocalError(error) {
+  if (error?.name === 'DataCloneError') return 'The runner could not read this code payload.'
+  return error?.message || 'The local CodeLab runner could not start.'
 }
 
-/**
- * Drives a single "run this code" call.
- *
- * `run(payload)` posts to /api/compiler/execute. A second run aborts the first so
- * a slow request can't land after a newer one. `result` is the raw execute
- * response ({ status, stdout, stderr, exit_code, compile, time_ms, ... }).
- */
 export function useCodeRunner() {
   const [running, setRunning] = useState(false)
   const [runningSince, setRunningSince] = useState(null)
   const [stopped, setStopped] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
-  const abortRef = useRef(null)
+  const workerRef = useRef(null)
+  const timerRef = useRef(null)
+  const runIdRef = useRef(0)
   const mountedRef = useRef(true)
 
-  useEffect(() => () => {
-    mountedRef.current = false
-    abortRef.current?.abort()
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = null
   }, [])
 
-  const run = useCallback(async (payload) => {
-    abortRef.current?.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
+  const terminateWorker = useCallback(() => {
+    workerRef.current?.terminate()
+    workerRef.current = null
+  }, [])
 
-    // Synchronous state flip so the UI shows "Running…" on the same tick as the
-    // click — before any network work. Clear the previous run so the transition
-    // is unambiguous.
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      clearTimer()
+      terminateWorker()
+    }
+  }, [clearTimer, terminateWorker])
+
+  const finish = useCallback((nextResult, nextError = null) => {
+    if (!mountedRef.current) return
+    clearTimer()
+    setResult(nextResult)
+    setError(nextError)
+    setRunning(false)
+    setRunningSince(null)
+  }, [clearTimer])
+
+  const runPython = useCallback((payload, runId) => {
+    terminateWorker()
+    const worker = new Worker(new URL('../workers/pyodideRunner.worker.js', import.meta.url), { type: 'module' })
+    workerRef.current = worker
+
+    timerRef.current = setTimeout(() => {
+      if (runIdRef.current !== runId) return
+      terminateWorker()
+      finish({
+        status: 'timeout',
+        stdout: '',
+        stderr: 'Execution timed out.',
+        runtime_ms: RUN_TIMEOUT_MS,
+        error: 'Execution timed out.',
+        truncated: false,
+      })
+    }, RUN_TIMEOUT_MS)
+
+    worker.onmessage = (event) => {
+      if (runIdRef.current !== runId) return
+      terminateWorker()
+      finish(event.data?.result ?? {
+        status: 'internal_error',
+        stdout: '',
+        stderr: 'The Python runner returned an invalid response.',
+        runtime_ms: 0,
+        error: 'Invalid runner response.',
+        truncated: false,
+      })
+    }
+
+    worker.onerror = (event) => {
+      if (runIdRef.current !== runId) return
+      terminateWorker()
+      finish(null, event.message || 'The Python runner crashed.')
+    }
+
+    worker.postMessage({
+      id: runId,
+      source: payload.source ?? payload.files?.[0]?.content ?? '',
+      stdin: payload.stdin ?? '',
+    })
+  }, [finish, terminateWorker])
+
+  const run = useCallback((payload) => {
+    const runId = runIdRef.current + 1
+    runIdRef.current = runId
+    clearTimer()
+    terminateWorker()
     setRunning(true)
     setRunningSince(Date.now())
     setStopped(false)
-    setError(null)
     setResult(null)
+    setError(null)
 
     try {
-      const data = await executeCode(payload, { signal: controller.signal })
-      if (!controller.signal.aborted && mountedRef.current) setResult(data)
-    } catch (err) {
-      if (controller.signal.aborted || err?.code === 'ERR_CANCELED') return
-      if (!mountedRef.current) return
-      setResult(null)
-      setError(describeRunError(err))
-    } finally {
-      if (abortRef.current === controller && mountedRef.current) {
-        abortRef.current = null
-        setRunning(false)
-        setRunningSince(null)
+      if (payload.language === 'web') {
+        finish(runWebPreview(payload))
+        return
       }
+      if (payload.language === 'python') {
+        runPython(payload, runId)
+        return
+      }
+      finish({
+        status: 'internal_error',
+        stdout: '',
+        stderr: 'This language is not available in Webnest CodeLab Phase 1.',
+        runtime_ms: 0,
+        error: 'Unsupported language.',
+        truncated: false,
+      })
+    } catch (err) {
+      finish(null, describeLocalError(err))
     }
-  }, [])
+  }, [clearTimer, finish, runPython, terminateWorker])
 
-  // User-initiated stop. Aborting the request is instant client-side (the response
-  // is dropped); the sandboxed process is torn down server-side by its own limits.
   const cancel = useCallback(() => {
-    abortRef.current?.abort()
-    abortRef.current = null
+    runIdRef.current += 1
+    clearTimer()
+    terminateWorker()
     setRunning(false)
     setRunningSince(null)
     setStopped(true)
-  }, [])
+  }, [clearTimer, terminateWorker])
 
   const reset = useCallback(() => {
     setResult(null)

@@ -72,10 +72,18 @@ export const getCodingStats = () => api.get('/api/me/coding-stats').then((r) => 
 // Build the write payload every project/share/execute call expects: `source` is the
 // documented alias the backend accepts everywhere; `files` is sent alongside it so
 // endpoints that key off the files array (e.g. PUT /api/projects/:id) also work.
-export function toCodePayload({ source, fileName, extra }) {
+export function toCodePayload({ source, fileName, files, extra }) {
+  const normalizedFiles = Array.isArray(files) && files.length
+    ? files.map((file) => ({
+      name: file?.name || fileName || 'main.txt',
+      language: file?.language,
+      content: file?.content ?? '',
+    }))
+    : [{ name: fileName || 'main.txt', content: source ?? '' }]
+
   return {
     source: source ?? '',
-    files: [{ name: fileName || 'main.txt', content: source ?? '' }],
+    files: normalizedFiles,
     ...extra,
   }
 }

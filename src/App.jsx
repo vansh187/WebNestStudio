@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { FiLoader, FiAlertTriangle, FiRefreshCw } from 'react-icons/fi'
 import { ThemeProvider } from './context/ThemeContext'
@@ -33,6 +33,13 @@ const Playground = lazy(() => import('./pages/coding/Playground'))
 const ProjectsList = lazy(() => import('./pages/coding/ProjectsList'))
 const ProjectWorkspace = lazy(() => import('./pages/coding/ProjectWorkspace'))
 const SharedSnippet = lazy(() => import('./pages/coding/SharedSnippet'))
+const CodeLabHome = lazy(() => import('./pages/codelab/CodeLabHome'))
+const ProblemsList = lazy(() => import('./pages/codelab/ProblemsList'))
+const ProblemDetail = lazy(() => import('./pages/codelab/ProblemDetail'))
+const LearnerDashboard = lazy(() => import('./pages/codelab/LearnerDashboard'))
+const CoursesList = lazy(() => import('./pages/learn/CoursesList'))
+const CourseDetail = lazy(() => import('./pages/learn/CourseDetail'))
+const LessonDetail = lazy(() => import('./pages/learn/LessonDetail'))
 
 // Auth-gated, never needed by anonymous visitors or crawlers - split out of the
 // main bundle so public/marketing pages don't pay for admin+portal code weight.
@@ -94,12 +101,74 @@ function App() {
                     <Route path="faqs" element={<Faqs />} />
                     <Route path="contact" element={<Contact />} />
                     <Route
-                      path="playground"
+                      path="codelab"
+                      element={(
+                        <ErrorBoundary>
+                          <CodeLabHome />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="codelab/playground"
                       element={(
                         <ErrorBoundary>
                           <Playground />
                         </ErrorBoundary>
                       )}
+                    />
+                    <Route
+                      path="codelab/problems"
+                      element={(
+                        <ErrorBoundary>
+                          <ProblemsList />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="codelab/problems/:slug"
+                      element={(
+                        <ErrorBoundary>
+                          <ProblemDetail />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="codelab/dashboard"
+                      element={(
+                        <ProtectedRoute>
+                          <ErrorBoundary>
+                            <LearnerDashboard />
+                          </ErrorBoundary>
+                        </ProtectedRoute>
+                      )}
+                    />
+                    <Route
+                      path="learn"
+                      element={(
+                        <ErrorBoundary>
+                          <CoursesList />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="learn/:courseSlug"
+                      element={(
+                        <ErrorBoundary>
+                          <CourseDetail />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="learn/lessons/:lessonId"
+                      element={(
+                        <ErrorBoundary>
+                          <LessonDetail />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="playground"
+                      element={<Navigate to="/codelab/playground" replace />}
                     />
                     <Route
                       path="s/:shareId"
@@ -133,14 +202,16 @@ function App() {
                       path="portal"
                       element={(
                         <ProtectedRoute roles={['client', 'admin']}>
-                          <ClientPortal />
+                          <ErrorBoundary>
+                            <ClientPortal />
+                          </ErrorBoundary>
                         </ProtectedRoute>
                       )}
                     />
                     <Route path="*" element={<NotFound />} />
                   </Route>
 
-                  <Route path="login" element={<Login />} />
+                  <Route path="login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
                   <Route
                     path="card"
                     element={(
@@ -154,14 +225,16 @@ function App() {
                     path="admin"
                     element={(
                       <ProtectedRoute roles={['admin']}>
-                        <AdminLayout />
+                        <ErrorBoundary>
+                          <AdminLayout />
+                        </ErrorBoundary>
                       </ProtectedRoute>
                     )}
                   >
-                    <Route index element={<AdminLeads />} />
-                    <Route path="leads" element={<AdminLeads />} />
-                    <Route path="project-status" element={<AdminProjectStatus />} />
-                    <Route path=":resource" element={<AdminResourceCrud />} />
+                    <Route index element={<ErrorBoundary><AdminLeads /></ErrorBoundary>} />
+                    <Route path="leads" element={<ErrorBoundary><AdminLeads /></ErrorBoundary>} />
+                    <Route path="project-status" element={<ErrorBoundary><AdminProjectStatus /></ErrorBoundary>} />
+                    <Route path=":resource" element={<ErrorBoundary><AdminResourceCrud /></ErrorBoundary>} />
                   </Route>
                 </Routes>
               </Suspense>

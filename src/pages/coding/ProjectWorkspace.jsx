@@ -9,7 +9,7 @@ import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../../components/states/StateViews'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
-import { getProject, updateProject, createShare, listLanguages, toCodePayload } from '../../api/coding'
+import { getProject, updateProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 
 function SaveStatus({ status }) {
@@ -42,31 +42,19 @@ export default function ProjectWorkspace() {
   const toast = useToast()
   const runner = useCodeRunner()
 
-  const [languages, setLanguages] = useState(LANGUAGES)
+  const [languages] = useState(LANGUAGES)
   const [project, setProject] = useState(undefined) // undefined = loading, null = not found
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   const [title, setTitle] = useState('')
-  const [language, setLanguage] = useState('python')
+  const [language, setLanguage] = useState('web')
   const [source, setSource] = useState('')
   const [stdin, setStdin] = useState('')
   const [fileName, setFileName] = useState('')
   const [sharing, setSharing] = useState(false)
 
-  useSeo({ title: title ? `${title} — Project` : 'Project', noindex: true, path: `/projects/${id}` })
-
-  useEffect(() => {
-    let cancelled = false
-    listLanguages()
-      .then((data) => {
-        if (!cancelled && Array.isArray(data) && data.length) setLanguages(data)
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  useSeo({ title: title ? `${title} - CodeLab Project` : 'CodeLab Project', noindex: true, path: `/projects/${id}` })
 
   useEffect(() => {
     let cancelled = false
@@ -77,7 +65,7 @@ export default function ProjectWorkspace() {
         if (cancelled) return
         setProject(data)
         setTitle(data.title ?? 'Untitled project')
-        setLanguage(data.language ?? 'python')
+        setLanguage(data.language ?? 'web')
         setSource(data.files?.[0]?.content ?? data.source ?? '')
         setStdin(data.stdin ?? '')
         setFileName(data.files?.[0]?.name ?? '')

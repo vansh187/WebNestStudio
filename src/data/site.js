@@ -13,7 +13,7 @@ export const NAV_LINKS = [
   { label: 'Services', to: '/services' },
   { label: 'Work', to: '/portfolio' },
   { label: 'Blog', to: '/blog' },
-  { label: 'Playground', to: '/playground' },
+  { label: 'Webnest CodeLab', to: '/codelab' },
   { label: 'Visiting Card', to: '/card' },
   { label: 'Contact', to: '/contact' },
 ]
@@ -41,7 +41,7 @@ export const FOOTER_SECTIONS = [
   {
     title: 'Platform',
     links: [
-      { label: 'Playground', to: '/playground' },
+      { label: 'Webnest CodeLab', to: '/codelab' },
       { label: 'Make a Project', to: '/projects' },
     ],
   },

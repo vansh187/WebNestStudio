@@ -19,7 +19,7 @@ export default function NewProjectModal({ onClose, onCreated, languages = LANGUA
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(newProjectSchema),
-    defaultValues: { title: '', language: 'python' },
+    defaultValues: { title: '', language: 'web' },
   })
 
   useEffect(() => {

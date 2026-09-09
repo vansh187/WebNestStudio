@@ -21,7 +21,7 @@ function useIsLargeScreen() {
   return isLarge
 }
 
-export default function CodeEditor({ value, onChange, language, readOnly = false, className = '' }) {
+export default function CodeEditor({ value, onChange, language, readOnly = false, className = '', roundedTop = true }) {
   const { theme } = useTheme()
   const isLarge = useIsLargeScreen()
 
@@ -45,7 +45,7 @@ export default function CodeEditor({ value, onChange, language, readOnly = false
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-900/40 ${className}`}
+      className={`overflow-hidden border border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-900/40 ${roundedTop ? 'rounded-xl' : 'rounded-b-xl'} ${className}`}
     >
       <Editor
         value={value}

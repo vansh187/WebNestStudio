@@ -1,22 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import CodeEditor from './CodeEditor'
+import FileTabs from './FileTabs'
 import RunBar from './RunBar'
 import StdinPanel from './StdinPanel'
 import OutputPanel from './OutputPanel'
+import PreviewPanel from './PreviewPanel'
 import BackButton from './BackButton'
 import { getLanguage, mainFileName } from '../../data/codingLanguages'
 import { toCodePayload } from '../../api/coding'
-import { wakeServer } from '../../lib/health'
+import ErrorBoundary from '../ErrorBoundary'
 
 const EDITOR_HEIGHT =
   'h-[45dvh] min-h-[240px] md:h-[55dvh] lg:h-[calc(100dvh-var(--nav-h)-190px)] lg:min-h-[420px] lg:max-h-[720px]'
 const PANEL_HEIGHT = 'lg:h-[calc(100dvh-var(--nav-h)-190px)] lg:min-h-[420px] lg:overflow-auto'
 
-/**
- * Shared editor + run + output surface for the Playground and a saved Project.
- * Owns the run-payload composition and the responsive layout (§8 of the frontend doc);
- * the parent supplies state + save/share behaviour.
- */
 export default function CodingWorkspace({
   eyebrow,
   title,
@@ -28,6 +25,10 @@ export default function CodingWorkspace({
   onLanguageChange,
   source,
   onSourceChange,
+  files,
+  selectedFile,
+  onSelectFile,
+  onFileChange,
   stdin,
   onStdinChange,
   runner,
@@ -38,20 +39,12 @@ export default function CodingWorkspace({
   sharing,
 }) {
   const [stdinOpen, setStdinOpen] = useState(false)
+  const [consoleText, setConsoleText] = useState('')
   const lang = languages.find((l) => l.id === language) ?? getLanguage(language)
-
+  const activeFile = files?.find((file) => file.name === selectedFile)
   const outputRef = useRef(null)
   const wasRunning = useRef(false)
 
-  // Start waking the Render free-tier backend the moment the editor opens, so the
-  // cold start (up to ~1 min) overlaps with the user writing code instead of being
-  // paid in full on the first Run.
-  useEffect(() => {
-    wakeServer()
-  }, [])
-
-  // On phones/tablets the output sits far below the editor — bring it into view
-  // when a run starts so the "Running…" feedback is actually visible.
   useEffect(() => {
     if (runner.running && !wasRunning.current) {
       if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
@@ -62,15 +55,21 @@ export default function CodingWorkspace({
   }, [runner.running])
 
   const handleRun = () => {
+    setConsoleText('')
+    const sourceText = activeFile?.content ?? source ?? ''
     runner.run({
       language,
-      ...(lang?.version ? { version: lang.version } : {}),
       ...toCodePayload({
-        source: source ?? '',
+        source: sourceText,
         fileName: mainFileName(lang),
-        extra: { stdin: stdin ?? '', args: [] },
+        files,
+        extra: { stdin: stdin ?? '' },
       }),
     })
+  }
+
+  const handleConsole = ({ type, text }) => {
+    setConsoleText((prev) => `${prev}${prev ? '\n' : ''}[${type}] ${text}`.slice(0, 64000))
   }
 
   return (
@@ -92,43 +91,73 @@ export default function CodingWorkspace({
       </div>
 
       <div className="mt-4">
-        <RunBar
-          languages={languages}
-          language={language}
-          onLanguageChange={onLanguageChange}
-          onRun={handleRun}
-          onCancel={runner.cancel}
-          running={runner.running}
-          stdinOpen={stdinOpen}
-          onToggleStdin={() => setStdinOpen((v) => !v)}
-          onSave={onSave}
-          saving={saving}
-          saveLabel={saveLabel}
-          onShare={onShare}
-          sharing={sharing}
-        />
+        <ErrorBoundary>
+          <RunBar
+            languages={languages}
+            language={language}
+            onLanguageChange={onLanguageChange}
+            onRun={handleRun}
+            onCancel={runner.cancel}
+            running={runner.running}
+            stdinOpen={stdinOpen}
+            onToggleStdin={() => setStdinOpen((v) => !v)}
+            onSave={onSave}
+            saving={saving}
+            saveLabel={saveLabel}
+            onShare={onShare}
+            sharing={sharing}
+          />
+        </ErrorBoundary>
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
-        <CodeEditor
-          value={source}
-          onChange={onSourceChange}
-          language={lang?.monacoId ?? 'plaintext'}
-          className={EDITOR_HEIGHT}
-        />
+        <div>
+          {files && (
+            <ErrorBoundary>
+              <FileTabs files={files} selectedFile={selectedFile} onSelectFile={onSelectFile} />
+            </ErrorBoundary>
+          )}
+          <ErrorBoundary>
+            <CodeEditor
+              value={activeFile?.content ?? source}
+              onChange={(value) => (activeFile ? onFileChange?.(activeFile.name, value) : onSourceChange?.(value))}
+              language={activeFile?.language ?? lang?.monacoId ?? 'plaintext'}
+              className={EDITOR_HEIGHT}
+              roundedTop={!files}
+            />
+          </ErrorBoundary>
+        </div>
         <div
           ref={outputRef}
           className={`grid scroll-mt-[calc(var(--nav-h)+8px)] gap-3 lg:grid-cols-1 ${stdinOpen ? 'md:grid-cols-2' : ''}`}
         >
-          <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
-          <OutputPanel
-            running={runner.running}
-            runningSince={runner.runningSince}
-            stopped={runner.stopped}
-            result={runner.result}
-            error={runner.error}
-            className={PANEL_HEIGHT}
-          />
+          <ErrorBoundary>
+            <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <OutputPanel
+              running={runner.running}
+              runningSince={runner.runningSince}
+              stopped={runner.stopped}
+              result={runner.result}
+              error={runner.error}
+              className={PANEL_HEIGHT}
+            />
+          </ErrorBoundary>
+          {language === 'web' && (
+            <ErrorBoundary>
+              <PreviewPanel
+                previewHtml={runner.result?.previewHtml}
+                onConsole={handleConsole}
+                className={PANEL_HEIGHT}
+              />
+            </ErrorBoundary>
+          )}
+          {consoleText && (
+            <pre className="max-h-48 overflow-auto rounded-xl border border-ink-200 bg-ink-950 p-3 font-mono text-xs text-ink-100 dark:border-ink-800">
+              {consoleText}
+            </pre>
+          )}
         </div>
       </div>
     </div>
