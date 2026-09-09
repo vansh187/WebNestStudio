@@ -46,56 +46,176 @@ export const SAMPLE_PROBLEMS = [
   },
 ]
 
-export const SAMPLE_COURSES = [
+const LANGUAGE_COURSE_DEFINITIONS = [
   {
-    id: 'course_python',
     slug: 'python',
     title: 'Python',
     level: 'beginner',
-    description: 'Python syntax, data types, functions, files, OOP, and APIs.',
-    lessons_count: 3,
-    completion_percent: 0,
-    modules: [
-      {
-        id: 'mod_python_basics',
-        title: 'Python Basics',
-        order: 1,
-        completion_percent: 0,
-        lessons: [
-          { id: 'lesson_python_variables', title: 'Variables and Types', order: 1, status: 'not_started' },
-          { id: 'lesson_python_input', title: 'Input and Output', order: 2, status: 'not_started' },
-        ],
-      },
-    ],
+    description: 'Readable programming fundamentals for scripts, automation, data work, APIs, and backend logic.',
+    language: 'python',
+    sample: 'name = "Webnest"\nscore = 95\nprint(f"{name}: {score}")\n',
+    output: 'Webnest: 95',
+  },
+  {
+    slug: 'javascript',
+    title: 'JavaScript',
+    level: 'beginner',
+    description: 'The language of browser interaction, Node.js backends, JSON APIs, and modern web apps.',
+    language: 'javascript',
+    sample: 'const name = "Webnest";\nconst score = 95;\nconsole.log(`${name}: ${score}`);\n',
+    output: 'Webnest: 95',
+  },
+  {
+    slug: 'java',
+    title: 'Java',
+    level: 'beginner',
+    description: 'Strongly typed programming for enterprise apps, Android concepts, services, and object-oriented design.',
+    language: 'java',
+    sample: 'class Main {\n  public static void main(String[] args) {\n    String name = "Webnest";\n    int score = 95;\n    System.out.println(name + ": " + score);\n  }\n}\n',
+    output: 'Webnest: 95',
+  },
+  {
+    slug: 'cpp',
+    title: 'C++',
+    level: 'beginner',
+    description: 'Fast, typed programming for algorithms, systems concepts, game logic, and performance-focused software.',
+    language: 'cpp',
+    sample: '#include <iostream>\nusing namespace std;\n\nint main() {\n  string name = "Webnest";\n  int score = 95;\n  cout << name << ": " << score << endl;\n  return 0;\n}\n',
+    output: 'Webnest: 95',
+  },
+  {
+    slug: 'c',
+    title: 'C',
+    level: 'beginner',
+    description: 'Foundational systems programming for memory, functions, control flow, and how computers execute code.',
+    language: 'c',
+    sample: '#include <stdio.h>\n\nint main() {\n  char name[] = "Webnest";\n  int score = 95;\n  printf("%s: %d\\n", name, score);\n  return 0;\n}\n',
+    output: 'Webnest: 95',
+  },
+  {
+    slug: 'html-css',
+    title: 'HTML and CSS',
+    level: 'beginner',
+    description: 'The structure and visual layer of websites: semantic markup, responsive layout, spacing, and styling.',
+    language: 'html',
+    sample: '<article class="card">\n  <h1>Webnest</h1>\n  <p>Build clean, useful web pages.</p>\n</article>\n\n<style>\n.card {\n  max-width: 360px;\n  padding: 24px;\n  border: 1px solid #dbe3ef;\n  border-radius: 8px;\n}\n</style>\n',
+    output: 'A styled card appears in the browser.',
   },
 ]
 
-export const SAMPLE_LESSONS = {
-  lesson_python_variables: {
-    id: 'lesson_python_variables',
-    course_slug: 'python',
-    title: 'Variables and Types',
-    content: {
-      format: 'html',
-      body: '<h2>Variables</h2><p>Variables give a name to a value so you can reuse it later.</p><pre><code>name = "Webnest"\nprint(name)</code></pre>',
-    },
-    resources: [{ type: 'code', language: 'python', content: 'name = "Webnest"\nprint(name)\n' }],
-    practice: [{ type: 'problem', slug: 'python-list-sum', title: 'List Sum' }],
-    progress: { status: 'not_started', completed_percent: 0, bookmarked: false, note: '' },
-  },
-  lesson_python_input: {
-    id: 'lesson_python_input',
-    course_slug: 'python',
-    title: 'Input and Output',
-    content: {
-      format: 'html',
-      body: '<h2>Input and Output</h2><p>Use input() to read text and print() to show results.</p>',
-    },
-    resources: [{ type: 'code', language: 'python', content: 'answer = input()\nprint(answer)\n' }],
-    practice: [{ type: 'problem', slug: 'python-list-sum', title: 'List Sum' }],
-    progress: { status: 'not_started', completed_percent: 0, bookmarked: false, note: '' },
-  },
+function lessonId(slug, topic) {
+  return `lesson_${slug.replaceAll('-', '_')}_${topic}`
 }
+
+function codeBlock(code) {
+  return code.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+}
+
+function createLesson(course, topic, title, body, code) {
+  const id = lessonId(course.slug, topic)
+  return {
+    id,
+    course_slug: course.slug,
+    title,
+    content: { format: 'html', body },
+    resources: [{ type: 'code', language: course.language, content: code }],
+    practice: course.slug === 'python'
+      ? [{ type: 'problem', slug: 'python-list-sum', title: 'List Sum' }]
+      : course.slug === 'html-css'
+        ? [{ type: 'problem', slug: 'web-profile-card', title: 'Profile Card' }]
+        : [],
+    progress: { status: 'not_started', completed_percent: 0, bookmarked: false, note: '' },
+  }
+}
+
+function lessonsFor(course) {
+  const sample = codeBlock(course.sample)
+  return [
+    createLesson(
+      course,
+      'overview',
+      `${course.title} Overview`,
+      `<h2>What you use ${course.title} for</h2><p>${course.description}</p><p>Most programming languages share the same core ideas: values, variables, decisions, loops, functions, collections, and small programs composed from smaller pieces. Once you understand those ideas in one language, learning another becomes mostly a matter of syntax and ecosystem.</p><h3>First example</h3><pre><code>${sample}</code></pre><p>Expected result: <strong>${course.output}</strong></p>`,
+      course.sample,
+    ),
+    createLesson(
+      course,
+      'values',
+      'Values, Variables, and Types',
+      `<h2>Values and variables</h2><p>A value is data your program works with. A variable is a name that points to a value. Types describe what kind of value you have, such as text, number, boolean, list, or object.</p><p>The concept is the same everywhere: store information, give it a useful name, then use it later. Strongly typed languages ask you to be more explicit; dynamic languages infer more for you.</p><pre><code>${sample}</code></pre>`,
+      course.sample,
+    ),
+    createLesson(
+      course,
+      'control-flow',
+      'Conditions and Loops',
+      `<h2>Control flow</h2><p>Conditions let a program choose between paths. Loops repeat work until a collection is finished or a condition changes. Together, they turn simple statements into useful behavior.</p><p>When writing loops, always ask what changes each time. If nothing changes, the loop may never end.</p>`,
+      course.slug === 'python'
+        ? 'for number in [1, 2, 3]:\n    if number % 2 == 0:\n        print("even", number)\n    else:\n        print("odd", number)\n'
+        : course.slug === 'javascript'
+          ? 'for (const number of [1, 2, 3]) {\n  if (number % 2 === 0) {\n    console.log("even", number);\n  } else {\n    console.log("odd", number);\n  }\n}\n'
+          : course.slug === 'html-css'
+            ? '<ul>\n  <li class="active">Learn</li>\n  <li>Practice</li>\n</ul>\n\n<style>\n.active { font-weight: 700; color: #b8860b; }\n</style>\n'
+            : 'for (int number = 1; number <= 3; number++) {\n  // check number and print odd/even\n}\n',
+    ),
+    createLesson(
+      course,
+      'functions',
+      'Functions and Reuse',
+      `<h2>Functions</h2><p>A function packages a task behind a name. Good functions do one clear job, accept inputs, and return or produce a result. This keeps code readable and easier to test.</p><p>If you copy the same logic more than once, it may want to become a function.</p>`,
+      course.slug === 'python'
+        ? 'def total(numbers):\n    return sum(numbers)\n\nprint(total([1, 2, 3]))\n'
+        : course.slug === 'javascript'
+          ? 'function total(numbers) {\n  return numbers.reduce((sum, value) => sum + value, 0);\n}\n\nconsole.log(total([1, 2, 3]));\n'
+          : course.slug === 'html-css'
+            ? '<button class="primary-button">Start</button>\n\n<style>\n.primary-button {\n  padding: 12px 16px;\n  border: 0;\n  border-radius: 8px;\n}\n</style>\n'
+            : 'int total(int a, int b) {\n  return a + b;\n}\n',
+    ),
+    createLesson(
+      course,
+      'collections',
+      'Collections and Data Shape',
+      `<h2>Collections</h2><p>Collections hold many values together. Arrays, lists, maps, dictionaries, objects, structs, and classes are all ways to shape data so a program can reason about it.</p><p>Name your data by what it means, not only by its type. <code>students</code> is clearer than <code>arr</code>.</p>`,
+      course.slug === 'python'
+        ? 'student = {"name": "Asha", "score": 95}\nprint(student["name"])\n'
+        : course.slug === 'javascript'
+          ? 'const student = { name: "Asha", score: 95 };\nconsole.log(student.name);\n'
+          : course.slug === 'html-css'
+            ? '<section class="profile">\n  <h2>Asha</h2>\n  <p>Score: 95</p>\n</section>\n'
+            : '// Store related values in arrays, structs, classes, or objects depending on the language.\n',
+    ),
+  ]
+}
+
+const LESSON_GROUPS = Object.fromEntries(LANGUAGE_COURSE_DEFINITIONS.map((course) => [course.slug, lessonsFor(course)]))
+
+export const SAMPLE_COURSES = LANGUAGE_COURSE_DEFINITIONS.map((course) => ({
+  id: `course_${course.slug.replaceAll('-', '_')}`,
+  slug: course.slug,
+  title: course.title,
+  level: course.level,
+  description: course.description,
+  lessons_count: LESSON_GROUPS[course.slug].length,
+  completion_percent: 0,
+  modules: [
+    {
+      id: `mod_${course.slug.replaceAll('-', '_')}_fundamentals`,
+      title: `${course.title} Fundamentals`,
+      order: 1,
+      completion_percent: 0,
+      lessons: LESSON_GROUPS[course.slug].map((lesson, index) => ({
+        id: lesson.id,
+        title: lesson.title,
+        order: index + 1,
+        status: 'not_started',
+      })),
+    },
+  ],
+}))
+
+export const SAMPLE_LESSONS = Object.fromEntries(
+  Object.values(LESSON_GROUPS).flat().map((lesson) => [lesson.id, lesson]),
+)
 
 export function cloneFiles(files, fallback = PYTHON_FILES) {
   const source = Array.isArray(files) && files.length ? files : fallback

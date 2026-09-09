@@ -67,7 +67,7 @@ export default function ProblemDetail() {
           setFiles(next?.starter_files || [])
           setSelectedFile(next?.starter_files?.[0]?.name || '')
           setStdin(next?.examples?.[0]?.input || '')
-          setError(next ? getErrorDetail(err, 'Could not load the live problem. Showing starter content.') : '')
+          setError(next ? '' : getErrorDetail(err, 'Could not load this problem.'))
         }
       }
     }

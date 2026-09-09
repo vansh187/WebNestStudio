@@ -39,7 +39,7 @@ export default function ProblemsList() {
         if (alive) setItems(normalizeProblems(data))
       } catch (err) {
         if (alive) {
-          setError(getErrorDetail(err, 'Could not load problems. Showing starter problems.'))
+          setError(SAMPLE_PROBLEMS.length ? '' : getErrorDetail(err, 'Could not load problems.'))
           setItems(SAMPLE_PROBLEMS)
         }
       } finally {
