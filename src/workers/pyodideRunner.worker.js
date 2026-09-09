@@ -2,9 +2,10 @@ import { loadPyodide } from 'pyodide'
 
 let pyodidePromise
 const OUTPUT_LIMIT = 64000
+const PYODIDE_INDEX_URL = '/pyodide/'
 
 function getPyodide() {
-  if (!pyodidePromise) pyodidePromise = loadPyodide()
+  if (!pyodidePromise) pyodidePromise = loadPyodide({ indexURL: PYODIDE_INDEX_URL })
   return pyodidePromise
 }
 

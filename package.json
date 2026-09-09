@@ -4,11 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-pyodide.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-pyodide.mjs",
     "build": "vite build",
     "prerender": "node scripts/prerender.mjs",
-    "build:prerender": "vite build && node scripts/prerender.mjs",
-    "vercel-build": "vite build && (node scripts/prerender.mjs || echo '[prerender] skipped - continuing with SPA-only build')",
+    "build:prerender": "node scripts/copy-pyodide.mjs && vite build && node scripts/prerender.mjs",
+    "prepreview": "node scripts/copy-pyodide.mjs",
+    "vercel-build": "node scripts/copy-pyodide.mjs && vite build && (node scripts/prerender.mjs || echo '[prerender] skipped - continuing with SPA-only build')",
     "lint": "oxlint",
     "preview": "vite preview"
   },
