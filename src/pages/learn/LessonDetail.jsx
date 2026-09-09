@@ -1,16 +1,33 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiBookmark, FiCheckCircle, FiCode, FiSave } from 'react-icons/fi'
-import { getLesson, saveLessonNote, toggleLessonBookmark, updateLessonProgress } from '../../api/learning'
 import { SAMPLE_LESSONS } from '../../data/codelabDefaults'
-import { getErrorDetail } from '../../lib/apiClient'
 import { useToast } from '../../context/ToastContext'
 import { useSeo } from '../../hooks/useSeo'
 import ErrorBoundary from '../../components/ErrorBoundary'
-import { ErrorState, NotFoundState } from '../../components/states/StateViews'
+import { NotFoundState } from '../../components/states/StateViews'
 
-function normalize(data, id) {
-  const source = data?.id ? data : SAMPLE_LESSONS[id]
+const PROGRESS_KEY = 'wns-static-learning-progress'
+
+function readProgress() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}')
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeProgress(progress) {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress))
+  } catch {
+    /* Static lessons should keep working even when storage is unavailable. */
+  }
+}
+
+function normalize(id) {
+  const source = SAMPLE_LESSONS[id]
   if (!source) return null
   return {
     id: source.id || id,
@@ -28,69 +45,58 @@ export default function LessonDetail() {
   const toast = useToast()
   const [lesson, setLesson] = useState(null)
   const [note, setNote] = useState('')
-  const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
-  useSeo({ title: lesson?.title ? `${lesson.title} | Learn` : 'Lesson', description: 'Read a Webnest CodeLab lesson.', path: `/learn/lessons/${lessonId || ''}` })
+
+  useSeo({
+    title: lesson?.title ? `${lesson.title} | Learn` : 'Lesson',
+    description: 'Read a static Webnest CodeLab lesson.',
+    path: `/learn/lessons/${lessonId || ''}`,
+  })
 
   useEffect(() => {
-    let alive = true
-    async function load() {
-      try {
-        const data = await getLesson(lessonId)
-        const next = normalize(data, lessonId)
-        if (alive) {
-          setLesson(next)
-          setNote(next?.progress?.note || '')
-        }
-      } catch (err) {
-        const next = normalize(null, lessonId)
-        if (alive) {
-          setLesson(next)
-          setNote(next?.progress?.note || '')
-          setError(next ? getErrorDetail(err, 'Could not load the live lesson. Showing starter content.') : '')
-        }
-      }
+    const next = normalize(lessonId)
+    if (!next) {
+      setLesson(null)
+      setNote('')
+      return
     }
-    load()
-    return () => {
-      alive = false
-    }
+    const saved = readProgress()[lessonId] || {}
+    const progress = { ...next.progress, ...saved }
+    setLesson({ ...next, progress })
+    setNote(progress.note || '')
   }, [lessonId])
 
-  const markComplete = useCallback(async () => {
-    try {
-      await updateLessonProgress(lesson.id, { status: 'completed', completed_percent: 100, time_spent_seconds: 0 })
-      setLesson((item) => ({ ...item, progress: { ...item.progress, status: 'completed', completed_percent: 100 } }))
-      toast.success('Lesson marked complete.')
-    } catch (err) {
-      toast.error(getErrorDetail(err, 'Could not update progress.'))
-    }
-  }, [lesson, toast])
+  const markComplete = useCallback(() => {
+    const progress = readProgress()
+    const nextProgress = { ...lesson.progress, status: 'completed', completed_percent: 100, note }
+    progress[lesson.id] = nextProgress
+    writeProgress(progress)
+    setLesson((item) => ({ ...item, progress: nextProgress }))
+    toast.success('Lesson marked complete.')
+  }, [lesson, note, toast])
 
-  const toggleBookmark = useCallback(async () => {
+  const toggleBookmark = useCallback(() => {
     const bookmarked = !lesson.progress.bookmarked
-    try {
-      await toggleLessonBookmark(lesson.id, { bookmarked })
-      setLesson((item) => ({ ...item, progress: { ...item.progress, bookmarked } }))
-    } catch (err) {
-      toast.error(getErrorDetail(err, 'Could not update bookmark.'))
-    }
-  }, [lesson, toast])
+    const progress = readProgress()
+    const nextProgress = { ...lesson.progress, bookmarked, note }
+    progress[lesson.id] = nextProgress
+    writeProgress(progress)
+    setLesson((item) => ({ ...item, progress: nextProgress }))
+  }, [lesson, note])
 
-  const saveNote = useCallback(async () => {
+  const saveNote = useCallback(() => {
     if (note.length > 5000) {
       toast.error('Notes must be 5000 characters or fewer.')
       return
     }
     setSaving(true)
-    try {
-      await saveLessonNote(lesson.id, { note })
-      toast.success('Note saved.')
-    } catch (err) {
-      toast.error(getErrorDetail(err, 'Could not save note.'))
-    } finally {
-      setSaving(false)
-    }
+    const progress = readProgress()
+    const nextProgress = { ...lesson.progress, note }
+    progress[lesson.id] = nextProgress
+    writeProgress(progress)
+    setLesson((item) => ({ ...item, progress: nextProgress }))
+    setSaving(false)
+    toast.success('Note saved.')
   }, [lesson, note, toast])
 
   if (!lesson) return <NotFoundState title="Lesson not found" backTo="/learn" backLabel="Back to courses" />
@@ -98,8 +104,8 @@ export default function LessonDetail() {
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
       <article className="min-w-0">
-        {error && <div className="mb-4"><ErrorState message={error} /></div>}
-        <h1 className="font-display text-3xl font-bold text-ink-900 dark:text-white">{lesson.title}</h1>
+        <Link to={`/learn/${lesson.course_slug}`} className="text-sm font-semibold text-gold-500 hover:text-gold-600">Back to course</Link>
+        <h1 className="mt-3 font-display text-3xl font-bold text-ink-900 dark:text-white">{lesson.title}</h1>
         <ErrorBoundary>
           <div className="prose prose-ink mt-6 max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: lesson.content.body || '' }} />
         </ErrorBoundary>
@@ -117,7 +123,7 @@ export default function LessonDetail() {
         <div className="rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40">
           <label className="text-sm font-semibold text-ink-700 dark:text-ink-100" htmlFor="lesson-note">Notes</label>
           <textarea id="lesson-note" value={note} onChange={(e) => setNote(e.target.value)} rows={8} className="mt-2 w-full rounded-lg border border-ink-200 bg-white p-3 text-sm dark:border-ink-800 dark:bg-ink-950" />
-          <button type="button" onClick={saveNote} disabled={saving} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gold-400 px-3 py-2 text-sm font-semibold text-ink-950">
+          <button type="button" onClick={saveNote} disabled={saving} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-gold-400 px-3 py-2 text-sm font-semibold text-ink-950 disabled:opacity-60">
             <FiSave className="h-4 w-4" /> Save
           </button>
         </div>
