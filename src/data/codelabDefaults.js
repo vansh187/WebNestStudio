@@ -56,7 +56,7 @@ const STATIC_COURSE_DEFINITIONS = [
     sample: 'class Main {\n  public static void main(String[] args) {\n    String name = "Webnest";\n    int score = 95;\n    System.out.println(name + ": " + score);\n  }\n}\n',
     modules: [
       ['Java Platform Basics', ['Java syntax', 'JVM/JDK/JRE', 'variables', 'data types', 'operators']],
-      ['Program Flow and Data', ['control flow', 'arrays', 'strings', 'file handling', 'I/O']],
+      ['Program Flow and Data', ['control flow', 'arrays', 'strings', 'file handling', 'I/O', 'Java database connectivity']],
       ['Object-Oriented Java', ['OOP', 'classes/objects', 'inheritance', 'polymorphism', 'abstraction', 'interfaces', 'packages']],
       ['Robust Java Programs', ['exceptions', 'collections', 'generics', 'multithreading', 'streams', 'lambdas']],
       ['Professional Java', ['date/time', 'annotations', 'testing fundamentals']],
@@ -241,6 +241,9 @@ function topicExample(course, topic) {
     if (t.includes('file')) return 'with open("notes.txt", "w", encoding="utf-8") as file:\n    file.write("Learn deeply")\n'
     return course.sample
   }
+  if (course.language === 'java' && t.includes('database connectivity')) {
+    return 'try (Connection connection = DriverManager.getConnection(url, username, password);\n     PreparedStatement statement = connection.prepareStatement("select id, name from users where active = ?")) {\n  statement.setBoolean(1, true);\n  try (ResultSet resultSet = statement.executeQuery()) {\n    while (resultSet.next()) {\n      System.out.println(resultSet.getLong("id") + " " + resultSet.getString("name"));\n    }\n  }\n}\n'
+  }
   if (course.language === 'javascript') {
     if (t.includes('react') || course.slug === 'react') return course.sample
     if (t.includes('async') || t.includes('promise') || t.includes('fetch')) return 'async function loadUser() {\n  const response = await fetch("/api/users/1");\n  if (!response.ok) throw new Error("Request failed");\n  return response.json();\n}\n'
@@ -275,6 +278,9 @@ function detailFor(course, topic) {
   }
   if (t.includes('api') || t.includes('rest') || t.includes('http') || t.includes('fetch') || t.includes('servlet') || t.includes('mvc')) {
     return `${base} API and web topics are about contracts between clients and servers. Pay attention to request shape, response shape, status codes, validation, pagination, errors, authentication, versioning, and observability. A good API is predictable, documented, and hard to misuse.`
+  }
+  if (t.includes('database connectivity') || t.includes('jdbc')) {
+    return `${base} Database connectivity is the bridge between application logic and durable data. Learn how connections are opened, reused, closed, and protected. Use parameterized statements instead of string-built SQL, understand transaction boundaries, handle checked exceptions cleanly, and keep database code separated from UI or controller code. In production Java, connection pooling, timeouts, retries, migrations, logging, and safe credential management matter as much as the query itself.`
   }
   if (t.includes('index') || t.includes('performance') || t.includes('optimization') || t.includes('explain')) {
     return `${base} Performance topics require measurement before conclusions. Learn what work the runtime or database is doing, how data is accessed, what can be cached, and what makes operations expensive. Indexes, query plans, rendering performance, memory use, and network timing should be understood with evidence, not assumptions.`
