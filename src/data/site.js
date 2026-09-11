@@ -36,6 +36,7 @@ export const FOOTER_SECTIONS = [
       { label: 'FAQs', to: '/faqs' },
       { label: 'Visiting Card', to: '/card' },
       { label: 'Contact', to: '/contact' },
+      { label: 'Privacy Policy', to: '/privacy-policy' },
     ],
   },
   {

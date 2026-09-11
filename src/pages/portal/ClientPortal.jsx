@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FiFolder, FiLogOut } from 'react-icons/fi'
 import Reveal from '../../components/Reveal'
 import { Skeleton } from '../../components/states/Skeleton'
@@ -155,6 +156,19 @@ export default function ClientPortal() {
             <FilesCard />
           </section>
         </div>
+
+        <section className="mt-10 rounded-2xl border border-red-400/30 bg-red-400/5 p-5">
+          <h2 className="font-display text-sm font-semibold text-red-500">Danger Zone</h2>
+          <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">
+            Permanently delete your account and all associated data.
+          </p>
+          <Link
+            to="/delete-account"
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-red-400/40 px-4 py-2 text-sm font-semibold text-red-500 hover:bg-red-500 hover:text-white"
+          >
+            Delete account
+          </Link>
+        </section>
       </Reveal>
     </div>
   )
