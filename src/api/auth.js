@@ -19,3 +19,8 @@ export const logout = (refresh_token) =>
   api.post('/api/auth/logout', { refresh_token }).then((r) => r.data)
 
 export const getMe = () => api.get('/api/auth/me').then((r) => r.data)
+
+// NOTE: backend does not implement this endpoint yet — wired up ahead of the
+// backend so the frontend is ready the moment DELETE /api/auth/me ships. Required
+// for Play Store's account-deletion policy (see /delete-account page).
+export const deleteAccount = () => api.delete('/api/auth/me').then((r) => r.data)

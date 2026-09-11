@@ -19,6 +19,8 @@ import Blog from './pages/Blog'
 import BlogDetail from './pages/BlogDetail'
 import Faqs from './pages/Faqs'
 import Contact from './pages/Contact'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import DeleteAccount from './pages/DeleteAccount'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 
@@ -100,6 +102,17 @@ function App() {
                     <Route path="blog/:slug" element={<BlogDetail />} />
                     <Route path="faqs" element={<Faqs />} />
                     <Route path="contact" element={<Contact />} />
+                    <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                    <Route
+                      path="delete-account"
+                      element={(
+                        <ProtectedRoute>
+                          <ErrorBoundary>
+                            <DeleteAccount />
+                          </ErrorBoundary>
+                        </ProtectedRoute>
+                      )}
+                    />
                     <Route
                       path="codelab"
                       element={(

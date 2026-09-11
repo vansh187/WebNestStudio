@@ -91,6 +91,16 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const doDeleteAccount = useCallback(async () => {
+    try {
+      await authApi.deleteAccount()
+      clearSession()
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, error, message: getErrorDetail(error, 'Could not delete your account.') }
+    }
+  }, [])
+
   const value = {
     accessToken,
     user,
@@ -102,6 +112,7 @@ export function AuthProvider({ children }) {
     verifyOtp: doVerifyOtp,
     login: doLogin,
     logout: doLogout,
+    deleteAccount: doDeleteAccount,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
