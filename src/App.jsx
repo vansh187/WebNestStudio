@@ -21,6 +21,7 @@ import Faqs from './pages/Faqs'
 import Contact from './pages/Contact'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import DeleteAccount from './pages/DeleteAccount'
+import AccountDeletion from './pages/AccountDeletion'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 
@@ -103,6 +104,12 @@ function App() {
                     <Route path="faqs" element={<Faqs />} />
                     <Route path="contact" element={<Contact />} />
                     <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                    {/* Public, no-login-required page - required by Google Play's account
+                        deletion policy so someone who lost app/website access can still
+                        request deletion. The Android app links here. Distinct from
+                        /delete-account below, which is the in-session self-service flow
+                        for the website's own logged-in portal users. */}
+                    <Route path="account-deletion" element={<AccountDeletion />} />
                     <Route
                       path="delete-account"
                       element={(
