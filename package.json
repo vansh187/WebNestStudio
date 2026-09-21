@@ -6,12 +6,13 @@
   "scripts": {
     "predev": "node scripts/copy-pyodide.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/copy-pyodide.mjs",
+    "prebuild": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs",
     "build": "vite build",
+    "sitemap": "node scripts/generate-sitemap.mjs",
     "prerender": "node scripts/prerender.mjs",
-    "build:prerender": "node scripts/copy-pyodide.mjs && vite build && node scripts/prerender.mjs",
+    "build:prerender": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs && vite build && node scripts/prerender.mjs",
     "prepreview": "node scripts/copy-pyodide.mjs",
-    "vercel-build": "node scripts/copy-pyodide.mjs && vite build && (node scripts/prerender.mjs || echo '[prerender] skipped - continuing with SPA-only build')",
+    "vercel-build": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs && vite build && (node scripts/prerender.mjs || echo '[prerender] skipped - continuing with SPA-only build')",
     "lint": "oxlint",
     "preview": "vite preview"
   },
