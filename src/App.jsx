@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { FiLoader, FiAlertTriangle, FiRefreshCw } from 'react-icons/fi'
@@ -82,6 +82,22 @@ function AppCrashedFallback() {
   )
 }
 
+function ClearPrerenderScrollLock() {
+  useEffect(() => {
+    // Static prerender snapshots can accidentally preserve a modal's body
+    // scroll-lock style. Clear it once the live app boots; real open modals
+    // set their own lock after mounting.
+    if (document.body.style.overflow === 'hidden') {
+      document.body.style.overflow = ''
+    }
+    if (document.documentElement.style.overflow === 'hidden') {
+      document.documentElement.style.overflow = ''
+    }
+  }, [])
+
+  return null
+}
+
 function App() {
   return (
     <ErrorBoundary fallback={() => <AppCrashedFallback />}>
@@ -91,6 +107,7 @@ function App() {
             <Analytics />
             <SlowRequestBanner />
             <BrowserRouter>
+              <ClearPrerenderScrollLock />
               <ScrollToTop />
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>

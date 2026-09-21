@@ -28,6 +28,7 @@
 import { preview } from 'vite'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { existsSync } from 'node:fs'
 
 const BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
 // Must match src/hooks/useSeo.js's SITE_URL exactly - this is what the canonical-tag
@@ -58,7 +59,15 @@ async function launchBrowser() {
     })
   }
   const { chromium } = await import('playwright')
-  return chromium.launch()
+  const localExecutable = [
+    process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+  ].find((executablePath) => executablePath && existsSync(executablePath))
+
+  return chromium.launch(localExecutable ? { executablePath: localExecutable } : undefined)
 }
 
 // Mirrors the public (non-auth, non-admin) branch of src/App.jsx exactly. /login, /portal,
@@ -115,6 +124,10 @@ async function prerenderRoute(page, baseOrigin, route) {
       expectedCanonical,
       { timeout: PER_ROUTE_TIMEOUT_MS }
     )
+    await page.evaluate(() => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    })
     const html = await page.content()
 
     const outDir = route === '/' ? DIST_DIR : path.join(DIST_DIR, route)
