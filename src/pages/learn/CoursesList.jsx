@@ -3,6 +3,7 @@ import { FiBookOpen } from 'react-icons/fi'
 import { SAMPLE_COURSES } from '../../data/codelabDefaults'
 import { useSeo } from '../../hooks/useSeo'
 import { EmptyState } from '../../components/states/StateViews'
+import BackButton from '../../components/coding/BackButton'
 
 export default function CoursesList() {
   useSeo({ title: 'Learn', description: 'Static programming language courses from Webnest CodeLab.', path: '/learn' })
@@ -10,7 +11,8 @@ export default function CoursesList() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Study</p>
+      <BackButton fallback="/codelab" label="Back to CodeLab" />
+      <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-gold-500">Study</p>
       <h1 className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">Courses</h1>
       <p className="mt-2 max-w-3xl text-ink-500 dark:text-ink-300">
         Static language guides with beginner-friendly concepts, syntax patterns, and examples. No server loading required.

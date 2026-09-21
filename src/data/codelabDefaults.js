@@ -13,6 +13,25 @@ export const CODELAB_TRACKS = [
   { id: 'python', label: 'Python', runner: 'pyodide' },
 ]
 
+import { JAVA_LESSON_CONTENT, JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES } from './java/index.js'
+import { TUTORIALS_BY_COURSE } from './tutorials/index.js'
+import { renderLessonContent, firstExampleCode } from './lessons/render.js'
+
+const TUTORIAL_LANGUAGE_LABEL = {
+  java: 'Java',
+  python: 'Python',
+  html: 'HTML',
+  css: 'CSS',
+  javascript: 'JavaScript',
+  sql: 'SQL',
+}
+
+const TUTORIAL_CONTENT = {
+  'java-core': JAVA_LESSON_CONTENT,
+  'advanced-java': JAVA_LESSON_CONTENT,
+  ...TUTORIALS_BY_COURSE,
+}
+
 export const SAMPLE_PROBLEMS = [
   {
     id: 'prob_python_sum',
@@ -54,13 +73,7 @@ const STATIC_COURSE_DEFINITIONS = [
     language: 'java',
     description: 'Complete Java foundation from syntax and JVM concepts to OOP, collections, streams, multithreading, testing, and production-ready habits.',
     sample: 'class Main {\n  public static void main(String[] args) {\n    String name = "Webnest";\n    int score = 95;\n    System.out.println(name + ": " + score);\n  }\n}\n',
-    modules: [
-      ['Java Platform Basics', ['Java syntax', 'JVM/JDK/JRE', 'variables', 'data types', 'operators']],
-      ['Program Flow and Data', ['control flow', 'arrays', 'strings', 'file handling', 'I/O', 'Java database connectivity']],
-      ['Object-Oriented Java', ['OOP', 'classes/objects', 'inheritance', 'polymorphism', 'abstraction', 'interfaces', 'packages']],
-      ['Robust Java Programs', ['exceptions', 'collections', 'generics', 'multithreading', 'streams', 'lambdas']],
-      ['Professional Java', ['date/time', 'annotations', 'testing fundamentals']],
-    ],
+    modules: JAVA_CORE_MODULES,
   },
   {
     slug: 'advanced-java',
@@ -69,12 +82,7 @@ const STATIC_COURSE_DEFINITIONS = [
     language: 'java',
     description: 'Server-side Java concepts for database access, web applications, deployment, concurrency, patterns, builds, logging, and testing.',
     sample: 'try (Connection connection = dataSource.getConnection()) {\n  PreparedStatement stmt = connection.prepareStatement("select id, name from users where active = ?");\n  stmt.setBoolean(1, true);\n  ResultSet rs = stmt.executeQuery();\n}\n',
-    modules: [
-      ['Database Connectivity', ['JDBC', 'database connectivity', 'transactions', 'connection pooling concepts']],
-      ['Java Web Fundamentals', ['Servlets', 'JSP concepts', 'sessions/cookies', 'filters/listeners', 'MVC fundamentals']],
-      ['Advanced Runtime Concepts', ['networking', 'concurrency', 'reflection', 'serialization']],
-      ['Engineering Practices', ['design patterns', 'Maven/Gradle basics', 'logging', 'testing', 'packaging and deployment concepts']],
-    ],
+    modules: ADVANCED_JAVA_MODULES,
   },
   {
     slug: 'spring-framework',
@@ -84,10 +92,10 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'Core Spring for dependency injection, application architecture, MVC, validation, AOP, transactions, data access, and tests.',
     sample: '@Service\nclass InvoiceService {\n  private final InvoiceRepository repository;\n\n  InvoiceService(InvoiceRepository repository) {\n    this.repository = repository;\n  }\n}\n',
     modules: [
-      ['Spring Container', ['IoC and Dependency Injection', 'beans', 'application context', 'component scanning', 'configuration']],
+      ['Spring Container', ['Setting up a Spring project', 'IoC and Dependency Injection', 'beans', 'application context', 'component scanning', 'configuration']],
       ['Bean and Runtime Management', ['bean lifecycle', 'profiles', 'events', 'resource handling']],
       ['Web and Cross-Cutting Concerns', ['Spring MVC', 'validation', 'exception handling', 'AOP']],
-      ['Data and Quality', ['Spring Data fundamentals', 'transactions', 'testing']],
+      ['Data and Quality', ['Spring Data fundamentals', 'transactions', 'testing', 'Spring reactive programming overview']],
     ],
   },
   {
@@ -101,7 +109,7 @@ const STATIC_COURSE_DEFINITIONS = [
       ['Project Setup', ['Project setup', 'starters', 'auto-configuration', 'configuration properties', 'profiles']],
       ['API Development', ['REST APIs', 'DTOs', 'validation', 'exception handling', 'OpenAPI']],
       ['Persistence and Security', ['Spring Data JPA', 'Hibernate', 'pagination', 'security concepts', 'JWT concepts']],
-      ['Production Readiness', ['Actuator', 'logging', 'testing', 'Docker/deployment concepts', 'production configuration']],
+      ['Production Readiness', ['Actuator', 'logging', 'testing', 'Docker/deployment concepts', 'production configuration', 'Spring Boot 3 and GraalVM native images']],
     ],
   },
   {
@@ -112,10 +120,10 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'Python from syntax and data structures to OOP, modules, decorators, testing, JSON, APIs, virtual environments, and introductory data handling.',
     sample: 'name = "Webnest"\nscore = 95\nprint(f"{name}: {score}")\n',
     modules: [
-      ['Python Foundations', ['Syntax', 'variables', 'data types', 'operators', 'control flow', 'functions']],
+      ['Python Foundations', ['Setting up the Python environment', 'Syntax', 'variables', 'data types', 'operators', 'control flow', 'functions']],
       ['Working With Data', ['lists/tuples/sets/dictionaries', 'comprehensions', 'strings', 'files', 'JSON', 'introductory data handling']],
       ['Reusable Python', ['modules', 'packages', 'standard library', 'virtual environments']],
-      ['Advanced Language Features', ['exceptions', 'OOP', 'iterators/generators', 'decorators', 'context managers']],
+      ['Advanced Language Features', ['exceptions', 'OOP', 'iterators/generators', 'decorators', 'context managers', 'type hints', 'async programming with asyncio']],
       ['Practical Python', ['testing', 'HTTP/API basics']],
     ],
   },
@@ -127,10 +135,10 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'Semantic HTML for accessible, searchable, well-structured web pages, forms, media, metadata, iframes, and SEO-ready documents.',
     sample: '<main>\n  <h1>Webnest Studio</h1>\n  <p>Build accessible web pages with semantic HTML.</p>\n  <a href="/learn">Start learning</a>\n</main>\n',
     modules: [
-      ['Document Structure', ['Document structure', 'semantic HTML', 'headings', 'links', 'metadata']],
+      ['Document Structure', ['Setting up your editor and browser DevTools', 'Document structure', 'semantic HTML', 'headings', 'links', 'metadata']],
       ['Content Elements', ['images', 'lists', 'tables', 'media', 'iframe concepts']],
       ['Forms and Inputs', ['forms', 'inputs', 'validation']],
-      ['Quality and Publishing', ['accessibility', 'SEO basics', 'best practices']],
+      ['Quality and Publishing', ['accessibility', 'SEO basics', 'best practices', 'web components basics']],
     ],
   },
   {
@@ -141,10 +149,10 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'CSS from selectors and the box model to responsive layouts, Flexbox, Grid, animation, architecture, and accessibility.',
     sample: '.card {\n  display: grid;\n  gap: 12px;\n  max-width: 420px;\n  padding: 24px;\n  border: 1px solid #dbe3ef;\n  border-radius: 8px;\n}\n',
     modules: [
-      ['CSS Foundations', ['Selectors', 'cascade', 'specificity', 'box model', 'units', 'typography']],
+      ['CSS Foundations', ['Setting up a CSS workflow', 'Selectors', 'cascade', 'specificity', 'box model', 'units', 'typography']],
       ['Layout Systems', ['positioning', 'display', 'Flexbox', 'Grid', 'responsive design', 'media queries']],
       ['Design Tokens and Motion', ['variables', 'transitions', 'transforms', 'animations', 'pseudo classes/elements']],
-      ['Maintainable CSS', ['architecture', 'accessibility']],
+      ['Maintainable CSS', ['architecture', 'accessibility', 'container queries']],
     ],
   },
   {
@@ -155,11 +163,11 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'JavaScript for dynamic UIs, browser APIs, async programming, modules, storage, debugging, classes, and testing fundamentals.',
     sample: 'const name = "Webnest";\nconst score = 95;\nconsole.log(`${name}: ${score}`);\n',
     modules: [
-      ['Language Basics', ['Syntax', 'variables', 'types', 'functions', 'arrays/objects']],
+      ['Language Basics', ['Setting up a JavaScript environment', 'Syntax', 'variables', 'types', 'functions', 'arrays/objects']],
       ['Runtime Concepts', ['scope', 'closures', 'classes', 'modern ES features', 'event loop concepts']],
       ['Browser Programming', ['DOM', 'events', 'modules', 'local storage']],
       ['Async and APIs', ['promises', 'async/await', 'fetch', 'error handling']],
-      ['Professional JavaScript', ['debugging', 'testing fundamentals']],
+      ['Professional JavaScript', ['debugging', 'testing fundamentals', 'introduction to TypeScript']],
     ],
   },
   {
@@ -170,10 +178,10 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'React from JSX and components to hooks, routing, API integration, state management concepts, performance, error boundaries, testing, and deployment.',
     sample: 'function WelcomeCard({ name }) {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>Hello {name}: {count}</button>;\n}\n',
     modules: [
-      ['React Basics', ['JSX', 'components', 'props', 'state', 'events', 'conditional rendering', 'lists/keys']],
+      ['React Basics', ['Setting up a React project', 'JSX', 'components', 'props', 'state', 'events', 'conditional rendering', 'lists/keys']],
       ['Forms and Hooks', ['forms', 'hooks', 'useEffect', 'useMemo/useCallback concepts', 'custom hooks']],
       ['App Architecture', ['context', 'routing', 'API integration', 'state management concepts']],
-      ['Production React', ['performance', 'error boundaries', 'testing', 'deployment']],
+      ['Production React', ['performance', 'error boundaries', 'testing', 'deployment', 'TypeScript in React']],
     ],
   },
   {
@@ -184,7 +192,7 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'Relational database fundamentals, SQL querying, schema design, joins, indexes, transactions, security, and optimization.',
     sample: 'select department, count(*) as total_users\nfrom users\nwhere active = true\ngroup by department\norder by total_users desc;\n',
     modules: [
-      ['Database Foundations', ['Database fundamentals', 'relational model', 'tables/rows/columns', 'keys', 'constraints']],
+      ['Database Foundations', ['Setting up a local database for practice', 'Database fundamentals', 'relational model', 'tables/rows/columns', 'keys', 'constraints']],
       ['Schema Thinking', ['normalization', 'ER modelling']],
       ['SQL Querying', ['SQL CRUD', 'filtering', 'joins', 'grouping', 'subqueries', 'views']],
       ['Performance and Reliability', ['indexes', 'transactions', 'ACID', 'isolation', 'locking concepts', 'query optimization']],
@@ -213,7 +221,7 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'Requirement-to-schema design for reliable, scalable, API-oriented databases with integrity, migrations, indexing, auditability, and clear naming.',
     sample: 'create table orders (\n  id bigserial primary key,\n  user_id bigint not null references users(id),\n  status text not null,\n  created_at timestamptz not null default now(),\n  updated_at timestamptz not null default now()\n);\n',
     modules: [
-      ['From Requirements to Model', ['Requirement-to-schema workflow', 'entities', 'relationships', 'cardinality']],
+      ['From Requirements to Model', ['Tools for database design (ERD software)', 'Requirement-to-schema workflow', 'entities', 'relationships', 'cardinality']],
       ['Schema Quality', ['normalization/denormalization trade-offs', 'naming standards', 'data integrity']],
       ['Operational Design', ['audit fields', 'soft delete', 'versioning', 'migration strategy']],
       ['Scale and API Design', ['indexing strategy', 'scalable API-oriented database design']],
@@ -301,8 +309,11 @@ function detailFor(course, topic) {
 }
 
 function createLesson(course, moduleTitle, topic, order) {
-  const example = topicExample(course, topic)
-  const body = `<h2>${topic}</h2><p>${detailFor(course, topic)}</p><h3>What to understand</h3><ul><li>The purpose of ${topic} in ${course.title} projects.</li><li>The basic syntax or structure used to apply it.</li><li>How it connects to the surrounding topics in ${moduleTitle}.</li><li>Common mistakes, edge cases, and debugging signals.</li><li>How experienced developers use it in production-quality code.</li></ul><h3>How to study it</h3><p>Start with a tiny example, change one thing at a time, predict the output, then run or reason through the result. After that, apply it inside a small feature: validation, a reusable helper, a database query, a page section, an API endpoint, or a UI component.</p><h3>Practical example</h3><pre><code>${codeBlock(example)}</code></pre><h3>Common mistakes</h3><ul><li>Learning syntax without understanding the problem it solves.</li><li>Ignoring names, formatting, and error cases.</li><li>Copying examples without changing inputs and observing behavior.</li><li>Skipping documentation for boundary cases and production constraints.</li></ul><h3>Professional checklist</h3><ul><li>Can you explain ${topic} in simple words?</li><li>Can you write a small example without copying?</li><li>Can you identify when not to use it?</li><li>Can you debug the most likely failure?</li><li>Can you connect it to code quality, testing, and maintainability?</li></ul>`
+  const richEntry = TUTORIAL_CONTENT[course.slug]?.[slugify(topic)]
+  const example = richEntry ? firstExampleCode(richEntry) : topicExample(course, topic)
+  const body = richEntry
+    ? renderLessonContent(richEntry, `${course.title} Tutorial`, TUTORIAL_LANGUAGE_LABEL[course.language] || course.language)
+    : `<h2>${topic}</h2><p>${detailFor(course, topic)}</p><h3>What to understand</h3><ul><li>The purpose of ${topic} in ${course.title} projects.</li><li>The basic syntax or structure used to apply it.</li><li>How it connects to the surrounding topics in ${moduleTitle}.</li><li>Common mistakes, edge cases, and debugging signals.</li><li>How experienced developers use it in production-quality code.</li></ul><h3>How to study it</h3><p>Start with a tiny example, change one thing at a time, predict the output, then run or reason through the result. After that, apply it inside a small feature: validation, a reusable helper, a database query, a page section, an API endpoint, or a UI component.</p><h3>Practical example</h3><pre><code>${codeBlock(example)}</code></pre><h3>Common mistakes</h3><ul><li>Learning syntax without understanding the problem it solves.</li><li>Ignoring names, formatting, and error cases.</li><li>Copying examples without changing inputs and observing behavior.</li><li>Skipping documentation for boundary cases and production constraints.</li></ul><h3>Professional checklist</h3><ul><li>Can you explain ${topic} in simple words?</li><li>Can you write a small example without copying?</li><li>Can you identify when not to use it?</li><li>Can you debug the most likely failure?</li><li>Can you connect it to code quality, testing, and maintainability?</li></ul>`
   return {
     id: lessonId(course.slug, topic),
     course_slug: course.slug,
@@ -356,7 +367,7 @@ const LESSON_MAP = Object.fromEntries(
 
 LESSON_MAP.lesson_python_overview = LESSON_MAP.lesson_python_syntax
 LESSON_MAP.lesson_python_input = LESSON_MAP.lesson_python_http_api_basics
-LESSON_MAP.lesson_java_overview = LESSON_MAP.lesson_java_core_java_syntax
+LESSON_MAP.lesson_java_overview = LESSON_MAP.lesson_java_core_history_and_features_of_java
 
 export const SAMPLE_LESSONS = LESSON_MAP
 

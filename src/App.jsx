@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
 import Layout from './components/Layout'
+import ScrollToTop from './components/ScrollToTop'
 import ProtectedRoute from './components/ProtectedRoute'
 import SlowRequestBanner from './components/SlowRequestBanner'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -89,6 +90,7 @@ function App() {
             <Analytics />
             <SlowRequestBanner />
             <BrowserRouter>
+              <ScrollToTop />
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   <Route element={<Layout />}>
