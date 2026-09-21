@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { SAMPLE_COURSES } from '../../data/codelabDefaults'
 import { useSeo } from '../../hooks/useSeo'
 import { NotFoundState } from '../../components/states/StateViews'
+import BackButton from '../../components/coding/BackButton'
 
 export default function CourseDetail() {
   const { courseSlug } = useParams()
@@ -18,7 +19,8 @@ export default function CourseDetail() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Course</p>
+      <BackButton fallback="/learn" label="Back to courses" />
+      <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-gold-500">Course</p>
       <h1 className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">{course.title}</h1>
       <p className="mt-2 max-w-3xl text-ink-500 dark:text-ink-300">{course.description}</p>
       <div className="mt-6 grid gap-4">
