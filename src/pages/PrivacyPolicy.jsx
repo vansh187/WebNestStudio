@@ -2,7 +2,7 @@ import Reveal from '../components/Reveal'
 import { CONTACT } from '../data/site'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'September 11, 2026'
+const EFFECTIVE_DATE = 'September 21, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -74,7 +74,13 @@ export default function PrivacyPolicy() {
             does not use cookies to track you across other sites.
           </p>
           <p>
-            <strong className="text-ink-900 dark:text-white">e) Local storage.</strong> We use your browser&rsquo;s
+            <strong className="text-ink-900 dark:text-white">e) Advertising and cookie data.</strong> If ads are
+            served on our website, Google AdSense and related Google services may use cookies, device
+            identifiers, IP address, browser information, page visits, and ad interaction data to provide,
+            measure, limit, and personalize ads where permitted by law and your settings.
+          </p>
+          <p>
+            <strong className="text-ink-900 dark:text-white">f) Local storage.</strong> We use your browser&rsquo;s
             local storage to keep you signed in between visits (storing a refresh token) and to remember your
             display theme preference. This data stays on your device and is not a tracking cookie shared with
             third parties.
@@ -106,6 +112,12 @@ export default function PrivacyPolicy() {
               infrastructure and communication providers (such as our hosting provider, analytics provider, and
               email delivery provider) solely to operate our Services on our behalf, under obligations to
               protect your data.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Advertising partners.</strong> When advertising is
+              enabled, Google and its partners may process limited device, cookie, and usage information to
+              deliver and measure ads. You can learn about and manage Google ad personalization through
+              Google&rsquo;s advertising settings and browser controls.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Legal requirements.</strong> We may disclose
@@ -185,7 +197,21 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="android-app" title="9. Android Application">
+        <Section id="cookies-and-ads" title="9. Cookies, Advertising, and Google Services">
+          <p>
+            We may use cookies, similar technologies, and local storage to operate the site, remember
+            preferences, keep users signed in, understand site performance, and support advertising. Google,
+            as a third-party vendor, may use cookies to serve ads based on a visitor&rsquo;s prior visits to this
+            website or other websites.
+          </p>
+          <p>
+            You can manage cookies in your browser settings and manage Google ad personalization in your Google
+            account settings. If required in your region, we will request consent before using non-essential
+            advertising cookies.
+          </p>
+        </Section>
+
+        <Section id="android-app" title="10. Android Application">
           <p>
             If you access WebNest Studio through our Android application, the application loads this same
             website and is subject to this Privacy Policy in full. The application does not request access to
@@ -194,7 +220,7 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="international" title="10. International Data Transfers">
+        <Section id="international" title="11. International Data Transfers">
           <p>
             We are based in India and primarily process data there. If you access our Services from outside
             India, your information may be transferred to, stored, and processed in India or other countries
@@ -203,7 +229,7 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="changes" title="11. Changes to This Policy">
+        <Section id="changes" title="12. Changes to This Policy">
           <p>
             We may update this Privacy Policy from time to time to reflect changes to our practices or for legal
             or regulatory reasons. We will update the &ldquo;Effective date&rdquo; above when we do, and material
@@ -211,7 +237,7 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="contact" title="12. Contact Us">
+        <Section id="contact" title="13. Contact Us">
           <p>If you have questions or concerns about this Privacy Policy or our data practices, contact us at:</p>
           <p className="font-semibold text-ink-900 dark:text-white">
             WebNest Studio

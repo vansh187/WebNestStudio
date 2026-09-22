@@ -21,6 +21,8 @@ import BlogDetail from './pages/BlogDetail'
 import Faqs from './pages/Faqs'
 import Contact from './pages/Contact'
 import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsConditions from './pages/TermsConditions'
+import Disclaimer from './pages/Disclaimer'
 import DeleteAccount from './pages/DeleteAccount'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
@@ -122,6 +124,8 @@ function App() {
                     <Route path="faqs" element={<Faqs />} />
                     <Route path="contact" element={<Contact />} />
                     <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="terms-and-conditions" element={<TermsConditions />} />
+                    <Route path="disclaimer" element={<Disclaimer />} />
                     <Route
                       path="delete-account"
                       element={(

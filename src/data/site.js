@@ -24,6 +24,7 @@ export const FOOTER_SECTIONS = [
     title: 'Company',
     links: [
       { label: 'Home', to: '/' },
+      { label: 'About Us', to: '/about' },
       { label: 'Our Story', to: '/our-story' },
       { label: 'Services', to: '/services' },
       { label: 'Work', to: '/portfolio' },
@@ -35,8 +36,15 @@ export const FOOTER_SECTIONS = [
       { label: 'Blog', to: '/blog' },
       { label: 'FAQs', to: '/faqs' },
       { label: 'Visiting Card', to: '/card' },
-      { label: 'Contact', to: '/contact' },
+      { label: 'Contact Us', to: '/contact' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
       { label: 'Privacy Policy', to: '/privacy-policy' },
+      { label: 'Terms & Conditions', to: '/terms-and-conditions' },
+      { label: 'Disclaimer', to: '/disclaimer' },
     ],
   },
   {

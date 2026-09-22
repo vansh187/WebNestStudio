@@ -19,6 +19,8 @@ const STATIC_ROUTES = [
   { path: '/faqs', changefreq: 'monthly', priority: '0.6' },
   { path: '/contact', changefreq: 'monthly', priority: '0.7' },
   { path: '/privacy-policy', changefreq: 'yearly', priority: '0.3' },
+  { path: '/terms-and-conditions', changefreq: 'yearly', priority: '0.3' },
+  { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
   { path: '/card', changefreq: 'monthly', priority: '0.5' },
   { path: '/codelab', changefreq: 'weekly', priority: '0.8' },
   { path: '/codelab/playground', changefreq: 'monthly', priority: '0.6' },
