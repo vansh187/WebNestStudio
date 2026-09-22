@@ -76,7 +76,20 @@ async function launchBrowser() {
 // loads from a third-party service at runtime, so there's nothing useful to snapshot.
 // /codelab is public + indexable. /projects and /s/:shareId
 // are auth-gated / dynamic - deliberately excluded, like /login, /portal, /admin/*.
-const STATIC_ROUTES = ['/', '/about', '/our-story', '/services', '/portfolio', '/blog', '/faqs', '/contact', '/privacy-policy', '/account-deletion', '/codelab']
+const STATIC_ROUTES = [
+  '/',
+  '/about',
+  '/our-story',
+  '/services',
+  '/portfolio',
+  '/blog',
+  '/faqs',
+  '/contact',
+  '/privacy-policy',
+  '/terms-and-conditions',
+  '/disclaimer',
+  '/codelab',
+]
 
 async function fetchJson(url) {
   const controller = new AbortController()
