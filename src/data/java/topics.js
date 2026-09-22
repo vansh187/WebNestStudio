@@ -184,6 +184,33 @@ export const ADVANCED_JAVA_MODULES = [
     'JSP Directives and Actions',
     'MVC Architecture with Servlets and JSP',
   ]],
+  ['Hibernate ORM', [
+    'Hibernate Introduction and Architecture',
+    'Entity Mapping and Configuration',
+    'Hibernate Relationships: One-to-One, One-to-Many, Many-to-Many',
+    'Hibernate Inheritance Mapping Strategies',
+    'Hibernate Caching: First-Level and Second-Level',
+    'HQL and the Criteria API',
+  ]],
+  ['Spring Framework Core', [
+    'Spring IoC Container and Dependency Injection',
+    'Bean Scopes, Autowiring, and Java Configuration',
+    'Aspect-Oriented Programming (AOP) in Spring',
+  ]],
+  ['Spring Boot and REST APIs', [
+    'Spring Boot Fundamentals and Auto-Configuration',
+    'Spring MVC and the DispatcherServlet',
+    'Building REST APIs with Spring Boot',
+    'Spring Data JPA Repositories',
+    'Validation and Exception Handling in Spring',
+  ]],
+  ['Spring Security, Cloud, and Microservices', [
+    'Spring Security Fundamentals',
+    'Securing REST APIs with JWT',
+    'Microservices Architecture Fundamentals',
+    'Service Discovery and API Gateways with Spring Cloud',
+    'Resilience: Circuit Breakers and Distributed Tracing',
+  ]],
   ['Advanced Runtime Concepts', [
     'Networking Basics: Socket, ServerSocket, and URL',
     'Reflection API',
@@ -197,6 +224,7 @@ export const ADVANCED_JAVA_MODULES = [
     'Build Tools: Gradle Basics',
     'Logging in Java Applications',
     'Unit Testing with JUnit',
+    'Mockito and Testing Spring Applications',
     'Packaging and Deployment: JAR and WAR',
   ]],
 ]
