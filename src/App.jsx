@@ -24,6 +24,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsConditions from './pages/TermsConditions'
 import Disclaimer from './pages/Disclaimer'
 import DeleteAccount from './pages/DeleteAccount'
+import AccountDeletion from './pages/AccountDeletion'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 
