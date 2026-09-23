@@ -8,6 +8,7 @@ import { useAutosave } from '../../hooks/useAutosave'
 import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../../components/states/StateViews'
+import BackButton from '../../components/coding/BackButton'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
 import { getProject, updateProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
@@ -127,6 +128,7 @@ export default function ProjectWorkspace() {
   if (error) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6">
+        <BackButton fallback="/projects" label="Back to projects" className="mb-6" />
         <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
       </div>
     )
@@ -146,6 +148,7 @@ export default function ProjectWorkspace() {
   if (project === undefined) {
     return (
       <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+        <BackButton fallback="/projects" label="Back to projects" className="mb-2" />
         <Skeleton className="h-8 w-56" />
         <Skeleton className="mt-4 h-12 w-full" />
         <Skeleton className="mt-3 h-[45dvh] w-full" />

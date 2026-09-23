@@ -6,6 +6,7 @@ import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiAlertTriangle, FiLoade
 import Logo from '../components/Logo'
 import Reveal from '../components/Reveal'
 import ThemeToggle from '../components/ThemeToggle'
+import BackButton from '../components/coding/BackButton'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { signup as signupApi, resendOtp, resetPassword } from '../api/auth'
@@ -502,6 +503,7 @@ export default function Login() {
     <div className="bg-grid relative flex min-h-screen items-center justify-center bg-white px-6 py-16 text-ink-800 dark:bg-ink-950 dark:text-ink-100">
       <div className="pointer-events-none absolute -top-32 right-[-10%] h-[28rem] w-[28rem] rounded-full bg-gold-400/15 blur-[110px]" />
       <div className="pointer-events-none absolute bottom-[-10%] left-[-10%] h-[24rem] w-[24rem] rounded-full bg-gold-600/10 blur-[100px]" />
+      <BackButton fallback="/" className="absolute left-6 top-6" />
       <ThemeToggle className="absolute right-6 top-6" />
 
       <Reveal className="relative w-full max-w-md">

@@ -1,5 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { FiUsers, FiLayers, FiImage, FiMessageSquare, FiHelpCircle, FiEdit3, FiActivity, FiLogOut } from 'react-icons/fi'
+import { NavLink, Outlet, Link } from 'react-router-dom'
+import { FiUsers, FiLayers, FiImage, FiMessageSquare, FiHelpCircle, FiEdit3, FiActivity, FiLogOut, FiArrowLeft } from 'react-icons/fi'
 import Logo from '../../components/Logo'
 import { useAuth } from '../../context/AuthContext'
 
@@ -21,6 +21,12 @@ export default function AdminLayout() {
       <div className="mx-auto flex max-w-7xl gap-8 px-6 py-10 lg:px-8">
         <aside className="w-64 shrink-0">
           <Logo size="sm" />
+          <Link
+            to="/"
+            className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-gold-500 dark:text-ink-300 dark:hover:text-gold-400"
+          >
+            <FiArrowLeft className="h-4 w-4" /> Back to site
+          </Link>
           <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-gold-500">Admin</p>
           <nav className="mt-4 space-y-1">
             {NAV.map(({ to, label, icon: Icon }) => (

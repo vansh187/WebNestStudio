@@ -1,5 +1,6 @@
 import Reveal from '../components/Reveal'
 import { CONTACT } from '../data/site'
+import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
 const EFFECTIVE_DATE = 'September 21, 2026'
@@ -25,6 +26,9 @@ export default function PrivacyPolicy() {
 
   return (
     <div>
+      <div className="px-6 pt-6 lg:px-8">
+        <BackButton fallback="/" />
+      </div>
       <section className="bg-grid px-6 py-20 text-center lg:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">

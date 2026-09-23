@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { FiMail, FiPhone, FiMapPin, FiSend, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import { FormField, ConsentCheckbox } from '../components/forms/FormField'
+import BackButton from '../components/coding/BackButton'
 import { CONTACT } from '../data/site'
 import { submitLead } from '../api/leads'
 import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
@@ -227,6 +228,9 @@ export default function Contact() {
 
   return (
     <div>
+      <div className="px-6 pt-6 lg:px-8">
+        <BackButton fallback="/" />
+      </div>
       <section className="bg-grid px-6 py-20 text-center lg:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">

@@ -4,6 +4,7 @@ import { FiFolder, FiLogOut } from 'react-icons/fi'
 import Reveal from '../../components/Reveal'
 import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
+import BackButton from '../../components/coding/BackButton'
 import { getMyProjectStatus, getMyFiles } from '../../api/me'
 import { getErrorDetail } from '../../lib/apiClient'
 import { useAuth } from '../../context/AuthContext'
@@ -129,6 +130,7 @@ export default function ClientPortal() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
+      <BackButton fallback="/" className="mb-6" />
       <Reveal>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>

@@ -1,4 +1,5 @@
 import { CONTACT } from '../data/site'
+import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
 function Step({ number, title, body }) {
@@ -23,6 +24,9 @@ export default function AccountDeletion() {
 
   return (
     <div className="bg-grid">
+      <section className="mx-auto max-w-4xl px-6 pt-6 lg:px-8">
+        <BackButton fallback="/" />
+      </section>
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <span className="inline-flex rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">
           Account Deletion
