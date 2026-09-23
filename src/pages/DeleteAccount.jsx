@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiAlertTriangle, FiLoader, FiTrash2 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
+import BackButton from '../components/coding/BackButton'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { CONTACT } from '../data/site'
@@ -49,6 +50,7 @@ export default function DeleteAccount() {
 
   return (
     <div className="mx-auto max-w-xl px-6 py-20 lg:px-8">
+      <BackButton fallback="/" className="mb-6" />
       <Reveal>
         <span className="inline-flex items-center gap-2 rounded-full border border-red-400/40 bg-red-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-red-500">
           Danger Zone

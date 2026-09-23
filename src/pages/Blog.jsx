@@ -6,6 +6,7 @@ import { SkeletonGrid } from '../components/states/Skeleton'
 import { ErrorState } from '../components/states/StateViews'
 import ResourceDownloadForm from '../components/forms/ResourceDownloadForm'
 import NewsletterForm from '../components/forms/NewsletterForm'
+import BackButton from '../components/coding/BackButton'
 import { getBlogPosts } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
@@ -49,6 +50,9 @@ export default function Blog() {
 
   return (
     <div>
+      <div className="px-6 pt-6 lg:px-8">
+        <BackButton fallback="/" />
+      </div>
       <section className="bg-grid px-6 py-20 text-center lg:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">

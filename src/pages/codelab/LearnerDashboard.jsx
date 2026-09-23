@@ -6,6 +6,7 @@ import { getErrorDetail } from '../../lib/apiClient'
 import { useAuth } from '../../context/AuthContext'
 import { useSeo } from '../../hooks/useSeo'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
+import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, getStartedCoursesProgress, getLearningTotals } from '../../lib/learningProgress'
 
 const fallback = {
@@ -52,6 +53,7 @@ export default function LearnerDashboard() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <BackButton fallback="/codelab" className="mb-4" />
       <h1 className="font-display text-3xl font-bold text-ink-900 dark:text-white">CodeLab Dashboard</h1>
       {error && <div className="mt-4"><ErrorState message={error} /></div>}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -3,6 +3,7 @@ import { FiArrowRight, FiExternalLink, FiCheckCircle } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import { ONGOING_PROJECTS } from '../data/ongoingProjects'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
+import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
 function DeliveredCard({ project, delay }) {
@@ -112,6 +113,9 @@ export default function Portfolio() {
 
   return (
     <div>
+      <div className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
+        <BackButton fallback="/" />
+      </div>
       {DELIVERED_PROJECTS.length > 0 && (
         <section className="mx-auto max-w-7xl px-6 pt-20 lg:px-8">
           <Reveal>

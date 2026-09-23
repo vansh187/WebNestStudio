@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FiBookOpen, FiCode, FiGrid, FiPlay } from 'react-icons/fi'
+import BackButton from '../../components/coding/BackButton'
 import { useSeo } from '../../hooks/useSeo'
 
 const links = [
@@ -14,6 +15,7 @@ export default function CodeLabHome() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <BackButton fallback="/" className="mb-4" />
       <div className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Webnest CodeLab</p>
         <h1 className="mt-3 font-display text-4xl font-bold text-ink-900 dark:text-white">Browser-first coding and learning workspace</h1>

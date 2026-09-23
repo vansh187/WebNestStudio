@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkBreaks from 'remark-breaks'
-import { FiArrowLeft } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import { Skeleton } from '../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../components/states/StateViews'
+import BackButton from '../components/coding/BackButton'
 import { getBlogPostBySlug } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
@@ -110,6 +110,7 @@ export default function BlogDetail() {
   if (state === 'error') {
     return (
       <div className="mx-auto max-w-3xl px-6 py-24">
+        <BackButton fallback="/blog" label="Back to blog" className="mb-6" />
         <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
       </div>
     )
@@ -118,6 +119,7 @@ export default function BlogDetail() {
   if (state === 'loading') {
     return (
       <div className="mx-auto max-w-3xl px-6 py-24">
+        <BackButton fallback="/blog" label="Back to blog" className="mb-6" />
         <Skeleton className="h-8 w-2/3" />
         <Skeleton className="mt-4 h-64 w-full" />
         <Skeleton className="mt-6 h-4 w-full" />
@@ -128,9 +130,7 @@ export default function BlogDetail() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-20 lg:px-8">
-      <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-semibold text-gold-500 hover:underline">
-        <FiArrowLeft className="h-4 w-4" /> Back to blog
-      </Link>
+      <BackButton fallback="/blog" label="Back to blog" />
 
       <Reveal>
         {post.topic_tag && (

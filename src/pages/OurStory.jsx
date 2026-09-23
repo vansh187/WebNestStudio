@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
+import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 import founderOriginal from '../assets/founder-original.jpeg'
 
@@ -58,6 +59,9 @@ export default function OurStory() {
     <div className="overflow-hidden bg-white text-ink-900 dark:bg-ink-950 dark:text-white">
       <section className="relative border-b border-gold-400/20 bg-ink-950 px-6 pt-8 pb-10 text-white sm:pt-10 sm:pb-12 lg:px-8 lg:pt-12 lg:pb-16">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(230,172,62,0.16),transparent_34%),linear-gradient(135deg,rgba(5,6,9,0.96),rgba(18,21,30,0.88))]" />
+        <div className="relative mx-auto mb-4 max-w-7xl">
+          <BackButton fallback="/" className="!text-white/70 hover:!text-gold-300" />
+        </div>
         <div className="relative mx-auto grid max-w-7xl items-start gap-7 lg:grid-cols-[0.96fr_1.04fr] lg:gap-12">
           <Reveal className="lg:row-start-1">
             <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-300">
