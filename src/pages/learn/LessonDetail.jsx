@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiArrowLeft, FiArrowRight, FiBookmark, FiCheckCircle, FiCode, FiList, FiLock, FiMenu, FiSave, FiTrash2 } from 'react-icons/fi'
+import { FiArrowLeft, FiArrowRight, FiBarChart2, FiBookmark, FiCheckCircle, FiCode, FiList, FiLock, FiMenu, FiSave, FiTrash2 } from 'react-icons/fi'
 import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
@@ -263,6 +263,9 @@ export default function LessonDetail() {
         )}
       </article>
       <aside className="space-y-3">
+        <Link to="/codelab/dashboard" className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-ink-200 px-4 py-3 text-sm font-semibold text-ink-700 hover:border-gold-400 hover:text-gold-600 dark:border-ink-800 dark:text-ink-100 dark:hover:text-gold-400">
+          <FiBarChart2 className="h-4 w-4" /> View dashboard
+        </Link>
         {lessonNavigation && (
           <div className="rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40">
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-400">
