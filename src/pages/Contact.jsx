@@ -1,3 +1,4 @@
+import { trackEvent } from '../lib/analytics'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -75,6 +76,7 @@ function ContactForm() {
     setBanner(null)
     try {
       await submitLead({ source: 'contact_form', ...values })
+      trackEvent('consultation_requested', { source: 'contact_form' })
       toast.success('Message sent — we\'ll reply within one business day.')
       setSuccess(values.email)
     } catch (error) {
@@ -112,6 +114,7 @@ function StartProjectForm() {
     setBanner(null)
     try {
       await submitLead({ source: 'start_project', ...values, ...getUtmParams() })
+      trackEvent('consultation_requested', { source: 'start_project' })
       toast.success('Got it — we\'ll reach out within 1 business day with next steps.')
       setSuccess(values.email)
     } catch (error) {
@@ -173,6 +176,7 @@ function ConsultationForm() {
     setBanner(null)
     try {
       await submitLead({ source: 'consultation_booking', ...values })
+      trackEvent('consultation_requested', { source: 'consultation_booking' })
       toast.success('Consultation requested — we\'ll confirm your slot by email.')
       setSuccess(values.email)
     } catch (error) {

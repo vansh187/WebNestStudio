@@ -28,6 +28,7 @@ export default function SharedSnippet() {
       ? `A shared ${getLanguage(snapshot.language)?.label ?? snapshot.language} snippet on WebNest Studio.`
       : undefined,
     path: `/s/${shareId}`,
+    noindex: true,
   })
 
   useEffect(() => {

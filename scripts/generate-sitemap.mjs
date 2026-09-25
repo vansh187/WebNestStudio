@@ -1,12 +1,12 @@
-import { writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { FALLBACK_POSTS } from '../src/data/blogContent.js'
 import { SAMPLE_COURSES, SAMPLE_LESSONS, SAMPLE_PROBLEMS } from '../src/data/codelabDefaults.js'
 
-const SITE_URL = 'https://www.webneststudio.co.in'
+import { SITE_URL, validLastmod } from '../src/lib/seo.js'
+import { SERVICE_PAGES } from '../src/data/servicePages.js'
 const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
 const OUTPUT_PATH = path.resolve(process.cwd(), 'public', 'sitemap.xml')
-const TODAY = new Date().toISOString().slice(0, 10)
 const FETCH_TIMEOUT_MS = 15000
 
 const STATIC_ROUTES = [
@@ -46,7 +46,7 @@ function createUrl(route) {
   const routePath = normalizePath(route.path)
   return {
     loc: `${SITE_URL}${routePath === '/' ? '' : routePath}`,
-    lastmod: route.lastmod || TODAY,
+    lastmod: validLastmod(route.lastmod),
     changefreq: route.changefreq || 'monthly',
     priority: route.priority || '0.5',
   }
@@ -66,53 +66,33 @@ async function fetchJson(endpoint) {
 }
 
 async function getLiveRoutes() {
-  try {
-    const [posts, portfolioItems, problemsResponse] = await Promise.all([
-      fetchJson('/api/blog'),
-      fetchJson('/api/portfolio'),
-      fetchJson('/api/codelab/problems'),
-    ])
-    const problems = Array.isArray(problemsResponse?.items) ? problemsResponse.items : problemsResponse
-
-    return [
-      ...posts
-        .filter((post) => post?.slug)
-        .map((post) => ({
-          path: `/blog/${post.slug}`,
-          lastmod: (post.updated_at || post.published_at || TODAY).slice(0, 10),
-          changefreq: 'monthly',
-          priority: '0.7',
-        })),
-      ...portfolioItems
-        .filter((item) => item?.slug)
-        .map((item) => ({
-          path: `/portfolio/${item.slug}`,
-          lastmod: (item.updated_at || item.created_at || TODAY).slice(0, 10),
-          changefreq: 'monthly',
-          priority: '0.7',
-        })),
-      ...(Array.isArray(problems) ? problems : [])
-        .filter((problem) => problem?.slug)
-        .map((problem) => ({
-          path: `/codelab/problems/${problem.slug}`,
-          lastmod: (problem.updated_at || problem.created_at || TODAY).slice(0, 10),
-          changefreq: 'monthly',
-          priority: '0.6',
-        })),
-    ]
-  } catch (error) {
-    console.warn(`[sitemap] Live API routes skipped: ${error.message}`)
+  const endpoints = [
+    ['/api/blog', '/blog'], ['/api/portfolio', '/portfolio'], ['/api/codelab/problems', '/codelab/problems'],
+  ]
+  const results = await Promise.allSettled(endpoints.map(async ([endpoint, prefix]) => {
+    const response = await fetchJson(endpoint)
+    const items = Array.isArray(response) ? response : response?.items
+    if (!Array.isArray(items)) throw new Error(`Invalid list from ${endpoint}`)
+    return items.filter((item) => /^[a-zA-Z0-9_-]+$/.test(item?.slug || '')).map((item) => ({
+      path: `${prefix}/${item.slug}`, lastmod: item.updated_at || item.published_at || item.created_at,
+      required: false,
+    }))
+  }))
+  return results.flatMap((result, index) => {
+    if (result.status === 'fulfilled') return result.value
+    console.warn(`[sitemap] ${endpoints[index][0]} unavailable: ${result.reason.message}`)
     return []
-  }
+  })
 }
 
 function getLocalRoutes() {
-  const lessonIds = Object.keys(SAMPLE_LESSONS).filter((id) => SAMPLE_LESSONS[id]?.id === id)
+  const lessonIds = Object.keys(SAMPLE_LESSONS).filter((id) => SAMPLE_LESSONS[id]?.id === id && SAMPLE_LESSONS[id].indexable)
 
   return [
+    ...SERVICE_PAGES.map((service) => ({ path: `/services/${service.slug}` })),
     ...FALLBACK_POSTS.map((post) => ({
       path: `/blog/${post.slug}`,
-      lastmod: (post.updated_at || post.published_at || TODAY).slice(0, 10),
+      lastmod: post.updated_at || post.published_at,
       changefreq: 'monthly',
       priority: '0.7',
     })),
@@ -151,8 +131,7 @@ function toXml(routes) {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((url) => `  <url>
     <loc>${escapeXml(url.loc)}</loc>
-    <lastmod>${escapeXml(url.lastmod)}</lastmod>
-    <changefreq>${escapeXml(url.changefreq)}</changefreq>
+${url.lastmod ? `    <lastmod>${escapeXml(url.lastmod)}</lastmod>\n` : ''}    <changefreq>${escapeXml(url.changefreq)}</changefreq>
     <priority>${escapeXml(url.priority)}</priority>
   </url>`).join('\n')}
 </urlset>
@@ -163,6 +142,8 @@ async function main() {
   const liveRoutes = await getLiveRoutes()
   const routes = [...STATIC_ROUTES, ...getLocalRoutes(), ...liveRoutes]
   await writeFile(OUTPUT_PATH, toXml(routes), 'utf8')
+  await mkdir('.seo-build', { recursive: true })
+  await writeFile('.seo-build/routes.json', JSON.stringify(uniqueRoutes(routes), null, 2))
   console.log(`[sitemap] Wrote ${uniqueRoutes(routes).length} URLs to ${OUTPUT_PATH}`)
 }
 

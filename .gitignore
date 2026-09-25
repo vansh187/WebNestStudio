@@ -32,3 +32,5 @@ public/pyodide/
 *.njsproj
 *.sln
 *.sw?
+
+.seo-build/

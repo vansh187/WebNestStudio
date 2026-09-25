@@ -62,6 +62,9 @@ export default function BlogDetail() {
           } else {
             setState('not-found')
           }
+        } else if (FALLBACK_POSTS.some((p) => p.slug === slug)) {
+          setPost(FALLBACK_POSTS.find((p) => p.slug === slug))
+          setState('success')
         } else {
           setError(getErrorDetail(err, 'Could not load this post.'))
           setState('error')
@@ -72,11 +75,14 @@ export default function BlogDetail() {
 
   const livePost = state === 'success' ? post : null
   useSeo({
-    title: livePost?.meta_title || livePost?.title,
+    // The API currently repeats meta_title across distinct articles. Use the
+    // visible editorial headline so search results identify the actual page.
+    title: livePost?.title || livePost?.meta_title,
     description: livePost?.meta_description || livePost?.excerpt,
     path: `/blog/${slug}`,
     image: livePost?.cover_image_url,
     type: 'article',
+    noindex: state === 'not-found' || state === 'error',
     keywords: livePost?.keywords,
   })
   // Injects BlogPosting structured data so search engines can better understand

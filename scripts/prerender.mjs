@@ -1,182 +1,85 @@
-// Build-time static prerendering for public routes.
-//
-// Why: this app is 100% client-side-rendered (index.html is just <div id="root">).
-// Googlebot renders JS but on a delayed, budget-limited second pass; many AI answer-
-// engine crawlers and social link-preview bots don't execute JS at all. Those visitors
-// currently see an empty shell instead of real content/meta tags.
-//
-// What this does: after `vite build`, spin up the built app, visit each public route
-// in headless Chromium, wait for the useSeo/useStructuredData effects (src/hooks/useSeo.js)
-// to actually commit, and write the fully-rendered HTML into dist/<route>/index.html.
-// Vercel serves these static files directly (filesystem match wins over the SPA catch-all
-// rewrite in vercel.json), so crawlers get real HTML on the first request. Real users still
-// get the full SPA - main.jsx uses createRoot (not hydrateRoot), so React simply replaces
-// this static shell with its own render once the JS bundle runs. No hydration mismatch risk,
-// but expect a visible flash on very slow connections - that's an accepted tradeoff since the
-// static HTML's audience is non-JS-executing crawlers, not a perceived-perf win for humans.
-//
-// Known limitation: prerendered blog/portfolio HTML is a snapshot from build time. Posts
-// publish/expire on a ~2-day cycle server-side, so the static snapshot can drift from the
-// live API between Vercel deploys. Real users always see live data (the SPA re-fetches on
-// top), so this only affects non-JS crawlers, bounded by the interval between deploys. Not
-// solved here - a future scheduled/webhook-triggered redeploy could close that window.
-//
-// Failure handling: a backend outage/timeout while enumerating dynamic slugs is non-fatal -
-// we skip dynamic-route prerendering and continue with static routes only (mirrors the
-// existing FALLBACK_POSTS/FALLBACK_FAQS "backend down is not a hard failure" pattern).
-
+// Snapshot the same canonical inventory that generates the sitemap.
 import { preview } from 'vite'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { existsSync } from 'node:fs'
+import { launchBrowser } from './browser.mjs'
+import { canonicalUrl } from '../src/lib/seo.js'
 
-const BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
-// Must match src/hooks/useSeo.js's SITE_URL exactly - this is what the canonical-tag
-// wait-check below compares against. The apex domain 308-redirects to www, so this
-// has to be the www form (the domain that actually serves the page).
-const SITE_URL = 'https://www.webneststudio.co.in'
-const BACKEND_TIMEOUT_MS = 60000 // matches apiClient.js's COLD_START_TIMEOUT for Render free-tier cold starts
-const PER_ROUTE_TIMEOUT_MS = 15000
-const DIST_DIR = path.resolve(process.cwd(), 'dist')
-
-// Vercel's build container is a minimal Amazon Linux image missing the shared
-// libraries (libnss3, libatk, libx11, ...) a normal desktop-Linux Chromium needs to
-// even launch - full Playwright's bundled browser exits immediately there (exit
-// code 127). @sparticuz/chromium ships a build compiled specifically to run in that
-// kind of constrained/serverless environment. Locally (and in any other CI), the
-// full `playwright` package with its own bundled browser works fine and needs no
-// special handling - only swap to the serverless build when actually on Vercel.
-async function launchBrowser() {
-  if (process.env.VERCEL) {
-    const [{ chromium }, sparticuzChromium] = await Promise.all([
-      import('playwright-core'),
-      import('@sparticuz/chromium').then((m) => m.default),
-    ])
-    return chromium.launch({
-      args: sparticuzChromium.args,
-      executablePath: await sparticuzChromium.executablePath(),
-      headless: true,
-    })
-  }
-  const { chromium } = await import('playwright')
-  const localExecutable = [
-    process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
-    'C:/Program Files/Google/Chrome/Application/chrome.exe',
-    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-  ].find((executablePath) => executablePath && existsSync(executablePath))
-
-  return chromium.launch(localExecutable ? { executablePath: localExecutable } : undefined)
-}
-
-// Mirrors the public (non-auth, non-admin) branch of src/App.jsx exactly. /login, /portal,
-// and /admin/* are deliberately excluded - noindexed or auth-gated, no reason to prerender.
-// /card is deliberately excluded - it's a dynamic interactive card whose QR image
-// loads from a third-party service at runtime, so there's nothing useful to snapshot.
-// /codelab is public + indexable. /projects and /s/:shareId
-// are auth-gated / dynamic - deliberately excluded, like /login, /portal, /admin/*.
-const STATIC_ROUTES = [
-  '/',
-  '/about',
-  '/our-story',
-  '/services',
-  '/portfolio',
-  '/blog',
-  '/faqs',
-  '/contact',
-  '/privacy-policy',
-  '/terms-and-conditions',
-  '/disclaimer',
-  '/codelab',
-]
-
-async function fetchJson(url) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), BACKEND_TIMEOUT_MS)
-  try {
-    const res = await fetch(url, { signal: controller.signal })
-    if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`)
-    return await res.json()
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-async function getDynamicRoutes() {
-  try {
-    const [posts, portfolioItems] = await Promise.all([
-      fetchJson(`${BASE_URL}/api/blog`),
-      fetchJson(`${BASE_URL}/api/portfolio`),
-    ])
-    return [
-      ...posts.map((p) => `/blog/${p.slug}`),
-      ...portfolioItems.map((p) => `/portfolio/${p.slug}`),
-    ]
-  } catch (err) {
-    console.warn(`[prerender] Skipping dynamic routes - backend unreachable: ${err.message}`)
-    return []
-  }
-}
-
-async function prerenderRoute(page, baseOrigin, route) {
-  const url = `${baseOrigin}${route}`
-  try {
-    try {
-      // 'networkidle' is the strong guarantee (waits out any async data fetch on
-      // dynamic detail pages) - but a page with a persistently-polling embed (e.g.
-      // /portfolio's live iframe previews) never goes idle. Fall back to 'load' for
-      // just that case rather than special-casing routes by name.
-      await page.goto(url, { waitUntil: 'networkidle', timeout: PER_ROUTE_TIMEOUT_MS })
-    } catch {
-      await page.goto(url, { waitUntil: 'load', timeout: PER_ROUTE_TIMEOUT_MS })
+const dist = path.resolve('dist')
+const manifest = JSON.parse(await readFile('.seo-build/routes.json', 'utf8'))
+const shell = await readFile(path.join(dist, 'app.html'), 'utf8').catch(() => readFile(path.join(dist, 'index.html'), 'utf8'))
+await writeFile(path.join(dist, 'app.html'), shell)
+const server = await preview({ preview: { port: 4174, strictPort: true } })
+const origin = server.resolvedUrls.local[0].replace(/\/$/, '')
+let browser
+const failures = []
+const completed = []
+try {
+  browser = await launchBrowser()
+  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  await context.addInitScript(() => { window.__PRERENDER__ = true })
+  // Serve the original shell on every navigation. Previously the home snapshot
+  // could leak its schema/meta into every later snapshot through SPA fallback.
+  await context.route('**/*', async (route) => {
+    const request = route.request()
+    if (request.isNavigationRequest()) {
+      if (request.frame().parentFrame()) return route.abort()
+      if (new URL(request.url()).origin === origin) return route.fulfill({ contentType: 'text/html', body: shell })
     }
-    const expectedCanonical = `${SITE_URL}${route}`
-    await page.waitForFunction(
-      (expected) => document.querySelector('link[rel="canonical"]')?.href === expected,
-      expectedCanonical,
-      { timeout: PER_ROUTE_TIMEOUT_MS }
-    )
-    await page.evaluate(() => {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-    })
-    const html = await page.content()
-
-    const outDir = route === '/' ? DIST_DIR : path.join(DIST_DIR, route)
-    await mkdir(outDir, { recursive: true })
-    await writeFile(path.join(outDir, 'index.html'), html, 'utf-8')
-    console.log(`[prerender] ✓ ${route}`)
-  } catch (err) {
-    console.warn(`[prerender] ✗ ${route} - ${err.message}`)
-  }
-}
-
-async function main() {
-  const dynamicRoutes = await getDynamicRoutes()
-  const routes = [...STATIC_ROUTES, ...dynamicRoutes]
-
-  const server = await preview({ preview: { port: 4174, strictPort: true } })
-  const baseOrigin = server.resolvedUrls.local[0].replace(/\/$/, '')
-
-  const browser = await launchBrowser()
-  const page = await browser.newPage()
-
-  // Sequential on purpose - a single shared page/browser context keeps this simple
-  // and the route count is small enough that parallelizing isn't worth the complexity.
-  for (const route of routes) {
-    await prerenderRoute(page, baseOrigin, route)
-  }
-
-  await browser.close()
-  await new Promise((resolve, reject) => {
-    server.httpServer.close((err) => (err ? reject(err) : resolve()))
+    if (/googlesyndication|google-analytics|vercel-insights/.test(request.url())) return route.abort()
+    return route.continue()
   })
-
-  console.log(`[prerender] Done - ${routes.length} routes attempted.`)
+  const queue = [...manifest, { path: '/404', required: true, noindex: true }]
+  async function worker() {
+    const page = await context.newPage()
+    while (queue.length) {
+      const entry = queue.shift()
+      try {
+        await page.goto(`${origin}${entry.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 })
+        await page.waitForFunction(({ expected, noindex }) => {
+          const robots = document.querySelector('meta[name="robots"]')?.content || ''
+          return document.querySelector('link[rel="canonical"]')?.href === expected
+            && !!document.querySelector('h1')?.textContent.trim()
+            && (noindex || !robots.includes('noindex'))
+        }, { expected: canonicalUrl(entry.path), noindex: entry.noindex }, { timeout: 65000 })
+        // Local lessons need no API data. Give API-backed public pages time to settle.
+        if (!entry.path.startsWith('/learn') && !entry.path.startsWith('/services/')) {
+          await page.waitForLoadState('networkidle', { timeout: 65000 })
+        }
+        if (!entry.noindex && await page.locator('meta[name="robots"]').getAttribute('content').then((value) => value.includes('noindex'))) throw new Error('Page is noindex or unavailable')
+        await page.evaluate(() => {
+          document.body.style.overflow = ''
+          document.documentElement.style.overflow = ''
+          // Reveal animations must not hide the delivered content without JavaScript.
+          document.querySelectorAll('[style]').forEach((element) => {
+            if (element.style.opacity === '0') { element.style.opacity = '1'; element.style.transform = 'none' }
+          })
+        })
+        const output = entry.path === '/' ? path.join(dist, 'index.html') : path.join(dist, `${entry.path.slice(1)}.html`)
+        await mkdir(path.dirname(output), { recursive: true })
+        await writeFile(output, await page.content(), 'utf8')
+        completed.push(entry.path)
+        if (completed.length % 25 === 0) console.log(`[prerender] ${completed.length}/${manifest.length + 1} rendered`)
+      } catch (error) {
+        failures.push({ ...entry, error: error.message })
+        console.warn(`[prerender] Failed ${entry.path}: ${error.message}`)
+      }
+    }
+    await page.close()
+  }
+  await Promise.all([worker(), worker(), worker()])
+} finally {
+  await browser?.close()
+  await new Promise((resolve) => server.httpServer.close(resolve))
 }
-
-main().catch((err) => {
-  console.error('[prerender] Fatal error:', err)
-  process.exit(1)
-})
+await writeFile('.seo-build/prerender-report.json', JSON.stringify({ completed, failures }, null, 2))
+// A failed optional live detail must not remain advertised in the sitemap.
+if (failures.length) {
+  let sitemap = await readFile(path.join(dist, 'sitemap.xml'), 'utf8')
+  for (const failure of failures) {
+    sitemap = sitemap.replace(/  <url>[\s\S]*?<\/url>\n/g, (block) => block.includes(`<loc>${canonicalUrl(failure.path)}</loc>`) ? '' : block)
+  }
+  await writeFile(path.join(dist, 'sitemap.xml'), sitemap)
+}
+console.log(`[prerender] ${completed.length} rendered; ${failures.length} failed`)
+if (failures.some((entry) => entry.required !== false)) process.exitCode = 1

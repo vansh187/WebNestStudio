@@ -1,3 +1,4 @@
+import { SERVICE_PAGES } from '../data/servicePages'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -62,6 +63,11 @@ export default function Services() {
         </Reveal>
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 pt-12 lg:px-8">
+        <h2 className="text-2xl font-semibold">Explore our development services</h2>
+        <p className="mt-3 text-ink-500 dark:text-ink-300">Based in New Delhi, India, WebNest Studio helps businesses plan, build and integrate software.</p>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">{SERVICE_PAGES.map((service) => <Link key={service.slug} to={`/services/${service.slug}`} className="rounded-xl border border-ink-200 p-6 hover:border-gold-400 dark:border-ink-800"><h3 className="font-semibold">{service.title}</h3><p className="mt-3 text-sm text-ink-500 dark:text-ink-300">{service.intro}</p><span className="mt-4 block text-sm font-semibold text-gold-600 dark:text-gold-400">Explore service</span></Link>)}</div>
+      </section>
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         {services === null && !error && <SkeletonGrid count={4} columns="md:grid-cols-2" />}
         {error && <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />}

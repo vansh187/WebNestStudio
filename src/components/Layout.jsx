@@ -1,3 +1,4 @@
+import ConversionTracking from './ConversionTracking'
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
@@ -12,6 +13,7 @@ import { CONTACT } from '../data/site'
 const ORGANIZATION_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
   name: SITE_NAME,
   // Tells Google this is the same brand under the spelling/spacing variants
   // people actually search for - the correct, non-spammy way to broaden brand-
@@ -22,14 +24,17 @@ const ORGANIZATION_SCHEMA = {
   logo: `${SITE_URL}/favicon.png`,
   email: CONTACT.email,
   telephone: CONTACT.phone,
+  address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
   sameAs: [CONTACT.instagramHref],
 }
 
 export default function Layout() {
   useStructuredData(ORGANIZATION_SCHEMA)
+  useStructuredData({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${SITE_URL}/#website`, name: SITE_NAME, url: SITE_URL, publisher: { '@id': `${SITE_URL}/#organization` } })
 
   return (
     <div className="min-h-screen bg-white text-ink-800 dark:bg-ink-950 dark:text-ink-100 transition-colors duration-300">
+      <ConversionTracking />
       <Navbar />
       <main>
         <Outlet />

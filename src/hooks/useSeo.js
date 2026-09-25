@@ -1,9 +1,7 @@
 import { useEffect } from 'react'
 
-export const SITE_NAME = 'WebNest Studio'
-// The apex domain 308-redirects here - canonical/OG URLs must point to the domain
-// that actually serves the page, not one that immediately redirects away from it.
-export const SITE_URL = 'https://www.webneststudio.co.in'
+import { SITE_NAME, DEFAULT_DESCRIPTION, DEFAULT_IMAGE, canonicalUrl as getCanonicalUrl } from '../lib/seo'
+export { SITE_NAME, SITE_URL } from '../lib/seo'
 
 function upsertTag(selector, create, content) {
   if (!content) return null
@@ -33,15 +31,16 @@ function upsertTag(selector, create, content) {
  * `path` should be the route path (e.g. '/about') so the canonical URL is
  * stable regardless of which host/preview deployment served the page.
  */
-export function useSeo({ title, description, path = '', image, type = 'website', noindex = false, keywords }) {
+export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', image = DEFAULT_IMAGE, type = 'website', noindex = false, keywords }) {
   useEffect(() => {
+    const resolvedImage = image || DEFAULT_IMAGE
     // Some titles (e.g. a backend-supplied blog meta_title) already end with some
     // form of the brand name - sometimes the full site name, sometimes just
     // "Webnest" without "Studio" - so match on the brand word alone rather than
     // the exact SITE_NAME string, or we double it up into "... | Webnest | WebNest Studio".
     const alreadyBranded = title?.toLowerCase().includes('webnest')
     const fullTitle = title ? (alreadyBranded ? title : `${title} | ${SITE_NAME}`) : document.title
-    const canonicalUrl = `${SITE_URL}${path}`
+    const canonicalUrl = getCanonicalUrl(path)
     const previousTitle = document.title
     if (title) document.title = fullTitle
 
@@ -60,7 +59,7 @@ export function useSeo({ title, description, path = '', image, type = 'website',
         const meta = document.createElement('meta')
         meta.setAttribute('name', 'robots')
         return meta
-      }, noindex ? 'noindex, nofollow' : 'index, follow'),
+      }, noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'),
       upsertTag('meta[property="og:title"]', () => {
         const meta = document.createElement('meta')
         meta.setAttribute('property', 'og:title')
@@ -90,7 +89,7 @@ export function useSeo({ title, description, path = '', image, type = 'website',
         const meta = document.createElement('meta')
         meta.setAttribute('name', 'twitter:card')
         return meta
-      }, image ? 'summary_large_image' : 'summary'),
+      }, image && image !== DEFAULT_IMAGE ? 'summary_large_image' : 'summary'),
       upsertTag('meta[name="twitter:title"]', () => {
         const meta = document.createElement('meta')
         meta.setAttribute('name', 'twitter:title')
@@ -103,18 +102,18 @@ export function useSeo({ title, description, path = '', image, type = 'website',
       }, description),
     ]
 
-    if (image) {
+    if (resolvedImage) {
       restoreFns.push(
         upsertTag('meta[property="og:image"]', () => {
           const meta = document.createElement('meta')
           meta.setAttribute('property', 'og:image')
           return meta
-        }, image),
+        }, new URL(resolvedImage, getCanonicalUrl()).href),
         upsertTag('meta[name="twitter:image"]', () => {
           const meta = document.createElement('meta')
           meta.setAttribute('name', 'twitter:image')
           return meta
-        }, image)
+        }, new URL(resolvedImage, getCanonicalUrl()).href)
       )
     }
 
@@ -163,7 +162,7 @@ export function useStructuredData(data) {
       script.setAttribute('data-schema-type', schemaType)
       document.head.appendChild(script)
     }
-    script.text = JSON.stringify(data)
+    script.text = JSON.stringify(data).replace(/</g, '\\u003c')
     structuredDataRefCounts.set(schemaType, (structuredDataRefCounts.get(schemaType) || 0) + 1)
 
     return () => {

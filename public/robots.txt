@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Account routes use noindex and authorization, not robots secrecy.
+Sitemap: https://www.webneststudio.co.in/sitemap.xml

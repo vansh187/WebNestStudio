@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { lessonTemplate } from '../../lib/lessonPlayground'
+import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSeo } from '../../hooks/useSeo'
@@ -6,15 +9,15 @@ import { useToast } from '../../context/ToastContext'
 import { useCodeRunner } from '../../hooks/useCodeRunner'
 import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
-import { WEB_FILES, PYTHON_FILES, cloneFiles } from '../../data/codelabDefaults'
+import { WEB_FILES, PYTHON_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { createProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 
 const STORAGE_KEY = 'wns-codelab-playground'
 
-function loadSession() {
+function loadSession(key = STORAGE_KEY) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(key)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (parsed && typeof parsed.language === 'string') {
@@ -35,11 +38,16 @@ function loadSession() {
 }
 
 export default function Playground() {
+  const location = useLocation()
+  return <PlaygroundEditor key={location.search} />
+}
+
+function PlaygroundEditor() {
   useSeo({
-    title: 'Webnest CodeLab',
+    title: 'Online Python and Web Coding Playground',
     description:
       'Write and run HTML, CSS, JavaScript and Python in the browser with Webnest CodeLab.',
-    path: '/codelab',
+    path: '/codelab/playground',
   })
 
   const navigate = useNavigate()
@@ -48,7 +56,12 @@ export default function Playground() {
   const toast = useToast()
   const runner = useCodeRunner()
 
-  const session = useMemo(loadSession, [])
+  const templateId = new URLSearchParams(location.search).get('lesson')
+  const exampleIndex = Number(new URLSearchParams(location.search).get('example') || 0)
+  const templateLesson = SAMPLE_LESSONS[templateId]
+  const template = useMemo(() => lessonTemplate(templateLesson, exampleIndex), [templateLesson, exampleIndex])
+  const storageKey = template ? `${STORAGE_KEY}:lesson:${template.lessonId}:${exampleIndex}` : STORAGE_KEY
+  const session = useMemo(() => loadSession(storageKey) || template, [storageKey, template])
   const [language, setLanguage] = useState(session?.language ?? 'web')
   const [files, setFiles] = useState(session?.files ?? cloneFiles(WEB_FILES, WEB_FILES))
   const [selectedFile, setSelectedFile] = useState(session?.selectedFile ?? files[0]?.name ?? 'index.html')
@@ -60,11 +73,15 @@ export default function Playground() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ language, source, files, selectedFile, stdin }))
+      localStorage.setItem(storageKey, JSON.stringify({ language, source, files, selectedFile, stdin }))
     } catch {
       /* Storage can fail in private mode; the editor should keep working. */
     }
-  }, [language, source, files, selectedFile, stdin])
+  }, [language, source, files, selectedFile, stdin, storageKey])
+
+  useEffect(() => {
+    trackEvent('codelab_opened', { source: template ? 'lesson' : 'playground', ...(template ? { lesson_id: template.lessonId } : {}) })
+  }, [template])
 
   const handleLanguageChange = useCallback(
     (next) => {
@@ -161,6 +178,8 @@ export default function Playground() {
   }, [isAuthenticated, requireLogin, currentLang, language, source, files, selectedFile, stdin, runner.result, toast])
 
   return (
+    <>
+    {templateLesson && <p className="mx-auto max-w-7xl px-6 pt-6 text-sm"><Link className="underline" to={`/learn/lessons/${templateLesson.id}`}>Back to {templateLesson.title}</Link> - Example loaded for practice. Some snippets need input, additional markup or dependencies; edit before running.</p>}
     <CodingWorkspace
       eyebrow="Webnest CodeLab"
       title="Browser coding playground"
@@ -183,5 +202,6 @@ export default function Playground() {
       onShare={handleShare}
       sharing={sharing}
     />
+    </>
   )
 }

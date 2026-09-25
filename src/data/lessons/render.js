@@ -13,12 +13,17 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
 }
 
+// Prose supports inline emphasis; literal HTML/Java generic tags stay text.
+function inlineText(value) {
+  return String(value || '').replace(/<[^>]*>/g, (tag) => /^<\/?(?:code|strong|em|b|i)>$/.test(tag) ? tag : escapeHtml(tag))
+}
+
 function paragraphs(text) {
   return String(text || '')
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean)
-    .map((p) => `<p class="mb-4 text-[15px] leading-7 text-ink-600 dark:text-ink-300">${p}</p>`)
+    .map((p) => `<p class="mb-4 text-[15px] leading-7 text-ink-600 dark:text-ink-300">${inlineText(p)}</p>`)
     .join('')
 }
 
@@ -27,13 +32,13 @@ function list(items) {
   return `<ul class="mb-5 space-y-2.5">${items
     .map(
       (item) =>
-        `<li class="flex gap-2.5 text-[15px] leading-7 text-ink-600 dark:text-ink-300"><span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400"></span><span>${item}</span></li>`,
+        `<li class="flex gap-2.5 text-[15px] leading-7 text-ink-600 dark:text-ink-300"><span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400"></span><span>${inlineText(item)}</span></li>`,
     )
     .join('')}</ul>`
 }
 
-function sectionHeading(text) {
-  return `<h3 class="mb-3 mt-9 flex items-center gap-2 font-display text-lg font-bold text-ink-900 dark:text-white"><span class="h-4 w-1 rounded-full bg-gold-400"></span>${text}</h3>`
+function sectionHeading(text, id = '') {
+  return `<h2 id="${id}" class="mb-3 mt-9 flex items-center gap-2 font-display text-lg font-bold text-ink-900 dark:text-white"><span class="h-4 w-1 rounded-full bg-gold-400"></span>${inlineText(text)}</h2>`
 }
 
 function renderExample(example, index, total, language) {
@@ -50,7 +55,7 @@ function renderExample(example, index, total, language) {
         <pre class="overflow-x-auto p-4 text-[13px] leading-6 text-emerald-200"><code class="font-mono">${escapeHtml(example.output)}</code></pre>
       </div>`
     : ''
-  return `<div class="mb-6"><p class="mb-0 text-xs font-bold uppercase tracking-widest text-gold-600 dark:text-gold-400">${label}</p>${code}${output}</div>`
+  return `<div class="mb-6"><p class="mb-0 text-xs font-bold uppercase tracking-widest text-gold-600 dark:text-gold-400">${inlineText(label)}</p>${code}${output}</div>`
 }
 
 function calloutBlock({ title, icon, accent, items }) {
@@ -72,7 +77,7 @@ function calloutBlock({ title, icon, accent, items }) {
   const itemsHtml = (items || [])
     .map(
       (item) =>
-        `<li class="flex gap-2.5 text-[14px] leading-6 text-ink-700 dark:text-ink-200"><span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${theme.dot}"></span><span>${item}</span></li>`,
+        `<li class="flex gap-2.5 text-[14px] leading-6 text-ink-700 dark:text-ink-200"><span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${theme.dot}"></span><span>${inlineText(item)}</span></li>`,
     )
     .join('')
   return `<div class="mb-6 mt-8 rounded-xl border ${theme.border} ${theme.bg} p-5">
@@ -92,17 +97,21 @@ export function renderLessonContent(entry, eyebrow = 'Tutorial', language = '') 
 
   const headerHtml = `<div class="mb-6 border-b border-ink-100 pb-6 dark:border-ink-800">
       <p class="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-gold-500">${eyebrow}</p>
-      <h2 class="font-display text-2xl font-extrabold leading-tight text-ink-900 sm:text-3xl dark:text-white">${entry.title}</h2>
+      <h1 class="font-display text-2xl font-extrabold leading-tight text-ink-900 sm:text-3xl dark:text-white">${entry.title}</h1>
     </div>`
 
   const introHtml = paragraphs(entry.intro)
 
+  const toc = sections.length >= 3
+    ? `<nav aria-label="On this page" class="my-6 rounded-xl border border-ink-200 p-4 dark:border-ink-800"><p class="font-semibold">On this page</p><ul class="mt-2 space-y-2">${sections.map((section, index) => `<li><a class="text-gold-600 hover:underline dark:text-gold-400" href="#section-${index + 1}">${inlineText(section.heading)}</a></li>`).join('')}${examples.length ? '<li><a class="text-gold-600 hover:underline dark:text-gold-400" href="#examples">Examples</a></li>' : ''}</ul></nav>`
+    : ''
+
   const sectionsHtml = sections
-    .map((section) => `${sectionHeading(section.heading)}${paragraphs(section.body)}${list(section.list)}`)
+    .map((section, index) => `${sectionHeading(section.heading, `section-${index + 1}`)}${paragraphs(section.body)}${list(section.list)}`)
     .join('')
 
   const examplesHtml = examples.length
-    ? `${sectionHeading(examples.length > 1 ? 'Examples' : 'Example')}${examples.map((ex, i) => renderExample(ex, i, examples.length, language)).join('')}`
+    ? `${sectionHeading(examples.length > 1 ? 'Examples' : 'Example', 'examples')}${examples.map((ex, i) => renderExample(ex, i, examples.length, language)).join('')}`
     : ''
 
   const mistakesHtml = entry.commonMistakes?.length
@@ -113,7 +122,7 @@ export function renderLessonContent(entry, eyebrow = 'Tutorial', language = '') 
     ? calloutBlock({ title: 'Key Points to Remember', icon: '✓', accent: 'success', items: entry.keyPoints })
     : ''
 
-  return `<div class="lesson-article">${headerHtml}${introHtml}${sectionsHtml}${examplesHtml}${mistakesHtml}${keyPointsHtml}</div>`
+  return `<div class="lesson-article">${headerHtml}${introHtml}${toc}${sectionsHtml}${examplesHtml}${mistakesHtml}${keyPointsHtml}</div>`
 }
 
 export function firstExampleCode(entry) {

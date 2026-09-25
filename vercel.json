@@ -1,7 +1,141 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/playground",
+      "destination": "/codelab/playground",
+      "permanent": true
+    },
+    {
+      "source": "/learn/java",
+      "destination": "/learn/java-core",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_java_overview",
+      "destination": "/learn/lessons/lesson_java_core_history_and_features_of_java",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_python_overview",
+      "destination": "/learn/lessons/lesson_python_syntax",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_python_input",
+      "destination": "/learn/lessons/lesson_python_http_api_basics",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/login",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/portal/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/projects/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/delete-account",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/s/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/codelab/dashboard",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    }
+  ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "https://webneststudiobackend-n00h.onrender.com/sitemap.xml" },
-    { "source": "/robots.txt", "destination": "https://webneststudiobackend-n00h.onrender.com/robots.txt" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/login",
+      "destination": "/app"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/app"
+    },
+    {
+      "source": "/portal/:path*",
+      "destination": "/app"
+    },
+    {
+      "source": "/projects/:path*",
+      "destination": "/app"
+    },
+    {
+      "source": "/delete-account",
+      "destination": "/app"
+    },
+    {
+      "source": "/s/:path*",
+      "destination": "/app"
+    },
+    {
+      "source": "/codelab/dashboard",
+      "destination": "/app"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/app"
+    },
+    {
+      "source": "/portfolio/:slug",
+      "destination": "/app"
+    },
+    {
+      "source": "/codelab/problems/:slug",
+      "destination": "/app"
+    }
   ]
 }
