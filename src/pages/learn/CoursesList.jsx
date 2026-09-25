@@ -6,16 +6,16 @@ import { EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 
 export default function CoursesList() {
-  useSeo({ title: 'Learn', description: 'Static programming language courses from Webnest CodeLab.', path: '/learn' })
+  useSeo({ title: 'Learn Java, Python, React and SQL', description: 'Free programming tutorials from WebNest Studio: Core Java, Advanced Java, Spring, Python, React and databases, with examples and coding practice.', path: '/learn' })
   const courses = SAMPLE_COURSES
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <BackButton fallback="/codelab" label="Back to CodeLab" />
       <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-gold-500">Study</p>
-      <h1 className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">Courses</h1>
+      <h1 className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">Learn programming with WebNest Studio</h1>
       <p className="mt-2 max-w-3xl text-ink-500 dark:text-ink-300">
-        Static language guides with beginner-friendly concepts, syntax patterns, and examples. No server loading required.
+        Learn concepts, understand examples, and practice your code. Explore Java, Spring, Python, web development and databases at your own pace.
       </p>
       {!courses.length ? (
         <div className="mt-6"><EmptyState icon={FiBookOpen} title="No courses yet" description="Static courses will appear here." /></div>
@@ -30,6 +30,7 @@ export default function CoursesList() {
           ))}
         </div>
       )}
-    </main>
+      <p className="mt-8 text-sm text-ink-500 dark:text-ink-300">WebNest Studio is an IT consultancy and software development company in New Delhi. Explore our <Link className="underline" to="/services">development services</Link> or <Link className="underline" to="/portfolio">project portfolio</Link>.</p>
+    </div>
   )
 }

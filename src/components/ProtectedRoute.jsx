@@ -1,3 +1,4 @@
+import { useSeo } from '../hooks/useSeo'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FiLoader } from 'react-icons/fi'
@@ -5,6 +6,7 @@ import { FiLoader } from 'react-icons/fi'
 export default function ProtectedRoute({ children, roles }) {
   const { isAuthenticated, initializing, user } = useAuth()
   const location = useLocation()
+  useSeo({ title: 'Your account', path: location.pathname, noindex: true })
 
   if (initializing) {
     return (

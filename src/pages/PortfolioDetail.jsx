@@ -23,6 +23,7 @@ export default function PortfolioDetail() {
     path: `/portfolio/${slug}`,
     image: liveItem?.cover_image_url,
     type: 'article',
+    noindex: state === 'not-found' || state === 'error',
   })
 
   useEffect(() => {

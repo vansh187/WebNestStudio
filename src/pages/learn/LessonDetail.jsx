@@ -1,10 +1,13 @@
+import Breadcrumbs from '../../components/Breadcrumbs'
+import { lessonTemplate } from '../../lib/lessonPlayground'
+import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiArrowLeft, FiArrowRight, FiBarChart2, FiBookmark, FiCheckCircle, FiCode, FiList, FiLock, FiMenu, FiSave, FiTrash2 } from 'react-icons/fi'
 import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
-import { useSeo } from '../../hooks/useSeo'
+import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../../hooks/useSeo'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import { NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
@@ -15,6 +18,7 @@ function normalize(id) {
   const source = SAMPLE_LESSONS[id]
   if (!source) return null
   return {
+    ...source,
     id: source.id || id,
     course_slug: source.course_slug || '',
     title: source.title || 'Untitled lesson',
@@ -86,7 +90,7 @@ export default function LessonDetail() {
   const toast = useToast()
   const { user, isAuthenticated } = useAuth()
   const userKey = user?.email || null
-  const [lesson, setLesson] = useState(null)
+  const lesson = useMemo(() => normalize(lessonId), [lessonId])
   const [courseProgress, setCourseProgress] = useState({})
   const [notes, setNotes] = useState([])
   const [draftNote, setDraftNote] = useState('')
@@ -114,14 +118,14 @@ export default function LessonDetail() {
   }, [lesson, lessonId])
 
   useSeo({
-    title: lesson?.title ? `${lesson.title} | Learn` : 'Lesson',
-    description: 'Read a static Webnest CodeLab lesson.',
-    path: `/learn/lessons/${lessonId || ''}`,
+    title: lesson?.seo_title || 'Lesson not found',
+    description: lesson?.description,
+    noindex: !lesson || !lesson.indexable,
+    path: `/learn/lessons/${lesson?.id || lessonId || ''}`,
+    type: 'article',
   })
 
   useEffect(() => {
-    const next = normalize(lessonId)
-    setLesson(next)
     setDraftNote('')
   }, [lessonId])
 
@@ -135,6 +139,19 @@ export default function LessonDetail() {
     setCourseProgress(readLearningProgress(userKey))
   }, [userKey, lessonId])
 
+  useStructuredData(lesson && lesson.indexable ? {
+    '@context': 'https://schema.org', '@type': 'TechArticle',
+    headline: lesson.title, description: lesson.description,
+    url: `${SITE_URL}/learn/lessons/${lesson.id}`,
+    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    isPartOf: { '@type': 'Course', name: lessonNavigation?.course.title, url: `${SITE_URL}/learn/${lesson.course_slug}` },
+    inLanguage: 'en',
+  } : null)
+
+  useEffect(() => {
+    if (lesson) trackEvent('lesson_viewed', { lesson_id: lesson.id, course_slug: lesson.course_slug })
+  }, [lesson])
+
   const markComplete = useCallback(() => {
     if (!userKey) return
     const all = readLearningProgress(userKey)
@@ -145,8 +162,9 @@ export default function LessonDetail() {
       return
     }
     setCourseProgress(all)
+    trackEvent('lesson_completed', { lesson_id: lessonId, course_slug: lesson?.course_slug })
     toast.success('Lesson marked complete.')
-  }, [userKey, lessonId, progress, toast])
+  }, [userKey, lessonId, progress, toast, lesson])
 
   const toggleBookmark = useCallback(() => {
     if (!userKey) return
@@ -198,8 +216,10 @@ export default function LessonDetail() {
 
   if (!lesson) return <NotFoundState title="Lesson not found" backTo="/learn" backLabel="Back to courses" />
 
+  const relatedLessons = lessonNavigation?.course.modules.find((module) => module.lessons.some((item) => item.id === lesson.id))?.lessons.filter((item) => item.id !== lesson.id).slice(0, 5) || []
+
   return (
-    <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[240px_minmax(0,1fr)_320px] lg:px-8">
+    <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[240px_minmax(0,1fr)_320px] lg:px-8">
       {lessonNavigation && (
         <>
           <details className="rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40 lg:hidden">
@@ -216,13 +236,30 @@ export default function LessonDetail() {
         </>
       )}
       <article className="min-w-0">
+        <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Learn', to: '/learn' }, { label: lessonNavigation?.course.title || 'Course', to: `/learn/${lesson.course_slug}` }, { label: lesson.title, to: `/learn/lessons/${lesson.id}` }]} />
+        <p className="mb-3 text-sm text-ink-500">By <Link to="/about" className="underline">WebNest Studio</Link></p>
         <BackButton fallback={`/learn/${lesson.course_slug}`} label="Back to course" />
         <ErrorBoundary>
           <div className="mt-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8 dark:border-ink-800 dark:bg-ink-900/40" dangerouslySetInnerHTML={{ __html: lesson.content.body || '' }} />
         </ErrorBoundary>
-        {lesson.resources.map((resource, index) => (
-          <pre key={`${resource.language}-${index}`} className="mt-4 overflow-auto rounded-lg bg-ink-950 p-4 font-mono text-xs text-ink-100">{resource.content}</pre>
-        ))}
+        <section className="mt-6 rounded-xl border border-ink-200 p-5 dark:border-ink-800">
+          <h2 className="text-lg font-semibold">Practice the examples</h2>
+          <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">Change an input, predict the result, then compare it with the output. Explain why the result changes.</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {(lesson.examples.length ? lesson.examples : lesson.resources).map((example, index) => lessonTemplate(lesson, index) ? (
+              <Link key={index} to={`/codelab/playground?lesson=${encodeURIComponent(lesson.id)}&example=${index}`} onClick={() => trackEvent('practice_started', { lesson_id: lesson.id, course_slug: lesson.course_slug })} className="rounded-lg bg-gold-400 px-4 py-2 text-sm font-semibold text-ink-950">
+                Try {example.caption || `example ${index + 1}`} in Webnest Codelab
+              </Link>
+            ) : (
+              <button key={index} type="button" className="rounded-lg border border-ink-300 px-4 py-2 text-sm" onClick={async () => {
+                try { await navigator.clipboard.writeText(example.code || example.content); toast.success('Example copied.'); trackEvent('practice_started', { lesson_id: lesson.id, language: lesson.language }) }
+                catch { toast.error('Select and copy the example from the lesson.') }
+              }}>Copy {example.caption || `example ${index + 1}`}</button>
+            ))}
+          </div>
+          {!lessonTemplate(lesson) && <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">Use your local {lesson.language === 'java' ? 'JDK or project IDE' : 'project environment'} for these examples. Codelab currently runs Python and HTML/CSS/JavaScript; framework examples may need project dependencies.</p>}
+        </section>
+        {relatedLessons.length > 0 && <nav aria-label="Related concepts" className="mt-6"><h2 className="text-lg font-semibold">Related concepts</h2><ul className="mt-2 space-y-2">{relatedLessons.map((item) => <li key={item.id}><Link className="text-gold-600 underline dark:text-gold-400" to={`/learn/lessons/${item.id}`}>{item.title}</Link></li>)}</ul></nav>}
         {lessonNavigation && (
           <nav className="mt-6 grid gap-3 rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40 sm:grid-cols-2" aria-label="Lesson pagination">
             {lessonNavigation.previous ? (
@@ -377,6 +414,6 @@ export default function LessonDetail() {
           </Link>
         ))}
       </aside>
-    </main>
+    </div>
   )
 }

@@ -9,8 +9,9 @@ export default function LaunchAnnouncementModal() {
   const project = DELIVERED_PROJECTS[0]
 
   useEffect(() => {
-    if (!project) return
-    const timer = setTimeout(() => setOpen(true), 500)
+    if (!project || window.__PRERENDER__) return
+    try { if (sessionStorage.getItem('wns-launch-seen')) return } catch { /* Storage is optional. */ }
+    const timer = setTimeout(() => { setOpen(true); try { sessionStorage.setItem('wns-launch-seen', '1') } catch { /* Storage is optional. */ } }, 15000)
     return () => clearTimeout(timer)
   }, [project])
 

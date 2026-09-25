@@ -1,3 +1,4 @@
+import { summarize } from '../lib/seo.js'
 export const WEB_FILES = [
   { name: 'index.html', language: 'html', content: '<main class="app">\n  <h1>Hello Webnest</h1>\n  <p>Edit the files, then run the preview.</p>\n  <button id="action">Click me</button>\n</main>' },
   { name: 'style.css', language: 'css', content: 'body {\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  margin: 0;\n  font-family: system-ui, sans-serif;\n  background: #f8fafc;\n  color: #111827;\n}\n\n.app {\n  max-width: 420px;\n  padding: 2rem;\n  border: 1px solid #dbe3ef;\n  border-radius: 8px;\n  background: white;\n}\n\nbutton {\n  border: 0;\n  border-radius: 8px;\n  padding: 0.75rem 1rem;\n  background: #111827;\n  color: white;\n  font-weight: 700;\n}' },
@@ -313,12 +314,17 @@ function createLesson(course, moduleTitle, topic, order) {
   const example = richEntry ? firstExampleCode(richEntry) : topicExample(course, topic)
   const body = richEntry
     ? renderLessonContent(richEntry, `${course.title} Tutorial`, TUTORIAL_LANGUAGE_LABEL[course.language] || course.language)
-    : `<h2>${topic}</h2><p>${detailFor(course, topic)}</p><h3>What to understand</h3><ul><li>The purpose of ${topic} in ${course.title} projects.</li><li>The basic syntax or structure used to apply it.</li><li>How it connects to the surrounding topics in ${moduleTitle}.</li><li>Common mistakes, edge cases, and debugging signals.</li><li>How experienced developers use it in production-quality code.</li></ul><h3>How to study it</h3><p>Start with a tiny example, change one thing at a time, predict the output, then run or reason through the result. After that, apply it inside a small feature: validation, a reusable helper, a database query, a page section, an API endpoint, or a UI component.</p><h3>Practical example</h3><pre><code>${codeBlock(example)}</code></pre><h3>Common mistakes</h3><ul><li>Learning syntax without understanding the problem it solves.</li><li>Ignoring names, formatting, and error cases.</li><li>Copying examples without changing inputs and observing behavior.</li><li>Skipping documentation for boundary cases and production constraints.</li></ul><h3>Professional checklist</h3><ul><li>Can you explain ${topic} in simple words?</li><li>Can you write a small example without copying?</li><li>Can you identify when not to use it?</li><li>Can you debug the most likely failure?</li><li>Can you connect it to code quality, testing, and maintainability?</li></ul>`
+    : `<h1>${topic}</h1><p>${detailFor(course, topic)}</p><h3>What to understand</h3><ul><li>The purpose of ${topic} in ${course.title} projects.</li><li>The basic syntax or structure used to apply it.</li><li>How it connects to the surrounding topics in ${moduleTitle}.</li><li>Common mistakes, edge cases, and debugging signals.</li><li>How experienced developers use it in production-quality code.</li></ul><h3>How to study it</h3><p>Start with a tiny example, change one thing at a time, predict the output, then run or reason through the result. After that, apply it inside a small feature: validation, a reusable helper, a database query, a page section, an API endpoint, or a UI component.</p><h3>Practical example</h3><pre><code>${codeBlock(example)}</code></pre><h3>Common mistakes</h3><ul><li>Learning syntax without understanding the problem it solves.</li><li>Ignoring names, formatting, and error cases.</li><li>Copying examples without changing inputs and observing behavior.</li><li>Skipping documentation for boundary cases and production constraints.</li></ul><h3>Professional checklist</h3><ul><li>Can you explain ${topic} in simple words?</li><li>Can you write a small example without copying?</li><li>Can you identify when not to use it?</li><li>Can you debug the most likely failure?</li><li>Can you connect it to code quality, testing, and maintainability?</li></ul>`
   return {
     id: lessonId(course.slug, topic),
     course_slug: course.slug,
     title: topic,
     module_title: moduleTitle,
+    language: course.language,
+    seo_title: `${topic} - ${course.title}`,
+    description: summarize(`${topic}: ${richEntry?.intro || detailFor(course, topic)}`),
+    indexable: Boolean(richEntry),
+    examples: richEntry?.examples || [],
     order,
     content: { format: 'html', body },
     resources: [{ type: 'code', language: course.language, content: example }],

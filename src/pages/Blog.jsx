@@ -19,7 +19,7 @@ export default function Blog() {
   useSeo({
     title: tag ? `${tag} Articles` : 'Blog',
     description:
-      'Notes on web development, AI, and engineering from the WebNest Studio team — fresh, SEO-optimized articles published regularly.',
+      'Notes on web development, AI, and engineering from the WebNest Studio team — practical guides for building and improving digital products.',
     // Always canonicalize tag-filtered views back to the plain list - the tag
     // filter is a client-side view, not a distinct indexable page, so this
     // avoids Google treating every ?tag= combination as duplicate content.
@@ -41,7 +41,7 @@ export default function Blog() {
 
   // Live backend posts win once published; curated fallback content keeps the page
   // (and its SEO value) populated in the meantime rather than showing an empty state.
-  const displayPosts = posts && posts.length > 0 ? posts : FALLBACK_POSTS
+  const displayPosts = useMemo(() => [...(posts || []), ...FALLBACK_POSTS.filter((fallback) => !posts?.some((post) => post.slug === fallback.slug))], [posts])
   const visiblePosts = useMemo(
     () => (tag ? displayPosts.filter((p) => (p.tags || []).includes(tag)) : displayPosts),
     [displayPosts, tag]
@@ -79,7 +79,7 @@ export default function Blog() {
 
             {posts === null && !error && <SkeletonGrid count={4} columns="sm:grid-cols-1" />}
             {error && <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />}
-            {posts !== null && !error && (
+            {visiblePosts.length > 0 && (
               <div className="space-y-6">
                 {visiblePosts.map((p, i) => (
                   <Reveal key={p.id ?? p.slug} delay={i * 0.06}>
@@ -89,7 +89,7 @@ export default function Blog() {
                     >
                       {p.cover_image_url && (
                         <div className="h-40 w-full shrink-0 overflow-hidden rounded-xl bg-ink-100 dark:bg-ink-800 sm:w-56">
-                          <img src={p.cover_image_url} alt={p.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                          <img loading="lazy" decoding="async" src={p.cover_image_url} alt={p.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1">

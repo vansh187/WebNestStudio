@@ -7,14 +7,16 @@
     "predev": "node scripts/copy-pyodide.mjs",
     "dev": "vite",
     "prebuild": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "prerender": "node scripts/prerender.mjs",
-    "build:prerender": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs && vite build && node scripts/prerender.mjs",
+    "build:prerender": "npm run build",
     "prepreview": "node scripts/copy-pyodide.mjs",
-    "vercel-build": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs && vite build && (node scripts/prerender.mjs || echo '[prerender] skipped - continuing with SPA-only build')",
+    "vercel-build": "npm run build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs",
+    "test:seo": "node scripts/check-seo.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

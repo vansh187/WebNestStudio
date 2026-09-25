@@ -11,25 +11,25 @@ import ProtectedRoute from './components/ProtectedRoute'
 import SlowRequestBanner from './components/SlowRequestBanner'
 import ErrorBoundary from './components/ErrorBoundary'
 import Home from './pages/Home'
-import About from './pages/About'
-import OurStory from './pages/OurStory'
-import Services from './pages/Services'
-import Portfolio from './pages/Portfolio'
-import PortfolioDetail from './pages/PortfolioDetail'
-import Blog from './pages/Blog'
-import BlogDetail from './pages/BlogDetail'
-import Faqs from './pages/Faqs'
-import Contact from './pages/Contact'
-import PrivacyPolicy from './pages/PrivacyPolicy'
-import TermsConditions from './pages/TermsConditions'
-import Disclaimer from './pages/Disclaimer'
-import DeleteAccount from './pages/DeleteAccount'
-import AccountDeletion from './pages/AccountDeletion'
-import Login from './pages/Login'
+const About = lazy(() => import('./pages/About'))
+const OurStory = lazy(() => import('./pages/OurStory'))
+const Services = lazy(() => import('./pages/Services'))
+const Portfolio = lazy(() => import('./pages/Portfolio'))
+const PortfolioDetail = lazy(() => import('./pages/PortfolioDetail'))
+const Blog = lazy(() => import('./pages/Blog'))
+const BlogDetail = lazy(() => import('./pages/BlogDetail'))
+const Faqs = lazy(() => import('./pages/Faqs'))
+const Contact = lazy(() => import('./pages/Contact'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsConditions = lazy(() => import('./pages/TermsConditions'))
+const Disclaimer = lazy(() => import('./pages/Disclaimer'))
+const DeleteAccount = lazy(() => import('./pages/DeleteAccount'))
+const Login = lazy(() => import('./pages/Login'))
 import NotFound from './pages/NotFound'
 
 // Split out of the main bundle - only visitors who actually open /card should
 // pay for the QR-code library it pulls in.
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
 const DigitalCard = lazy(() => import('./pages/DigitalCard'))
 
 // Coding platform - Monaco + its language workers are heavy, and only visitors who
@@ -118,6 +118,7 @@ function App() {
                     <Route path="about" element={<About />} />
                     <Route path="our-story" element={<OurStory />} />
                     <Route path="services" element={<Services />} />
+                    <Route path="services/:slug" element={<ServiceDetail />} />
                     <Route path="portfolio" element={<Portfolio />} />
                     <Route path="portfolio/:slug" element={<PortfolioDetail />} />
                     <Route path="blog" element={<Blog />} />

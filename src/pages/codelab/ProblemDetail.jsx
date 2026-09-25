@@ -45,7 +45,7 @@ export default function ProblemDetail() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useSeo({ title: problem?.title ? `${problem.title} | CodeLab` : 'CodeLab Problem', description: 'Solve a Webnest CodeLab problem.', path: `/codelab/problems/${slug || ''}` })
+  useSeo({ title: problem?.title ? `${problem.title} | CodeLab` : 'CodeLab Problem', description: problem?.statement || 'Solve a Webnest CodeLab problem.', noindex: !problem && Boolean(error), path: `/codelab/problems/${slug || ''}` })
 
   useEffect(() => {
     let alive = true

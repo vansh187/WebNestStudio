@@ -29,6 +29,7 @@ export default function DigitalCard() {
           taller than the viewport - unlike flex justify-center, auto margins
           never clip the overflow. */}
       <div className="relative m-auto w-full max-w-md">
+        <h1 className="mb-5 text-center text-xl font-semibold">WebNest Studio digital business card</h1>
         <VisitingCard onClose={closeCard} />
       </div>
     </div>
