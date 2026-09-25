@@ -16,7 +16,7 @@ export const NAV_LINKS = [
   { label: 'Blog', to: '/blog' },
   { label: 'Webnest CodeLab', to: '/codelab' },
   { label: 'Learn', to: '/learn' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'Visiting Card', to: '/card' },
 ]
 
 // Grouped for the footer so the nav reads as tidy categories, not one long list.
