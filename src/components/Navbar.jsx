@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { FiMenu, FiX, FiArrowRight, FiUser, FiLogOut } from 'react-icons/fi'
 import Logo from './Logo'
-import ThemeToggle from './ThemeToggle'
 import { NAV_LINKS } from '../data/site'
 import { useAuth } from '../context/AuthContext'
 
@@ -82,10 +81,19 @@ export default function Navbar() {
               </NavLink>
             ),
           )}
+          <NavLink
+            to="/contact"
+            className={({ isActive }) =>
+              `whitespace-nowrap text-sm font-medium transition-colors ${
+                isActive ? 'text-gold-500' : 'text-ink-600 dark:text-ink-200 hover:text-gold-500 dark:hover:text-gold-400'
+              }`
+            }
+          >
+            Contact
+          </NavLink>
         </div>
 
-        <div className="hidden items-center gap-4 xl:flex">
-          <ThemeToggle />
+        <div className="hidden items-center gap-6 xl:flex 2xl:gap-8">
           {account ? (
             <>
               <Link
@@ -121,7 +129,6 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 xl:hidden">
-          <ThemeToggle />
           <button
             type="button"
             aria-label="Toggle menu"
@@ -162,6 +169,15 @@ export default function Navbar() {
                 </NavLink>
               ),
             )}
+            <NavLink
+              to="/contact"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `text-base font-medium ${isActive ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'}`
+              }
+            >
+              Contact
+            </NavLink>
             {account ? (
               <>
                 <Link

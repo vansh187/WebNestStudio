@@ -1,4 +1,6 @@
 import Breadcrumbs from '../../components/Breadcrumbs'
+import LessonVideo from '../../components/LessonVideo'
+import { getLessonVideo } from '../../data/lessonVideos'
 import { lessonTemplate } from '../../lib/lessonPlayground'
 import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -97,6 +99,18 @@ export default function LessonDetail() {
   const [saving, setSaving] = useState(false)
 
   const progress = useMemo(() => getLessonProgress(courseProgress, lessonId), [courseProgress, lessonId])
+
+  // Split the lesson HTML so a video can sit between two sections. Falls back
+  // to showing the video below the lesson when the split marker isn't found.
+  const video = lesson ? getLessonVideo(lesson.id) : null
+  const bodyParts = useMemo(() => {
+    const body = lesson?.content.body || ''
+    if (video?.afterSection) {
+      const at = body.indexOf(`<h2 id="section-${video.afterSection + 1}"`)
+      if (at > 0) return { before: body.slice(0, at), after: body.slice(at), inline: true }
+    }
+    return { before: body, after: '', inline: false }
+  }, [lesson, video])
 
   const lessonNavigation = useMemo(() => {
     if (!lesson) return null
@@ -240,8 +254,13 @@ export default function LessonDetail() {
         <p className="mb-3 text-sm text-ink-500">By <Link to="/about" className="underline">WebNest Studio</Link></p>
         <BackButton fallback={`/learn/${lesson.course_slug}`} label="Back to course" />
         <ErrorBoundary>
-          <div className="mt-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8 dark:border-ink-800 dark:bg-ink-900/40" dangerouslySetInnerHTML={{ __html: lesson.content.body || '' }} />
+          <div className="mt-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8 dark:border-ink-800 dark:bg-ink-900/40">
+            <div dangerouslySetInnerHTML={{ __html: bodyParts.before }} />
+            {video && bodyParts.inline && <LessonVideo video={video} lessonId={lesson.id} />}
+            {bodyParts.after && <div dangerouslySetInnerHTML={{ __html: bodyParts.after }} />}
+          </div>
         </ErrorBoundary>
+        {video && !bodyParts.inline && <LessonVideo video={video} lessonId={lesson.id} />}
         <section className="mt-6 rounded-xl border border-ink-200 p-5 dark:border-ink-800">
           <h2 className="text-lg font-semibold">Practice the examples</h2>
           <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">Change an input, predict the result, then compare it with the output. Explain why the result changes.</p>
