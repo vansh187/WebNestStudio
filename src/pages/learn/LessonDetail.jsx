@@ -105,7 +105,7 @@ export default function LessonDetail() {
   const video = lesson ? getLessonVideo(lesson.id) : null
   const bodyParts = useMemo(() => {
     const body = lesson?.content.body || ''
-    if (video?.afterSection) {
+    if (typeof video?.afterSection === 'number') {
       const at = body.indexOf(`<h2 id="section-${video.afterSection + 1}"`)
       if (at > 0) return { before: body.slice(0, at), after: body.slice(at), inline: true }
     }

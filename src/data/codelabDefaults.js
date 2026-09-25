@@ -93,7 +93,8 @@ const STATIC_COURSE_DEFINITIONS = [
     description: 'Core Spring for dependency injection, application architecture, MVC, validation, AOP, transactions, data access, and tests.',
     sample: '@Service\nclass InvoiceService {\n  private final InvoiceRepository repository;\n\n  InvoiceService(InvoiceRepository repository) {\n    this.repository = repository;\n  }\n}\n',
     modules: [
-      ['Spring Container', ['Setting up a Spring project', 'IoC and Dependency Injection', 'beans', 'application context', 'component scanning', 'configuration']],
+      ['Getting Started and Installation', ['Spring Framework Overview and Modules', 'Installing the JDK on Windows, macOS and Linux', 'Installing Maven and Gradle', 'Setting Up Your IDE for Spring', 'Setting up a Spring project', 'Creating a Project with Spring Initializr', 'Your First Spring Application', 'Your First Spring Boot Web Application', 'Running, Packaging and Troubleshooting Spring Applications']],
+      ['Spring Container', ['IoC and Dependency Injection', 'beans', 'application context', 'component scanning', 'configuration']],
       ['Bean and Runtime Management', ['bean lifecycle', 'profiles', 'events', 'resource handling']],
       ['Web and Cross-Cutting Concerns', ['Spring MVC', 'validation', 'exception handling', 'AOP']],
       ['Data and Quality', ['Spring Data fundamentals', 'transactions', 'testing', 'Spring reactive programming overview']],

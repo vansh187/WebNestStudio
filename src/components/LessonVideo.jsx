@@ -6,13 +6,18 @@ import { trackEvent } from '../lib/analytics'
 // so the lesson stays fast and the prerendered HTML has no third-party frame.
 export default function LessonVideo({ video, lessonId }) {
   const [playing, setPlaying] = useState(false)
-  const watchUrl = `https://www.youtube.com/shorts/${video.youtubeId}`
+  const isShort = video.format === 'short'
+  const watchUrl = isShort
+    ? `https://www.youtube.com/shorts/${video.youtubeId}`
+    : `https://www.youtube.com/watch?v=${video.youtubeId}`
+  const frameClass = isShort ? 'aspect-[9/16] max-w-[280px]' : 'aspect-video max-w-2xl'
+  const thumbnail = video.thumbnail || `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`
 
   return (
     <section aria-label="Lesson video" className="mt-6 rounded-xl border border-ink-200 p-5 dark:border-ink-800">
       <h2 className="text-lg font-semibold">Watch: {video.title}</h2>
       <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">{video.description}</p>
-      <div className="mt-4 mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-xl bg-ink-950">
+      <div className={`mx-auto mt-4 w-full overflow-hidden rounded-xl bg-ink-950 ${frameClass}`}>
         {playing ? (
           <iframe
             className="h-full w-full"
@@ -29,7 +34,7 @@ export default function LessonVideo({ video, lessonId }) {
             className="relative flex h-full w-full items-center justify-center"
           >
             <img
-              src={`https://i.ytimg.com/vi/${video.youtubeId}/hq2.jpg`}
+              src={thumbnail}
               alt=""
               loading="lazy"
               className="absolute inset-0 h-full w-full object-cover"
