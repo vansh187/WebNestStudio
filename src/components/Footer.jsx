@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
-import { FaWhatsapp } from 'react-icons/fa'
+import { FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
 import { CONTACT, FOOTER_SECTIONS, TECH_STACK } from '../data/site'
@@ -25,6 +25,15 @@ export default function Footer() {
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 dark:border-ink-700 text-ink-500 dark:text-ink-300 hover:border-gold-400 hover:text-gold-500 transition-colors"
               >
                 <FiInstagram className="h-4 w-4" />
+              </a>
+              <a
+                href={CONTACT.linkedinHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WebNest Studio on LinkedIn"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 dark:border-ink-700 text-ink-500 dark:text-ink-300 hover:border-gold-400 hover:text-gold-500 transition-colors"
+              >
+                <FaLinkedinIn className="h-4 w-4" />
               </a>
               <a
                 href={CONTACT.whatsappHref}

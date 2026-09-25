@@ -25,7 +25,7 @@ const ORGANIZATION_SCHEMA = {
   email: CONTACT.email,
   telephone: CONTACT.phone,
   address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
-  sameAs: [CONTACT.instagramHref],
+  sameAs: [CONTACT.instagramHref, CONTACT.linkedinHref],
 }
 
 export default function Layout() {
