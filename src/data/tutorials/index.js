@@ -1,5 +1,6 @@
 import { springFrameworkContent } from './spring-framework.js'
 import { springBootContent } from './spring-boot.js'
+import { springFrameworkSetup } from './spring-framework-setup.js'
 import { pythonContentA } from './python-a.js'
 import { pythonContentB } from './python-b.js'
 import { htmlContent } from './html.js'
@@ -29,7 +30,7 @@ import {
 // Keyed by course slug (matching STATIC_COURSE_DEFINITIONS in codelabDefaults.js),
 // each value keyed by the topic's slug (via the same slugify() used for lesson ids).
 export const TUTORIALS_BY_COURSE = {
-  'spring-framework': { ...springFrameworkContent, ...springFrameworkExtra },
+  'spring-framework': { ...springFrameworkContent, ...springFrameworkExtra, ...springFrameworkSetup },
   'spring-boot': { ...springBootContent, ...springBootExtra },
   python: { ...pythonContentA, ...pythonContentB, ...pythonExtra },
   html: { ...htmlContent, ...htmlExtra },

@@ -1948,12 +1948,27 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_creating_a_project_with_spring_initializr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_events</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_exception_handling</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_installing_maven_and_gradle</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_installing_the_jdk_on_windows_macos_and_linux</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1973,12 +1988,27 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_running_packaging_and_troubleshooting_spring_applications</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_setting_up_a_spring_project</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_setting_up_your_ide_for_spring</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_spring_data_fundamentals</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_spring_framework_overview_and_modules</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -2004,6 +2034,16 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_validation</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_your_first_spring_application</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_your_first_spring_boot_web_application</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
