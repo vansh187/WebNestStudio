@@ -9,6 +9,13 @@ export const LESSON_VIDEOS = {
     title: 'How Java Runs Anywhere',
     description: 'A quick video on how Java bytecode and the JVM let the same program run on any platform.',
   },
+  lesson_java_core_jvm_jdk_and_jre: {
+    youtubeId: 'LyEFMLCG3vw',
+    format: 'short',
+    afterSection: 0, // right after the introduction, before the JVM/JRE/JDK sections
+    title: 'JVM, JDK and JRE Explained',
+    description: 'A quick video on the difference between the JVM, JRE and JDK and how they fit together.',
+  },
   lesson_java_core_c_vs_java_key_differences: {
     youtubeId: 'QJo8wq3Xvmk',
     afterSection: 0, // right after the introduction, before the comparison sections
