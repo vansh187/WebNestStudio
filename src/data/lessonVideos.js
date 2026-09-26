@@ -16,6 +16,12 @@ export const LESSON_VIDEOS = {
     title: 'JVM, JDK and JRE Explained',
     description: 'A quick video on the difference between the JVM, JRE and JDK and how they fit together.',
   },
+  lesson_java_core_java_program_structure_and_first_program: {
+    youtubeId: 'wHsmdwLFqY4',
+    afterSection: 0, // right after the introduction, before the written walkthrough
+    title: 'Java Program Structure and Your First Program',
+    description: 'Prefer to watch? This video walks through the structure of a Java program and writing your first one.',
+  },
   lesson_java_core_c_vs_java_key_differences: {
     youtubeId: 'QJo8wq3Xvmk',
     afterSection: 0, // right after the introduction, before the comparison sections
