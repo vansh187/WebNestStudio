@@ -102,15 +102,31 @@ export default function LessonDetail() {
 
   // Split the lesson HTML so a video can sit between two sections. Falls back
   // to showing the video below the lesson when the split marker isn't found.
-  const video = lesson ? getLessonVideo(lesson.id) : null
-  const bodyParts = useMemo(() => {
+  const videos = useMemo(() => {
+    const entry = lesson ? getLessonVideo(lesson.id) : null
+    return entry ? [].concat(entry) : []
+  }, [lesson])
+  const bodySegments = useMemo(() => {
     const body = lesson?.content.body || ''
-    if (typeof video?.afterSection === 'number') {
-      const at = body.indexOf(`<h2 id="section-${video.afterSection + 1}"`)
-      if (at > 0) return { before: body.slice(0, at), after: body.slice(at), inline: true }
-    }
-    return { before: body, after: '', inline: false }
-  }, [lesson, video])
+    const inline = []
+    const trailing = []
+    videos.forEach((video) => {
+      const at = typeof video.afterSection === 'number'
+        ? body.indexOf(`<h2 id="section-${video.afterSection + 1}"`)
+        : -1
+      if (at > 0) inline.push({ at, video })
+      else trailing.push(video)
+    })
+    inline.sort((a, b) => a.at - b.at)
+    const segments = []
+    let cursor = 0
+    inline.forEach(({ at, video }) => {
+      segments.push({ html: body.slice(cursor, at), video })
+      cursor = at
+    })
+    segments.push({ html: body.slice(cursor), video: null })
+    return { segments, trailing }
+  }, [lesson, videos])
 
   const lessonNavigation = useMemo(() => {
     if (!lesson) return null
@@ -255,12 +271,15 @@ export default function LessonDetail() {
         <BackButton fallback={`/learn/${lesson.course_slug}`} label="Back to course" />
         <ErrorBoundary>
           <div className="mt-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8 dark:border-ink-800 dark:bg-ink-900/40">
-            <div dangerouslySetInnerHTML={{ __html: bodyParts.before }} />
-            {video && bodyParts.inline && <LessonVideo video={video} lessonId={lesson.id} />}
-            {bodyParts.after && <div dangerouslySetInnerHTML={{ __html: bodyParts.after }} />}
+            {bodySegments.segments.map((segment, i) => (
+              <div key={i}>
+                <div dangerouslySetInnerHTML={{ __html: segment.html }} />
+                {segment.video && <LessonVideo video={segment.video} lessonId={lesson.id} />}
+              </div>
+            ))}
           </div>
         </ErrorBoundary>
-        {video && !bodyParts.inline && <LessonVideo video={video} lessonId={lesson.id} />}
+        {bodySegments.trailing.map((video) => <LessonVideo key={video.youtubeId} video={video} lessonId={lesson.id} />)}
         <section className="mt-6 rounded-xl border border-ink-200 p-5 dark:border-ink-800">
           <h2 className="text-lg font-semibold">Practice the examples</h2>
           <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">Change an input, predict the result, then compare it with the output. Explain why the result changes.</p>
