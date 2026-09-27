@@ -38,7 +38,10 @@ export default function Layout() {
       <ConversionTracking />
       <Navbar />
       <main>
-        <Outlet />
+        {/* Keeps the navbar and footer usable if a page fails; resets on navigation. */}
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <Footer />
       <FloatingThemeToggle />

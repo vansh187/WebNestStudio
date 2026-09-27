@@ -14,7 +14,7 @@ import ErrorBoundary from '../../components/ErrorBoundary'
 import { NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, writeLearningProgress, getLessonProgress } from '../../lib/learningProgress'
-import { readUserNotes, writeUserNotes, createNoteId } from '../../lib/lessonNotes'
+import { readUserNotes, readLessonNotes, writeUserNotes, createNoteId, noteDateLabel } from '../../lib/lessonNotes'
 
 function normalize(id) {
   const source = SAMPLE_LESSONS[id]
@@ -165,7 +165,7 @@ export default function LessonDetail() {
       setCourseProgress({})
       return
     }
-    setNotes(readUserNotes(userKey)[lessonId] || [])
+    setNotes(readLessonNotes(userKey, lessonId))
     setCourseProgress(readLearningProgress(userKey))
   }, [userKey, lessonId])
 
@@ -420,8 +420,8 @@ export default function LessonDetail() {
                     <li key={entry.id} className="rounded-lg bg-ink-50 p-3 text-sm dark:bg-ink-950">
                       <p className="whitespace-pre-wrap text-ink-800 dark:text-ink-100">{entry.text}</p>
                       <div className="mt-2 flex items-center justify-between">
-                        <time className="text-xs text-ink-400" dateTime={entry.createdAt}>
-                          {new Date(entry.createdAt).toLocaleString()}
+                        <time className="text-xs text-ink-400" dateTime={entry.createdAt || undefined}>
+                          {noteDateLabel(entry.createdAt)}
                         </time>
                         <button
                           type="button"

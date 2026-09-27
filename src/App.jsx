@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { FiLoader, FiAlertTriangle, FiRefreshCw } from 'react-icons/fi'
@@ -10,50 +10,51 @@ import ScrollToTop from './components/ScrollToTop'
 import ProtectedRoute from './components/ProtectedRoute'
 import SlowRequestBanner from './components/SlowRequestBanner'
 import ErrorBoundary from './components/ErrorBoundary'
+import { lazyWithReload } from './lib/chunkReload'
 import Home from './pages/Home'
-const About = lazy(() => import('./pages/About'))
-const OurStory = lazy(() => import('./pages/OurStory'))
-const Services = lazy(() => import('./pages/Services'))
-const Portfolio = lazy(() => import('./pages/Portfolio'))
-const PortfolioDetail = lazy(() => import('./pages/PortfolioDetail'))
-const Blog = lazy(() => import('./pages/Blog'))
-const BlogDetail = lazy(() => import('./pages/BlogDetail'))
-const Faqs = lazy(() => import('./pages/Faqs'))
-const Contact = lazy(() => import('./pages/Contact'))
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
-const TermsConditions = lazy(() => import('./pages/TermsConditions'))
-const Disclaimer = lazy(() => import('./pages/Disclaimer'))
-const DeleteAccount = lazy(() => import('./pages/DeleteAccount'))
-const Login = lazy(() => import('./pages/Login'))
+const About = lazyWithReload(() => import('./pages/About'))
+const OurStory = lazyWithReload(() => import('./pages/OurStory'))
+const Services = lazyWithReload(() => import('./pages/Services'))
+const Portfolio = lazyWithReload(() => import('./pages/Portfolio'))
+const PortfolioDetail = lazyWithReload(() => import('./pages/PortfolioDetail'))
+const Blog = lazyWithReload(() => import('./pages/Blog'))
+const BlogDetail = lazyWithReload(() => import('./pages/BlogDetail'))
+const Faqs = lazyWithReload(() => import('./pages/Faqs'))
+const Contact = lazyWithReload(() => import('./pages/Contact'))
+const PrivacyPolicy = lazyWithReload(() => import('./pages/PrivacyPolicy'))
+const TermsConditions = lazyWithReload(() => import('./pages/TermsConditions'))
+const Disclaimer = lazyWithReload(() => import('./pages/Disclaimer'))
+const DeleteAccount = lazyWithReload(() => import('./pages/DeleteAccount'))
+const Login = lazyWithReload(() => import('./pages/Login'))
 import NotFound from './pages/NotFound'
 
 // Split out of the main bundle - only visitors who actually open /card should
 // pay for the QR-code library it pulls in.
-const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
-const DigitalCard = lazy(() => import('./pages/DigitalCard'))
+const ServiceDetail = lazyWithReload(() => import('./pages/ServiceDetail'))
+const DigitalCard = lazyWithReload(() => import('./pages/DigitalCard'))
 
 // Coding platform - Monaco + its language workers are heavy, and only visitors who
 // open the playground / a project should pay for that chunk. Lazy for the same reason
 // as /card and admin below.
-const Playground = lazy(() => import('./pages/coding/Playground'))
-const ProjectsList = lazy(() => import('./pages/coding/ProjectsList'))
-const ProjectWorkspace = lazy(() => import('./pages/coding/ProjectWorkspace'))
-const SharedSnippet = lazy(() => import('./pages/coding/SharedSnippet'))
-const CodeLabHome = lazy(() => import('./pages/codelab/CodeLabHome'))
-const ProblemsList = lazy(() => import('./pages/codelab/ProblemsList'))
-const ProblemDetail = lazy(() => import('./pages/codelab/ProblemDetail'))
-const LearnerDashboard = lazy(() => import('./pages/codelab/LearnerDashboard'))
-const CoursesList = lazy(() => import('./pages/learn/CoursesList'))
-const CourseDetail = lazy(() => import('./pages/learn/CourseDetail'))
-const LessonDetail = lazy(() => import('./pages/learn/LessonDetail'))
+const Playground = lazyWithReload(() => import('./pages/coding/Playground'))
+const ProjectsList = lazyWithReload(() => import('./pages/coding/ProjectsList'))
+const ProjectWorkspace = lazyWithReload(() => import('./pages/coding/ProjectWorkspace'))
+const SharedSnippet = lazyWithReload(() => import('./pages/coding/SharedSnippet'))
+const CodeLabHome = lazyWithReload(() => import('./pages/codelab/CodeLabHome'))
+const ProblemsList = lazyWithReload(() => import('./pages/codelab/ProblemsList'))
+const ProblemDetail = lazyWithReload(() => import('./pages/codelab/ProblemDetail'))
+const LearnerDashboard = lazyWithReload(() => import('./pages/codelab/LearnerDashboard'))
+const CoursesList = lazyWithReload(() => import('./pages/learn/CoursesList'))
+const CourseDetail = lazyWithReload(() => import('./pages/learn/CourseDetail'))
+const LessonDetail = lazyWithReload(() => import('./pages/learn/LessonDetail'))
 
 // Auth-gated, never needed by anonymous visitors or crawlers - split out of the
 // main bundle so public/marketing pages don't pay for admin+portal code weight.
-const ClientPortal = lazy(() => import('./pages/portal/ClientPortal'))
-const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
-const AdminLeads = lazy(() => import('./pages/admin/AdminLeads'))
-const AdminResourceCrud = lazy(() => import('./pages/admin/AdminResourceCrud'))
-const AdminProjectStatus = lazy(() => import('./pages/admin/AdminProjectStatus'))
+const ClientPortal = lazyWithReload(() => import('./pages/portal/ClientPortal'))
+const AdminLayout = lazyWithReload(() => import('./pages/admin/AdminLayout'))
+const AdminLeads = lazyWithReload(() => import('./pages/admin/AdminLeads'))
+const AdminResourceCrud = lazyWithReload(() => import('./pages/admin/AdminResourceCrud'))
+const AdminProjectStatus = lazyWithReload(() => import('./pages/admin/AdminProjectStatus'))
 
 function RouteLoadingFallback() {
   return (
