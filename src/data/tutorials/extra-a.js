@@ -163,10 +163,10 @@ public class ReactiveDemo {
 
 export const springBootExtra = {
   'spring-boot-3-and-graalvm-native-images': {
-    title: 'Spring Boot 3 and GraalVM Native Images',
+    title: 'GraalVM Native Images with Spring Boot 3 and 4',
     intro: `Every Spring Boot application you have run so far starts on the JVM: the JVM loads your compiled bytecode, JIT-compiles hot code paths at runtime, and manages memory with garbage collection. This gives excellent long-running throughput, but it comes with a startup cost — the JVM has to warm up, and Spring itself has to scan the classpath, process annotations, and build the application context before the app can serve a single request. For a long-running server that stays up for days, a few seconds of startup barely matters. For a serverless function that spins up fresh for each burst of traffic, those seconds are a large fraction of the total cost.
 
-GraalVM native images solve this by compiling your Spring Boot application ahead of time into a standalone native executable, and Spring Boot 3 added first-class support for producing one directly from your existing codebase. This lesson explains what a native image actually is, why it helps in cloud and serverless contexts, how Spring Boot 3 builds one via its AOT (ahead-of-time) processing, and the real trade-offs involved.`,
+GraalVM native images solve this by compiling your Spring Boot application ahead of time into a standalone native executable, and Spring Boot 3 added first-class support for producing one directly from your existing codebase — support that Spring Boot 4 continues and refines. This lesson explains what a native image actually is, why it helps in cloud and serverless contexts, how Spring Boot 3 builds one via its AOT (ahead-of-time) processing, and the real trade-offs involved.`,
     sections: [
       {
         heading: 'What a GraalVM Native Image Is',
@@ -192,8 +192,8 @@ GraalVM native images solve this by compiling your Spring Boot application ahead
     ],
     examples: [
       {
-        caption: 'Building and running a Spring Boot 3 native image with Maven',
-        code: `<!-- pom.xml already has spring-boot-starter-parent 3.x, which brings in the native profile -->
+        caption: 'Building and running a Spring Boot native image with Maven',
+        code: `<!-- pom.xml already has spring-boot-starter-parent (3.x or 4.x), which brings in the native profile -->
 
 # Build the native executable (requires a GraalVM JDK on PATH)
 mvn -Pnative native:compile
