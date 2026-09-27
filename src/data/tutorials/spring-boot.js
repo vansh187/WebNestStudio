@@ -48,10 +48,73 @@ public class WebnestAppApplication {
   '  |____| .__|_| |_|_| |_\\__, |
  =========|_|==============|___/=
 
- :: Spring Boot ::               (v3.2.4)
+ :: Spring Boot ::                (v4.1.1)
 
-... Tomcat started on port(s): 8080 (http)
+... Tomcat started on port 8080 (http) with context path '/'
 ... Started WebnestAppApplication in 1.842 seconds`,
+      },
+      {
+        caption: 'Hello World (console): print a message when the application starts',
+        code: `package com.webnest.app;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+@SpringBootApplication
+public class HelloWorldApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(HelloWorldApplication.class, args);
+    }
+
+    // A CommandLineRunner bean runs once, right after Spring Boot has started
+    @Bean
+    CommandLineRunner sayHello() {
+        return args -> System.out.println("Hello, World from Spring Boot!");
+    }
+}
+
+// Run it from the project folder:
+//   Maven:  mvn spring-boot:run      (Windows: mvnw.cmd spring-boot:run)
+//   Gradle: ./gradlew bootRun        (Windows: gradlew.bat bootRun)`,
+        output: ` :: Spring Boot ::                (v4.1.1)
+
+... Starting HelloWorldApplication using Java 21
+... Started HelloWorldApplication in 0.912 seconds
+Hello, World from Spring Boot!`,
+      },
+      {
+        caption: 'Hello World (web): return the message from a REST endpoint',
+        code: `<!-- pom.xml: add the web starter (named spring-boot-starter-web before Boot 4) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webmvc</artifactId>
+</dependency>
+
+// src/main/java/com/webnest/app/HelloController.java
+package com.webnest.app;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    @GetMapping("/hello")
+    public String hello(@RequestParam(defaultValue = "World") String name) {
+        return "Hello, " + name + "!";
+    }
+}`,
+        output: `Open http://localhost:8080/hello in a browser, or use curl:
+
+curl http://localhost:8080/hello
+Hello, World!
+
+curl "http://localhost:8080/hello?name=Webnest"
+Hello, Webnest!`,
       },
     ],
     commonMistakes: [
@@ -77,7 +140,8 @@ This matters because version mismatches between related libraries are one of the
         heading: 'Commonly Used Starters',
         body: `Each starter is named after the capability it adds, following the pattern spring-boot-starter-*.`,
         list: [
-          '<code>spring-boot-starter-web</code> — builds RESTful/MVC web applications using Spring MVC, with an embedded Tomcat server and Jackson for JSON.',
+          '<code>spring-boot-starter-webmvc</code> — builds RESTful/MVC web applications using Spring MVC, with an embedded Tomcat server and Jackson for JSON (called <code>spring-boot-starter-web</code> before Spring Boot 4).',
+          '<code>spring-boot-starter-restclient</code> / <code>spring-boot-starter-webclient</code> — HTTP clients for calling other services (separate starters since Spring Boot 4).',
           '<code>spring-boot-starter-data-jpa</code> — Spring Data JPA on top of Hibernate, for working with relational databases through repository interfaces.',
           '<code>spring-boot-starter-security</code> — Spring Security, adding authentication and authorization with sensible defaults (e.g. every endpoint requires login unless configured otherwise).',
           '<code>spring-boot-starter-validation</code> — Bean Validation (Jakarta Validation) support for @Valid-based request validation.',
@@ -95,7 +159,7 @@ This matters because version mismatches between related libraries are one of the
         code: `<dependencies>
     <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
+        <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -117,7 +181,8 @@ This matters because version mismatches between related libraries are one of the
     ],
     keyPoints: [
       'Starters bundle compatible sets of dependencies for a specific concern (web, data, security, testing).',
-      'spring-boot-starter-web, -data-jpa, and -security are the most commonly used starters in real applications.',
+      'spring-boot-starter-webmvc, -data-jpa, -validation and -security are the most commonly used starters in real applications.',
+      'Spring Boot 4 splits starters by technology and adds a matching test starter for each (e.g. spring-boot-starter-webmvc-test).',
       'What is on the classpath (via starters) directly determines which auto-configuration classes activate.',
       'Prefer starters over hand-picking individual library versions to avoid compatibility issues.',
     ],
@@ -645,7 +710,7 @@ public class ProductController {
 // <dependency>
 //   <groupId>org.springdoc</groupId>
 //   <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-//   <version>2.5.0</version>
+//   <version>3.0.0</version>   <!-- springdoc 3.x supports Spring Boot 4; 2.x is for Boot 3 -->
 // </dependency>`,
         output: `Swagger UI available at: http://localhost:8080/swagger-ui.html
 Raw spec available at:   http://localhost:8080/v3/api-docs
@@ -913,7 +978,7 @@ GET  /api/orders          -> 401 Unauthorized (no credentials supplied)`,
       'Confusing 401 Unauthorized (authentication is missing or invalid) with 403 Forbidden (authenticated, but not authorized for this resource).',
       'Storing plaintext passwords instead of hashing them with a PasswordEncoder like BCryptPasswordEncoder.',
       'Leaving CSRF protection enabled on a stateless, token-based REST API where it provides no benefit and only blocks legitimate non-browser clients.',
-      'Extending the deprecated WebSecurityConfigurerAdapter in a new project instead of the current SecurityFilterChain bean approach.',
+      'Copying old tutorials that extend WebSecurityConfigurerAdapter — it was removed in Spring Security 6; use SecurityFilterChain beans.',
     ],
     keyPoints: [
       'Spring Security enforces access control through a chain of servlet filters that run before your controllers.',
@@ -1102,7 +1167,7 @@ public class OrderService {
 
   testing: {
     title: 'Testing Spring Boot Applications',
-    intro: `Spring Boot applications benefit from testing at different levels of the stack — a full integration test that boots the entire application context is thorough but slow, while a narrowly focused slice test loads only what's needed for one layer and runs much faster. Spring Boot Test provides annotations for exactly this range of granularity, built on JUnit 5, Mockito, and AssertJ (all bundled in spring-boot-starter-test).`,
+    intro: `Spring Boot applications benefit from testing at different levels of the stack — a full integration test that boots the entire application context is thorough but slow, while a narrowly focused slice test loads only what's needed for one layer and runs much faster. Spring Boot Test provides annotations for exactly this range of granularity, built on JUnit Jupiter, Mockito, and AssertJ (bundled in spring-boot-starter-test; Spring Boot 4 also provides per-technology test starters such as spring-boot-starter-webmvc-test and spring-boot-starter-data-jpa-test). The lessons in this module cover each level in depth.`,
     sections: [
       {
         heading: '@SpringBootTest — Full Integration Tests',
@@ -1110,7 +1175,7 @@ public class OrderService {
       },
       {
         heading: '@WebMvcTest — Controller Slice Tests',
-        body: `<code>@WebMvcTest(ControllerClass.class)</code> loads only the Spring MVC infrastructure and the specified controller, without starting the full context (no real database, no service beans unless mocked). Combined with <code>MockMvc</code>, it lets you send simulated HTTP requests and assert on status codes, headers, and JSON response bodies quickly, while service dependencies are typically supplied as <code>@MockBean</code>.`,
+        body: `<code>@WebMvcTest(ControllerClass.class)</code> loads only the Spring MVC infrastructure and the specified controller, without starting the full context (no real database, no service beans unless mocked). Combined with <code>MockMvc</code>, it lets you send simulated HTTP requests and assert on status codes, headers, and JSON response bodies quickly, while service dependencies are supplied as <code>@MockitoBean</code> (Spring Boot 4 removed the older <code>@MockBean</code>).`,
       },
       {
         heading: '@DataJpaTest — Repository Slice Tests',
@@ -1126,7 +1191,7 @@ class ProductControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ProductService productService;
 
     @Test
@@ -1165,15 +1230,15 @@ Tests run: 2, Failures: 0, Errors: 0, Skipped: 0`,
     ],
     commonMistakes: [
       'Using @SpringBootTest for every test class, causing the full application context to boot repeatedly and slowing the test suite dramatically as the project grows.',
-      'Forgetting @MockBean for a controller\'s dependencies inside @WebMvcTest, causing context startup failures because the real service bean (and its own dependencies, like a database) is not available in that slice.',
+      'Forgetting @MockitoBean for a controller\'s dependencies inside @WebMvcTest, causing context startup failures because the real service bean (and its own dependencies, like a database) is not available in that slice.',
       'Testing the repository layer against production-like assumptions without realizing @DataJpaTest uses an embedded in-memory database by default, whose SQL dialect quirks can differ subtly from the real production database.',
       'Not resetting shared mutable state between tests, causing flaky, order-dependent test failures.',
     ],
     keyPoints: [
       '@SpringBootTest boots the full application context — thorough but slow, best used for true integration tests.',
-      '@WebMvcTest loads only MVC infrastructure and one controller, paired with MockMvc and @MockBean for fast controller tests.',
+      '@WebMvcTest loads only MVC infrastructure and one controller, paired with MockMvc (or MockMvcTester) and @MockitoBean for fast controller tests.',
       '@DataJpaTest loads only JPA components with an embedded database and per-test transaction rollback, ideal for repository tests.',
-      'spring-boot-starter-test bundles JUnit 5, Mockito, and AssertJ so no extra setup is needed to start testing.',
+      'spring-boot-starter-test bundles JUnit Jupiter, Mockito, and AssertJ; add the per-technology test starters for slices in Spring Boot 4.',
     ],
   },
 

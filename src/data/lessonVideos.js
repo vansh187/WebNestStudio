@@ -34,6 +34,20 @@ export const LESSON_VIDEOS = {
     title: 'Java Environment Setup',
     description: 'Prefer to watch? This video walks through setting up your Java development environment. Follow it alongside the written steps below.',
   },
+  lesson_java_core_identifiers_in_java: {
+    youtubeId: 'aXAwZ_lg0yY',
+    format: 'short',
+    afterSection: 0, // right after the introduction, before the naming rules
+    title: 'How Java Evaluates Identifiers',
+    description: 'A quick video on how Java decides whether a name is a valid identifier.',
+  },
+  lesson_java_core_java_variables: {
+    youtubeId: 'I5dEw1XPLNY',
+    format: 'short',
+    afterSection: 0, // right after the introduction, before the written sections
+    title: 'How Java Variables Control Your Data',
+    description: 'A quick video on how Java variables store and control your program\'s data.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
