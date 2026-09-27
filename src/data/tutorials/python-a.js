@@ -830,7 +830,7 @@ total_revenue = sum(item["units"] * item["price"] for item in sales)
 print(f"Total revenue: {total_revenue:.2f}")`,
         output: `Total units sold: 45
 Widget records: [{'product': 'Widget', 'units': 12, 'price': 9.5}, {'product': 'Widget', 'units': 8, 'price': 9.5}]
-Total revenue: 317.50`,
+Total revenue: 380.00`,
       },
       {
         caption: 'Sorting records by a field and finding the top result',

@@ -18,6 +18,18 @@ import { springBootAdvanced } from './spring-boot-advanced.js'
 import { springBootCareer } from './spring-boot-career.js'
 import { pythonContentA } from './python-a.js'
 import { pythonContentB } from './python-b.js'
+import { pythonBasics } from './python-basics.js'
+import { pythonStructures } from './python-structures.js'
+import { pythonOopA } from './python-oop-a.js'
+import { pythonOopB } from './python-oop-b.js'
+import { pythonMl } from './python-ml.js'
+import { pythonDataB } from './python-data-b.js'
+import { pythonDataA } from './python-data-a.js'
+import { pythonFastapiB } from './python-fastapi-b.js'
+import { pythonFastapiA } from './python-fastapi-a.js'
+import { pythonDatabases } from './python-databases.js'
+import { pythonAdvanced } from './python-advanced.js'
+import { pythonStdlib } from './python-stdlib.js'
 import { htmlContent } from './html.js'
 import { cssContent } from './css.js'
 import { javascriptContentA } from './javascript-a.js'
@@ -65,7 +77,23 @@ export const TUTORIALS_BY_COURSE = {
     ...springBootAdvanced,
     ...springBootCareer,
   },
-  python: { ...pythonContentA, ...pythonContentB, ...pythonExtra },
+  python: {
+    ...pythonContentA,
+    ...pythonContentB,
+    ...pythonExtra,
+    ...pythonBasics,
+    ...pythonStructures,
+    ...pythonOopA,
+    ...pythonOopB,
+    ...pythonMl,
+    ...pythonDataB,
+    ...pythonDataA,
+    ...pythonFastapiB,
+    ...pythonFastapiA,
+    ...pythonDatabases,
+    ...pythonAdvanced,
+    ...pythonStdlib,
+  },
   html: { ...htmlContent, ...htmlExtra },
   css: { ...cssContent, ...cssExtra },
   javascript: { ...javascriptContentA, ...javascriptContentB, ...javascriptExtra },
