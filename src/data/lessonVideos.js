@@ -48,6 +48,27 @@ export const LESSON_VIDEOS = {
     title: 'How Java Variables Control Your Data',
     description: 'A quick video on how Java variables store and control your program\'s data.',
   },
+  lesson_java_core_java_keywords: {
+    youtubeId: 'm0D1WuRBciU',
+    format: 'short',
+    afterSection: 0, // right after the introduction, before the keyword categories
+    title: 'The Invisible Rules That Power Java',
+    description: 'A quick video on Java keywords — the reserved words with a fixed meaning that you cannot use as names.',
+  },
+  lesson_java_core_java_data_types: {
+    youtubeId: '2sUHFJZ16rw',
+    format: 'short',
+    afterSection: 0, // right after the introduction, before the primitive types
+    title: 'The Hidden Rules of Java Data Types',
+    description: 'A quick video on Java data types — primitives, references and the rules that govern them.',
+  },
+  lesson_java_core_java_if_else_statement: {
+    youtubeId: 'jHLp97U38jA',
+    format: 'short',
+    afterSection: 1, // just before the "Nested if and Braces" section
+    title: 'How the Dangling Else Breaks Code',
+    description: 'A quick video on the dangling else problem — which if an else really belongs to, and how braces fix it.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
