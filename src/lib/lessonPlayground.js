@@ -4,6 +4,8 @@ export function lessonTemplate(lesson, exampleIndex = 0) {
   const code = example?.code || example?.content
   const language = lesson?.language || example?.language
   if (!code || lesson?.course_slug === 'react') return null
+  // Framework/database examples (FastAPI, Streamlit, MySQL...) need a local project.
+  if (example?.runnable === false) return null
   // Setup lessons also contain terminal commands. They are useful to copy, but
   // are not Python/JavaScript programs and must not be sent to those runners.
   if (/^\s*(?:\$\s+|(?:python3?|pip3?|npm|npx|node|cd|mkdir|source|sudo|brew|apt|git)\s+|>>>\s)/m.test(code)) return null
