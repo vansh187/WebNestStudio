@@ -19,6 +19,7 @@ for (const url of process.argv.includes('--browser-only') ? [] : urls) {
   assert.ok(html.includes(`rel="canonical" href="${canonicalUrl(pathname)}"`), `${pathname}: canonical`)
   assert.equal((html.match(/<h1\b/g) || []).length, 1, `${pathname}: one H1`)
   assert.ok(!/<meta name="robots" content="noindex/.test(html), `${pathname}: indexable`)
+  assert.ok(!/\b(?:href|src)="https?:\/\/(?:localhost|127\.0\.0\.1)[:/]/.test(html), `${pathname}: no local preview-server URLs`)
   const title = html.match(/<title>(.*?)<\/title>/s)?.[1]
   const description = html.match(/<meta name="description" content="([^"]*)"/)?.[1]
   assert.ok(title && description, `${pathname}: metadata`)

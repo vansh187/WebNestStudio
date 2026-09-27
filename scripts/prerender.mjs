@@ -57,7 +57,10 @@ try {
         })
         const output = entry.path === '/' ? path.join(dist, 'index.html') : path.join(dist, `${entry.path.slice(1)}.html`)
         await mkdir(path.dirname(output), { recursive: true })
-        await writeFile(output, await page.content(), 'utf8')
+        // Vite adds <link rel="modulepreload"> tags with absolute URLs of this local
+        // preview server; left as-is, every visitor's browser would try localhost.
+        const html = (await page.content()).replaceAll(`${origin}/`, '/')
+        await writeFile(output, html, 'utf8')
         completed.push(entry.path)
         if (completed.length % 25 === 0) console.log(`[prerender] ${completed.length}/${manifest.length + 1} rendered`)
       } catch (error) {

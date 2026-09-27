@@ -1,11 +1,12 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { lazyWithReload } from '../../lib/chunkReload'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FiX } from 'react-icons/fi'
 import CodingIcon from './CodingIcon'
 
 // Deferred until the user actually opens the panel - pulls in its own markdown
 // rendering and generation UI, which shouldn't load on every page for every visitor.
-const ChatPanel = lazy(() => import('./ChatPanel'))
+const ChatPanel = lazyWithReload(() => import('./ChatPanel'))
 
 const NOTIFICATION_TEXT = "Hi, I'm WebNestAi. Need a Website, Mobile App, or AI Solutions? Tell us your requirement — I'll handle the rest."
 

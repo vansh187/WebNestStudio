@@ -12,6 +12,12 @@ function storageKey(userKey) {
   return `${STORAGE_PREFIX}:${userKey}`
 }
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+const DEFAULT_LESSON_PROGRESS = { status: 'not_started', completed_percent: 0, bookmarked: false }
+
 function migrateLegacyData(userKey) {
   let legacy
   try {
@@ -41,6 +47,7 @@ function migrateLegacyData(userKey) {
   } catch {
     existingProgress = {}
   }
+  if (!isPlainObject(existingProgress)) existingProgress = {}
   const progressSaved = writeLearningProgress(userKey, { ...progress, ...existingProgress })
   const existingNotes = readUserNotes(userKey)
   const notesSaved = writeUserNotes(userKey, { ...notesByLesson, ...existingNotes })
@@ -63,7 +70,7 @@ export function readLearningProgress(userKey) {
   migrateLegacyData(userKey)
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey(userKey)) || '{}')
-    return parsed && typeof parsed === 'object' ? parsed : {}
+    return isPlainObject(parsed) ? parsed : {}
   } catch {
     return {}
   }
@@ -83,7 +90,8 @@ export function writeLearningProgress(userKey, progress) {
 }
 
 export function getLessonProgress(progress, lessonId) {
-  return progress[lessonId] || { status: 'not_started', completed_percent: 0, bookmarked: false }
+  const entry = progress?.[lessonId]
+  return isPlainObject(entry) ? { ...DEFAULT_LESSON_PROGRESS, ...entry } : DEFAULT_LESSON_PROGRESS
 }
 
 export function getCourseProgress(progress, course) {

@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { lazyWithReload } from '../lib/chunkReload'
 import { NavLink, Link } from 'react-router-dom'
 import { FiMenu, FiX, FiArrowRight, FiUser, FiLogOut } from 'react-icons/fi'
 import Logo from './Logo'
@@ -6,7 +7,7 @@ import { NAV_LINKS } from '../data/site'
 import { useAuth } from '../context/AuthContext'
 
 // Pulls in the card UI + newsletter form - only loaded once a visitor opens it.
-const VisitingCardModal = lazy(() => import('./VisitingCardModal'))
+const VisitingCardModal = lazyWithReload(() => import('./VisitingCardModal'))
 
 // The "Visiting Card" entry opens an in-site overlay instead of navigating, so
 // visitors can grab our details without leaving the page. The /card route still
