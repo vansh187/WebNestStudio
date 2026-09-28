@@ -549,6 +549,21 @@ The syntax reads almost like plain English: <code>for (Type element : collection
         body: `On each iteration, the loop variable is assigned a copy of the next element in the array or collection, in order, and the body executes with that value available. The loop automatically stops after the last element, so there is no condition or index update to get wrong.`,
       },
       {
+        heading: 'How It Works Internally: What the Compiler Generates',
+        body: `There is no special "for-each" instruction in the JVM. The compiler rewrites every enhanced for loop into an ordinary loop before producing bytecode, and it picks one of two shapes depending on what you loop over:`,
+        list: [
+          '<strong>Arrays</strong> become an indexed loop. <code>for (int n : nums) { ... }</code> is compiled as if you wrote <code>int[] a = nums; for (int i = 0; i &lt; a.length; i++) { int n = a[i]; ... }</code>. The array reference is captured once before the loop starts, so pointing <code>nums</code> at a different array inside the body does not change what is being iterated.',
+          '<strong>Anything Iterable</strong> (List, Set, Queue, your own classes) becomes an iterator loop. <code>for (String s : list) { ... }</code> is compiled as <code>for (Iterator&lt;String&gt; it = list.iterator(); it.hasNext(); ) { String s = it.next(); ... }</code>.',
+          'The loop variable is a fresh local variable assigned from <code>a[i]</code> or <code>it.next()</code> on every pass. That is why reassigning it never changes the array or collection — for objects it is a copy of the <em>reference</em>, so calling a method that changes the object itself (like <code>sb.append("!")</code>) does affect the original.',
+          'Because the generated code calls <code>list.iterator()</code> (for a collection) or reads <code>a.length</code> (for an array) before the first pass, looping over a <code>null</code> collection or array throws a NullPointerException before the body ever runs.',
+          'Any class that implements <code>Iterable&lt;T&gt;</code> — that is, has an <code>iterator()</code> method — can be used in a for-each loop. Maps are not Iterable themselves, which is why you loop over <code>map.entrySet()</code>, <code>keySet()</code> or <code>values()</code> instead.',
+        ],
+      },
+      {
+        heading: 'Why Removing Inside for-each Throws ConcurrentModificationException',
+        body: `Collections like ArrayList keep an internal modification counter (<code>modCount</code>) that increases every time the list changes size. When the hidden iterator is created, it remembers that count. Every call to <code>next()</code> compares the two, and if the list was changed behind the iterator's back — for example by <code>list.remove(x)</code> inside the loop — it throws ConcurrentModificationException. This is a "fail-fast" safety check, not a threading problem. The fix is to remove through the iterator itself with an explicit <code>Iterator</code> and <code>it.remove()</code>, which updates both counters together, or to use <code>list.removeIf(...)</code>, which does the same thing in one line.`,
+      },
+      {
         heading: 'Limitations of the For-each Loop',
         body: `The convenience comes with real trade-offs that make for-each unsuitable for some tasks.`,
         list: [
@@ -582,9 +597,131 @@ Apple
 Banana
 Cherry`,
       },
+      {
+        caption: 'What the compiler turns a for-each loop into, written out by hand for an array and a List',
+        code: `import java.util.Iterator;
+import java.util.List;
+
+public class ForEachInternalsDemo {
+    public static void main(String[] args) {
+        int[] nums = {10, 20, 30};
+
+        // What you write
+        for (int n : nums) {
+            System.out.print(n + " ");
+        }
+        System.out.println("<- for-each over array");
+
+        // What the compiler generates for an array
+        int[] a = nums;
+        for (int i = 0; i < a.length; i++) {
+            int n = a[i];
+            System.out.print(n + " ");
+        }
+        System.out.println("<- indexed loop");
+
+        List<String> langs = List.of("Java", "Python", "React");
+
+        // What you write
+        for (String s : langs) {
+            System.out.print(s + " ");
+        }
+        System.out.println("<- for-each over List");
+
+        // What the compiler generates for an Iterable
+        for (Iterator<String> it = langs.iterator(); it.hasNext(); ) {
+            String s = it.next();
+            System.out.print(s + " ");
+        }
+        System.out.println("<- iterator loop");
+    }
+}`,
+        output: `10 20 30 <- for-each over array
+10 20 30 <- indexed loop
+Java Python React <- for-each over List
+Java Python React <- iterator loop`,
+      },
+      {
+        caption: 'Your own class works in for-each as soon as it implements Iterable',
+        code: `import java.util.Iterator;
+
+public class CountdownDemo {
+    static class Countdown implements Iterable<Integer> {
+        private final int start;
+
+        Countdown(int start) {
+            this.start = start;
+        }
+
+        @Override
+        public Iterator<Integer> iterator() {
+            return new Iterator<>() {
+                private int current = start;
+
+                @Override
+                public boolean hasNext() {
+                    return current > 0;
+                }
+
+                @Override
+                public Integer next() {
+                    return current--;
+                }
+            };
+        }
+    }
+
+    public static void main(String[] args) {
+        for (int n : new Countdown(5)) {
+            System.out.print(n + " ");
+        }
+        System.out.println("Liftoff!");
+    }
+}`,
+        output: '5 4 3 2 1 Liftoff!',
+      },
+      {
+        caption: 'Removing inside for-each fails fast; Iterator.remove() and removeIf() are the safe ways',
+        code: `import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.List;
+
+public class SafeRemoveDemo {
+    public static void main(String[] args) {
+        List<Integer> nums = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
+        try {
+            for (int n : nums) {
+                if (n % 2 == 0) {
+                    nums.remove(Integer.valueOf(n));
+                }
+            }
+        } catch (ConcurrentModificationException e) {
+            System.out.println("for-each + list.remove(): ConcurrentModificationException");
+        }
+
+        List<Integer> a = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
+        for (Iterator<Integer> it = a.iterator(); it.hasNext(); ) {
+            if (it.next() % 2 == 0) {
+                it.remove();
+            }
+        }
+        System.out.println("Iterator.remove(): " + a);
+
+        List<Integer> b = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
+        b.removeIf(n -> n % 2 == 0);
+        System.out.println("removeIf():        " + b);
+    }
+}`,
+        output: `for-each + list.remove(): ConcurrentModificationException
+Iterator.remove(): [1, 3, 5]
+removeIf():        [1, 3, 5]`,
+      },
     ],
     commonMistakes: [
       'Trying to modify an array element by assigning to the for-each loop variable, not realizing it only changes the local copy, not the array.',
+      'Looping over a collection that might be null — the hidden iterator() call throws a NullPointerException before the first iteration, so return an empty list instead of null.',
+      'Trying to use a Map directly in a for-each loop; Map is not Iterable, so loop over entrySet(), keySet() or values().',
       'Needing the current index inside the loop and having no clean way to get it without falling back to an indexed for loop.',
       'Adding or removing elements from a List while iterating it with for-each, which throws a ConcurrentModificationException at runtime.',
       'Assuming for-each can iterate in reverse order — it always moves forward from the first element to the last.',
@@ -594,6 +731,8 @@ Cherry`,
       'The loop variable receives a copy of each element; reassigning it never changes the underlying array or collection.',
       'for-each has no built-in index access and always iterates forward only.',
       'Modifying a collection\'s structure while iterating it with for-each can throw ConcurrentModificationException.',
+      'Internally, for-each over an array compiles to an indexed loop, and over an Iterable to an iterator loop using hasNext() and next().',
+      'Any class implementing Iterable can be used in for-each; to remove while looping, use Iterator.remove() or removeIf().',
     ],
   },
 
