@@ -86,6 +86,17 @@ Traditional switch statements execute case labels sequentially once a match is f
         heading: 'Modern Enhanced Switch (Java 14+)',
         body: `Newer Java versions introduced an arrow-based switch expression: <code>case value -> result;</code>. Each arrow case runs only its own branch with no fall-through at all, the switch itself can produce a value directly (assignable to a variable), and a block body can return a value with <code>yield</code>. This form is safer for beginners because it removes the fall-through pitfall entirely, though the classic colon-and-break form remains widely used in existing codebases and is still essential to understand.`,
       },
+      {
+        heading: 'How Enhanced Switch Eliminates Bugs',
+        body: `The enhanced switch isn't just shorter syntax. It turns several bugs that the classic switch lets through silently into bugs the compiler rejects, or makes them impossible to write in the first place:`,
+        list: [
+          '<strong>No accidental fall-through</strong> — an arrow case runs only its own expression or block, so a missing <code>break</code> can never leak execution into the next case.',
+          '<strong>Exhaustiveness is checked</strong> — a switch <em>expression</em> must handle every possible value. For an enum, covering every constant is enough (no <code>default</code> needed), and if someone later adds a new constant, every switch expression that doesn\'t handle it stops compiling instead of quietly doing nothing.',
+          '<strong>No "forgot to assign" paths</strong> — because the switch produces the value itself, you assign the variable once (<code>String type = switch (...) {...};</code>) instead of assigning it separately in each case and hoping none was missed.',
+          '<strong>Duplicate-looking cases become one line</strong> — <code>case 1, 2, 3 -></code> replaces stacked empty labels, so there is no fall-through left to misread.',
+          '<strong>yield makes the result explicit</strong> — when a case needs several statements, a <code>{ ... }</code> block ends with <code>yield value;</code>, and the compiler errors if a block can finish without yielding.',
+        ],
+      },
     ],
     examples: [
       {
@@ -133,9 +144,86 @@ Traditional switch statements execute case labels sequentially once a match is f
 }`,
         output: 'Weekday',
       },
+      {
+        caption: 'The fall-through bug: a missing break grants every access level below the match',
+        code: `public class FallThroughBug {
+    public static void main(String[] args) {
+        int level = 1;
+
+        switch (level) {
+            case 1:
+                System.out.println("Read access");
+                // missing break -> falls into case 2 and case 3
+            case 2:
+                System.out.println("Write access");
+            case 3:
+                System.out.println("Admin access");
+                break;
+            default:
+                System.out.println("No access");
+        }
+    }
+}`,
+        output: `Read access
+Write access
+Admin access`,
+      },
+      {
+        caption: 'Enhanced switch over an enum: exhaustive, no default, and the compiler catches a missing constant',
+        code: `public class TrafficLightDemo {
+    enum Light { RED, YELLOW, GREEN }
+
+    static String action(Light light) {
+        // Every constant is covered, so no default is needed.
+        // Add BLUE to the enum and this method stops compiling
+        // until a "case BLUE ->" is added.
+        return switch (light) {
+            case RED -> "Stop";
+            case YELLOW -> "Slow down";
+            case GREEN -> "Go";
+        };
+    }
+
+    public static void main(String[] args) {
+        for (Light light : Light.values()) {
+            System.out.println(light + " -> " + action(light));
+        }
+    }
+}`,
+        output: `RED -> Stop
+YELLOW -> Slow down
+GREEN -> Go`,
+      },
+      {
+        caption: 'Using yield when a case needs more than one statement',
+        code: `public class GradeDemo {
+    public static void main(String[] args) {
+        int score = 76;
+
+        String grade = switch (score / 10) {
+            case 10, 9 -> "A";
+            case 8 -> "B";
+            case 7 -> {
+                String g = "C";
+                if (score % 10 >= 5) {
+                    g = "C+";
+                }
+                yield g;
+            }
+            default -> "F";
+        };
+
+        System.out.println(grade);
+    }
+}`,
+        output: 'C+',
+      },
     ],
     commonMistakes: [
       'Forgetting "break" at the end of a case in a classic switch, causing execution to silently fall through into the next case.',
+      'Mixing colon cases (case 1:) and arrow cases (case 1 ->) in the same switch, which does not compile — pick one style per switch.',
+      'Using return inside a switch expression block to produce its value; a switch expression block must use yield, not return.',
+      'Adding a default to an enum switch expression that already covers every constant, which hides the compile error you would otherwise get when a new constant is added.',
       'Trying to use a non-constant variable or a method call result as a case label, which fails to compile.',
       'Assuming a switch on String is case-insensitive — case labels must match the switch value exactly, including capitalization.',
       'Writing an enum case label as "Day.MONDAY" instead of just "MONDAY", which does not compile inside a switch on that enum type.',
@@ -144,7 +232,9 @@ Traditional switch statements execute case labels sequentially once a match is f
       'Classic switch falls through to the next case unless a break statement stops it — this is by design, not a bug.',
       'Case labels must be compile-time constants; switch supports byte/short/char/int, their wrappers, String, and enums.',
       'The Java 14+ arrow syntax (case value -> result;) has no fall-through and can directly produce a value.',
-      'default is optional but should normally be included to handle unexpected values explicitly.',
+      'A switch expression must be exhaustive: over an enum, covering every constant is enough, and a newly added constant becomes a compile error rather than a silent bug.',
+      'Use yield (not return) to produce the value from a multi-statement block inside a switch expression.',
+      'default is optional but should normally be included to handle unexpected values explicitly — except in an enum switch expression that already covers every constant, where leaving it out keeps the compiler\'s exhaustiveness check working for you.',
     ],
   },
 
@@ -157,6 +247,25 @@ Because all three parts of the header are visible together, the for loop communi
       {
         heading: 'Anatomy of the for Loop',
         body: `The header has the form <code>for (initialization; condition; update)</code>. Initialization runs once before the loop starts, typically declaring a counter variable. The condition is checked before every iteration, including the first — if it is false immediately, the loop body never runs at all. The update expression runs after each iteration completes, before the condition is checked again.`,
+      },
+      {
+        heading: 'How the for Loop Runs, Step by Step',
+        body: `The three header parts are written together but are <em>not</em> executed together. For <code>for (int i = 1; i &lt;= 3; i++) { body }</code>, Java runs them in this exact order:`,
+        list: [
+          '<strong>1. Initialization</strong> — <code>int i = 1</code> runs exactly once, before anything else.',
+          '<strong>2. Condition</strong> — <code>i &lt;= 3</code> is checked. If it is false, the loop ends immediately and the body is skipped.',
+          '<strong>3. Body</strong> — the statements inside the braces run once.',
+          '<strong>4. Update</strong> — <code>i++</code> runs <em>after</em> the body, not before it.',
+          '<strong>5. Repeat from step 2</strong> — the condition is checked again with the new value, and steps 2 to 4 repeat until the condition becomes false.',
+        ],
+      },
+      {
+        heading: 'Tracing an Iteration Table',
+        body: `The easiest way to predict what a loop does is to trace it in a small table: one row per condition check, recording the counter's value, whether the condition is true, and what the body does. For <code>for (int i = 1; i &lt;= 3; i++)</code> the condition is checked <strong>four</strong> times (i = 1, 2, 3 and finally 4) but the body runs only <strong>three</strong> times, because the fourth check is the one that fails and ends the loop. The condition is always checked one more time than the body runs, and that single extra check is where most off-by-one bugs come from.`,
+      },
+      {
+        heading: 'Nested for Loops',
+        body: `A for loop can contain another for loop. The inner loop runs through <em>all</em> of its iterations for every single iteration of the outer loop, so an outer loop of 3 and an inner loop of 4 execute the inner body 3 × 4 = 12 times. Nested loops are the standard tool for rows-and-columns work: grids, 2D arrays, multiplication tables, and printed patterns. Give each loop its own counter name (commonly <code>i</code> for rows and <code>j</code> for columns), and remember that a plain <code>break</code> only exits the innermost loop it sits in.`,
       },
       {
         heading: 'Multiple Expressions and Infinite Loops',
@@ -188,15 +297,86 @@ Because all three parts of the header are visible together, the for loop communi
 2 4
 3 3`,
       },
+      {
+        caption: 'Printing every step to see the real execution order of init, condition, body, and update',
+        code: `public class ForLoopTrace {
+    static boolean check(int i) {
+        boolean result = i <= 3;
+        System.out.println("check i=" + i + " -> " + result);
+        return result;
+    }
+
+    public static void main(String[] args) {
+        for (int i = init(); check(i); i = update(i)) {
+            System.out.println("  body i=" + i);
+        }
+        System.out.println("loop finished");
+    }
+
+    static int init() {
+        System.out.println("init i=1");
+        return 1;
+    }
+
+    static int update(int i) {
+        System.out.println("  update i=" + i + " -> " + (i + 1));
+        return i + 1;
+    }
+}`,
+        output: `init i=1
+check i=1 -> true
+  body i=1
+  update i=1 -> 2
+check i=2 -> true
+  body i=2
+  update i=2 -> 3
+check i=3 -> true
+  body i=3
+  update i=3 -> 4
+check i=4 -> false
+loop finished`,
+      },
+      {
+        caption: 'Nested for loops: the inner loop completes fully for each outer iteration',
+        code: `public class NestedForDemo {
+    public static void main(String[] args) {
+        for (int i = 1; i <= 3; i++) {
+            for (int j = 1; j <= i; j++) {
+                System.out.print("* ");
+            }
+            System.out.println();
+        }
+
+        for (int i = 1; i <= 3; i++) {
+            for (int j = 1; j <= 3; j++) {
+                System.out.print(i * j + "\\t");
+            }
+            System.out.println();
+        }
+    }
+}`,
+        output: `*
+* *
+* * *
+1	2	3
+2	4	6
+3	6	9	`,
+      },
     ],
     commonMistakes: [
       'Off-by-one errors from using "<=" versus "<" incorrectly, causing the loop to run one time too many or too few.',
+      'Putting a semicolon right after the header — "for (int i = 0; i < 5; i++);" — which makes the loop body an empty statement, so the block below it runs only once after the loop finishes.',
+      'Assuming the update (i++) runs before the body on each pass; it always runs after the body, just before the next condition check.',
+      'Reusing the same counter name (i) for an inner nested loop, which does not compile when the outer i is still in scope.',
       'Modifying the loop counter inside the body in addition to the header\'s update expression, causing confusing, hard-to-predict iteration counts.',
       'Trying to use the loop variable after the loop ends, not realizing it goes out of scope once the for block closes.',
       'Writing "for (;;)" without an internal break condition, creating an unintended infinite loop that hangs the program.',
     ],
     keyPoints: [
       'The header runs initialization once, checks the condition before every iteration, and runs the update after every iteration.',
+      'Execution order is: init → condition → body → update → condition → body → update … until the condition is false.',
+      'The condition is always checked one more time than the body runs — the final, failing check is what ends the loop.',
+      'In nested loops the inner loop runs to completion for every outer iteration, so the total inner-body count is outer × inner.',
       'If the condition is false on the very first check, the loop body never executes.',
       'A for loop\'s counter variable is scoped to the loop and does not exist outside it.',
       'for (;;) with all header parts omitted creates an infinite loop that needs an internal break or return.',
@@ -220,6 +400,21 @@ The key difference between them is when the condition is checked: while is a pre
       {
         heading: 'Choosing Between while, do-while, and for',
         body: `Use a for loop when the number of iterations is known or naturally counted. Use a while loop when repetition depends on a condition that might already be false the first time. Use a do-while loop specifically when the body must run at least once regardless of the condition — this is the one behavioral guarantee no other loop form provides.`,
+      },
+      {
+        heading: 'How to Choose the Right Loop',
+        body: `Every Java loop can technically be rewritten as any other, so the choice is not about what is possible — it is about which loop states your intent most clearly and leaves the fewest places for bugs. Ask these questions in order:`,
+        list: [
+          '<strong>Do I know how many times it runs?</strong> (10 times, once per index, from 1 to n) → use <code>for</code>. The start, stop and step are all visible in one header.',
+          '<strong>Am I visiting every element of an array or collection, without needing the index?</strong> → use the for-each loop, <code>for (String s : list)</code>. There is no counter at all, so there is no off-by-one bug to write.',
+          '<strong>Am I repeating until something happens, and might it be zero times?</strong> (until the number reaches 0, until the queue is empty, until the file ends) → use <code>while</code>.',
+          '<strong>Must the body run once before the condition even makes sense?</strong> (show a menu, then ask whether to repeat; read input, then validate it; try once, then decide whether to retry) → use <code>do-while</code>.',
+          '<strong>Does the exit decision happen in the middle of the body?</strong> → <code>while (true)</code> with a <code>break</code> at the exit point is clearer than duplicating code before and inside the loop.',
+        ],
+      },
+      {
+        heading: 'A while Loop That Should Have Been a for Loop',
+        body: `A common smell is a while loop that declares a counter above it, tests the counter in the condition, and increments it on the last line of the body. That is a for loop in disguise, and it has two real costs: the counter stays alive after the loop, and the increment sits far from the condition, where it is easy to skip. The classic bug is adding a <code>continue</code> to such a loop — <code>continue</code> jumps straight back to the condition, skipping the increment at the bottom, and the loop never ends. In a for loop, <code>continue</code> still runs the header's update, so the same change is safe.`,
       },
     ],
     examples: [
@@ -247,8 +442,87 @@ While count: 2
 While count: 1
 Do-while attempt: 0`,
       },
+      {
+        caption: 'Choosing the right loop for four common jobs',
+        code: `import java.util.List;
+
+public class ChooseLoopDemo {
+    public static void main(String[] args) {
+        // 1. Known number of repetitions -> for
+        for (int i = 1; i <= 3; i++) {
+            System.out.println("for: lap " + i);
+        }
+
+        // 2. Every element of a collection, no index needed -> for-each
+        List<String> stack = List.of("Java", "Python", "React");
+        for (String tech : stack) {
+            System.out.println("for-each: " + tech);
+        }
+
+        // 3. Repeat until a condition changes, possibly zero times -> while
+        int n = 4096;
+        int digits = 0;
+        while (n > 0) {
+            n /= 10;
+            digits++;
+        }
+        System.out.println("while: 4096 has " + digits + " digits");
+
+        // 4. Must run at least once before checking -> do-while
+        int[] userInput = {7, 0, 2}; // simulated menu choices; only 1-3 are valid
+        int index = 0;
+        int choice;
+        do {
+            choice = userInput[index++];
+            System.out.println("do-while: menu shown, user picked " + choice);
+        } while (choice < 1 || choice > 3);
+    }
+}`,
+        output: `for: lap 1
+for: lap 2
+for: lap 3
+for-each: Java
+for-each: Python
+for-each: React
+while: 4096 has 4 digits
+do-while: menu shown, user picked 7
+do-while: menu shown, user picked 0
+do-while: menu shown, user picked 2`,
+      },
+      {
+        caption: "Why a counting job belongs in a for loop: continue skips a while loop's increment but not a for loop's update",
+        code: `public class ContinueTrapDemo {
+    public static void main(String[] args) {
+        // for: continue still runs i++, so this safely skips 3
+        for (int i = 1; i <= 5; i++) {
+            if (i == 3) {
+                continue;
+            }
+            System.out.print(i + " ");
+        }
+        System.out.println();
+
+        // while: the same idea needs the increment BEFORE continue.
+        // If i++ stayed only at the bottom, i would be stuck at 3 forever.
+        int i = 1;
+        while (i <= 5) {
+            if (i == 3) {
+                i++;
+                continue;
+            }
+            System.out.print(i + " ");
+            i++;
+        }
+        System.out.println();
+    }
+}`,
+        output: `1 2 4 5
+1 2 4 5`,
+      },
     ],
     commonMistakes: [
+      'Using continue in a while loop whose counter is incremented at the bottom of the body — continue skips the increment, so the loop gets stuck on the same value forever.',
+      'Writing a counted loop as a while loop (counter declared above, incremented at the bottom) when a for loop would keep the start, stop, and step together in one header.',
       'Forgetting the semicolon after "while (condition)" in a do-while loop, which is required and causes a compile error if missing.',
       'Forgetting to update the variable used in the while condition inside the loop body, creating an accidental infinite loop.',
       'Using do-while when the body should not run at all if the condition starts false — do-while always runs its body once, regardless.',
@@ -259,6 +533,8 @@ Do-while attempt: 0`,
       'do-while checks its condition after each iteration and always executes at least once.',
       'The do-while syntax requires a trailing semicolon after the while(condition) part.',
       'Choose while/do-while over for when the iteration count is not known ahead of time.',
+      'Quick rule: known count → for; every element → for-each; until something happens (maybe never) → while; at least once → do-while.',
+      'In a for loop, continue still runs the update expression; in a while loop, continue jumps straight to the condition and skips any increment below it.',
     ],
   },
 

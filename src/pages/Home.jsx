@@ -5,6 +5,7 @@ import {
   FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiCheckCircle, FiStar,
   FiExternalLink,
 } from 'react-icons/fi'
+import BuildTrackerCard from '../components/BuildTrackerCard'
 import Reveal from '../components/Reveal'
 import LaunchAnnouncementModal from '../components/LaunchAnnouncementModal'
 import SectionHeading from '../components/SectionHeading'
@@ -127,45 +128,11 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative mx-auto w-full max-w-md"
             >
-              <div className="animate-float rounded-3xl border border-gold-400/30 bg-white/60 dark:bg-ink-900/60 p-5 shadow-2xl backdrop-blur-xl">
-                <div className="flex items-center justify-between border-b border-ink-200 dark:border-ink-700 pb-3">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-gold-500">
-                    {demoStatus?.project_name ?? 'Project Status'}
-                  </span>
-                  <span className="flex h-2.5 w-2.5 animate-glow rounded-full bg-gold-400" />
-                </div>
-                <div className="mt-4 space-y-3">
-                  {[
-                    { label: 'Discovery', value: 100 },
-                    { label: 'Design', value: 100 },
-                    { label: demoStatus?.phase ?? 'Development', value: demoStatus?.percent_complete ?? 72 },
-                    { label: 'AI Integration', value: 48 },
-                  ].map((row) => (
-                    <div key={row.label}>
-                      <div className="mb-1.5 flex justify-between text-xs text-ink-500 dark:text-ink-300">
-                        <span>{row.label}</span>
-                        <span>{row.value}%</span>
-                      </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-gold-300 to-gold-500"
-                          style={{ width: `${row.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  {['React', 'Python', 'Java'].map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-lg border border-ink-200 dark:border-ink-700 py-1.5 text-center text-xs font-semibold text-ink-600 dark:text-ink-200"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              <BuildTrackerCard
+                projectName={demoStatus?.project_name}
+                devLabel={demoStatus?.phase}
+                devPercent={demoStatus?.percent_complete}
+              />
             </motion.div>
           </div>
         </div>
