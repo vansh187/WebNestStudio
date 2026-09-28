@@ -90,6 +90,13 @@ export const LESSON_VIDEOS = {
     title: 'How to Choose the Right Java Loop',
     description: 'A quick video on when to reach for for, for-each, while or do-while.',
   },
+  lesson_java_core_java_for_each_loop: {
+    youtubeId: 'C9owdhqsT0Q',
+    format: 'short',
+    afterSection: 1, // just before the "How It Works Internally" section
+    title: 'How the Java For-each Loop Works Internally',
+    description: 'A quick video on what the compiler turns a for-each loop into for arrays and collections.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
