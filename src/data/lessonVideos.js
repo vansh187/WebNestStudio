@@ -69,6 +69,27 @@ export const LESSON_VIDEOS = {
     title: 'How the Dangling Else Breaks Code',
     description: 'A quick video on the dangling else problem — which if an else really belongs to, and how braces fix it.',
   },
+  lesson_java_core_java_switch_statement: {
+    youtubeId: 'dMvqlTjb2BU',
+    format: 'short',
+    afterSection: 3, // just before the "How Enhanced Switch Eliminates Bugs" section
+    title: "How Java's Enhanced Switch Eliminates Bugs",
+    description: 'A quick video on how the arrow-style switch removes fall-through bugs and lets the compiler catch missing cases.',
+  },
+  lesson_java_core_java_for_loop: {
+    youtubeId: 'NWVkACvtpqg',
+    format: 'short',
+    afterSection: 1, // just before the "How the for Loop Runs, Step by Step" section
+    title: 'How the Java For Loop Works',
+    description: 'A quick video on the order a for loop runs its initialization, condition, body and update.',
+  },
+  lesson_java_core_java_while_and_do_while_loop: {
+    youtubeId: '80LS2Q1SfeA',
+    format: 'short',
+    afterSection: 3, // just before the "How to Choose the Right Loop" section
+    title: 'How to Choose the Right Java Loop',
+    description: 'A quick video on when to reach for for, for-each, while or do-while.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
