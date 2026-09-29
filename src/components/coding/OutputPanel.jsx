@@ -8,6 +8,7 @@ const STATUS_STYLES = {
   compile_error: 'border-red-500/30 bg-red-500/10 text-red-500',
   runtime_error: 'border-red-500/30 bg-red-500/10 text-red-500',
   timeout: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
+  output_limit: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
   rate_limited: 'border-amber-500/30 bg-amber-500/10 text-amber-500',
   stopped: 'border-ink-300 bg-ink-100 text-ink-500 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-200',
   internal_error: 'border-red-500/30 bg-red-500/10 text-red-500',
@@ -19,6 +20,7 @@ const STATUS_LABELS = {
   compile_error: 'Compile error',
   runtime_error: 'Runtime error',
   timeout: 'Timed out',
+  output_limit: 'Output limit',
   rate_limited: 'Rate limited',
   stopped: 'Stopped',
   internal_error: 'Runner error',
@@ -29,6 +31,7 @@ const STATUS_HINTS = {
   failed: 'One or more checks failed.',
   runtime_error: 'Your program exited with an error.',
   timeout: 'Execution timed out before it finished.',
+  output_limit: 'Execution stopped after reaching the output limit.',
   rate_limited: 'The runner is busy. Try again later.',
   internal_error: 'The local runner hit an error. Try again in a moment.',
 }
@@ -49,7 +52,7 @@ function Stream({ label, text, tone = 'default' }) {
   )
 }
 
-function RunningIndicator({ since }) {
+function RunningIndicator({ since, hint }) {
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     if (!since) {
@@ -68,8 +71,10 @@ function RunningIndicator({ since }) {
         <FiLoader className="h-4 w-4 animate-spin text-gold-500" />
         Running your code... {elapsed > 0 && <span className="tabular-nums text-ink-400">{elapsed}s</span>}
       </div>
-      {elapsed >= 4 && (
-        <p className="text-[11px] text-ink-400">Python can take a moment while Pyodide loads in your browser.</p>
+      {hint ? (
+        <p className="text-[11px] text-ink-400">{hint}</p>
+      ) : elapsed >= 4 && (
+        <p className="text-[11px] text-ink-400">The first run may take a moment while the runtime starts.</p>
       )}
     </div>
   )
@@ -78,12 +83,13 @@ function RunningIndicator({ since }) {
 export default function OutputPanel({
   running = false,
   runningSince = null,
+  runningHint = null,
   stopped = false,
   result = null,
   error = null,
   className = '',
 }) {
-  const compileText = result?.compile?.stderr || result?.compile?.stdout
+  const compileText = [result?.compile?.stdout, result?.compile?.stderr].filter(Boolean).join('\n')
 
   const runtimeMs = result?.runtime_ms ?? result?.wall_time_ms ?? result?.time_ms
   const nothingPrinted = result && !result.stdout && !result.stderr && !compileText
@@ -107,7 +113,7 @@ export default function OutputPanel({
         )}
       </div>
 
-      {running && <RunningIndicator since={runningSince} />}
+      {running && <RunningIndicator since={runningSince} hint={runningHint} />}
 
       {!running && error && (
         <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-500">{error}</p>
@@ -134,6 +140,8 @@ export default function OutputPanel({
           />
           <Stream label="Stdout" text={result.stdout} />
           <Stream label="Stderr" text={result.stderr} tone="error" />
+          {result.notice && <p className="text-xs text-amber-500">{result.notice}</p>}
+          {result.request_id && <p className="break-all text-[11px] text-ink-400">Request: {result.request_id}</p>}
           {nothingPrinted && (
             <p className={`text-sm ${result.status === 'success' ? 'text-ink-400' : 'text-red-500'}`}>
               {result.status === 'success'

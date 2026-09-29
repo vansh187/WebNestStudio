@@ -1,3 +1,10 @@
+// Java runs through the backend's public route (see JAVA_PLAYGROUND_ENDPOINT in javaRunner.js).
+export const JAVA_LANGUAGE = {
+  id: 'java', label: 'Java 17 Playground', monacoId: 'java', fileExtension: 'java',
+  mainFile: 'Main.java', runner: 'java-playground',
+  defaultSnippet: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Webnest Studio!");\n    }\n}\n',
+}
+
 export const LANGUAGES = [
   {
     id: 'web',
@@ -18,6 +25,7 @@ export const LANGUAGES = [
     runner: 'pyodide',
     defaultSnippet: 'print("Hello, World!")\n',
   },
+  JAVA_LANGUAGE,
 ]
 
 const BY_ID = Object.fromEntries(LANGUAGES.map((l) => [l.id, l]))

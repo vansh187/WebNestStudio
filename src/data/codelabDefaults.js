@@ -1,4 +1,6 @@
 import { summarize } from '../lib/seo.js'
+import { JAVA_LANGUAGE } from './codingLanguages.js'
+export const JAVA_FILES = [{ name: 'Main.java', language: 'java', content: JAVA_LANGUAGE.defaultSnippet }]
 export const WEB_FILES = [
   { name: 'index.html', language: 'html', content: '<main class="app">\n  <h1>Hello Webnest</h1>\n  <p>Edit the files, then run the preview.</p>\n  <button id="action">Click me</button>\n</main>' },
   { name: 'style.css', language: 'css', content: 'body {\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  margin: 0;\n  font-family: system-ui, sans-serif;\n  background: #f8fafc;\n  color: #111827;\n}\n\n.app {\n  max-width: 420px;\n  padding: 2rem;\n  border: 1px solid #dbe3ef;\n  border-radius: 8px;\n  background: white;\n}\n\nbutton {\n  border: 0;\n  border-radius: 8px;\n  padding: 0.75rem 1rem;\n  background: #111827;\n  color: white;\n  font-weight: 700;\n}' },

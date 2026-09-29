@@ -4,7 +4,7 @@ import BackButton from '../../components/coding/BackButton'
 import { useSeo } from '../../hooks/useSeo'
 
 const links = [
-  { to: '/codelab/playground', icon: FiPlay, title: 'Playground', text: 'Run web files and Python locally in the browser.' },
+  { to: '/codelab/playground', icon: FiPlay, title: 'Playground', text: 'Practice Java 17, Python, and web development.' },
   { to: '/codelab/problems', icon: FiCode, title: 'Problems', text: 'Practice with auth-aware progress and submissions.' },
   { to: '/learn', icon: FiBookOpen, title: 'Learn', text: 'Read lessons, save notes, and open practice work.' },
   { to: '/codelab/dashboard', icon: FiGrid, title: 'Dashboard', text: 'Track solved problems, XP, streaks, and activity.' },
@@ -19,7 +19,7 @@ export default function CodeLabHome() {
       <div className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Webnest CodeLab</p>
         <h1 className="mt-3 font-display text-4xl font-bold text-ink-900 dark:text-white">Browser-first coding and learning workspace</h1>
-        <p className="mt-3 text-ink-500 dark:text-ink-300">Build web snippets in a sandboxed iframe, run Python through Pyodide, and move from lessons into practice without a server-side compiler.</p>
+        <p className="mt-3 text-ink-500 dark:text-ink-300">Build web snippets, run Python in your browser, and practice Java with the Webnest playground.</p>
       </div>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {links.map(({ to, icon: Icon, title, text }) => (

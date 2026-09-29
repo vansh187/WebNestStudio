@@ -9,7 +9,7 @@ import { useToast } from '../../context/ToastContext'
 import { useCodeRunner } from '../../hooks/useCodeRunner'
 import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
-import { WEB_FILES, PYTHON_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
+import { WEB_FILES, PYTHON_FILES, JAVA_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { createProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 
@@ -22,11 +22,12 @@ function loadSession(key = STORAGE_KEY) {
     const parsed = JSON.parse(raw)
     if (parsed && typeof parsed.language === 'string') {
       const language = parsed.language === 'javascript' ? 'web' : parsed.language
-      const fallback = language === 'web' ? WEB_FILES : PYTHON_FILES
+      if (!LANGUAGES.some((item) => item.id === language)) return null
+      const fallback = language === 'web' ? WEB_FILES : language === 'java' ? JAVA_FILES : PYTHON_FILES
       return {
         language,
         source: parsed.source ?? '',
-        files: cloneFiles(parsed.files, fallback),
+        files: cloneFiles(parsed.files, parsed.source && language === 'java' ? [{ ...JAVA_FILES[0], content: parsed.source }] : fallback),
         selectedFile: parsed.selectedFile,
         stdin: parsed.stdin ?? '',
       }
@@ -44,7 +45,7 @@ export default function Playground() {
 
 function PlaygroundEditor() {
   useSeo({
-    title: 'Online Python and Web Coding Playground',
+    title: 'Java, Python and Web Coding Playground',
     description:
       'Write and run HTML, CSS, JavaScript and Python in the browser with Webnest CodeLab.',
     path: '/codelab/playground',
@@ -90,7 +91,8 @@ function PlaygroundEditor() {
         const snippet = getLanguage(next).defaultSnippet
         if (snippet != null) setSource(snippet)
       }
-      const nextFiles = next === 'web' ? cloneFiles(WEB_FILES, WEB_FILES) : cloneFiles(PYTHON_FILES, PYTHON_FILES)
+      const defaults = next === 'web' ? WEB_FILES : next === 'java' ? JAVA_FILES : PYTHON_FILES
+      const nextFiles = cloneFiles(defaults, defaults)
       setFiles(nextFiles)
       setSelectedFile(nextFiles[0]?.name ?? 'main.py')
     },
@@ -183,7 +185,7 @@ function PlaygroundEditor() {
     <CodingWorkspace
       eyebrow="Webnest CodeLab"
       title="Browser coding playground"
-      subtitle="Run Web projects and Python locally in your browser. No compiler server needed."
+      subtitle="Run web projects and Python in your browser, or practice Java 17 with the Webnest playground."
       languages={LANGUAGES}
       language={language}
       onLanguageChange={handleLanguageChange}

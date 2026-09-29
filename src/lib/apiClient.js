@@ -29,6 +29,11 @@ const AI_BUILDER_TIMEOUT = 90000
 const COMPILER_PATHS = ['/api/compiler']
 const COMPILER_TIMEOUT = 60000
 
+// Java playground: backend proxies to a private Cloud Run runner, so a fully cold run
+// stacks a Render cold start (~60s) on a Cloud Run cold start plus compile + run.
+const JAVA_PATHS = ['/api/java']
+const JAVA_TIMEOUT = 90000
+
 let hasCompletedFirstRequest = false
 const slowListeners = new Set()
 let pendingSlowCount = 0
@@ -70,6 +75,8 @@ api.interceptors.request.use((config) => {
     config.timeout = AI_BUILDER_TIMEOUT
   } else if (COMPILER_PATHS.some((p) => url.includes(p))) {
     config.timeout = COMPILER_TIMEOUT
+  } else if (JAVA_PATHS.some((p) => url.includes(p))) {
+    config.timeout = JAVA_TIMEOUT
   } else {
     config.timeout = hasCompletedFirstRequest ? WARM_TIMEOUT : COLD_START_TIMEOUT
   }
@@ -109,8 +116,8 @@ api.interceptors.response.use(
     // Auto-retry once on 503 (DB temporarily unavailable) after a short backoff.
     // Skipped for the compiler: a 503 there means the execution engine is down or
     // unconfigured (per BACKEND_API_CODING_PLATFORM.md), which a 2s retry won't fix -
-    // fail fast so the user sees the message immediately.
-    const isCompilerCall = COMPILER_PATHS.some((p) => path.includes(p))
+    // fail fast so the user sees the message immediately. Same for the Java runner.
+    const isCompilerCall = [...COMPILER_PATHS, ...JAVA_PATHS].some((p) => path.includes(p))
     if (status === 503 && !config._retried503 && !isCompilerCall) {
       config._retried503 = true
       await new Promise((r) => setTimeout(r, 2000))
