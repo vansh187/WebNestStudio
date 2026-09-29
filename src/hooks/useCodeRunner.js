@@ -1,11 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { runWebPreview } from '../lib/codelab/webPreview'
+import { executeJava, JAVA_PLAYGROUND_ENDPOINT } from '../lib/codelab/javaRunner'
+import { api, subscribeSlowRequest } from '../lib/apiClient'
 
 const RUN_TIMEOUT_MS = 10000
+// Slightly above the axios JAVA_TIMEOUT (90s) so the client's own timeout normally wins.
+const JAVA_TIMEOUT_MS = 95000
+const JAVA_TIMEOUT_MESSAGE = 'The Java service did not respond in time. Please try again.'
+const JAVA_SLOW_HINT = 'Starting the Java runner… the first run can take up to a minute.'
 
 function describeLocalError(error) {
   if (error?.name === 'DataCloneError') return 'The runner could not read this code payload.'
   return error?.message || 'The local CodeLab runner could not start.'
+}
+
+function describeJavaError(error) {
+  if (error?.status === 503) return 'The Java runner is starting up or unavailable. Try again in a moment.'
+  // 429 detail says which limit was hit (per-visitor, daily cap, busy) - show it as-is.
+  if (error?.status) return error.message
+  if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') return JAVA_TIMEOUT_MESSAGE
+  if (error?.isAxiosError) return 'Could not reach the Java service. Check your connection and try again.'
+  return describeLocalError(error)
 }
 
 export function useCodeRunner() {
@@ -14,8 +29,11 @@ export function useCodeRunner() {
   const [stopped, setStopped] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [runningHint, setRunningHint] = useState(null)
   const workerRef = useRef(null)
+  const requestRef = useRef(null)
   const timerRef = useRef(null)
+  const slowUnsubRef = useRef(null)
   const runIdRef = useRef(0)
   const mountedRef = useRef(true)
 
@@ -24,7 +42,15 @@ export function useCodeRunner() {
     timerRef.current = null
   }, [])
 
+  const stopSlowWatch = useCallback(() => {
+    slowUnsubRef.current?.()
+    slowUnsubRef.current = null
+    if (mountedRef.current) setRunningHint(null)
+  }, [])
+
   const terminateWorker = useCallback(() => {
+    requestRef.current?.abort()
+    requestRef.current = null
     workerRef.current?.terminate()
     workerRef.current = null
   }, [])
@@ -34,18 +60,20 @@ export function useCodeRunner() {
     return () => {
       mountedRef.current = false
       clearTimer()
+      stopSlowWatch()
       terminateWorker()
     }
-  }, [clearTimer, terminateWorker])
+  }, [clearTimer, stopSlowWatch, terminateWorker])
 
   const finish = useCallback((nextResult, nextError = null) => {
     if (!mountedRef.current) return
     clearTimer()
+    stopSlowWatch()
     setResult(nextResult)
     setError(nextError)
     setRunning(false)
     setRunningSince(null)
-  }, [clearTimer])
+  }, [clearTimer, stopSlowWatch])
 
   const runPython = useCallback((payload, runId) => {
     terminateWorker()
@@ -95,6 +123,7 @@ export function useCodeRunner() {
     const runId = runIdRef.current + 1
     runIdRef.current = runId
     clearTimer()
+    stopSlowWatch()
     terminateWorker()
     setRunning(true)
     setRunningSince(Date.now())
@@ -111,6 +140,30 @@ export function useCodeRunner() {
         runPython(payload, runId)
         return
       }
+      if (payload.language === 'java') {
+        const controller = new AbortController()
+        requestRef.current = controller
+        timerRef.current = setTimeout(() => {
+          if (runIdRef.current !== runId) return
+          runIdRef.current += 1
+          controller.abort()
+          requestRef.current = null
+          finish(null, JAVA_TIMEOUT_MESSAGE)
+        }, JAVA_TIMEOUT_MS)
+        // No login check: Java runs for logged-out visitors like Python and HTML.
+        slowUnsubRef.current = subscribeSlowRequest((slow) => {
+          if (slow && runIdRef.current === runId && mountedRef.current) setRunningHint(JAVA_SLOW_HINT)
+        })
+        executeJava(payload, { endpoint: JAVA_PLAYGROUND_ENDPOINT, signal: controller.signal, httpClient: api })
+          .then((javaResult) => {
+            if (runIdRef.current === runId) finish(javaResult)
+          })
+          .catch((err) => {
+            if (runIdRef.current === runId && !controller.signal.aborted) finish(null, describeJavaError(err))
+          })
+          .finally(() => { if (requestRef.current === controller) requestRef.current = null })
+        return
+      }
       finish({
         status: 'internal_error',
         stdout: '',
@@ -122,16 +175,17 @@ export function useCodeRunner() {
     } catch (err) {
       finish(null, describeLocalError(err))
     }
-  }, [clearTimer, finish, runPython, terminateWorker])
+  }, [clearTimer, finish, runPython, stopSlowWatch, terminateWorker])
 
   const cancel = useCallback(() => {
     runIdRef.current += 1
     clearTimer()
+    stopSlowWatch()
     terminateWorker()
     setRunning(false)
     setRunningSince(null)
     setStopped(true)
-  }, [clearTimer, terminateWorker])
+  }, [clearTimer, stopSlowWatch, terminateWorker])
 
   const reset = useCallback(() => {
     setResult(null)
@@ -139,5 +193,5 @@ export function useCodeRunner() {
     setStopped(false)
   }, [])
 
-  return { running, runningSince, stopped, result, error, run, cancel, reset }
+  return { running, runningSince, runningHint, stopped, result, error, run, cancel, reset }
 }

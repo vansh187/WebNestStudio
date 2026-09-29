@@ -40,6 +40,7 @@ export default function CodingWorkspace({
 }) {
   const [stdinOpen, setStdinOpen] = useState(false)
   const [consoleText, setConsoleText] = useState('')
+  const [javaClassName, setJavaClassName] = useState('Main')
   const lang = languages.find((l) => l.id === language) ?? getLanguage(language)
   const activeFile = files?.find((file) => file.name === selectedFile)
   const outputRef = useRef(null)
@@ -63,7 +64,7 @@ export default function CodingWorkspace({
         source: sourceText,
         fileName: mainFileName(lang),
         files,
-        extra: { stdin: stdin ?? '' },
+        extra: { stdin: stdin ?? '', ...(language === 'java' ? { className: javaClassName.trim() || 'Main' } : {}) },
       }),
     })
   }
@@ -112,6 +113,13 @@ export default function CodingWorkspace({
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
         <div>
+          {language === 'java' && (
+            <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-ink-500 dark:text-ink-300">
+              <label htmlFor="java-main-class">Main class</label>
+              <input id="java-main-class" value={javaClassName} onChange={(event) => setJavaClassName(event.target.value)} disabled={runner.running} placeholder="Main or practice.Main" spellCheck={false} className="rounded-lg border border-ink-200 bg-transparent px-3 py-2 dark:border-ink-700" />
+              <span>Java 17 · 5 second runtime · 128 MiB heap{import.meta.env.DEV ? ' · local trusted code only' : ''}</span>
+            </div>
+          )}
           {files && (
             <ErrorBoundary>
               <FileTabs files={files} selectedFile={selectedFile} onSelectFile={onSelectFile} />
@@ -138,6 +146,7 @@ export default function CodingWorkspace({
             <OutputPanel
               running={runner.running}
               runningSince={runner.runningSince}
+              runningHint={runner.runningHint}
               stopped={runner.stopped}
               result={runner.result}
               error={runner.error}
