@@ -21,9 +21,48 @@ function useIsLargeScreen() {
   return isLarge
 }
 
-export default function CodeEditor({ value, onChange, language, readOnly = false, className = '', roundedTop = true }) {
+// Java suggestions (see lib/codelab/javaIntel) load on first use so other languages never pay for them.
+function useJavaIntel({ editorState, language, readOnly, javaProject, markers }) {
+  const [intel, setIntel] = useState(null)
+  const enabled = language === 'java' && !readOnly
+
+  useEffect(() => {
+    if (!enabled || !editorState || intel) return undefined
+    let cancelled = false
+    import('../../lib/codelab/javaIntel/monacoJava.js')
+      .then((mod) => {
+        if (cancelled) return
+        mod.registerJavaIntel(editorState.monaco)
+        setIntel(mod)
+      })
+      .catch(() => { /* Suggestions are optional; the editor keeps working without them. */ })
+    return () => { cancelled = true }
+  }, [enabled, editorState, intel])
+
+  useEffect(() => {
+    if (!intel || !editorState) return
+    intel.setModelProject(editorState.editor.getModel(), javaProject ?? { files: [], activeName: 'Main.java' })
+  }, [intel, editorState, javaProject])
+
+  useEffect(() => {
+    if (!intel || !editorState) return
+    intel.setJavacMarkers(editorState.monaco, editorState.editor.getModel(), enabled ? markers ?? [] : [])
+  }, [intel, editorState, markers, enabled])
+
+  useEffect(() => {
+    if (!intel || !editorState) return undefined
+    const model = editorState.editor.getModel()
+    return () => intel.forgetModel(model)
+  }, [intel, editorState])
+}
+
+export default function CodeEditor({
+  value, onChange, language, readOnly = false, className = '', roundedTop = true, javaProject, markers,
+}) {
   const { theme } = useTheme()
   const isLarge = useIsLargeScreen()
+  const [editorState, setEditorState] = useState(null)
+  useJavaIntel({ editorState, language, readOnly, javaProject, markers })
 
   const options = {
     automaticLayout: true,
@@ -41,6 +80,13 @@ export default function CodeEditor({ value, onChange, language, readOnly = false
     // Let the page scroll when the pointer leaves the (often short) editor on mobile.
     scrollbar: { alwaysConsumeMouseWheel: false },
     contextmenu: isLarge,
+    ...(language === 'java' && !readOnly ? {
+      quickSuggestions: { other: true, comments: false, strings: false },
+      suggestOnTriggerCharacters: true,
+      snippetSuggestions: 'inline',
+      wordBasedSuggestions: 'off',
+      parameterHints: { enabled: true },
+    } : {}),
   }
 
   return (
@@ -52,6 +98,7 @@ export default function CodeEditor({ value, onChange, language, readOnly = false
         language={language}
         theme={theme === 'dark' ? 'vs-dark' : 'vs'}
         onChange={(v) => onChange?.(v ?? '')}
+        onMount={(editor, monaco) => setEditorState({ editor, monaco })}
         options={options}
         loading={
           <div className="flex h-full items-center justify-center">

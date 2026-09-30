@@ -12,6 +12,7 @@ import BackButton from '../../components/coding/BackButton'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
 import { getProject, updateProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
+import { isJavaFile } from '../../lib/codelab/javaProject'
 
 function SaveStatus({ status }) {
   if (status === 'saving') {
@@ -53,6 +54,9 @@ export default function ProjectWorkspace() {
   const [source, setSource] = useState('')
   const [stdin, setStdin] = useState('')
   const [fileName, setFileName] = useState('')
+  // Java projects keep every class file; other languages stay single-file.
+  const [javaFiles, setJavaFiles] = useState(null)
+  const [selectedFile, setSelectedFile] = useState('')
   const [sharing, setSharing] = useState(false)
 
   useSeo({ title: title ? `${title} - CodeLab Project` : 'CodeLab Project', noindex: true, path: `/projects/${id}` })
@@ -70,6 +74,11 @@ export default function ProjectWorkspace() {
         setSource(data.files?.[0]?.content ?? data.source ?? '')
         setStdin(data.stdin ?? '')
         setFileName(data.files?.[0]?.name ?? '')
+        const savedJava = (data.files ?? []).filter(isJavaFile)
+        setJavaFiles(data.language === 'java' && savedJava.length
+          ? savedJava.map((file) => ({ name: file.name, language: 'java', content: file.content ?? '' }))
+          : null)
+        setSelectedFile(savedJava[0]?.name ?? '')
       })
       .catch((err) => {
         if (cancelled) return
@@ -89,10 +98,20 @@ export default function ProjectWorkspace() {
   const currentFileName =
     fileName && ext && fileName.toLowerCase().endsWith(ext) ? fileName : mainFileName(lang)
 
+  const files = useMemo(() => (language === 'java'
+    ? javaFiles ?? [{ name: currentFileName, language: 'java', content: source }]
+    : undefined), [language, javaFiles, currentFileName, source])
+  const activeSource = files ? files[0]?.content ?? '' : source
+
   const autosaveValue = useMemo(
-    () => ({ title, language, ...toCodePayload({ source, fileName: currentFileName, extra: { stdin } }) }),
-    [title, language, stdin, source, currentFileName],
+    () => ({ title, language, ...toCodePayload({ source: activeSource, fileName: currentFileName, files, extra: { stdin } }) }),
+    [title, language, stdin, activeSource, currentFileName, files],
   )
+
+  const handleFileChange = useCallback((name, value) => {
+    setJavaFiles((items) => (items ?? [{ name, language: 'java', content: '' }])
+      .map((file) => (file.name === name ? { ...file, content: value } : file)))
+  }, [])
 
   const { status: saveStatus } = useAutosave(autosaveValue, (val) => updateProject(id, val), {
     enabled: Boolean(project),
@@ -106,8 +125,9 @@ export default function ProjectWorkspace() {
         title,
         language,
         ...toCodePayload({
-          source,
+          source: activeSource,
           fileName: currentFileName,
+          files,
           extra: { stdin, stdout: runner.result?.stdout },
         }),
       })
@@ -123,7 +143,7 @@ export default function ProjectWorkspace() {
     } finally {
       setSharing(false)
     }
-  }, [id, title, language, currentFileName, source, stdin, runner.result, toast])
+  }, [id, title, language, currentFileName, activeSource, files, stdin, runner.result, toast])
 
   if (error) {
     return (
@@ -174,6 +194,11 @@ export default function ProjectWorkspace() {
       onLanguageChange={setLanguage}
       source={source}
       onSourceChange={setSource}
+      files={files}
+      selectedFile={files?.some((file) => file.name === selectedFile) ? selectedFile : files?.[0]?.name}
+      onSelectFile={setSelectedFile}
+      onFileChange={handleFileChange}
+      onFilesChange={setJavaFiles}
       stdin={stdin}
       onStdinChange={setStdin}
       runner={runner}
