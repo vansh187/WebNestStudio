@@ -109,6 +109,11 @@ function PlaygroundEditor() {
     setFiles((items) => items.map((file) => (file.name === fileName ? { ...file, content: value } : file)))
   }, [])
 
+  const handleFilesChange = useCallback((nextFiles) => {
+    setTouched(true)
+    setFiles(nextFiles)
+  }, [])
+
   const requireLogin = useCallback(
     (message) => {
       toast.info(message)
@@ -185,7 +190,7 @@ function PlaygroundEditor() {
     <CodingWorkspace
       eyebrow="Webnest CodeLab"
       title="Browser coding playground"
-      subtitle="Run web projects and Python in your browser, or practice Java 17 with the Webnest playground."
+      subtitle="Run web projects and Python in your browser, or build multi-class Java 17 programs with the Webnest playground."
       languages={LANGUAGES}
       language={language}
       onLanguageChange={handleLanguageChange}
@@ -195,6 +200,7 @@ function PlaygroundEditor() {
       selectedFile={selectedFile}
       onSelectFile={setSelectedFile}
       onFileChange={handleFileChange}
+      onFilesChange={handleFilesChange}
       stdin={stdin}
       onStdinChange={setStdin}
       runner={runner}

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { FiExternalLink } from 'react-icons/fi'
 import { useSeo } from '../../hooks/useSeo'
 import CodeEditor from '../../components/coding/CodeEditor'
+import FileTabs from '../../components/coding/FileTabs'
 import OutputPanel from '../../components/coding/OutputPanel'
 import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../../components/states/StateViews'
@@ -21,6 +22,7 @@ export default function SharedSnippet() {
   const [snapshot, setSnapshot] = useState(undefined)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [selectedFile, setSelectedFile] = useState('')
 
   useSeo({
     title: snapshot?.title ? `${snapshot.title} - Shared CodeLab code` : 'Shared CodeLab code',
@@ -77,13 +79,20 @@ export default function SharedSnippet() {
 
   const normalizedLanguage = snapshot.language === 'javascript' ? 'web' : snapshot.language
   const lang = getLanguage(normalizedLanguage)
-  const source = snapshot.files?.[0]?.content ?? snapshot.source ?? ''
+  const files = Array.isArray(snapshot.files) ? snapshot.files.filter((file) => file?.name) : []
+  const activeFile = files.find((file) => file.name === selectedFile) ?? files[0]
+  const source = files[0]?.content ?? snapshot.source ?? ''
 
   const openInCodeLab = () => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ language: normalizedLanguage, source, stdin: snapshot.stdin ?? '' }),
+        JSON.stringify({
+          language: normalizedLanguage,
+          source,
+          ...(files.length ? { files, selectedFile: activeFile?.name } : {}),
+          stdin: snapshot.stdin ?? '',
+        }),
       )
     } catch {
       /* CodeLab opens with its own last session when storage is unavailable. */
@@ -116,12 +125,18 @@ export default function SharedSnippet() {
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,460px)]">
         <ErrorBoundary>
-          <CodeEditor
-            value={source}
-            language={lang?.monacoId ?? 'plaintext'}
-            readOnly
-            className="h-[50dvh] min-h-[260px] lg:h-[60dvh] lg:max-h-[720px]"
-          />
+          <div>
+            {files.length > 1 && (
+              <FileTabs files={files} selectedFile={activeFile?.name} onSelectFile={setSelectedFile} />
+            )}
+            <CodeEditor
+              value={activeFile?.content ?? source}
+              language={activeFile?.language && activeFile.language !== 'plaintext' ? activeFile.language : lang?.monacoId ?? 'plaintext'}
+              readOnly
+              roundedTop={files.length <= 1}
+              className="h-[50dvh] min-h-[260px] lg:h-[60dvh] lg:max-h-[720px]"
+            />
+          </div>
         </ErrorBoundary>
         <ErrorBoundary>
           <OutputPanel
