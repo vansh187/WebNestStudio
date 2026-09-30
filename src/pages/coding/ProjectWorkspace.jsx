@@ -113,6 +113,16 @@ export default function ProjectWorkspace() {
       .map((file) => (file.name === name ? { ...file, content: value } : file)))
   }, [])
 
+  // Leaving Java keeps the main file's latest code as the project's single source (like the
+  // single-file languages do) and drops the class list, so neither side restores stale code.
+  const handleLanguageChange = useCallback((next) => {
+    if (language === 'java' && next !== 'java') {
+      setSource(files?.[0]?.content ?? source)
+      setJavaFiles(null)
+    }
+    setLanguage(next)
+  }, [language, files, source])
+
   const { status: saveStatus } = useAutosave(autosaveValue, (val) => updateProject(id, val), {
     enabled: Boolean(project),
   })
@@ -191,7 +201,7 @@ export default function ProjectWorkspace() {
       headerRight={<SaveStatus status={saveStatus} />}
       languages={languages}
       language={language}
-      onLanguageChange={setLanguage}
+      onLanguageChange={handleLanguageChange}
       source={source}
       onSourceChange={setSource}
       files={files}

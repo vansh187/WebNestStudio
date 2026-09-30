@@ -110,7 +110,7 @@ key now: APPLE`,
     keyPoints: [
       'Strings are immutable: once created, their character content never changes.',
       'Reassigning a String variable points it at a new object; other references to the old String still see the old text.',
-      'String is a final class with a private final character array, so nothing can modify a String after it is built.',
+      'String is a final class with a private final internal array (bytes since Java 9), so nothing can modify a String after it is built.',
       'String literals live in the String Constant Pool; new String() always creates a separate heap object.',
       'Immutability enables safe pool sharing, thread safety, security, and cached hashcodes.',
     ],
