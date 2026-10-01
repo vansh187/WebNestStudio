@@ -29,6 +29,7 @@ export const FOOTER_SECTIONS = [
       { label: 'Our Story', to: '/our-story' },
       { label: 'Services', to: '/services' },
       { label: 'Work', to: '/portfolio' },
+      { label: 'Case Studies', to: '/case-studies' },
     ],
   },
   {

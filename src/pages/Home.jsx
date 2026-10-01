@@ -9,6 +9,7 @@ import BuildTrackerCard from '../components/BuildTrackerCard'
 import Reveal from '../components/Reveal'
 import LaunchAnnouncementModal from '../components/LaunchAnnouncementModal'
 import SectionHeading from '../components/SectionHeading'
+import CaseStudiesSection from '../components/caseStudies/CaseStudiesSection'
 import { SkeletonGrid } from '../components/states/Skeleton'
 import { ErrorState } from '../components/states/StateViews'
 import { useHomeData } from '../hooks/useHomeData'
@@ -331,6 +332,8 @@ export default function Home() {
           </div>
         </section>
       ) : null}
+
+      <CaseStudiesSection />
 
       {/* PROCESS */}
       <section className="py-20">
