@@ -14,6 +14,7 @@ import { lazyWithReload } from './lib/chunkReload'
 import Home from './pages/Home'
 const About = lazyWithReload(() => import('./pages/About'))
 const OurStory = lazyWithReload(() => import('./pages/OurStory'))
+const Authors = lazyWithReload(() => import('./pages/Authors'))
 const Services = lazyWithReload(() => import('./pages/Services'))
 const Portfolio = lazyWithReload(() => import('./pages/Portfolio'))
 const PortfolioDetail = lazyWithReload(() => import('./pages/PortfolioDetail'))
@@ -118,6 +119,7 @@ function App() {
                     <Route index element={<Home />} />
                     <Route path="about" element={<About />} />
                     <Route path="our-story" element={<OurStory />} />
+                    <Route path="authors/webnest-studio" element={<Authors />} />
                     <Route path="services" element={<Services />} />
                     <Route path="services/:slug" element={<ServiceDetail />} />
                     <Route path="portfolio" element={<Portfolio />} />

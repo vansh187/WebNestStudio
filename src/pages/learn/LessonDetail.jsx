@@ -1,4 +1,6 @@
 import Breadcrumbs from '../../components/Breadcrumbs'
+import AuthorBox from '../../components/AuthorBox'
+import { AUTHOR_PAGE_PATH, TEAM_AUTHOR } from '../../data/authors'
 import LessonVideo from '../../components/LessonVideo'
 import { getLessonVideo } from '../../data/lessonVideos'
 import { lessonTemplate } from '../../lib/lessonPlayground'
@@ -173,7 +175,8 @@ export default function LessonDetail() {
     '@context': 'https://schema.org', '@type': 'TechArticle',
     headline: lesson.title, description: lesson.description,
     url: `${SITE_URL}/learn/lessons/${lesson.id}`,
-    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    author: { '@type': 'Organization', name: TEAM_AUTHOR.name, url: `${SITE_URL}${AUTHOR_PAGE_PATH}` },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
     isPartOf: { '@type': 'Course', name: lessonNavigation?.course.title, url: `${SITE_URL}/learn/${lesson.course_slug}` },
     inLanguage: 'en',
   } : null)
@@ -267,7 +270,7 @@ export default function LessonDetail() {
       )}
       <article className="min-w-0">
         <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Learn', to: '/learn' }, { label: lessonNavigation?.course.title || 'Course', to: `/learn/${lesson.course_slug}` }, { label: lesson.title, to: `/learn/lessons/${lesson.id}` }]} />
-        <p className="mb-3 text-sm text-ink-500">By <Link to="/about" className="underline">WebNest Studio</Link></p>
+        <p className="mb-3 text-sm text-ink-500">By <Link to={AUTHOR_PAGE_PATH} className="underline">{TEAM_AUTHOR.name}</Link></p>
         <BackButton fallback={`/learn/${lesson.course_slug}`} label="Back to course" />
         <ErrorBoundary>
           <div className="mt-4 rounded-2xl border border-ink-100 bg-white p-6 shadow-sm sm:p-8 dark:border-ink-800 dark:bg-ink-900/40">
@@ -298,6 +301,7 @@ export default function LessonDetail() {
           {!lessonTemplate(lesson) && <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">Use your local {lesson.language === 'java' ? 'JDK or project IDE' : 'project environment'} for these examples. Codelab currently runs Python and HTML/CSS/JavaScript; framework examples may need project dependencies.</p>}
         </section>
         {relatedLessons.length > 0 && <nav aria-label="Related concepts" className="mt-6"><h2 className="text-lg font-semibold">Related concepts</h2><ul className="mt-2 space-y-2">{relatedLessons.map((item) => <li key={item.id}><Link className="text-gold-600 underline dark:text-gold-400" to={`/learn/lessons/${item.id}`}>{item.title}</Link></li>)}</ul></nav>}
+        <AuthorBox className="mt-6" />
         {lessonNavigation && (
           <nav className="mt-6 grid gap-3 rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40 sm:grid-cols-2" aria-label="Lesson pagination">
             {lessonNavigation.previous ? (
