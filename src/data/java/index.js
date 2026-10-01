@@ -30,6 +30,7 @@ import { practice04aOop } from './practice-04a-oop.js'
 import { practice04bOop } from './practice-04b-oop.js'
 import { practice04cOop } from './practice-04c-oop.js'
 import { practice05Exceptions } from './practice-05-exceptions.js'
+import { practice06Multithreading } from './practice-06-multithreading.js'
 import { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex } from './topics.js'
 
 // Practice blocks live in their own per-module files, keyed by the same slugs.
@@ -41,6 +42,7 @@ export const JAVA_PRACTICE = {
   ...practice04bOop,
   ...practice04cOop,
   ...practice05Exceptions,
+  ...practice06Multithreading,
 }
 
 const LESSON_PROSE = {
