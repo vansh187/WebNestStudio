@@ -15,7 +15,7 @@ export default function Logo({ size = 'md', showText = true, className = '' }) {
         className="relative shrink-0 rounded-full overflow-hidden"
         style={{ width: ring, height: ring }}
       >
-        <img src={logoMark} alt="WebNest Studio" className="h-full w-full object-cover" />
+        <img src={logoMark} alt="WebNest Studio" width={ring} height={ring} decoding="async" className="h-full w-full object-cover" />
       </div>
       {showText && (
         <span className={`font-display font-semibold tracking-tight ${size === 'lg' ? 'text-2xl' : 'text-lg'} leading-none`}>

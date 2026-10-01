@@ -89,9 +89,11 @@ export default function CodingWorkspace({
 
   const renameFile = (oldName, newName) => {
     const className = javaClassFromFile(newName)
-    onFilesChange(renameJavaFile(files, oldName, className))
+    const next = renameJavaFile(files, oldName, className)
+    onFilesChange(next)
     if (selectedFile === oldName) onSelectFile?.(`${className}.java`)
-    if (javaClassName.split('.').at(-1) === javaClassFromFile(oldName)) setJavaClassName(className)
+    // Keep the package: a single file declaring `package practice;` runs as practice.App.
+    if (javaClassName.split('.').at(-1) === javaClassFromFile(oldName)) setJavaClassName(qualifiedJavaClass(next, className))
   }
 
   const deleteFile = (name) => {
@@ -99,10 +101,12 @@ export default function CodingWorkspace({
     const next = files.filter((file) => file.name !== name)
     onFilesChange(next)
     if (selectedFile === name) onSelectFile?.(next[Math.max(0, index - 1)]?.name)
-    // Keep the run target valid: with one file left the typed class name is used as-is.
+    // Keep the run target valid. With one file left the stored name is sent as-is, so it must
+    // carry the package (the multi-file dropdown stores only the simple name).
     const remaining = findJavaMainClasses(next)
-    if (remaining.length && !remaining.includes(javaClassName.split('.').at(-1))) {
-      setJavaClassName(qualifiedJavaClass(next, remaining[0]))
+    if (remaining.length) {
+      const current = javaClassName.split('.').at(-1)
+      setJavaClassName(qualifiedJavaClass(next, remaining.includes(current) ? current : remaining[0]))
     }
   }
 

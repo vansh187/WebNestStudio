@@ -10,6 +10,7 @@ export default function DigitalCard() {
     description:
       'WebNest Studio digital business card - save our contact, message us on WhatsApp, or book a free consultation in one tap.',
     path: '/card',
+    noindex: true,
   })
 
   const closeCard = () => {

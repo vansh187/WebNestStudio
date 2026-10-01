@@ -97,6 +97,22 @@ export const LESSON_VIDEOS = {
     title: 'How the Java For-each Loop Works Internally',
     description: 'A quick video on what the compiler turns a for-each loop into for arrays and collections.',
   },
+  lesson_java_core_java_string: [
+    {
+      youtubeId: '9lWeD258_AE',
+      format: 'short',
+      afterSection: 1, // just before the 'What Happens When You "Change" a String' section
+      title: 'Why Java Strings Cannot Be Changed',
+      description: 'A quick video on what really happens when you "change" a String: a new object is created and the original stays the same.',
+    },
+    {
+      youtubeId: '5TjfnYu3Z38',
+      format: 'short',
+      afterSection: 2, // just before the "Why Strings Are Immutable" section
+      title: 'Why Java Strings Are Immutable',
+      description: 'A quick video on the reasons behind String immutability: the string pool, security, thread safety and cached hash codes.',
+    },
+  ],
 }
 
 export function getLessonVideo(lessonId) {

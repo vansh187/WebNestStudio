@@ -6,6 +6,22 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "webneststudio.co.in"
+        }
+      ],
+      "destination": "https://www.webneststudio.co.in/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.png",
+      "permanent": true
+    },
+    {
       "source": "/playground",
       "destination": "/codelab/playground",
       "permanent": true
@@ -123,18 +139,6 @@
     },
     {
       "source": "/codelab/dashboard",
-      "destination": "/app"
-    },
-    {
-      "source": "/blog/:slug",
-      "destination": "/app"
-    },
-    {
-      "source": "/portfolio/:slug",
-      "destination": "/app"
-    },
-    {
-      "source": "/codelab/problems/:slug",
       "destination": "/app"
     }
   ]

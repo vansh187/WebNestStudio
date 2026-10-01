@@ -17,8 +17,14 @@ The single most important fact about Java Strings is that they are immutable —
         ],
       },
       {
+        heading: 'What Happens When You "Change" a String',
+        body: `When code seems to change a String, the object itself is never touched. A statement like <code>a = a + " 17";</code> builds a brand-new String and then points the variable <code>a</code> at it; any other variable still holding the old reference keeps seeing the old text. The same is true for every String method — <code>toUpperCase()</code>, <code>replace()</code>, <code>trim()</code> and <code>concat()</code> all return a new String, and calling one without assigning the result changes nothing.
+
+The String class enforces this in three ways: the class is declared <code>final</code>, so no subclass can add methods that modify it; the array holding its characters is <code>private final</code>, so no outside code can reach it; and no method ever writes into that array after construction.`,
+      },
+      {
         heading: 'Why Strings Are Immutable',
-        body: `Java's designers made String immutable for several concrete reasons, not just as an arbitrary restriction. Because Strings are used everywhere — as class names in class loading, as keys in HashMap, as file paths, and as network resource identifiers — allowing them to change after creation would open the door to serious bugs and security holes.`,
+        body: `Java's designers made String immutable for several concrete reasons, not just as an arbitrary restriction. Because Strings are used everywhere — as class names in class loading, as keys in HashMap, as file paths, and as network resource identifiers — allowing them to change after creation would open the door to serious bugs and security holes. Each reason below depends on the same guarantee: once a String has been checked, stored or shared, its text stays exactly as it was.`,
         list: [
           '<strong>String pool sharing</strong> — multiple references can safely share the same object because no one can modify it out from under another reference.',
           '<strong>Security</strong> — sensitive values like file paths, usernames, and class names cannot be altered after being validated and passed to a security-sensitive method.',
@@ -48,6 +54,53 @@ The single most important fact about Java Strings is that they are immutable —
 changed: Java Rocks
 same object? false`,
       },
+      {
+        caption: 'Reassigning a variable is not changing the String',
+        code: `public class StringReferenceDemo {
+    public static void main(String[] args) {
+        String a = "Java";
+        String b = a;          // b points to the same object as a
+
+        a = a + " 17";         // creates a new String; a now points to it
+
+        System.out.println("a: " + a);
+        System.out.println("b: " + b);
+
+        String name = "webnest";
+        name.toUpperCase();    // result ignored - name is unchanged
+        System.out.println("name: " + name);
+
+        name = name.toUpperCase();  // capture the new String
+        System.out.println("name: " + name);
+    }
+}`,
+        output: `a: Java 17
+b: Java
+name: webnest
+name: WEBNEST`,
+      },
+      {
+        caption: 'Why immutability keeps HashMap keys safe',
+        code: `import java.util.HashMap;
+import java.util.Map;
+
+public class StringKeyDemo {
+    public static void main(String[] args) {
+        Map<String, Integer> stock = new HashMap<>();
+        String key = "apple";
+        stock.put(key, 10);
+
+        key = key.toUpperCase();  // a new String; the key inside the map is untouched
+
+        System.out.println("get(\\"apple\\"): " + stock.get("apple"));
+        System.out.println("get(key): " + stock.get(key));
+        System.out.println("key now: " + key);
+    }
+}`,
+        output: `get("apple"): 10
+get(key): null
+key now: APPLE`,
+      },
     ],
     commonMistakes: [
       'Believing that methods like concat() or replace() modify the original String in place — they always return a new String that must be captured in a variable.',
@@ -56,6 +109,8 @@ same object? false`,
     ],
     keyPoints: [
       'Strings are immutable: once created, their character content never changes.',
+      'Reassigning a String variable points it at a new object; other references to the old String still see the old text.',
+      'String is a final class with a private final internal array (bytes since Java 9), so nothing can modify a String after it is built.',
       'String literals live in the String Constant Pool; new String() always creates a separate heap object.',
       'Immutability enables safe pool sharing, thread safety, security, and cached hashcodes.',
     ],
