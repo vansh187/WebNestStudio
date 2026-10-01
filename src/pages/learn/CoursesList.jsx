@@ -30,7 +30,7 @@ export default function CoursesList() {
           ))}
         </div>
       )}
-      <p className="mt-8 text-sm text-ink-500 dark:text-ink-300">WebNest Studio is an IT consultancy and software development company in New Delhi. Explore our <Link className="underline" to="/services">development services</Link> or <Link className="underline" to="/portfolio">project portfolio</Link>.</p>
+      <p className="mt-8 text-sm text-ink-500 dark:text-ink-300">WebNest Studio is an IT consultancy and software development company in Gurugram. Explore our <Link className="underline" to="/services">development services</Link> or <Link className="underline" to="/portfolio">project portfolio</Link>.</p>
     </div>
   )
 }

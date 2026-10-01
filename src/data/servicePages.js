@@ -2,7 +2,7 @@
 export const SERVICE_PAGES = [
   {
     slug: 'web-development', title: 'Custom Website Development',
-    description: 'Custom website development from WebNest Studio in New Delhi: responsive business websites and web applications with accessible interfaces and maintainable code.',
+    description: 'Custom website development from WebNest Studio in Gurugram: responsive business websites and web applications with accessible interfaces and maintainable code.',
     intro: 'Your website should help people understand your business and take the next step. We build custom websites around your content, customer journeys and the systems your team already uses.',
     problems: 'This service fits businesses launching a new site, replacing a site that is difficult to update, or turning a manual customer journey into a web application. Start with the task your visitor needs to complete: finding a service, requesting a quote, buying a product or accessing an account.',
     capabilities: ['Responsive layouts for phones, tablets and desktops', 'React interfaces, forms and API-connected applications', 'Content structure, accessible navigation and technical SEO foundations', 'Integration with your existing backend and business tools'],
@@ -16,7 +16,7 @@ export const SERVICE_PAGES = [
   },
   {
     slug: 'ai-development', title: 'AI Implementation and Integration',
-    description: 'Integrate AI chatbots, automation and LLM-powered features into your business software with WebNest Studio, an IT consultancy in New Delhi.',
+    description: 'Integrate AI chatbots, automation and LLM-powered features into your business software with WebNest Studio, an IT consultancy in Gurugram.',
     intro: 'AI is useful when it solves a specific workflow problem. We help integrate chatbots, intelligent automation and LLM-powered features into websites and applications, with clear boundaries around what the system can do.',
     problems: 'A starting point might be helping customers navigate approved information, assisting staff with repetitive work, or adding an AI feature to an existing product. We begin with the inputs, expected outputs and how a person will review or act on the result.',
     capabilities: ['Chatbot interfaces connected to your application', 'LLM-powered features integrated with existing workflows', 'Automation that works with your APIs and business systems', 'Evaluation of expected responses and failure cases'],
