@@ -13,6 +13,9 @@ const titles = new Map()
 const descriptions = new Map()
 const warnings = []
 const canonicalPaths = new Set(urls.map((url) => new URL(url).pathname))
+// Noindex snapshots (e.g. /card) are outside the sitemap but remain valid link targets.
+const manifest = JSON.parse(await readFile('.seo-build/routes.json', 'utf8'))
+manifest.filter((route) => route.noindex).forEach((route) => canonicalPaths.add(route.path))
 for (const url of process.argv.includes('--browser-only') ? [] : urls) {
   const pathname = new URL(url).pathname
   const html = await readFile(pathname === '/' ? path.join(dist, 'index.html') : path.join(dist, `${pathname.slice(1)}.html`), 'utf8')

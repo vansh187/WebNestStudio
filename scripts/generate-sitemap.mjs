@@ -21,7 +21,8 @@ const STATIC_ROUTES = [
   { path: '/privacy-policy', changefreq: 'yearly', priority: '0.3' },
   { path: '/terms-and-conditions', changefreq: 'yearly', priority: '0.3' },
   { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
-  { path: '/card', changefreq: 'monthly', priority: '0.5' },
+  // Still prerendered so the QR link works, but kept out of the sitemap.
+  { path: '/card', noindex: true },
   { path: '/codelab', changefreq: 'weekly', priority: '0.8' },
   { path: '/codelab/playground', changefreq: 'monthly', priority: '0.6' },
   { path: '/codelab/problems', changefreq: 'weekly', priority: '0.7' },
@@ -124,7 +125,7 @@ function uniqueRoutes(routes) {
 }
 
 function toXml(routes) {
-  const urls = uniqueRoutes(routes).map(createUrl)
+  const urls = uniqueRoutes(routes).filter((route) => !route.noindex).map(createUrl)
   urls.sort((a, b) => a.loc.localeCompare(b.loc))
 
   return `<?xml version="1.0" encoding="UTF-8"?>

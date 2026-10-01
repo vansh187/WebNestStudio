@@ -32,6 +32,14 @@ export const FOOTER_SECTIONS = [
     ],
   },
   {
+    title: 'Services',
+    links: [
+      { label: 'Website Development', to: '/services/web-development' },
+      { label: 'AI Implementation', to: '/services/ai-development' },
+      { label: 'Software Development', to: '/services/software-development' },
+    ],
+  },
+  {
     title: 'Resources',
     links: [
       { label: 'Blog', to: '/blog' },

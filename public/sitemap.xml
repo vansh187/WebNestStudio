@@ -34,6 +34,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses-2</loc>
+    <lastmod>2026-09-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/blog/react-frontend-with-python-and-java-backend-the-ultimate-tech-stack-for-growing-businesses</loc>
     <lastmod>2026-09-22</lastmod>
     <changefreq>monthly</changefreq>
@@ -46,19 +52,8 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://www.webneststudio.co.in/blog/turn-zero-click-searches-into-actual-foot-traffic-for-your-store</loc>
-    <lastmod>2026-09-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/blog/why-your-business-app-needs-smart-product-recommendations</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/card</loc>
+    <loc>https://www.webneststudio.co.in/blog/what-dictates-the-ecommerce-website-development-cost-in-india</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -1573,12 +1568,117 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_abstraction_and_abstract_base_classes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_arrays_stacks_and_queues</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_assertions_and_debugging</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_async_programming_with_asyncio</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_authentication_with_oauth2_and_jwt</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_booleans_and_none</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_break_continue_and_pass</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_built_in_exceptions_reference</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_built_in_functions_reference</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_choosing_the_right_data_structure</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_classes_and_objects</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_classic_python_programs</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_classification_with_scikit_learn</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_cleaning_data_with_pandas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_clustering_with_k_means</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_command_line_arguments</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_comments_and_docstrings</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_composition_vs_inheritance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_comprehensions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_conditional_statements_and_match</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_connecting_to_mysql</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_connecting_to_postgresql</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_constructors_and_the_init_method</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1593,7 +1693,42 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_crud_operations_with_sqlite3</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_csv_files</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_data_preprocessing_and_pipelines</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_data_types</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_data_visualization_with_matplotlib</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_database_connectivity_with_sqlite3</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_dataclasses</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_date_and_time</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1603,7 +1738,52 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_dependency_injection_and_routers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_deploying_fastapi_applications</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_design_patterns_in_python</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_dictionaries_and_dictionary_methods</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_encapsulation_and_access_modifiers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_enums</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_excel_files</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_exceptions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_exploratory_data_analysis_project</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_fastapi_with_a_database</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1613,12 +1793,82 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_flask_basics</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_function_arguments</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_functions</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_grouping_merging_and_pivoting_in_pandas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_handling_multiple_exceptions_and_finally</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_hello_world_program</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_higher_order_functions_map_filter_and_reduce</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_http_api_basics</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_inheritance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_input_and_output</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_instance_class_and_static_methods</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_introduction_to_fastapi</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_introduction_to_machine_learning</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_introduction_to_numpy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_introduction_to_pandas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_introduction_to_python</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1633,7 +1883,32 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_itertools_and_functools</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_json</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_keywords_and_identifiers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_lambda_functions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_linear_regression_with_scikit_learn</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_lists_and_list_methods</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1643,7 +1918,77 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_literals</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_logging</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_loops_for_and_while</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_magic_methods_and_operator_overloading</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_math_random_and_statistics_modules</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_method_overloading_in_python</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_middleware_background_tasks_and_websockets</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_model_evaluation_and_hyperparameter_tuning</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_modules</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_mongodb_with_pymongo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_multiprocessing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_multithreading</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_numbers_and_math</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_numpy_for_math_statistics_and_linear_algebra</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_numpy_indexing_and_array_operations</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1658,7 +2003,87 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_os_sys_and_pathlib</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_packages</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_path_and_query_parameters</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_pip_and_dependency_management</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_polymorphism_and_method_overriding</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_properties_and_descriptors</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_python_ides_and_tools</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_raising_and_custom_exceptions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_recursion</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_regular_expressions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_request_body_and_pydantic_models</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_response_models_status_codes_and_errors</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_saving_and_deploying_ml_models</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_scope_closures_and_namespaces</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_searching_algorithms</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_selecting_and_filtering_data_with_pandas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_sets_and_set_methods</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1668,7 +2093,27 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_sorting_algorithms</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_sqlalchemy_orm</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_standard_library</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_string_formatting</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_string_methods_reference</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1684,6 +2129,31 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_testing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_testing_fastapi_applications</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_the_collections_module</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_transactions_and_sql_injection</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_tuples_and_tuple_methods</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_python_type_casting</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1818,12 +2288,162 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_aop_advice_types_before_after_around_after_returning_and_after_throwing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_apache_kafka_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_api_gateway_with_spring_cloud_gateway</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_api_versioning</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_application_properties_and_common_settings</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_application_startup_runners_and_lifecycle_events</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_aspect_oriented_programming_aop_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_async_processing_with_async</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_auditing_optimistic_locking_and_soft_deletes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_authentication_with_users_and_roles</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_authorization_rules_and_method_security</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_auto_configuration</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_batch_processing_with_spring_batch</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_building_container_images_with_buildpacks</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_caching_with_spring_cache</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_capstone_project_building_a_production_ready_course_platform_api</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_centralized_configuration_with_spring_cloud_config</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_chat_memory</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_chatclient_and_prompt_templates</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_ci_cd_with_github_actions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_configuration_properties</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_connecting_to_postgresql_and_mysql</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_content_negotiation_json_and_xml</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_creating_a_custom_starter</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_csrf_and_cors_in_spring_security</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_custom_queries_and_projections</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_data_layer_tests_with_datajpatest</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_database_migrations_with_flyway_and_liquibase</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_dependency_management_and_the_starter_parent</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_deploying_to_kubernetes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_distributed_tracing_with_opentelemetry</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_distributed_transactions_and_the_saga_pattern</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1838,12 +2458,97 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_embeddings_and_vector_stores</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_entity_relationships_in_depth</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_event_driven_microservices_with_spring_cloud_stream</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_exception_handling</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_file_upload_and_download</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_filtering_api_responses_static_and_dynamic</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_filters_and_interceptors</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_graphql_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_grpc_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_h2_database_and_a_complete_crud_application</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_health_checks_readiness_and_liveness_probes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_hibernate</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_http_service_clients_with_httpexchange</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_integration_tests_with_testcontainers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_internationalization_i18n</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_introduction_to_spring_ai</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_jdbcclient_and_spring_data_jdbc</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_json_with_jackson_3</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_jwt_authentication_with_oauth2_resource_server</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1858,12 +2563,57 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_metrics_with_micrometer_and_prometheus</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_microservices_architecture_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_model_context_protocol_mcp_servers_and_clients</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_modular_monoliths_with_spring_modulith</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_multi_module_projects</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_oauth2_login_with_google_and_github</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_openapi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_packaging_and_deployment_jar_war_and_external_tomcat</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_pagination</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_passkeys_and_one_time_token_login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_password_encoding</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1883,7 +2633,62 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_r2dbc_reactive_database_access</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_rabbitmq_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_reactive_programming_with_project_reactor</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_redis_with_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_request_mapping_and_parameters</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_resilience_retries_rate_limits_and_circuit_breakers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_rest_api_best_practices_and_the_richardson_maturity_model</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_rest_apis</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_restclient</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_retrieval_augmented_generation_rag</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_running_local_models_with_ollama</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_scheduling_tasks_with_scheduled</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1893,7 +2698,57 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_security_hardening_checklist</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_sending_email</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_server_side_rendering_with_thymeleaf</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_service_discovery_with_eureka_and_load_balancing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_solving_the_n_1_problem</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_application_events</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_authorization_server</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_3_and_graalvm_native_images</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_annotations_reference</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_devtools</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_interview_questions_and_answers</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1903,7 +2758,42 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_data_mongodb</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_hateoas</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_security_architecture_and_the_filter_chain</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_vs_spring_boot_vs_spring_mvc</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_webflux</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_starters</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_structured_logging</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_structured_output</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1913,7 +2803,57 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_testing_and_observing_ai_applications</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_testing_secured_endpoints</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_tool_calling</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_transactions_in_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_unit_testing_with_junit_and_mockito</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_validation</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_virtual_threads_in_spring_boot</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_web_layer_tests_with_webmvctest</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_webclient</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_websockets_and_stomp</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_what_is_new_in_spring_boot_4</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
