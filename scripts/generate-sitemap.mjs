@@ -13,6 +13,7 @@ const STATIC_ROUTES = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
   { path: '/about', changefreq: 'monthly', priority: '0.7' },
   { path: '/our-story', changefreq: 'monthly', priority: '0.7' },
+  { path: '/authors/webnest-studio', changefreq: 'monthly', priority: '0.5' },
   { path: '/services', changefreq: 'monthly', priority: '0.8' },
   { path: '/portfolio', changefreq: 'weekly', priority: '0.8' },
   { path: '/blog', changefreq: 'weekly', priority: '0.8' },
