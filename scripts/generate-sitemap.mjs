@@ -5,6 +5,7 @@ import { SAMPLE_COURSES, SAMPLE_LESSONS, SAMPLE_PROBLEMS } from '../src/data/cod
 
 import { SITE_URL, validLastmod } from '../src/lib/seo.js'
 import { SERVICE_PAGES } from '../src/data/servicePages.js'
+import { CASE_STUDIES } from '../src/data/caseStudies.js'
 const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
 const OUTPUT_PATH = path.resolve(process.cwd(), 'public', 'sitemap.xml')
 const FETCH_TIMEOUT_MS = 15000
@@ -16,6 +17,7 @@ const STATIC_ROUTES = [
   { path: '/authors/webnest-studio', changefreq: 'monthly', priority: '0.5' },
   { path: '/services', changefreq: 'monthly', priority: '0.8' },
   { path: '/portfolio', changefreq: 'weekly', priority: '0.8' },
+  { path: '/case-studies', changefreq: 'monthly', priority: '0.8' },
   { path: '/blog', changefreq: 'weekly', priority: '0.8' },
   { path: '/faqs', changefreq: 'monthly', priority: '0.6' },
   { path: '/contact', changefreq: 'monthly', priority: '0.7' },
@@ -92,6 +94,7 @@ function getLocalRoutes() {
 
   return [
     ...SERVICE_PAGES.map((service) => ({ path: `/services/${service.slug}` })),
+    ...CASE_STUDIES.map((study) => ({ path: `/case-studies/${study.slug}`, priority: '0.8' })),
     ...FALLBACK_POSTS.map((post) => ({
       path: `/blog/${post.slug}`,
       lastmod: post.updated_at || post.published_at,

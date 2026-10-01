@@ -23,9 +23,15 @@ import { content21Hibernate } from './content-21-hibernate.js'
 import { content22SpringCoreBoot } from './content-22-spring-core-boot.js'
 import { content23SecurityCloud } from './content-23-security-cloud.js'
 import { content24Mockito } from './content-24-mockito.js'
+import { practice01Basics } from './practice-01-basics.js'
 import { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex } from './topics.js'
 
-export const JAVA_LESSON_CONTENT = {
+// Practice blocks live in their own per-module files, keyed by the same slugs.
+export const JAVA_PRACTICE = {
+  ...practice01Basics,
+}
+
+const LESSON_PROSE = {
   ...content01Basics,
   ...content02ControlFlow,
   ...content03Strings,
@@ -52,5 +58,9 @@ export const JAVA_LESSON_CONTENT = {
   ...content23SecurityCloud,
   ...content24Mockito,
 }
+
+export const JAVA_LESSON_CONTENT = Object.fromEntries(
+  Object.entries(LESSON_PROSE).map(([slug, entry]) => [slug, JAVA_PRACTICE[slug] ? { ...entry, ...JAVA_PRACTICE[slug] } : entry]),
+)
 
 export { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex }

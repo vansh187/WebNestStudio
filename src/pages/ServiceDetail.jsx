@@ -17,7 +17,7 @@ export default function ServiceDetail() {
   return (
     <article className="mx-auto max-w-4xl px-6 py-12 text-ink-700 dark:text-ink-200">
       <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Services', to: '/services' }, { label: service.title, to: `/services/${slug}` }]} />
-      <p className="text-sm font-semibold text-gold-600 dark:text-gold-400">IT consultancy · New Delhi, India</p>
+      <p className="text-sm font-semibold text-gold-600 dark:text-gold-400">IT consultancy · Gurugram, India</p>
       <h1 className="mt-3 font-display text-4xl font-bold text-ink-900 dark:text-white">{service.title}</h1>
       <p className="mt-6 text-lg leading-relaxed">{service.intro}</p>
       <Link className="mt-6 inline-flex rounded-full bg-gold-400 px-6 py-3 font-semibold text-ink-950" to="/contact">Discuss your project</Link>

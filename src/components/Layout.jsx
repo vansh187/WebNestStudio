@@ -25,7 +25,7 @@ const ORGANIZATION_SCHEMA = {
   logo: `${SITE_URL}/favicon.png`,
   email: CONTACT.email,
   telephone: CONTACT.phone,
-  address: { '@type': 'PostalAddress', addressLocality: 'New Delhi', addressCountry: 'IN' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Gurugram', addressCountry: 'IN' },
   sameAs: [CONTACT.instagramHref, CONTACT.linkedinHref],
 }
 

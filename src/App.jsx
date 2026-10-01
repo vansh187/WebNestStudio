@@ -15,6 +15,8 @@ import Home from './pages/Home'
 const About = lazyWithReload(() => import('./pages/About'))
 const OurStory = lazyWithReload(() => import('./pages/OurStory'))
 const Authors = lazyWithReload(() => import('./pages/Authors'))
+const CaseStudies = lazyWithReload(() => import('./pages/CaseStudies'))
+const CaseStudyDetail = lazyWithReload(() => import('./pages/CaseStudyDetail'))
 const Services = lazyWithReload(() => import('./pages/Services'))
 const Portfolio = lazyWithReload(() => import('./pages/Portfolio'))
 const PortfolioDetail = lazyWithReload(() => import('./pages/PortfolioDetail'))
@@ -120,6 +122,8 @@ function App() {
                     <Route path="about" element={<About />} />
                     <Route path="our-story" element={<OurStory />} />
                     <Route path="authors/webnest-studio" element={<Authors />} />
+                    <Route path="case-studies" element={<CaseStudies />} />
+                    <Route path="case-studies/:slug" element={<CaseStudyDetail />} />
                     <Route path="services" element={<Services />} />
                     <Route path="services/:slug" element={<ServiceDetail />} />
                     <Route path="portfolio" element={<Portfolio />} />

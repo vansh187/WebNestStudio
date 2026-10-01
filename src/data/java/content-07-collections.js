@@ -262,7 +262,89 @@ public class MapDemo {
 TreeMap sorted: {apple=3, banana=5, cherry=8}
 TreeMap rejected null key`,
       },
+      {
+        caption: 'Two different keys with the same hash code (a collision)',
+        code: `import java.util.HashMap;
+import java.util.Map;
+
+public class CollisionDemo {
+    public static void main(String[] args) {
+        // "Aa" and "BB" are different strings with the same hash code
+        System.out.println("Aa".hashCode());
+        System.out.println("BB".hashCode());
+
+        Map<String, Integer> stock = new HashMap<>();
+        stock.put("Aa", 10);
+        stock.put("BB", 20);
+
+        // Both land in the same bucket; equals() tells them apart
+        System.out.println(stock.get("Aa"));
+        System.out.println(stock.get("BB"));
+        System.out.println(stock.size());
+    }
+}`,
+        output: `2112
+2112
+10
+20
+2`,
+      },
     ],
+    whyItMatters: `Maps are how Java programs answer "given this key, what is the value?" without scanning a list: a user by id, a price by product code, a count by word. Picking the wrong implementation shows up as real bugs — output that changes order between runs, a <code>NullPointerException</code> on a null key, or a lookup that slows down as data grows — so knowing the four trade-offs is worth more than memorising their method names.`,
+    diagram: {
+      caption: 'How HashMap finds a bucket: the key\'s hash code picks an index, and keys that share a bucket are told apart with equals().',
+      svg: `<svg viewBox="0 0 640 230" role="img" aria-label="A key is hashed to a bucket index; two entries share bucket 2 as a chain" class="mx-auto h-auto w-full max-w-2xl" fill="none" stroke="currentColor" stroke-width="1.5" font-family="ui-monospace, monospace" font-size="13">
+  <rect x="10" y="105" width="110" height="40" rx="6"/>
+  <text x="65" y="130" text-anchor="middle" fill="currentColor" stroke="none">key "BB"</text>
+  <path d="M120 125 H160"/><path d="M154 119 L160 125 L154 131"/>
+  <rect x="160" y="105" width="130" height="40" rx="6"/>
+  <text x="225" y="123" text-anchor="middle" fill="currentColor" stroke="none">hashCode()</text>
+  <text x="225" y="139" text-anchor="middle" fill="currentColor" stroke="none">= 2112</text>
+  <path d="M290 125 H330"/><path d="M324 119 L330 125 L324 131"/>
+  <text x="372" y="20" text-anchor="middle" fill="currentColor" stroke="none">buckets</text>
+  <rect x="330" y="30" width="84" height="38"/><text x="372" y="54" text-anchor="middle" fill="currentColor" stroke="none">0</text>
+  <rect x="330" y="68" width="84" height="38"/><text x="372" y="92" text-anchor="middle" fill="currentColor" stroke="none">1</text>
+  <rect x="330" y="106" width="84" height="38" stroke-width="3"/><text x="372" y="130" text-anchor="middle" fill="currentColor" stroke="none">2</text>
+  <rect x="330" y="144" width="84" height="38"/><text x="372" y="168" text-anchor="middle" fill="currentColor" stroke="none">3</text>
+  <text x="372" y="204" text-anchor="middle" fill="currentColor" stroke="none">...</text>
+  <path d="M414 125 H444"/><path d="M438 119 L444 125 L438 131"/>
+  <rect x="444" y="106" width="78" height="38" rx="6"/><text x="483" y="130" text-anchor="middle" fill="currentColor" stroke="none">Aa=10</text>
+  <path d="M522 125 H548"/><path d="M542 119 L548 125 L542 131"/>
+  <rect x="548" y="106" width="78" height="38" rx="6"/><text x="587" y="130" text-anchor="middle" fill="currentColor" stroke="none">BB=20</text>
+</svg>`,
+    },
+    complexity: [
+      { operation: 'HashMap / LinkedHashMap — get, put, remove', average: 'O(1)', worst: 'O(log n) since Java 8, when a crowded bucket becomes a tree (O(n) before)' },
+      { operation: 'TreeMap — get, put, remove', average: 'O(log n)', worst: 'O(log n)' },
+      { operation: 'Hashtable — get, put, remove', average: 'O(1)', worst: 'O(n)' },
+      { operation: 'HashMap resize (rehash all entries)', average: 'O(n), amortised away over many puts', worst: 'O(n)' },
+    ],
+    productionExample: {
+      heading: 'Where this is used',
+      body: `Counting and grouping are the most common everyday uses of a map: page views per URL, orders per customer, errors per type. <code>merge()</code> does the "insert 1 or add 1" step in a single call, so there is no separate check for whether the key already exists.`,
+      caption: 'Counting page views per URL',
+      code: `import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class PageViews {
+    public static void main(String[] args) {
+        List<String> requests = List.of("/home", "/pricing", "/home", "/blog", "/home");
+
+        Map<String, Integer> views = new HashMap<>();
+        for (String path : requests) {
+            views.merge(path, 1, Integer::sum);
+        }
+
+        System.out.println("/home: " + views.get("/home"));
+        System.out.println("/pricing: " + views.get("/pricing"));
+        System.out.println("/missing: " + views.getOrDefault("/missing", 0));
+    }
+}`,
+      output: `/home: 3
+/pricing: 1
+/missing: 0`,
+    },
     commonMistakes: [
       'Assuming HashMap iteration order is insertion order — that guarantee belongs to LinkedHashMap, not HashMap.',
       'Putting a null key into a TreeMap or Hashtable and being surprised by a NullPointerException.',
@@ -274,6 +356,87 @@ TreeMap rejected null key`,
       'LinkedHashMap: insertion (or access) order preserved, same performance as HashMap.',
       'TreeMap: sorted by key, O(log n), no null keys allowed.',
       'Hashtable: legacy and synchronized, disallows both null keys and null values entirely.',
+    ],
+    exercise: {
+      prompt: `Count how many times each word appears in a sentence and print the result in alphabetical order. Start from the code below and replace the TODO.
+
+The expected output is <code>{be=2, not=1, or=1, to=2}</code>. Once it works, change <code>TreeMap</code> to <code>HashMap</code> and explain why the printed order is no longer guaranteed.`,
+      starterCode: `import java.util.Map;
+import java.util.TreeMap;
+
+public class WordCount {
+    public static void main(String[] args) {
+        String text = "to be or not to be";
+        Map<String, Integer> counts = new TreeMap<>();
+
+        // TODO: split text on spaces and count each word
+
+        System.out.println(counts);
+    }
+}`,
+      hints: [
+        '<code>text.split(" ")</code> gives you an array of words to loop over.',
+        '<code>counts.merge(word, 1, Integer::sum)</code> inserts 1 for a new word or adds 1 to an existing count.',
+      ],
+      solution: `import java.util.Map;
+import java.util.TreeMap;
+
+public class WordCount {
+    public static void main(String[] args) {
+        String text = "to be or not to be";
+        Map<String, Integer> counts = new TreeMap<>();
+
+        for (String word : text.split(" ")) {
+            counts.merge(word, 1, Integer::sum);
+        }
+
+        System.out.println(counts); // {be=2, not=1, or=1, to=2}
+    }
+}`,
+    },
+    quiz: [
+      {
+        question: 'You need to print report rows sorted by customer name. Which map keeps its keys sorted?',
+        options: ['HashMap', 'LinkedHashMap', 'TreeMap', 'Hashtable'],
+        answer: 2,
+        explanation: 'TreeMap keeps keys in sorted order. LinkedHashMap keeps insertion order, and HashMap and Hashtable promise no order.',
+      },
+      {
+        question: 'What happens when you call <code>put(null, 1)</code> on a TreeMap that uses natural ordering?',
+        options: ['It stores the entry under a null key', 'It throws NullPointerException', 'It silently ignores the call', 'It replaces the first entry'],
+        answer: 1,
+        explanation: 'TreeMap must compare the new key with existing keys to place it, and null cannot be compared, so it throws NullPointerException.',
+      },
+      {
+        question: 'A HashMap is created with the default capacity (16) and load factor (0.75). When does it first resize?',
+        options: ['When the 9th entry is added', 'When the 13th entry is added', 'When the 16th entry is added', 'Only when you call a resize method'],
+        answer: 1,
+        explanation: 'The threshold is 16 × 0.75 = 12 entries. Adding the 13th entry exceeds it, so the table doubles to 32 buckets and entries are redistributed.',
+      },
+    ],
+    interviewQuestions: [
+      {
+        question: 'What is the difference between HashMap and Hashtable?',
+        answer: `HashMap is not synchronized and allows one null key and any number of null values. Hashtable is a legacy class whose methods are all synchronized, and it rejects null keys and null values with a NullPointerException.
+
+For thread-safe code today, the usual answer is ConcurrentHashMap rather than Hashtable, because it does not lock the whole table for every operation.`,
+      },
+      {
+        question: 'Why must a class used as a HashMap key override both equals() and hashCode()?',
+        answer: `HashMap uses hashCode() to choose the bucket and equals() to find the exact key inside that bucket. If two keys are equal but return different hash codes, they land in different buckets, so a lookup with an equal key finds nothing and the map can hold duplicates.
+
+The rule is: equal objects must have equal hash codes. Keys should also be immutable, because changing a field that feeds hashCode() after insertion leaves the entry in the wrong bucket.`,
+      },
+      {
+        question: 'How would you build a simple LRU cache using the collections framework?',
+        answer: `Extend LinkedHashMap, pass <code>true</code> for the accessOrder constructor argument so that each <code>get()</code> moves the entry to the end, and override <code>removeEldestEntry()</code> to return true when <code>size()</code> exceeds the cache limit. The least recently used entry is then evicted automatically on insert.
+
+This version is not thread-safe; it needs external synchronization or a different design for concurrent use.`,
+      },
+    ],
+    seeAlso: [
+      { lessonId: 'lesson_java_core_how_hashmap_works_internally', label: 'How HashMap Works Internally' },
+      { lessonId: 'lesson_java_core_concurrent_collections_concurrenthashmap_and_copyonwritearraylist', label: 'Concurrent Collections: ConcurrentHashMap and CopyOnWriteArrayList' },
     ],
   },
 
