@@ -199,6 +199,12 @@ Score: 45/50 (90.0%)`,
 StringBuffer has existed in Java since version 1.0, and its defining characteristic is that all of its public methods are synchronized. This makes a single StringBuffer instance safe to share and mutate from multiple threads at once, at the cost of the extra overhead that synchronization always introduces.`,
     sections: [
       {
+        heading: 'How StringBuffer Beats Immutable Strings',
+        body: `A String can never be changed, so every "modification" — <code>concat()</code>, <code>+</code>, <code>replace()</code> — has to allocate a new String object and copy the old characters into it. The original object is left behind for the garbage collector. Do that a thousand times in a loop and you have created a thousand objects to end up with one piece of text.
+
+A StringBuffer works the other way round. It owns one internal character array, and <code>append()</code>, <code>insert()</code> and <code>reverse()</code> write into that same array. No new object is created per change; the buffer only allocates a larger array when it runs out of room. You can see the difference directly: <code>append()</code> returns the very same StringBuffer it was called on, while <code>concat()</code> returns a different String.`,
+      },
+      {
         heading: 'Core Mutating Methods',
         body: `StringBuffer's API is built around modifying its internal buffer directly rather than returning new objects.`,
         list: [
@@ -242,6 +248,26 @@ Java language is powerful
 Kotlin language is powerful
 lufrewop si egaugnal niltoK`,
       },
+      {
+        caption: 'A String change creates a new object; a StringBuffer change reuses the same one',
+        code: `public class MutableVsImmutable {
+    public static void main(String[] args) {
+        String text = "Java";
+        String changed = text.concat(" 17");
+        System.out.println(text == changed); // different objects
+        System.out.println(text);            // the original is untouched
+
+        StringBuffer buffer = new StringBuffer("Java");
+        StringBuffer same = buffer.append(" 17");
+        System.out.println(buffer == same);  // the same object
+        System.out.println(buffer);          // it was modified in place
+    }
+}`,
+        output: `false
+Java
+true
+Java 17`,
+      },
     ],
     commonMistakes: [
       'Using StringBuffer by default for single-threaded string building, paying for synchronization overhead that provides no benefit there.',
@@ -261,6 +287,12 @@ lufrewop si egaugnal niltoK`,
 
 As a result, StringBuilder is the recommended default choice for mutable string construction in modern Java code, and it is exactly what the compiler uses internally to optimize simple String concatenation with "+" inside a single expression.`,
     sections: [
+      {
+        heading: 'How StringBuilder Fixes the Memory Problem',
+        body: `Building text with <code>+=</code> in a loop looks harmless, but because Strings are immutable each pass creates a brand-new String and copies every character built so far into it. The previous String becomes garbage immediately. For a loop of n steps that is n throwaway objects and a growing amount of copying each time.
+
+A StringBuilder keeps one resizable character array instead. It starts with room for 16 characters, and <code>append()</code> writes straight into the free space. Only when the array is full does it allocate a bigger one — roughly double the size plus two — and copy the contents across once. So thousands of appends cost a handful of allocations rather than thousands, and a single <code>toString()</code> at the end produces the final String.`,
+      },
       {
         heading: 'Same API, No Synchronization',
         body: `StringBuilder and StringBuffer implement the same CharSequence-based operations and share method signatures almost identically, so switching between them (when thread-safety requirements change) is usually just a matter of changing the type name. The difference is entirely about the synchronized keyword being present on StringBuffer's methods and absent on StringBuilder's.`,
@@ -303,6 +335,27 @@ As a result, StringBuilder is the recommended default choice for mutable string 
         output: `Numbers: 1, 2, 3, 4, 5
 Length: 15
 [1, 2, 3, 4, 5]`,
+      },
+      {
+        caption: 'One buffer that grows: capacity starts at 16 and expands only when it is full',
+        code: `public class BuilderCapacityDemo {
+    public static void main(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        System.out.println(sb.capacity());       // room for 16 characters
+
+        sb.append("0123456789ABCDEF");           // exactly 16 characters
+        System.out.println(sb.capacity());       // still 16, no new array needed
+
+        sb.append("G");                          // the 17th character does not fit
+        System.out.println(sb.capacity());       // grown to (16 * 2) + 2
+
+        System.out.println(sb.length());         // characters actually stored
+    }
+}`,
+        output: `16
+16
+34
+17`,
       },
     ],
     commonMistakes: [

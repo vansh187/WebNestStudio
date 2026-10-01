@@ -113,6 +113,20 @@ export const LESSON_VIDEOS = {
       description: 'A quick video on the reasons behind String immutability: the string pool, security, thread safety and cached hash codes.',
     },
   ],
+  lesson_java_core_java_stringbuffer: {
+    youtubeId: '87796k2_CPU',
+    format: 'short',
+    afterSection: 0, // just before the "How StringBuffer Beats Immutable Strings" section
+    title: 'How StringBuffer Beats Immutable Strings',
+    description: 'A quick video on why modifying a StringBuffer in place avoids the new object that every String change creates.',
+  },
+  lesson_java_core_java_stringbuilder: {
+    youtubeId: 'XLrnuI2MB_E',
+    format: 'short',
+    afterSection: 0, // just before the "How StringBuilder Fixes the Memory Problem" section
+    title: 'How StringBuilder Fixes Java Memory',
+    description: 'A quick video on how one growing buffer replaces the throwaway Strings that += creates in a loop.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
