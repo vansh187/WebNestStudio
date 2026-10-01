@@ -25,12 +25,14 @@ import { content23SecurityCloud } from './content-23-security-cloud.js'
 import { content24Mockito } from './content-24-mockito.js'
 import { practice01Basics } from './practice-01-basics.js'
 import { practice02ControlFlow } from './practice-02-controlflow.js'
+import { practice03Strings } from './practice-03-strings.js'
 import { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex } from './topics.js'
 
 // Practice blocks live in their own per-module files, keyed by the same slugs.
 export const JAVA_PRACTICE = {
   ...practice01Basics,
   ...practice02ControlFlow,
+  ...practice03Strings,
 }
 
 const LESSON_PROSE = {
