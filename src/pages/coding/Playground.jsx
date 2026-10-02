@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { lessonTemplate } from '../../lib/lessonPlayground'
+import { lessonWorkspace } from '../../lib/lessonPlayground'
 import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -58,10 +58,11 @@ function PlaygroundEditor() {
   const runner = useCodeRunner()
 
   const templateId = new URLSearchParams(location.search).get('lesson')
-  const exampleIndex = Number(new URLSearchParams(location.search).get('example') || 0)
+  // "example" is an example index, or "exercise" / "scratch" for the lesson's other workspaces.
+  const exampleKey = new URLSearchParams(location.search).get('example') || '0'
   const templateLesson = SAMPLE_LESSONS[templateId]
-  const template = useMemo(() => lessonTemplate(templateLesson, exampleIndex), [templateLesson, exampleIndex])
-  const storageKey = template ? `${STORAGE_KEY}:lesson:${template.lessonId}:${exampleIndex}` : STORAGE_KEY
+  const template = useMemo(() => lessonWorkspace(templateLesson, exampleKey), [templateLesson, exampleKey])
+  const storageKey = template ? `${STORAGE_KEY}:lesson:${template.lessonId}:${exampleKey}` : STORAGE_KEY
   const session = useMemo(() => loadSession(storageKey) || template, [storageKey, template])
   const [language, setLanguage] = useState(session?.language ?? 'web')
   const [files, setFiles] = useState(session?.files ?? cloneFiles(WEB_FILES, WEB_FILES))
@@ -186,7 +187,17 @@ function PlaygroundEditor() {
 
   return (
     <>
-    {templateLesson && <p className="mx-auto max-w-7xl px-6 pt-6 text-sm"><Link className="underline" to={`/learn/lessons/${templateLesson.id}`}>Back to {templateLesson.title}</Link> - Example loaded for practice. Some snippets need input, additional markup or dependencies; edit before running.</p>}
+    {templateLesson && (
+      <p className="mx-auto max-w-7xl px-6 pt-6 text-sm">
+        <Link className="underline" to={`/learn/lessons/${templateLesson.id}`}>Back to {templateLesson.title}</Link>
+        {' - '}
+        {exampleKey === 'scratch'
+          ? `Your own practice space for this topic. ${template?.note || ''} Your code is kept in this browser.`
+          : exampleKey === 'exercise'
+            ? 'Exercise starter code loaded. Complete the TODOs, run it, and compare with the expected output in the lesson.'
+            : 'Example loaded for practice. Some snippets need input, additional markup or dependencies; edit before running.'}
+      </p>
+    )}
     <CodingWorkspace
       eyebrow="Webnest CodeLab"
       title="Browser coding playground"

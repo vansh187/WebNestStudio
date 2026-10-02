@@ -14,7 +14,8 @@ export default function Footer() {
             <Logo size="md" />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500 dark:text-ink-300">
               WebNest Studio is an IT consultancy building websites, AI-driven products, and
-              enterprise software — where brands go digital.
+              enterprise software, and a learning platform for new developers — where brands
+              go digital and developers are born.
             </p>
             <div className="mt-5 flex gap-3">
               <a
