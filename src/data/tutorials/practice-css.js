@@ -38,8 +38,8 @@ main {
     quiz: [
       {
         question: 'Which line correctly links an external stylesheet?',
-        options: ['&lt;style src="style.css"&gt;', '&lt;link rel="stylesheet" href="style.css"&gt;', '&lt;css href="style.css"&gt;', '&lt;script href="style.css"&gt;'],
-        answer: 1,
+        options: ['&lt;link rel="stylesheet" href="style.css"&gt;', '&lt;style src="style.css"&gt;', '&lt;css href="style.css"&gt;', '&lt;script href="style.css"&gt;'],
+        answer: 0,
         explanation: 'The link element goes in the head, with rel="stylesheet" and the path in href.',
       },
       {
@@ -50,8 +50,8 @@ main {
       },
       {
         question: 'What does a preprocessor such as Sass produce?',
-        options: ['JavaScript', 'A faster browser', 'HTML', 'Plain CSS that the browser can read'],
-        answer: 3,
+        options: ['JavaScript', 'Plain CSS that the browser can read', 'HTML', 'A faster browser'],
+        answer: 1,
         explanation: 'Browsers do not understand Sass syntax; it is compiled to CSS before the page is served.',
       },
     ],
@@ -101,14 +101,14 @@ main > button {
     quiz: [
       {
         question: 'What does the selector <code>.card p</code> match?',
-        options: ['Only p elements that are direct children of .card', 'Every p element at any depth inside an element with the class card', 'Elements with both classes card and p', 'The first p on the page'],
-        answer: 1,
+        options: ['Only p elements that are direct children of .card', 'Elements with both classes card and p', 'Every p element at any depth inside an element with the class card', 'The first p on the page'],
+        answer: 2,
         explanation: 'A space is the descendant combinator. Use > to limit the match to direct children.',
       },
       {
         question: 'Which selector matches inputs whose <code>type</code> is <code>email</code>?',
-        options: ['input.email', 'input#email', 'input[type="email"]', 'input:email'],
-        answer: 2,
+        options: ['input.email', 'input#email', 'input:email', 'input[type="email"]'],
+        answer: 3,
         explanation: 'Square brackets select by attribute and value.',
       },
       {
@@ -164,14 +164,14 @@ button {
     quiz: [
       {
         question: 'Two rules with the same selector set different colours on the same element. Which wins?',
-        options: ['The first one in the file', 'Neither', 'The one that appears later', 'The shorter one'],
-        answer: 2,
+        options: ['The first one in the file', 'Neither', 'The shorter one', 'The one that appears later'],
+        answer: 3,
         explanation: 'When origin, importance and specificity are equal, source order decides.',
       },
       {
         question: 'Which of these properties is inherited by child elements by default?',
-        options: ['color', 'border', 'margin', 'padding'],
-        answer: 0,
+        options: ['margin', 'border', 'color', 'padding'],
+        answer: 2,
         explanation: 'Text properties such as color and font-family inherit. Box properties such as margin and border do not.',
       },
       {
@@ -225,20 +225,20 @@ body main p {
     quiz: [
       {
         question: 'Which selector has the highest specificity?',
-        options: ['p', '.note', 'div p', '#intro'],
-        answer: 3,
+        options: ['#intro', '.note', 'div p', 'p'],
+        answer: 0,
         explanation: 'One id outweighs any number of classes, and one class outweighs any number of element selectors.',
       },
       {
         question: 'What is the specificity of <code>ul li.active a</code>, written as ids, classes, elements?',
-        options: ['0, 1, 3', '0, 3, 1', '1, 1, 2', '0, 1, 1'],
-        answer: 0,
+        options: ['0, 3, 1', '0, 1, 3', '1, 1, 2', '0, 1, 1'],
+        answer: 1,
         explanation: 'There is one class (.active) and three element selectors (ul, li, a).',
       },
       {
         question: 'Two selectors have exactly the same specificity. What decides the winner?',
-        options: ['The longer selector', 'The one that comes later in the source', 'The one written first', 'Alphabetical order'],
-        answer: 1,
+        options: ['The longer selector', 'The one written first', 'The one that comes later in the source', 'Alphabetical order'],
+        answer: 2,
         explanation: 'Source order is the tie-breaker.',
       },
     ],
@@ -284,20 +284,20 @@ button {
     quiz: [
       {
         question: 'In what order do the layers of the box model go, from the inside out?',
-        options: ['Margin, border, padding, content', 'Content, border, padding, margin', 'Content, padding, border, margin', 'Padding, content, margin, border'],
-        answer: 2,
+        options: ['Margin, border, padding, content', 'Content, border, padding, margin', 'Padding, content, margin, border', 'Content, padding, border, margin'],
+        answer: 3,
         explanation: 'Padding is inside the border and margin is outside it.',
       },
       {
         question: 'An element has <code>width: 100px; padding: 10px; border: 2px solid;</code> and the default <code>box-sizing</code>. How wide is it on screen?',
-        options: ['100px', '124px', '112px', '120px'],
-        answer: 1,
+        options: ['124px', '100px', '112px', '120px'],
+        answer: 0,
         explanation: 'With content-box, padding and border on both sides are added: 100 + 20 + 4.',
       },
       {
         question: 'Two paragraphs are stacked. The first has <code>margin-bottom: 30px</code> and the second <code>margin-top: 20px</code>. What is the gap between them?',
-        options: ['30px', '50px', '20px', '10px'],
-        answer: 0,
+        options: ['50px', '30px', '20px', '10px'],
+        answer: 1,
         explanation: 'Adjoining vertical margins collapse into one, equal to the larger of the two.',
       },
     ],
@@ -354,14 +354,14 @@ button {
     quiz: [
       {
         question: 'What is <code>1rem</code> equal to?',
-        options: ['The font size of the parent element', 'Always 10px', '1% of the viewport width', 'The font size of the root (html) element'],
-        answer: 3,
+        options: ['The font size of the parent element', 'Always 10px', 'The font size of the root (html) element', '1% of the viewport width'],
+        answer: 2,
         explanation: 'By default that is 16px, unless the user or the stylesheet changes it.',
       },
       {
         question: 'A <code>div</code> with <code>font-size: 1.5em</code> is nested inside another <code>div</code> with the same rule, and the root size is 16px. What is the inner font size?',
-        options: ['24px', '36px', '16px', '48px'],
-        answer: 1,
+        options: ['24px', '48px', '16px', '36px'],
+        answer: 3,
         explanation: 'em is relative to the parent\'s font size, so it compounds: 16 × 1.5 × 1.5.',
       },
       {
@@ -425,14 +425,14 @@ h1 {
     quiz: [
       {
         question: 'Why does a font stack end with a generic family such as <code>sans-serif</code>?',
-        options: ['It is required by the syntax', 'It makes the text bold', 'It guarantees a fallback if none of the named fonts is available', 'It loads the font faster'],
-        answer: 2,
+        options: ['It is required by the syntax', 'It guarantees a fallback if none of the named fonts is available', 'It makes the text bold', 'It loads the font faster'],
+        answer: 1,
         explanation: 'The browser works through the list and uses the first font it has.',
       },
       {
         question: 'Why is a unitless <code>line-height</code>, such as <code>1.5</code>, recommended?',
-        options: ['It is multiplied by each element\'s own font size, so it scales correctly when inherited', 'It is shorter to type', 'Units are not allowed', 'It disables inheritance'],
-        answer: 0,
+        options: ['Units are not allowed', 'It is shorter to type', 'It is multiplied by each element\'s own font size, so it scales correctly when inherited', 'It disables inheritance'],
+        answer: 2,
         explanation: 'A value with a unit is computed once and inherited as a fixed length, which can be too small for larger text.',
       },
       {
@@ -492,20 +492,20 @@ button {
     quiz: [
       {
         question: 'What is the default value of <code>position</code>?',
-        options: ['relative', 'static', 'absolute', 'fixed'],
-        answer: 1,
+        options: ['static', 'relative', 'absolute', 'fixed'],
+        answer: 0,
         explanation: 'A static element is in the normal flow, and top, right, bottom and left have no effect on it.',
       },
       {
         question: 'What is a <code>position: fixed</code> element positioned relative to?',
-        options: ['Its parent', 'The previous element', 'The viewport', 'The document'],
-        answer: 2,
+        options: ['Its parent', 'The viewport', 'The previous element', 'The document'],
+        answer: 1,
         explanation: 'It stays in the same place on screen when the page scrolls.',
       },
       {
         question: 'What happens to the space of an element with <code>position: relative; top: 20px</code>?',
-        options: ['Its original space in the flow is kept, and it is drawn 20px lower', 'The space is removed', 'Other elements move down by 20px', 'It leaves the flow completely'],
-        answer: 0,
+        options: ['Other elements move down by 20px', 'The space is removed', 'Its original space in the flow is kept, and it is drawn 20px lower', 'It leaves the flow completely'],
+        answer: 2,
         explanation: 'A relatively positioned element is shifted visually without affecting its neighbours.',
       },
     ],
@@ -578,8 +578,8 @@ button {
       },
       {
         question: 'Which is a block-level element by default?',
-        options: ['div', 'span', 'a', 'img'],
-        answer: 0,
+        options: ['span', 'div', 'a', 'img'],
+        answer: 1,
         explanation: 'A div starts on a new line and takes the full width available.',
       },
     ],
@@ -635,14 +635,14 @@ button {
       },
       {
         question: 'What does <code>flex: 1</code> on every item of a row do?',
-        options: ['The items share the available space equally', 'Each item is 1px wide', 'Only the first item grows', 'The items wrap onto new lines'],
-        answer: 0,
+        options: ['The items wrap onto new lines', 'Each item is 1px wide', 'Only the first item grows', 'The items share the available space equally'],
+        answer: 3,
         explanation: 'It is shorthand for flex-grow 1, flex-shrink 1 and flex-basis 0.',
       },
       {
         question: 'By default, what happens when the items of a flex row do not fit?',
-        options: ['They wrap onto a new line', 'They are hidden', 'The container scrolls', 'They shrink to fit on one line, because flex-wrap defaults to nowrap'],
-        answer: 3,
+        options: ['They shrink to fit on one line, because flex-wrap defaults to nowrap', 'They are hidden', 'The container scrolls', 'They wrap onto a new line'],
+        answer: 0,
         explanation: 'Set flex-wrap: wrap to allow the items to move onto new lines.',
       },
     ],
@@ -698,14 +698,14 @@ h1 {
       },
       {
         question: 'What does <code>grid-template-columns: repeat(3, 1fr)</code> create?',
-        options: ['Three equal columns', 'Three rows', 'One column repeated in three grids', 'Three columns of 1px'],
-        answer: 0,
+        options: ['One column repeated in three grids', 'Three rows', 'Three equal columns', 'Three columns of 1px'],
+        answer: 2,
         explanation: 'repeat avoids writing 1fr 1fr 1fr.',
       },
       {
         question: 'What is <code>repeat(auto-fit, minmax(200px, 1fr))</code> used for?',
-        options: ['A fixed layout of 200 columns', 'Animating a grid', 'A responsive grid that fits as many columns of at least 200px as the width allows', 'Hiding empty cells'],
-        answer: 2,
+        options: ['A fixed layout of 200 columns', 'Animating a grid', 'Hiding empty cells', 'A responsive grid that fits as many columns of at least 200px as the width allows'],
+        answer: 3,
         explanation: 'The number of columns changes with the available width, with no media query.',
       },
     ],
@@ -766,8 +766,8 @@ button {
     quiz: [
       {
         question: 'What does "mobile-first" mean in CSS?',
-        options: ['Building a separate mobile site', 'Hiding content on phones', 'Using only pixel units', 'Writing the base styles for small screens and adding rules for larger ones with min-width queries'],
-        answer: 3,
+        options: ['Writing the base styles for small screens and adding rules for larger ones with min-width queries', 'Hiding content on phones', 'Using only pixel units', 'Building a separate mobile site'],
+        answer: 0,
         explanation: 'Larger screens then build on the simpler small-screen layout.',
       },
       {
@@ -778,8 +778,8 @@ button {
       },
       {
         question: 'Which HTML tag must be present for responsive CSS to work on phones?',
-        options: ['The viewport meta tag', 'The charset meta tag', 'A link to a mobile stylesheet', 'The canonical link'],
-        answer: 0,
+        options: ['A link to a mobile stylesheet', 'The charset meta tag', 'The viewport meta tag', 'The canonical link'],
+        answer: 2,
         explanation: 'Without it, a phone lays the page out at desktop width and scales it down.',
       },
     ],
@@ -830,14 +830,14 @@ main {
     quiz: [
       {
         question: 'When do the styles inside <code>@media (min-width: 768px)</code> apply?',
-        options: ['When the viewport is 768px wide or wider', 'When the viewport is narrower than 768px', 'Only at exactly 768px', 'Only when printing'],
-        answer: 0,
+        options: ['Only when printing', 'When the viewport is narrower than 768px', 'Only at exactly 768px', 'When the viewport is 768px wide or wider'],
+        answer: 3,
         explanation: 'min-width means "at least this wide".',
       },
       {
         question: 'Which query type goes with a mobile-first approach?',
-        options: ['max-width', 'orientation', 'min-width', 'print'],
-        answer: 2,
+        options: ['min-width', 'orientation', 'max-width', 'print'],
+        answer: 0,
         explanation: 'The base styles serve small screens, and each min-width query adds rules for larger ones.',
       },
       {
@@ -899,14 +899,14 @@ main {
     quiz: [
       {
         question: 'How is a CSS custom property declared?',
-        options: ['$brand: blue;', '@brand: blue;', 'var brand = blue;', '--brand: blue;'],
-        answer: 3,
+        options: ['$brand: blue;', '@brand: blue;', '--brand: blue;', 'var brand = blue;'],
+        answer: 2,
         explanation: 'The $ and @ forms belong to the Sass and Less preprocessors.',
       },
       {
         question: 'What does <code>var(--gap, 8px)</code> do?',
-        options: ['Sets --gap to 8px', 'Uses the value of --gap, or 8px if --gap is not defined', 'Adds 8px to --gap', 'It is invalid'],
-        answer: 1,
+        options: ['Sets --gap to 8px', 'It is invalid', 'Adds 8px to --gap', 'Uses the value of --gap, or 8px if --gap is not defined'],
+        answer: 3,
         explanation: 'The second argument is a fallback value.',
       },
       {
@@ -965,14 +965,14 @@ button:hover {
     quiz: [
       {
         question: 'In <code>transition: opacity 0.5s ease-in 0.2s</code>, what does <code>0.2s</code> mean?',
-        options: ['The duration', 'The number of repeats', 'The delay before the transition starts', 'The opacity value'],
-        answer: 2,
+        options: ['The duration', 'The delay before the transition starts', 'The number of repeats', 'The opacity value'],
+        answer: 1,
         explanation: 'The first time value is the duration and the second is the delay.',
       },
       {
         question: 'On which rule should the <code>transition</code> property be placed?',
-        options: ['The base rule of the element, so that it animates both to and from the changed state', 'Only the :hover rule', 'The body', 'A media query'],
-        answer: 0,
+        options: ['The body', 'Only the :hover rule', 'The base rule of the element, so that it animates both to and from the changed state', 'A media query'],
+        answer: 2,
         explanation: 'On :hover alone, the change back would be instant.',
       },
       {
@@ -1027,14 +1027,14 @@ button:hover {
     quiz: [
       {
         question: 'Does <code>transform: translateX(100px)</code> move the neighbouring elements?',
-        options: ['Yes, they shift by 100px', 'No; the element is drawn in a new place, but the layout keeps its original space', 'Only elements to the right', 'Only in a flex container'],
-        answer: 1,
+        options: ['No; the element is drawn in a new place, but the layout keeps its original space', 'Yes, they shift by 100px', 'Only elements to the right', 'Only in a flex container'],
+        answer: 0,
         explanation: 'Transforms happen after layout, so nothing else is affected.',
       },
       {
         question: 'What is the default <code>transform-origin</code>?',
-        options: ['The top-left corner', 'The bottom-right corner', 'The centre of the element', 'The centre of the page'],
-        answer: 2,
+        options: ['The top-left corner', 'The centre of the element', 'The bottom-right corner', 'The centre of the page'],
+        answer: 1,
         explanation: 'Rotation and scaling happen around the centre unless the origin is changed.',
       },
       {
@@ -1103,8 +1103,8 @@ button {
       },
       {
         question: 'Which value makes an animation repeat without end?',
-        options: ['animation-iteration-count: 0', 'animation-direction: loop', 'animation-iteration-count: infinite', 'animation-duration: forever'],
-        answer: 2,
+        options: ['animation-iteration-count: 0', 'animation-iteration-count: infinite', 'animation-direction: loop', 'animation-duration: forever'],
+        answer: 1,
         explanation: 'The default iteration count is 1.',
       },
     ],
@@ -1161,8 +1161,8 @@ h1::after {
     quiz: [
       {
         question: 'What is the difference between a pseudo-class and a pseudo-element?',
-        options: ['There is none', 'A pseudo-class selects an element in a particular state; a pseudo-element selects a part of an element', 'A pseudo-element selects a state', 'Pseudo-classes only work on links'],
-        answer: 1,
+        options: ['There is none', 'Pseudo-classes only work on links', 'A pseudo-element selects a state', 'A pseudo-class selects an element in a particular state; a pseudo-element selects a part of an element'],
+        answer: 3,
         explanation: 'Pseudo-classes use one colon, as in :hover; pseudo-elements use two, as in ::before.',
       },
       {
@@ -1228,14 +1228,14 @@ div#content section.cards div.card.featured {
     quiz: [
       {
         question: 'In the BEM class <code>menu__item--active</code>, which part is the modifier?',
-        options: ['menu', 'item', 'active', 'menu__item'],
-        answer: 2,
+        options: ['menu', 'active', 'item', 'menu__item'],
+        answer: 1,
         explanation: 'menu is the block, item the element, and active the modifier.',
       },
       {
         question: 'What is the main problem with a selector such as <code>#sidebar ul li a span</code>?',
-        options: ['It is tied to the exact HTML structure and has high specificity, so it breaks easily and is hard to override', 'It is invalid', 'It is too short', 'It cannot be used with media queries'],
-        answer: 0,
+        options: ['It is too short', 'It is invalid', 'It is tied to the exact HTML structure and has high specificity, so it breaks easily and is hard to override', 'It cannot be used with media queries'],
+        answer: 2,
         explanation: 'A single class on the element is more robust.',
       },
       {
@@ -1313,20 +1313,20 @@ button:focus-visible {
     quiz: [
       {
         question: 'What contrast ratio does WCAG level AA require for normal-sized text?',
-        options: ['2:1', '4.5:1', '3:1', '7:1'],
-        answer: 1,
+        options: ['4.5:1', '2:1', '3:1', '7:1'],
+        answer: 0,
         explanation: 'Large text needs 3:1. Level AAA asks for 7:1 for normal text.',
       },
       {
         question: 'Why is <code>outline: none</code> on focusable elements a problem?',
-        options: ['It slows the page', 'It breaks hover styles', 'Keyboard users can no longer see which element has focus', 'It is invalid CSS'],
-        answer: 2,
+        options: ['It slows the page', 'Keyboard users can no longer see which element has focus', 'It breaks hover styles', 'It is invalid CSS'],
+        answer: 1,
         explanation: 'If the default outline is removed, a clear replacement focus style must be provided.',
       },
       {
         question: 'What does <code>:focus-visible</code> match that <code>:focus</code> does not distinguish?',
-        options: ['Focus that the browser judges should be shown, such as keyboard focus, and usually not a mouse click on a button', 'Only mouse clicks', 'Only links', 'Hidden elements'],
-        answer: 0,
+        options: ['Only links', 'Only mouse clicks', 'Focus that the browser judges should be shown, such as keyboard focus, and usually not a mouse click on a button', 'Hidden elements'],
+        answer: 2,
         explanation: 'It lets keyboard users have a strong focus ring without showing it on every mouse click.',
       },
     ],
@@ -1399,8 +1399,8 @@ h1 {
       },
       {
         question: 'Can the rules inside <code>@container</code> style the container element itself?',
-        options: ['Yes, always', 'Only its width', 'No; they apply to its descendants', 'Only with !important'],
-        answer: 2,
+        options: ['Yes, always', 'No; they apply to its descendants', 'Only its width', 'Only with !important'],
+        answer: 1,
         explanation: 'A container cannot depend on its own size, so the query targets what is inside it.',
       },
     ],

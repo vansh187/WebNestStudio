@@ -873,10 +873,10 @@ Expected result: pressing Submit with an empty or invalid field shows the browse
     exercise: {
       prompt: `The page below has three accessibility faults: a clickable <code>div</code> that cannot be reached or activated with the keyboard, an image with no text alternative, and an input with no label. Fix all three using native HTML.
 
-Expected result: the Save control is a real button, the logo has the alternative text <code>WebNest Studio</code>, and the field has the visible label <code>Search</code>.`,
+Expected result: the Save control is a real button that logs <code>Saved</code> to the console when activated with the mouse or the keyboard, the logo has the alternative text <code>WebNest Studio</code>, and the field has the visible label <code>Search</code>.`,
       starterCode: `<img src="logo.png">
 
-<div onclick="alert('Saved')">Save</div>
+<div onclick="console.log('Saved')">Save</div>
 
 <input type="text" name="q">`,
       hints: [
@@ -885,7 +885,7 @@ Expected result: the Save control is a real button, the logo has the alternative
       ],
       solution: `<img src="logo.png" alt="WebNest Studio">
 
-<button type="button" onclick="alert('Saved')">Save</button>
+<button type="button" onclick="console.log('Saved')">Save</button>
 
 <label for="q">Search</label>
 <input type="text" id="q" name="q">`,

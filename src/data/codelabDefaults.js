@@ -352,7 +352,8 @@ function createLesson(course, moduleTitle, topic, order) {
     description: summarize(`${topic}: ${richEntry?.intro || detailFor(course, topic)}`),
     indexable: Boolean(richEntry),
     examples: richEntry?.examples || [],
-    exercise_starter: richEntry?.exercise?.starterCode || '',
+    // An exercise marked runnable: false needs tools the playground does not have.
+    exercise_starter: richEntry?.exercise?.runnable === false ? '' : richEntry?.exercise?.starterCode || '',
     order,
     content: { format: 'html', body },
     resources: [{ type: 'code', language: course.language, content: example }],
