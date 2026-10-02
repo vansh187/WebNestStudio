@@ -36,7 +36,7 @@ function buildVCard() {
     `TEL;TYPE=CELL:${CONTACT.phone.replace(/\s+/g, '')}`,
     `EMAIL;TYPE=WORK:${CONTACT.email}`,
     `URL:${SITE_URL}`,
-    'NOTE:WebNest Studio - Where brands go digital.',
+    'NOTE:WebNest Studio - Where brands go digital & developers are born.',
     'END:VCARD',
   ].join('\r\n')
 }
@@ -92,7 +92,7 @@ export default function VisitingCard({ onClose }) {
   const handleShare = async () => {
     const shareData = {
       title: 'WebNest Studio',
-      text: 'WebNest Studio - Where brands go digital.',
+      text: 'WebNest Studio - Where brands go digital & developers are born.',
       url: CARD_URL,
     }
     try {
@@ -133,7 +133,7 @@ export default function VisitingCard({ onClose }) {
           WEB<span className="text-gold-300">NEST</span> STUDIO
         </p>
         <p className="mt-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-gold-300/90">
-          Where brands go digital
+          Where brands go digital &amp; developers are born
         </p>
 
         <div className="mt-5 inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-ink-950/50 px-4 py-2.5">
