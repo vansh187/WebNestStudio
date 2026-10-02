@@ -135,7 +135,7 @@ export default function Portfolio() {
             </span>
           </Reveal>
           <Reveal delay={0.1}>
-            <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+            <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.2] tracking-tight text-white sm:text-5xl">
               Real problems. Real engineering. <span className="text-gradient-gold">Real results.</span>
             </h1>
           </Reveal>

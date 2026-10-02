@@ -1,5 +1,8 @@
 import { useReducedMotion } from 'framer-motion'
 
+// Styling for a BackButton placed on a dark hero, below the floating navbar.
+export const HERO_BACK_CLASS = 'absolute left-6 top-28 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950! lg:left-8'
+
 // Decorative looping background for a dark hero section. `base` is the path of the
 // files without their extension, e.g. "/media/services-hero", which expects
 // base.webm, base-mobile.webm and base-poster.webp. Only WebM is shipped; a browser

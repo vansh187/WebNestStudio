@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 
 // Token colours: keyword, string, function, comment, plain.
@@ -24,24 +24,25 @@ const CODE = [
 
 const OUTPUT = ['✓ tests passed', '✓ build optimised', '✓ live in production']
 
-const TOTAL = CODE.reduce((sum, line) => sum + line.reduce((n, [, text]) => n + text.length, 0), 0)
 const TYPE_MS = 32
 const OUTPUT_MS = 550
 const HOLD_MS = 4500
 
 // Decorative editor window that types a short program, prints its output, then starts
-// again. Shown complete and still for reduced-motion visitors.
-export default function CodeWindow({ className = '' }) {
+// again. Shown complete and still for reduced-motion visitors. `code` is a list of
+// lines, each a list of [colour, text] tokens (see COLORS); the default is a JS demo.
+export default function CodeWindow({ className = '', file = 'deliver.js', command = 'npm run deploy', code = CODE, output = OUTPUT }) {
   const reduced = useReducedMotion()
   const [typed, setTyped] = useState(0)
   const [printed, setPrinted] = useState(0)
+  const total = useMemo(() => code.reduce((sum, line) => sum + line.reduce((n, [, text]) => n + text.length, 0), 0), [code])
 
   useEffect(() => {
     if (reduced) return undefined
     let delay = TYPE_MS
     let next = () => setTyped((n) => n + 1)
-    if (typed >= TOTAL) {
-      if (printed < OUTPUT.length) {
+    if (typed >= total) {
+      if (printed < output.length) {
         delay = OUTPUT_MS
         next = () => setPrinted((n) => n + 1)
       } else {
@@ -51,10 +52,10 @@ export default function CodeWindow({ className = '' }) {
     }
     const timer = setTimeout(next, delay)
     return () => clearTimeout(timer)
-  }, [typed, printed, reduced])
+  }, [typed, printed, reduced, total, output.length])
 
-  const shownChars = reduced ? TOTAL : typed
-  const shownOutput = reduced ? OUTPUT.length : printed
+  const shownChars = reduced ? total : typed
+  const shownOutput = reduced ? output.length : printed
   let remaining = shownChars
 
   return (
@@ -63,10 +64,10 @@ export default function CodeWindow({ className = '' }) {
         <span className="h-3 w-3 rounded-full bg-rose-400/80" />
         <span className="h-3 w-3 rounded-full bg-amber-400/80" />
         <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
-        <span className="ml-3 font-mono text-xs text-ink-300">deliver.js</span>
+        <span className="ml-3 font-mono text-xs text-ink-300">{file}</span>
       </div>
       <pre className="min-h-[15.5rem] overflow-hidden px-5 py-4 font-mono text-[13px] leading-6 sm:text-sm sm:leading-7">
-        {CODE.map((line, index) => {
+        {code.map((line, index) => {
           const lineStart = remaining
           const parts = line.map(([color, text], part) => {
             const visible = text.slice(0, Math.max(0, remaining))
@@ -74,7 +75,7 @@ export default function CodeWindow({ className = '' }) {
             return visible ? <span key={part} className={COLORS[color]}>{visible}</span> : null
           })
           // The caret sits on the line currently being typed.
-          const typing = !reduced && lineStart > 0 && remaining <= 0 && shownChars < TOTAL
+          const typing = !reduced && lineStart > 0 && remaining <= 0 && shownChars < total
           return (
             <div key={index} className="flex">
               <span className="mr-4 w-5 shrink-0 select-none text-right text-ink-600">{index + 1}</span>
@@ -87,8 +88,8 @@ export default function CodeWindow({ className = '' }) {
         })}
       </pre>
       <div className="min-h-[6.5rem] border-t border-white/10 bg-black/40 px-5 py-3 font-mono text-xs leading-6 text-emerald-300 sm:text-[13px]">
-        <p className="text-ink-400">$ npm run deploy</p>
-        {OUTPUT.slice(0, shownOutput).map((line) => <p key={line}>{line}</p>)}
+        <p className="text-ink-400">$ {command}</p>
+        {output.slice(0, shownOutput).map((line) => <p key={line}>{line}</p>)}
       </div>
     </div>
   )

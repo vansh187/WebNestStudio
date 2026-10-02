@@ -63,7 +63,7 @@ export default function Services() {
             </span>
           </Reveal>
           <Reveal delay={0.1}>
-            <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold leading-[1.2] tracking-tight text-white sm:text-5xl lg:text-6xl">
               Every layer of your digital stack, <span className="text-gradient-gold">handled.</span>
             </h1>
           </Reveal>
