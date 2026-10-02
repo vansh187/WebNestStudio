@@ -122,7 +122,7 @@ export default function Footer() {
           <p className="text-xs text-ink-400 dark:text-ink-500">
             © {new Date().getFullYear()} WebNest Studio. All rights reserved.
           </p>
-          <p className="text-xs italic text-gold-500">Where Brands Go Digital</p>
+          <p className="text-xs italic text-gold-500">Where Brands Go Digital &amp; Developers Are Born</p>
         </div>
       </div>
     </footer>
