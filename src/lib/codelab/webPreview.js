@@ -11,6 +11,7 @@ function fileContent(files, name) {
 }
 
 export function createPreviewHtml(input) {
+  // The bridge goes in the head so that scripts written inside index.html are captured too.
   const bridge = `
     <script>
       (() => {
@@ -52,10 +53,10 @@ export function createPreviewHtml(input) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>${css}</style>
+    ${bridge}
   </head>
   <body>
     ${html}
-    ${bridge}
     <script>${js}</script>
   </body>
 </html>`

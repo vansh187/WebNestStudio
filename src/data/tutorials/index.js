@@ -62,6 +62,13 @@ import { practicePythonDatabasesAdvanced } from './practice-python-05-databases-
 import { practicePythonAlgorithmsPractical } from './practice-python-06-algorithms-practical.js'
 import { practicePythonFastapi } from './practice-python-07-fastapi.js'
 import { practicePythonDataMl } from './practice-python-08-data-ml.js'
+import { practiceHtml } from './practice-html.js'
+import { practiceCss } from './practice-css.js'
+import { practiceJavascript } from './practice-javascript.js'
+import { practiceDatabaseSql } from './practice-database-sql.js'
+import { practiceDatabaseDesign } from './practice-database-design.js'
+import { practicePostgresql } from './practice-postgresql.js'
+import { practiceReact } from './practice-react.js'
 
 // Practice blocks live in their own files, keyed by course slug and then by the same
 // topic slugs as the lesson prose.
@@ -76,6 +83,13 @@ export const TUTORIAL_PRACTICE = {
     ...practicePythonFastapi,
     ...practicePythonDataMl,
   },
+  html: practiceHtml,
+  css: practiceCss,
+  javascript: practiceJavascript,
+  'database-sql': practiceDatabaseSql,
+  'database-design': practiceDatabaseDesign,
+  postgresql: practicePostgresql,
+  react: practiceReact,
 }
 
 // Keyed by course slug (matching STATIC_COURSE_DEFINITIONS in codelabDefaults.js),

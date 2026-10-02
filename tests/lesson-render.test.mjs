@@ -62,6 +62,16 @@ test('every practice entry attaches to an existing lesson and is well formed', (
         assert.ok(item.explanation, `${slug}: quiz explanation`)
       }
       if (practice.exercise) assert.ok(practice.exercise.prompt && practice.exercise.solution, `${slug}: exercise needs a prompt and solution`)
+      // Prose is rendered as HTML, so a literal tag such as <nav> must be written &lt;nav&gt;.
+      const prose = [
+        practice.whyItMatters, practice.exercise?.prompt, ...(practice.exercise?.hints || []),
+        ...(practice.quiz || []).flatMap((item) => [item.question, item.explanation, ...item.options]),
+        ...(practice.interviewQuestions || []).flatMap((item) => [item.question, item.answer]),
+      ]
+      for (const text of prose) {
+        if (typeof text !== 'string') continue
+        assert.ok(!/<[a-zA-Z/!]/.test(text.replace(/<\/?(code|strong|em)>/g, '')), `${slug}: unescaped markup in "${text.slice(0, 60)}"`)
+      }
     }
   }
 })
