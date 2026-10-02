@@ -9,8 +9,9 @@ export const HERO_BACK_CLASS = 'absolute left-6 top-28 z-10 rounded-full border 
 // that cannot play it keeps showing the poster.
 // Without `base`, only the animated gold glow is shown.
 // `children` is an optional code-drawn backdrop (e.g. NeuralBackdrop), placed on top
-// of the dark overlay.
-export default function HeroVideo({ base, children }) {
+// of the dark overlay. Pass dim={false} to leave the overlay out when there is no footage
+// to tone down.
+export default function HeroVideo({ base, children, dim = true }) {
   const reduced = useReducedMotion()
   const saveData = typeof navigator !== 'undefined' && navigator.connection?.saveData
   const poster = base ? `${base}-poster.webp` : undefined
@@ -36,7 +37,7 @@ export default function HeroVideo({ base, children }) {
         </video>
       ))}
       {/* Keeps the centre dark so the headline stays readable over any footage. */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(8,8,12,0.78)_0%,rgba(8,8,12,0.45)_55%,rgba(8,8,12,0.75)_100%)]" />
+      {dim && <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(8,8,12,0.78)_0%,rgba(8,8,12,0.45)_55%,rgba(8,8,12,0.75)_100%)]" />}
       {children}
     </div>
   )

@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiAlertTriangle, FiLoader } from 'react-icons/fi'
+import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiAlertTriangle, FiLoader, FiCheck } from 'react-icons/fi'
 import Logo from '../components/Logo'
 import Reveal from '../components/Reveal'
-import ThemeToggle from '../components/ThemeToggle'
+import HeroVideo from '../components/HeroVideo'
+import NeuralBackdrop from '../components/NeuralBackdrop'
 import BackButton from '../components/coding/BackButton'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -15,6 +16,13 @@ import {
   signupSchema, loginSchema, otpSchema, forgotPasswordEmailSchema, resetPasswordSchema,
 } from '../schemas/leadSchemas'
 import { useSeo } from '../hooks/useSeo'
+
+// What an account gives you; shown beside the form on wide screens.
+const PERKS = [
+  'Track the status of your project with us',
+  'Save your coding projects and pick them up anywhere',
+  'Follow your progress through every course',
+]
 
 function roleHome(role) {
   if (role === 'admin') return '/admin'
@@ -500,19 +508,40 @@ export default function Login() {
   }
 
   return (
-    <div className="bg-grid relative flex min-h-screen items-center justify-center bg-white px-6 py-16 text-ink-800 dark:bg-ink-950 dark:text-ink-100">
-      <div className="pointer-events-none absolute -top-32 right-[-10%] h-[28rem] w-[28rem] rounded-full bg-gold-400/15 blur-[110px]" />
-      <div className="pointer-events-none absolute bottom-[-10%] left-[-10%] h-[24rem] w-[24rem] rounded-full bg-gold-600/10 blur-[100px]" />
-      <BackButton fallback="/" className="absolute left-6 top-6" />
-      <ThemeToggle className="absolute right-6 top-6" />
+    // Always dark: the "dark" class switches the forms below to their dark styling.
+    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-gradient-to-br from-[#262b3d] via-[#161a27] to-[#0d1019] px-6 py-20 text-ink-100 lg:px-8">
+      <HeroVideo dim={false}><NeuralBackdrop /></HeroVideo>
+      {/* Warm light from the top right, so the page reads as lit, not flat black. */}
+      <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
+      <BackButton
+        fallback="/"
+        className="absolute left-6 top-6 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950!"
+      />
 
-      <Reveal className="relative w-full max-w-md">
-        <div className="rounded-3xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/60 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
-          <div className="flex justify-center">
+      <div className="relative mx-auto grid w-full max-w-6xl items-start gap-14 lg:grid-cols-2">
+      <div className="hidden lg:block">
+        <Logo size="lg" />
+        <p className="mt-10 font-display text-3xl font-extrabold leading-[1.25] tracking-tight text-white xl:text-4xl">
+          <span className="block whitespace-nowrap">Where brands go digital</span>
+          <span className="block whitespace-nowrap">and developers <span className="text-gradient-gold">are born.</span></span>
+        </p>
+        <ul className="mt-8 space-y-4">
+          {PERKS.map((perk) => (
+            <li key={perk} className="flex items-center gap-3 text-ink-200">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-400/15 text-gold-400"><FiCheck className="h-4 w-4" /></span>
+              {perk}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <Reveal className="relative mx-auto w-full max-w-md">
+        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#2a3044]/90 to-[#161a27]/95 [&_input]:border-white/20 [&_input]:bg-black/25 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10">
+          <div className="flex justify-center lg:hidden">
             <Logo size="lg" />
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center lg:mt-0">
             <h1 className="font-display text-2xl font-bold text-ink-900 dark:text-white">
               {titles[view].title}
             </h1>
@@ -551,10 +580,11 @@ export default function Login() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-ink-400 dark:text-ink-500">
-          <Link to="/" className="hover:text-gold-500">← Back to homepage</Link>
+        <p className="mt-6 text-center text-sm text-ink-400">
+          <Link to="/" className="hover:text-gold-400">← Back to homepage</Link>
         </p>
       </Reveal>
+      </div>
     </div>
   )
 }
