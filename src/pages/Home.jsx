@@ -348,8 +348,8 @@ export default function Home() {
           />
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {PROCESS.map((p, i) => (
-              <Reveal key={p.step} delay={i * 0.08}>
-                <div className="relative rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 p-6">
+              <Reveal key={p.step} delay={i * 0.08} className="h-full">
+                <div className="relative h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 p-6">
                   <span className="font-display text-4xl font-extrabold text-ink-100 dark:text-ink-800">
                     {p.step}
                   </span>

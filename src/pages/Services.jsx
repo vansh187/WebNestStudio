@@ -5,6 +5,7 @@ import {
   FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiArrowRight, FiCheckCircle,
 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
+import HeroVideo from '../components/HeroVideo'
 import SectionHeading from '../components/SectionHeading'
 import { SkeletonGrid } from '../components/states/Skeleton'
 import { ErrorState } from '../components/states/StateViews'
@@ -14,7 +15,10 @@ import { getServices } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { useSeo } from '../hooks/useSeo'
 
-const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
+// Files live in public/media (see HeroVideo for the expected names).
+const HERO_VIDEO = '/media/services-hero'
+
+const ICON_CYCLE =[FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
 const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer }
 
 const LANGUAGES = [
@@ -45,29 +49,48 @@ export default function Services() {
 
   return (
     <div>
-      <div className="px-6 pt-6 lg:px-8">
-        <BackButton fallback="/" />
-      </div>
-      <section className="bg-grid px-6 py-20 text-center lg:px-8">
-        <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">
-            Services
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-ink-900 dark:text-white sm:text-5xl">
-            Every layer of your digital stack, handled.
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-500 dark:text-ink-300">
-            We specialize deep and ship wide — from customer-facing websites to the enterprise
-            infrastructure running behind them.
-          </p>
-        </Reveal>
+      {/* -mt-22 pulls the hero up under the floating navbar (see Navbar). */}
+      <section className="relative -mt-22 flex min-h-[80vh] items-center justify-center overflow-hidden bg-ink-950 px-6 pb-24 pt-44 text-center lg:px-8">
+        <HeroVideo base={HERO_VIDEO} />
+        <BackButton
+          fallback="/"
+          className="absolute left-6 top-28 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950! lg:left-8"
+        />
+        <div className="relative">
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-400">
+              Services
+            </span>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Every layer of your digital stack, <span className="text-gradient-gold">handled.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-200">
+              We specialize deep and ship wide — from customer-facing websites to the enterprise
+              infrastructure running behind them.
+            </p>
+          </Reveal>
+          <Reveal delay={0.3}>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <Link to="/contact" className="group inline-flex items-center gap-2 rounded-full bg-gold-400 px-6 py-3 text-sm font-semibold text-ink-950 transition-transform hover:scale-105">
+                Start a project <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link to="/portfolio" className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white hover:border-gold-400 hover:text-gold-400">
+                See our work
+              </Link>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pt-12 lg:px-8">
+      <section className="bg-gold-400/10 dark:bg-ink-900/40"><div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <h2 className="text-2xl font-semibold">Explore our development services</h2>
         <p className="mt-3 text-ink-500 dark:text-ink-300">Based in Gurugram, India, WebNest Studio helps businesses plan, build and integrate software.</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">{SERVICE_PAGES.map((service) => <Link key={service.slug} to={`/services/${service.slug}`} className="rounded-xl border border-ink-200 p-6 hover:border-gold-400 dark:border-ink-800"><h3 className="font-semibold">{service.title}</h3><p className="mt-3 text-sm text-ink-500 dark:text-ink-300">{service.intro}</p><span className="mt-4 block text-sm font-semibold text-gold-600 dark:text-gold-400">Explore service</span></Link>)}</div>
-      </section>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">{SERVICE_PAGES.map((service) => <Link key={service.slug} to={`/services/${service.slug}`} className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-gold-400 hover:shadow-md dark:border-ink-800 dark:bg-ink-950"><h3 className="font-semibold">{service.title}</h3><p className="mt-3 text-sm text-ink-500 dark:text-ink-300">{service.intro}</p><span className="mt-4 block text-sm font-semibold text-gold-600 dark:text-gold-400">Explore service</span></Link>)}</div>
+      </div></section>
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         {services === null && !error && <SkeletonGrid count={4} columns="md:grid-cols-2" />}
         {error && <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />}
@@ -106,7 +129,8 @@ export default function Services() {
         )}
       </section>
 
-      <section className="bg-ink-50 dark:bg-ink-900/40 py-20">
+      {/* Always dark, to break up the page; "dark" switches the cards inside too. */}
+      <section className="dark bg-ink-950 py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading
             eyebrow="Specializations"
@@ -118,7 +142,7 @@ export default function Services() {
               const Icon = CATEGORY_ICONS[cat.icon]
               return (
                 <Reveal key={cat.title} delay={i * 0.07}>
-                  <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 p-6">
+                  <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/60 p-6">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500">
                       <Icon className="h-5 w-5" />
                     </div>
@@ -167,16 +191,16 @@ export default function Services() {
 
       <section className="mx-auto max-w-4xl px-6 pb-24 text-center lg:px-8">
         <Reveal>
-          <div className="rounded-3xl border border-gold-400/30 bg-gold-400/5 p-10">
-            <h2 className="font-display text-2xl font-bold text-ink-900 dark:text-white sm:text-3xl">
+          <div className="rounded-3xl border border-gold-400/40 bg-ink-950 p-10 shadow-xl">
+            <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
               Not sure which stack fits your project?
             </h2>
-            <p className="mt-3 text-ink-500 dark:text-ink-300">
+            <p className="mt-3 text-ink-300">
               Tell us your goals — we'll recommend the right technology, timeline, and budget.
             </p>
             <Link
               to="/contact"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-ink-900 dark:bg-gold-400 px-7 py-3.5 text-sm font-semibold text-white dark:text-ink-950 transition-transform hover:scale-105"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold-400 px-7 py-3.5 text-sm font-semibold text-ink-950 transition-transform hover:scale-105"
             >
               Talk to Our Team
               <FiArrowRight className="h-4 w-4" />

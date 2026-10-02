@@ -5,6 +5,13 @@ import { ONGOING_PROJECTS } from '../data/ongoingProjects'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
+import HeroVideo from '../components/HeroVideo'
+import NeuralBackdrop from '../components/NeuralBackdrop'
+import CodeWindow from '../components/CodeWindow'
+
+// Set to '/media/work-hero' once the video files are in public/media (see HeroVideo).
+// Until then the hero shows the network animation.
+const HERO_VIDEO = null
 
 function DeliveredCard({ project, delay }) {
   return (
@@ -113,18 +120,58 @@ export default function Portfolio() {
 
   return (
     <div>
-      <div className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
-        <BackButton fallback="/" />
-      </div>
+      {/* -mt-22 pulls the hero up under the floating navbar (see Navbar). */}
+      <section className="relative -mt-22 flex min-h-[80vh] items-center overflow-hidden bg-ink-950 px-6 pb-20 pt-44 lg:px-8">
+        <HeroVideo base={HERO_VIDEO}>{!HERO_VIDEO && <NeuralBackdrop />}</HeroVideo>
+        <BackButton
+          fallback="/"
+          className="absolute left-6 top-28 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950! lg:left-8"
+        />
+        <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-2">
+        <div className="text-center lg:text-left">
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-400">
+              Our Work
+            </span>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+              Real problems. Real engineering. <span className="text-gradient-gold">Real results.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-200 lg:mx-0">
+              Live projects you can open and browse in production, not static case studies.
+            </p>
+          </Reveal>
+          <Reveal delay={0.3}>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+              {DELIVERED_PROJECTS.length > 0 && (
+                <a href="#delivered" className="inline-flex items-center gap-2 rounded-full bg-gold-400 px-6 py-3 text-sm font-semibold text-ink-950 transition-transform hover:scale-105">
+                  <FiCheckCircle className="h-4 w-4" /> {DELIVERED_PROJECTS.length} delivered
+                </a>
+              )}
+              <a href="#ongoing" className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white hover:border-gold-400 hover:text-gold-400">
+                {ONGOING_PROJECTS.length} in progress
+              </a>
+            </div>
+          </Reveal>
+        </div>
+          <Reveal delay={0.2}>
+            <CodeWindow className="mx-auto w-full max-w-xl" />
+          </Reveal>
+        </div>
+      </section>
+
       {DELIVERED_PROJECTS.length > 0 && (
-        <section className="mx-auto max-w-7xl px-6 pt-20 lg:px-8">
+        <section id="delivered" className="mx-auto max-w-7xl scroll-mt-28 px-6 pt-20 lg:px-8">
           <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-500">
               Shipped &amp; Live
             </span>
-            <h1 className="mt-4 font-display text-3xl font-bold text-ink-900 dark:text-white sm:text-4xl">
+            <h2 className="mt-4 font-display text-3xl font-bold text-ink-900 dark:text-white sm:text-4xl">
               Projects Delivered
-            </h1>
+            </h2>
           </Reveal>
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             {DELIVERED_PROJECTS.map((project, i) => (
@@ -134,7 +181,7 @@ export default function Portfolio() {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-6 pt-20 lg:px-8">
+      <section id="ongoing" className="mx-auto max-w-7xl scroll-mt-28 px-6 pt-20 lg:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">
             Currently Building
@@ -150,24 +197,20 @@ export default function Portfolio() {
         </div>
       </section>
 
-      <section className="mt-20 bg-grid px-6 py-20 text-center lg:px-8">
+      <section className="mt-20 bg-gold-400/10 px-6 py-16 text-center dark:bg-ink-900/40 lg:px-8">
         <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">
-            Our Work
-          </span>
-          <h2 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-ink-900 dark:text-white sm:text-5xl">
-            Real problems. Real engineering. Real results.
-          </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-500 dark:text-ink-300">
-            "Good design is obvious. Great design is transparent." We build for the second kind —
-            work that just works, so your users never have to think twice.
+          <p className="mx-auto max-w-3xl font-display text-2xl font-semibold leading-snug text-ink-900 dark:text-white sm:text-3xl">
+            "Good design is obvious. Great design is transparent."
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-ink-500 dark:text-ink-300">
+            We build for the second kind — work that just works, so your users never have to think twice.
           </p>
         </Reveal>
       </section>
 
-      <section className="mx-auto max-w-4xl px-6 pb-24 text-center lg:px-8">
+      <section className="mx-auto max-w-4xl px-6 pb-24 pt-20 text-center lg:px-8">
         <Reveal>
-          <div className="rounded-3xl bg-ink-900 dark:bg-gradient-to-br dark:from-ink-900 dark:to-ink-950 p-10">
+          <div className="rounded-3xl border border-gold-400/40 bg-ink-950 p-10 shadow-xl">
             <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
               Want your project featured here next?
             </h2>

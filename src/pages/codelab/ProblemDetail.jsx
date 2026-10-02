@@ -44,6 +44,8 @@ export default function ProblemDetail() {
   const [stdin, setStdin] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  // The slug whose request has finished; until it matches, the problem is still loading.
+  const [loadedSlug, setLoadedSlug] = useState(null)
 
   useSeo({ title: problem?.title ? `${problem.title} | CodeLab` : 'CodeLab Problem', description: problem?.statement || 'Solve a Webnest CodeLab problem.', noindex: !problem && Boolean(error), path: `/codelab/problems/${slug || ''}` })
 
@@ -69,6 +71,8 @@ export default function ProblemDetail() {
           setStdin(next?.examples?.[0]?.input || '')
           setError(next ? '' : getErrorDetail(err, 'Could not load this problem.'))
         }
+      } finally {
+        if (alive) setLoadedSlug(slug)
       }
     }
     load()
@@ -112,6 +116,19 @@ export default function ProblemDetail() {
       setSubmitting(false)
     }
   }, [isAuthenticated, toast, navigate, location, runner.result, problem, files])
+
+  if (loadedSlug !== slug) {
+    return (
+      <div className="mx-auto mt-6 max-w-6xl px-4 pb-8 sm:px-6 lg:px-8" role="status" aria-live="polite">
+        <span className="sr-only">Loading problem…</span>
+        <div className="animate-pulse space-y-4">
+          <div className="h-40 rounded-lg bg-ink-100 dark:bg-ink-900" />
+          <div className="h-8 w-1/3 rounded bg-ink-100 dark:bg-ink-900" />
+          <div className="h-96 rounded-lg bg-ink-100 dark:bg-ink-900" />
+        </div>
+      </div>
+    )
+  }
 
   if (!problem) return <NotFoundState title="Problem not found" backTo="/codelab/problems" backLabel="Back to problems" />
 

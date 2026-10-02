@@ -11,6 +11,11 @@ import { getBlogPosts } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
 import { useSeo } from '../hooks/useSeo'
+import HeroVideo from '../components/HeroVideo'
+import NeuralBackdrop from '../components/NeuralBackdrop'
+
+// Files live in public/media (see HeroVideo). Set to null to show the network animation instead.
+const HERO_VIDEO = '/media/blog-hero'
 
 export default function Blog() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -50,21 +55,33 @@ export default function Blog() {
 
   return (
     <div>
-      <div className="px-6 pt-6 lg:px-8">
-        <BackButton fallback="/" />
-      </div>
-      <section className="bg-grid px-6 py-20 text-center lg:px-8">
-        <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500">
-            Insights
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-ink-900 dark:text-white sm:text-5xl">
-            Notes on web, AI, and engineering.
-          </h1>
-        </Reveal>
+      {/* -mt-22 pulls the hero up under the floating navbar (see Navbar). */}
+      <section className="relative -mt-22 flex min-h-[62vh] items-center justify-center overflow-hidden bg-ink-950 px-6 pb-20 pt-44 text-center lg:px-8">
+        <HeroVideo base={HERO_VIDEO}>{!HERO_VIDEO && <NeuralBackdrop />}</HeroVideo>
+        <BackButton
+          fallback="/"
+          className="absolute left-6 top-28 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950! lg:left-8"
+        />
+        <div className="relative">
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-400">
+              Insights
+            </span>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Notes on web, AI, and <span className="text-gradient-gold">engineering.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-200">
+              Practical guides from the WebNest Studio team for building and improving digital products.
+            </p>
+          </Reveal>
+        </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-24 lg:px-8">
+      <section className="mx-auto max-w-7xl px-6 pb-24 pt-16 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {tag && (
