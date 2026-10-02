@@ -6,30 +6,40 @@ const JAVA_SCRATCH = 'public class Main {\n    public static void main(String[] 
 
 const PYTHON_SCRATCH = '# Write your own code for this topic here.\nprint("Hello from the playground")\n'
 
-// SQL has no runner of its own, so the scratchpad runs statements on SQLite through the
-// Python runtime. Splitting on ";" is enough for practice queries.
-const SQL_SCRATCH = `import sqlite3
+// SQL has no runner of its own, so SQL runs on SQLite through the Python runtime.
+// Splitting on ";" is enough for practice queries.
+const SQL_SAMPLE = `CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
+INSERT INTO users (id, name, city) VALUES (1, 'Asha', 'Pune'), (2, 'Ravi', 'Delhi'), (3, 'Zoya', 'Pune');
+
+SELECT city, COUNT(*) AS total FROM users GROUP BY city ORDER BY city;`
+
+export function sqlRunnerSource(sql) {
+  return `import sqlite3
 
 # Write your SQL between the triple quotes, then press Run.
 # It runs on SQLite inside your browser, so a few PostgreSQL-only features are not available.
 SQL = """
-CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
-INSERT INTO users (name, city) VALUES ('Asha', 'Pune'), ('Ravi', 'Delhi'), ('Zoya', 'Pune');
-
-SELECT city, COUNT(*) AS total FROM users GROUP BY city ORDER BY city;
+${sql.trim()}
 """
 
-connection = sqlite3.connect(":memory:")
+connection = sqlite3.connect(":memory:", isolation_level=None)
+connection.execute("PRAGMA foreign_keys = ON")
 for statement in SQL.split(";"):
     if not statement.strip():
         continue
-    cursor = connection.execute(statement)
+    try:
+        cursor = connection.execute(statement)
+    except sqlite3.Error as error:
+        print("Error:", error)
+        print()
+        continue
     if cursor.description:
         print(" | ".join(column[0] for column in cursor.description))
         for row in cursor.fetchall():
-            print(" | ".join(str(value) for value in row))
+            print(" | ".join("NULL" if value is None else str(value) for value in row))
         print()
 `
+}
 
 function pythonWorkspace(lesson, code) {
   return { language: 'python', files: [{ name: 'main.py', language: 'python', content: code }], selectedFile: 'main.py', source: code, stdin: '', lessonId: lesson.id }
@@ -80,6 +90,10 @@ export function lessonExerciseTemplate(lesson) {
   const examples = lesson?.examples || []
   // A lesson whose examples all need a local project has an exercise that does too.
   if (examples.length && examples.every((example) => example.runnable === false)) return null
+  // SQL exercises are written for SQLite, so they run through the SQL runner.
+  if (lesson?.language === 'sql') {
+    return lesson.exercise_starter ? pythonWorkspace(lesson, sqlRunnerSource(lesson.exercise_starter)) : null
+  }
   return workspaceForCode(lesson, lesson?.exercise_starter, lesson?.language)
 }
 
@@ -88,7 +102,7 @@ const SCRATCH_NOTES = {
   java: 'Runs plain Java 17. Frameworks such as Spring, and databases, are not available here.',
   web: 'Shows a live preview of your HTML, CSS and JavaScript.',
   react: 'Shows a live preview of plain HTML, CSS and JavaScript. JSX needs a React project on your computer.',
-  sql: 'Runs your SQL on SQLite in your browser.',
+  sql: 'Runs your SQL on SQLite in your browser. Standard SQL works; a few features that exist only in PostgreSQL or MySQL do not.',
 }
 
 // A blank workspace for the learner's own code on this topic. Every lesson has one, in
@@ -98,7 +112,7 @@ export function lessonScratch(lesson) {
   const language = lesson.language
   if (language === 'python') return { ...pythonWorkspace(lesson, PYTHON_SCRATCH), note: SCRATCH_NOTES.python }
   if (language === 'java') return { ...javaWorkspace(lesson, JAVA_SCRATCH), note: SCRATCH_NOTES.java }
-  if (language === 'sql') return { ...pythonWorkspace(lesson, SQL_SCRATCH), note: SCRATCH_NOTES.sql }
+  if (language === 'sql') return { ...pythonWorkspace(lesson, sqlRunnerSource(SQL_SAMPLE)), note: SCRATCH_NOTES.sql }
   const note = lesson.course_slug === 'react' ? SCRATCH_NOTES.react : SCRATCH_NOTES.web
   return { ...webWorkspace(lesson, 'html', WEB_PLACEHOLDER), note }
 }
