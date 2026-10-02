@@ -94,8 +94,8 @@ class Order {
     quiz: [
       {
         question: 'In <code>Order order = new Order();</code> written inside a method, where is the <code>Order</code> object stored?',
-        options: ['On the stack', 'On the heap', 'In the stack frame of main', 'In a CPU register'],
-        answer: 1,
+        options: ['On the heap', 'On the stack', 'In the stack frame of main', 'In a CPU register'],
+        answer: 0,
         explanation: 'Every object created with new is on the heap. Only the reference variable order is in the stack frame.',
       },
       {
@@ -106,8 +106,8 @@ class Order {
       },
       {
         question: 'Two threads run the same method at the same time. Do they share its local variables?',
-        options: ['Yes, always', 'No; each thread has its own stack and so its own copies', 'Only if the variables are primitives', 'Only if the method is static'],
-        answer: 1,
+        options: ['Yes, always', 'Only if the variables are primitives', 'No; each thread has its own stack and so its own copies', 'Only if the method is static'],
+        answer: 2,
         explanation: 'Local variables are in a stack frame, and each thread has a separate stack. Objects those variables refer to can still be shared.',
       },
     ],
@@ -187,14 +187,14 @@ public class RecentSearches {
     quiz: [
       {
         question: 'When does an object become eligible for garbage collection?',
-        options: ['When its variable goes out of scope', 'When no chain of references from a GC root reaches it', 'When System.gc() is called', 'When its reference count is zero'],
-        answer: 1,
+        options: ['When its variable goes out of scope', 'When its reference count is zero', 'When System.gc() is called', 'When no chain of references from a GC root reaches it'],
+        answer: 3,
         explanation: 'The test is reachability from GC roots such as local variables on a stack and static fields.',
       },
       {
         question: 'What does <code>System.gc()</code> do?',
-        options: ['Runs a full collection immediately', 'Suggests that the JVM run a collection; the JVM may ignore it', 'Frees all objects set to null', 'Stops the program until memory is free'],
-        answer: 1,
+        options: ['Suggests that the JVM run a collection; the JVM may ignore it', 'Runs a full collection immediately', 'Frees all objects set to null', 'Stops the program until memory is free'],
+        answer: 0,
         explanation: 'It is a request. The JVM decides when to collect.',
       },
       {
@@ -283,14 +283,14 @@ public class SafeCounter {
       },
       {
         question: 'Is <code>count++</code> thread-safe when <code>count</code> is a <code>volatile int</code>?',
-        options: ['Yes', 'No; the read, the add and the write are separate steps', 'Only with two threads', 'Only on a single-core machine'],
-        answer: 1,
+        options: ['Yes', 'Only with two threads', 'No; the read, the add and the write are separate steps', 'Only on a single-core machine'],
+        answer: 2,
         explanation: 'Two threads can read the same value before either writes, and one increment is lost.',
       },
       {
         question: 'Which is a suitable use of <code>volatile</code>?',
-        options: ['A counter incremented by many threads', 'A boolean flag that one thread sets to tell another to stop', 'Protecting two fields that must change together', 'Replacing every synchronized block'],
-        answer: 1,
+        options: ['A counter incremented by many threads', 'Replacing every synchronized block', 'Protecting two fields that must change together', 'A boolean flag that one thread sets to tell another to stop'],
+        answer: 3,
         explanation: 'A flag is written in one step and read in one step, so visibility is all it needs.',
       },
     ],
@@ -382,20 +382,20 @@ public class TransientPin {
     quiz: [
       {
         question: 'What value does a <code>transient String</code> field have after the object is deserialized?',
-        options: ['Its original value', 'An empty string', 'null', 'It throws an exception'],
-        answer: 2,
+        options: ['null', 'An empty string', 'Its original value', 'It throws an exception'],
+        answer: 0,
         explanation: 'A transient field is not saved, so it comes back as the default for its type, which is null for a reference type.',
       },
       {
         question: 'A serializable class has a <code>Thread</code> field that is not marked transient. What happens when an instance holding a thread is serialized?',
-        options: ['The thread is saved and restarted later', 'The field is skipped automatically', 'NotSerializableException is thrown', 'The code does not compile'],
-        answer: 2,
+        options: ['The thread is saved and restarted later', 'NotSerializableException is thrown', 'The field is skipped automatically', 'The code does not compile'],
+        answer: 1,
         explanation: 'Thread does not implement Serializable, so writing the object fails at runtime.',
       },
       {
         question: 'What is the effect of marking a <code>static</code> field <code>transient</code>?',
-        options: ['The field is excluded from serialization, which it was already', 'The field becomes an instance field', 'The field is serialized twice', 'It does not compile'],
-        answer: 0,
+        options: ['The field is serialized twice', 'The field becomes an instance field', 'The field is excluded from serialization, which it was already', 'It does not compile'],
+        answer: 2,
         explanation: 'Static fields belong to the class and are never serialized, so transient adds nothing.',
       },
     ],
