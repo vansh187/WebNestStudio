@@ -34,3 +34,6 @@ public/pyodide/
 *.sw?
 
 .seo-build/
+
+# Hero videos ship as WebM only
+public/media/*.mp4
