@@ -17,6 +17,7 @@ import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
+import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
 import { useSeo } from '../hooks/useSeo'
 
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
@@ -24,6 +25,12 @@ const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer
 
 export default function Home() {
   const { state, reload } = useHomeData()
+  // Our own client feedback always shows; admin-managed testimonials follow once loaded.
+  const apiTestimonials = state.testimonials.status === 'success' ? state.testimonials.data : []
+  const testimonials = [
+    ...CLIENT_TESTIMONIALS,
+    ...apiTestimonials.filter((t) => !CLIENT_TESTIMONIALS.some((own) => own.quote === t.quote)),
+  ]
 
   useSeo({
     title: 'Website Development, AI Implementation & Full-Stack Engineering',
@@ -373,16 +380,10 @@ export default function Home() {
           title="What it's like to work with us"
         />
         <div className="mt-14">
-          {state.testimonials.status === 'loading' && (
-            <SkeletonGrid count={3} columns="sm:grid-cols-2 lg:grid-cols-3" />
-          )}
-          {state.testimonials.status === 'error' && (
-            <ErrorState message={state.testimonials.error} onRetry={() => reload(['testimonials'])} />
-          )}
-          {state.testimonials.status === 'success' && state.testimonials.data.length > 0 && (
+          {testimonials.length > 0 && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {state.testimonials.data.map((t, i) => (
-                <Reveal key={t.id} delay={i * 0.08}>
+              {testimonials.map((t, i) => (
+                <Reveal key={t.id} delay={i * 0.08} className="h-full">
                   <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7">
                     <div className="flex items-center gap-1 text-gold-400">
                       {Array.from({ length: t.rating ?? 5 }).map((_, idx) => (
@@ -405,12 +406,25 @@ export default function Home() {
                         {t.company && <p className="text-xs text-ink-400">{t.company}</p>}
                       </div>
                     </div>
+                    {(t.url || t.review_url) && (
+                      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-gold-600 dark:text-gold-400">
+                        {t.review_url && (
+                          <a href={t.review_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
+                            {t.review_label || 'See the review'} <FiArrowRight className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                        {t.url && (
+                          <a href={t.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
+                            See the live site <FiArrowRight className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </Reveal>
               ))}
             </div>
           )}
-          {/* Empty testimonials list is hidden gracefully — no section shown at all */}
         </div>
       </section>
 
