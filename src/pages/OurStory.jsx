@@ -56,9 +56,10 @@ export default function OurStory() {
   })
 
   return (
-    <div className="overflow-hidden bg-white text-ink-900 dark:bg-ink-950 dark:text-white">
-      <section className="relative border-b border-gold-400/20 bg-ink-950 px-6 pt-8 pb-10 text-white sm:pt-10 sm:pb-12 lg:px-8 lg:pt-12 lg:pb-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(230,172,62,0.16),transparent_34%),linear-gradient(135deg,rgba(5,6,9,0.96),rgba(18,21,30,0.88))]" />
+    <div className="-mt-22 overflow-hidden bg-white text-ink-900 dark:bg-ink-950 dark:text-white">
+      {/* The wrapper's -mt-22 pulls this hero up under the floating navbar (see Navbar). */}
+      <section className="relative border-b border-gold-400/20 bg-night px-6 pt-28 pb-10 text-white sm:pb-12 lg:px-8 lg:pt-32 lg:pb-16">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
         <div className="relative mx-auto mb-4 max-w-7xl">
           <BackButton fallback="/" className="!text-white/70 hover:!text-gold-300" />
         </div>
@@ -73,7 +74,7 @@ export default function OurStory() {
           </Reveal>
 
           <Reveal delay={0.12} className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-            <div className="relative mx-auto w-full max-w-[300px] sm:max-w-[340px] lg:max-w-[390px]">
+            <div className="relative mx-auto w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[520px]">
               <div className="absolute -inset-2 rounded-3xl bg-gold-300/10 blur-xl" />
               <div className="relative overflow-hidden rounded-3xl border border-gold-300/25 bg-white/8 p-3 shadow-2xl shadow-black/45 backdrop-blur">
                 <div className="absolute inset-x-3 top-3 h-px bg-gradient-to-r from-transparent via-gold-200/40 to-transparent" />
@@ -134,7 +135,7 @@ export default function OurStory() {
           </Reveal>
           <div className="mt-12 grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
             <Reveal>
-              <div className="border-l-2 border-gold-400 pl-6">
+              <div className="rounded-r-2xl border-l-2 border-gold-400 bg-gold-400/5 py-6 pl-6 pr-6">
                 <p className="text-lg leading-8 text-ink-600 dark:text-ink-200">
                   WebNest Studio is growing with a clear direction: serve ambitious founders
                   and businesses that want their online presence to carry authority, elegance,
@@ -150,7 +151,7 @@ export default function OurStory() {
             <div className="grid gap-5">
               {STORY_MARKERS.map((item, index) => (
                 <Reveal key={item.title} delay={index * 0.08}>
-                  <article className="border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900/40">
+                  <article className="rounded-2xl border border-ink-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-gold-400/60 hover:shadow-md dark:border-ink-800 dark:bg-ink-900/40">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-400">
                       {item.label}
                     </p>
@@ -168,7 +169,7 @@ export default function OurStory() {
         </div>
       </section>
 
-      <section className="bg-ink-50 px-6 py-20 dark:bg-ink-900/40 lg:px-8">
+      <section className="bg-gold-400/10 px-6 py-20 dark:bg-ink-900/40 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold-600 dark:text-gold-400">
@@ -180,9 +181,9 @@ export default function OurStory() {
           </Reveal>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {SCOPE.map((item, index) => (
-              <Reveal key={item.title} delay={index * 0.06}>
-                <article className="h-full border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-950">
-                  <div className="flex h-11 w-11 items-center justify-center bg-gold-400/10 text-gold-600 dark:text-gold-400">
+              <Reveal key={item.title} delay={index * 0.06} className="h-full">
+                <article className="h-full rounded-2xl border border-gold-400/30 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gold-400 hover:shadow-md dark:border-ink-800 dark:bg-ink-950">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-400/10 text-gold-600 dark:text-gold-400">
                     <item.icon className="h-5 w-5" />
                   </div>
                   <h3 className="mt-5 font-display text-lg font-bold text-ink-900 dark:text-white">
@@ -202,7 +203,7 @@ export default function OurStory() {
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <div className="sticky top-28">
-              <div className="flex h-14 w-14 items-center justify-center border border-gold-400/40 text-gold-600 dark:text-gold-400">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gold-400/40 bg-gold-400/10 text-gold-600 dark:text-gold-400">
                 <FiTarget className="h-7 w-7" />
               </div>
               <p className="mt-6 text-xs font-bold uppercase tracking-[0.28em] text-gold-600 dark:text-gold-400">
@@ -217,7 +218,7 @@ export default function OurStory() {
           <div className="space-y-4">
             {GOALS.map((goal, index) => (
               <Reveal key={goal} delay={index * 0.08}>
-                <div className="flex gap-5 border-b border-ink-200 py-6 dark:border-ink-800">
+                <div className="flex gap-5 rounded-2xl border border-ink-200 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900/40">
                   <span className="font-display text-2xl font-bold text-gold-600 dark:text-gold-400">
                     0{index + 1}
                   </span>
@@ -231,17 +232,18 @@ export default function OurStory() {
         </div>
       </section>
 
-      <section className="bg-ink-950 px-6 py-20 text-white lg:px-8">
-        <Reveal className="mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-night px-6 py-24 text-white lg:px-8">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gold-400/15 blur-[110px]" />
+        <Reveal className="relative mx-auto max-w-4xl text-center">
           <FiCompass className="mx-auto h-10 w-10 text-gold-400" />
           <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-gold-300">
             Our Vision
           </p>
-          <h2 className="mt-5 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            To make WebNest Studio the place where premium brands come to become
-            unforgettable online.
+          <h2 className="mt-5 font-display text-3xl font-bold leading-[1.25] tracking-tight sm:text-4xl">
+            To make WebNest Studio the place where premium brands come to become{' '}
+            <span className="text-gradient-gold">unforgettable online.</span>
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-ink-300">
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-ink-200">
             We see a future where every serious business has access to digital craftsmanship
             that feels world-class: strategic, elegant, intelligent, and engineered to grow.
           </p>

@@ -2,9 +2,12 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiCheckCircle, FiStar,
-  FiExternalLink,
+  FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiStar,
+  FiExternalLink, FiBookOpen, FiPlay, FiCode,
 } from 'react-icons/fi'
+import HeroVideo from '../components/HeroVideo'
+import NeuralBackdrop from '../components/NeuralBackdrop'
+import { ONGOING_PROJECTS } from '../data/ongoingProjects'
 import BuildTrackerCard from '../components/BuildTrackerCard'
 import Reveal from '../components/Reveal'
 import LaunchAnnouncementModal from '../components/LaunchAnnouncementModal'
@@ -17,13 +20,37 @@ import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
+import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
 import { useSeo } from '../hooks/useSeo'
+
+// Course totals shown on the landing page. Kept here as plain numbers because the course
+// data itself is a very large file that the landing page should not load. Update when
+// courses are added (the Learn page shows the exact live counts).
+const LEARNING = { courses: 12, lessons: '550+' }
+
+// Colour scheme of the hero and the learning band: true = cream and gold with dark
+// accents (navbar, footer, review and call-to-action panels); false = warm charcoal.
+const CREAM = false
+
+const LEARN_LINKS = [
+  { to: '/learn', icon: FiBookOpen, title: 'Courses', text: 'Java, Spring, Python, React and SQL, lesson by lesson.' },
+  { to: '/codelab/playground', icon: FiPlay, title: 'Playground', text: 'Write and run code in your browser. Nothing to install.' },
+  { to: '/codelab/problems', icon: FiCode, title: 'Problems', text: 'Easy, medium and hard challenges that earn XP.' },
+]
 
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
 const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer }
 
 export default function Home() {
   const { state, reload } = useHomeData()
+  // Our own client feedback always shows; admin-managed testimonials follow once loaded.
+  const apiTestimonials = state.testimonials.status === 'success' ? state.testimonials.data : []
+  const testimonials = [
+    ...CLIENT_TESTIMONIALS,
+    ...apiTestimonials.filter((t) => !CLIENT_TESTIMONIALS.some((own) => own.quote === t.quote)),
+  ]
+  // The first one gets the wide featured card; any others sit in a grid below it.
+  const [featured, ...moreTestimonials] = testimonials
 
   useSeo({
     title: 'Website Development, AI Implementation & Full-Stack Engineering',
@@ -36,27 +63,26 @@ export default function Home() {
     wakeServer()
   }, [])
 
-  // Floor at 2 to reflect our current ongoing projects even before the backend catalog is caught up.
-  const projectsDelivered = Math.max(state.stats.data?.projects_delivered ?? 0, 2)
   const displayStats = [
-    { value: `${projectsDelivered}+`, label: 'Projects Delivered' },
-    { value: '24/7', label: 'Client Support' },
-    { value: '100%', label: 'Custom-Built Solutions' },
-    { value: '∞', label: 'Languages Supported' },
+    { value: DELIVERED_PROJECTS.length + ONGOING_PROJECTS.length, label: 'Client projects, live and in progress' },
+    { value: LEARNING.courses, label: 'Free courses' },
+    { value: LEARNING.lessons, label: 'Lessons' },
+    { value: TECH_STACK.length, label: 'Core technologies' },
   ]
 
   const demoStatus = state.projectStatus.data
 
   return (
-    <div className="overflow-hidden">
+    <div className="-mt-22 overflow-hidden">
       <LaunchAnnouncementModal />
 
-      {/* HERO */}
-      <section className="relative bg-grid text-ink-900 dark:text-white">
-        <div className="pointer-events-none absolute -top-40 right-[-10%] h-[36rem] w-[36rem] rounded-full bg-gold-400/20 blur-[120px]" />
-        <div className="pointer-events-none absolute top-1/3 -left-40 h-[28rem] w-[28rem] rounded-full bg-gold-600/10 blur-[100px]" />
+      {/* HERO — always dark ("dark" switches the card and buttons inside). The page wrapper's
+          -mt-22 pulls it up under the floating navbar (see Navbar). */}
+      <section className={`relative flex min-h-[min(88vh,820px)] items-center overflow-hidden text-ink-900 dark:text-white ${CREAM ? 'bg-cream' : 'dark bg-night'}`}>
+        <HeroVideo dim={false}><NeuralBackdrop fade="left" /></HeroVideo>
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 pb-12 pt-8 lg:px-8 lg:pb-16 lg:pt-12">
+        <div className="relative mx-auto w-full max-w-7xl px-6 pb-16 pt-40 lg:px-8 lg:pb-20">
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
             <div>
               <motion.span
@@ -72,7 +98,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1 }}
-                className="mt-4 font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl"
+                className="mt-4 font-display text-4xl font-extrabold leading-[1.2] tracking-tight sm:text-5xl"
               >
                 Where Brands <span className="text-gradient-gold">Go Digital</span>
                 <br />
@@ -142,43 +168,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MILESTONE ANNOUNCEMENT — first delivered project */}
-      {DELIVERED_PROJECTS.length > 0 && (
-        <section className="mx-auto max-w-7xl px-6 pb-16 lg:px-8 lg:pb-20">
-          <Reveal>
-            <a
-              href={DELIVERED_PROJECTS[0].url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl border border-emerald-400/30 bg-gradient-to-r from-emerald-400/10 via-gold-400/5 to-transparent p-6 transition-all hover:border-emerald-400/60 hover:shadow-lg hover:shadow-emerald-500/10 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="flex items-start gap-4 sm:items-center">
-                <span className="relative flex h-3 w-3 shrink-0">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
-                </span>
-                <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-500">
-                    <FiCheckCircle className="h-3.5 w-3.5" />
-                    First Project Delivered
-                  </span>
-                  <p className="mt-2 font-display text-lg font-bold text-ink-900 dark:text-white">
-                    {DELIVERED_PROJECTS[0].name} is now live in production
-                  </p>
-                  <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">
-                    {DELIVERED_PROJECTS[0].phase ?? 'Now shipped.'} — see how it turned out.
-                  </p>
-                </div>
-              </div>
-              <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-ink-900 dark:bg-gold-400 px-5 py-2.5 text-xs font-semibold text-white dark:text-ink-950 transition-transform group-hover:scale-105 sm:self-center">
-                Visit Live Site
-                <FiExternalLink className="h-3.5 w-3.5" />
-              </span>
-            </a>
-          </Reveal>
-        </section>
-      )}
-
       {/* MARQUEE */}
       <section className="border-y border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40 py-6">
         <div className="flex overflow-hidden">
@@ -196,12 +185,12 @@ export default function Home() {
       </section>
 
       {/* STATS */}
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+      <section className="bg-gold-400/10 dark:bg-ink-900/40">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-y-10 px-6 py-14 sm:grid-cols-4 sm:divide-x sm:divide-gold-400/30 lg:px-8">
           {displayStats.map((s, i) => (
-            <Reveal key={s.label} delay={i * 0.08} className="text-center">
-              <p className="font-display text-3xl font-extrabold text-gradient-gold sm:text-4xl">{s.value}</p>
-              <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">{s.label}</p>
+            <Reveal key={s.label} delay={i * 0.08} className="px-4 text-center">
+              <p className="font-display text-4xl font-extrabold text-gradient-gold sm:text-5xl">{s.value}</p>
+              <p className="mt-2 text-sm text-ink-600 dark:text-ink-300">{s.label}</p>
             </Reveal>
           ))}
         </div>
@@ -225,26 +214,31 @@ export default function Home() {
                 {TECH_CATEGORIES.map((cat, i) => {
                   const Icon = CATEGORY_ICONS[cat.icon]
                   return (
-                    <Reveal key={cat.title} delay={i * 0.07}>
-                      <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500">
+                    <Reveal key={cat.title} delay={i * 0.07} className="h-full">
+                      <Link
+                        to="/services"
+                        className="group flex h-full flex-col rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7 transition-all hover:-translate-y-1.5 hover:border-gold-400/60 hover:shadow-xl hover:shadow-gold-500/10"
+                      >
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500 transition-colors group-hover:bg-gold-400 group-hover:text-ink-950">
                           <Icon className="h-6 w-6" />
                         </div>
                         <h3 className="mt-5 font-display text-lg font-semibold text-ink-900 dark:text-white">
                           {cat.title}
                         </h3>
-                        <p className="mt-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+                        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink-500 dark:text-ink-300">
                           {cat.description}
                         </p>
-                        <ul className="mt-4 space-y-2">
+                        <ul className="mt-4 flex flex-wrap gap-2">
                           {cat.technologies.map((item) => (
-                            <li key={item} className="flex items-center gap-2 text-sm text-ink-700 dark:text-ink-200">
-                              <FiCheckCircle className="h-4 w-4 shrink-0 text-gold-400" />
+                            <li key={item} className="rounded-full bg-gold-400/10 px-2.5 py-1 text-xs font-semibold text-gold-700 dark:text-gold-400">
                               {item}
                             </li>
                           ))}
                         </ul>
-                      </div>
+                        <span className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-gold-600 dark:text-gold-400">
+                          Learn more <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </span>
+                      </Link>
                     </Reveal>
                   )
                 })}
@@ -366,6 +360,39 @@ export default function Home() {
         </div>
       </section>
 
+      {/* LEARN — the "developers are born" half of the tagline */}
+      <section className={`relative overflow-hidden py-20 ${CREAM ? 'bg-cream' : 'dark bg-night'}`}>
+        <div className="hero-glow hero-glow-b" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-[1fr_1.4fr] lg:px-8">
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">
+              Learn &amp; Practise
+            </span>
+            <h2 className="mt-5 font-display text-3xl font-bold leading-tight tracking-tight text-ink-900 dark:text-white sm:text-4xl">
+              Where developers <span className="text-gradient-gold">are born</span>
+            </h2>
+            <p className="mt-4 max-w-md leading-relaxed text-ink-600 dark:text-ink-200">
+              {LEARNING.courses} free courses and {LEARNING.lessons} lessons with examples and coding
+              practice, plus a playground that runs your code in the browser.
+            </p>
+            <Link to="/learn" className="group mt-8 inline-flex items-center gap-2 rounded-full bg-ink-900 px-6 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 dark:bg-gold-400 dark:text-ink-950">
+              Start learning <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </Reveal>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {LEARN_LINKS.map(({ to, icon: Icon, title, text }, i) => (
+              <Reveal key={to} delay={i * 0.08} className="h-full">
+                <Link to={to} className="block h-full rounded-2xl border border-gold-400/30 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gold-400 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04]">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-400/15 text-gold-500 dark:text-gold-400"><Icon className="h-5 w-5" /></span>
+                  <h3 className="mt-4 font-display text-lg font-semibold text-ink-900 dark:text-white">{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">{text}</p>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* TESTIMONIALS */}
       <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <SectionHeading
@@ -373,16 +400,43 @@ export default function Home() {
           title="What it's like to work with us"
         />
         <div className="mt-14">
-          {state.testimonials.status === 'loading' && (
-            <SkeletonGrid count={3} columns="sm:grid-cols-2 lg:grid-cols-3" />
+          {featured && (
+            <Reveal>
+              <figure className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-gold-400/40 bg-night px-8 py-12 text-center shadow-xl sm:px-14">
+                <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-gold-400/20 blur-[90px]" />
+                <div className="relative flex items-center justify-center gap-1 text-gold-400">
+                  {Array.from({ length: featured.rating ?? 5 }).map((_, idx) => (
+                    <FiStar key={idx} className="h-5 w-5 fill-current" />
+                  ))}
+                </div>
+                <blockquote className="relative mt-6 font-display text-2xl font-semibold leading-snug text-white sm:text-3xl">
+                  &ldquo;{featured.quote}&rdquo;
+                </blockquote>
+                <figcaption className="relative mt-8">
+                  <p className="font-semibold text-white">{featured.client_name}</p>
+                  {featured.company && <p className="mt-1 text-sm text-ink-300">{featured.company}</p>}
+                </figcaption>
+                {(featured.url || featured.review_url) && (
+                  <div className="relative mt-6 flex flex-wrap justify-center gap-3 text-sm font-semibold">
+                    {featured.review_url && (
+                      <a href={featured.review_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-gold-400 px-5 py-2.5 text-ink-950 transition-transform hover:scale-105">
+                        {featured.review_label || 'See the review'} <FiArrowRight className="h-4 w-4" />
+                      </a>
+                    )}
+                    {featured.url && (
+                      <a href={featured.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-white hover:border-gold-400 hover:text-gold-400">
+                        See the live site <FiExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </figure>
+            </Reveal>
           )}
-          {state.testimonials.status === 'error' && (
-            <ErrorState message={state.testimonials.error} onRetry={() => reload(['testimonials'])} />
-          )}
-          {state.testimonials.status === 'success' && state.testimonials.data.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {state.testimonials.data.map((t, i) => (
-                <Reveal key={t.id} delay={i * 0.08}>
+          {moreTestimonials.length > 0 && (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {moreTestimonials.map((t, i) => (
+                <Reveal key={t.id} delay={i * 0.08} className="h-full">
                   <div className="h-full rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-7">
                     <div className="flex items-center gap-1 text-gold-400">
                       {Array.from({ length: t.rating ?? 5 }).map((_, idx) => (
@@ -405,19 +459,32 @@ export default function Home() {
                         {t.company && <p className="text-xs text-ink-400">{t.company}</p>}
                       </div>
                     </div>
+                    {(t.url || t.review_url) && (
+                      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-gold-600 dark:text-gold-400">
+                        {t.review_url && (
+                          <a href={t.review_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
+                            {t.review_label || 'See the review'} <FiArrowRight className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                        {t.url && (
+                          <a href={t.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
+                            See the live site <FiArrowRight className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </Reveal>
               ))}
             </div>
           )}
-          {/* Empty testimonials list is hidden gracefully — no section shown at all */}
         </div>
       </section>
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <Reveal>
-          <div className="relative overflow-hidden rounded-3xl bg-ink-900 dark:bg-gradient-to-br dark:from-ink-900 dark:to-ink-950 px-8 py-16 text-center sm:px-16">
+          <div className="relative overflow-hidden rounded-3xl bg-night px-8 py-16 text-center sm:px-16">
             <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-gold-400/20 blur-[100px]" />
             <h2 className="relative font-display text-3xl font-bold text-white sm:text-4xl">
               Ready to turn your idea into a digital brand?

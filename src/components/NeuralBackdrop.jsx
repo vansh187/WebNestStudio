@@ -4,11 +4,18 @@ import { useReducedMotion } from 'framer-motion'
 const GOLD = '230, 172, 62'
 const LINK_DISTANCE = 180
 
+// Where the network is faded so text stays clean: behind a centred headline, or on the
+// left when the text sits in the left column.
+const FADES = {
+  center: '[mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,0.12)_20%,black_75%)]',
+  left: '[mask-image:linear-gradient(to_right,rgba(0,0,0,0.1)_0%,rgba(0,0,0,0.1)_42%,black_78%)]',
+}
+
 // Decorative "neural network" for a dark hero: drifting gold nodes joined by faint
 // lines, with signals travelling along the links. Drawn on a canvas, so it needs no
-// video file. A mask fades it out behind the headline. Stops when off screen and
-// stays still for reduced-motion visitors.
-export default function NeuralBackdrop() {
+// video file. A mask fades it out behind the text (see FADES). Stops when off screen
+// and stays still for reduced-motion visitors.
+export default function NeuralBackdrop({ fade = 'center' }) {
   const canvasRef = useRef(null)
   const reduced = useReducedMotion()
 
@@ -114,5 +121,5 @@ export default function NeuralBackdrop() {
     }
   }, [reduced])
 
-  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,0.12)_20%,black_75%)]" />
+  return <canvas ref={canvasRef} className={`absolute inset-0 h-full w-full ${FADES[fade] || FADES.center}`} />
 }
