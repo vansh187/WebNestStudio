@@ -54,9 +54,33 @@ import {
   databaseDesignExtra,
 } from './extra-b.js'
 
+import { practicePythonFoundations } from './practice-python-01-foundations.js'
+import { practicePythonStructuresFunctions } from './practice-python-02-structures-functions.js'
+import { practicePythonOop } from './practice-python-03-oop.js'
+import { practicePythonModulesErrorsFiles } from './practice-python-04-modules-errors-files.js'
+import { practicePythonDatabasesAdvanced } from './practice-python-05-databases-advanced.js'
+import { practicePythonAlgorithmsPractical } from './practice-python-06-algorithms-practical.js'
+import { practicePythonFastapi } from './practice-python-07-fastapi.js'
+import { practicePythonDataMl } from './practice-python-08-data-ml.js'
+
+// Practice blocks live in their own files, keyed by course slug and then by the same
+// topic slugs as the lesson prose.
+export const TUTORIAL_PRACTICE = {
+  python: {
+    ...practicePythonFoundations,
+    ...practicePythonStructuresFunctions,
+    ...practicePythonOop,
+    ...practicePythonModulesErrorsFiles,
+    ...practicePythonDatabasesAdvanced,
+    ...practicePythonAlgorithmsPractical,
+    ...practicePythonFastapi,
+    ...practicePythonDataMl,
+  },
+}
+
 // Keyed by course slug (matching STATIC_COURSE_DEFINITIONS in codelabDefaults.js),
 // each value keyed by the topic's slug (via the same slugify() used for lesson ids).
-export const TUTORIALS_BY_COURSE = {
+const TUTORIAL_PROSE = {
   'spring-framework': { ...springFrameworkContent, ...springFrameworkExtra, ...springFrameworkSetup },
   'spring-boot': {
     ...springBootContent,
@@ -102,3 +126,13 @@ export const TUTORIALS_BY_COURSE = {
   postgresql: postgresqlContent,
   'database-design': { ...databaseDesignContent, ...databaseDesignExtra },
 }
+
+export const TUTORIALS_BY_COURSE = Object.fromEntries(
+  Object.entries(TUTORIAL_PROSE).map(([course, lessons]) => {
+    const practice = TUTORIAL_PRACTICE[course]
+    if (!practice) return [course, lessons]
+    return [course, Object.fromEntries(
+      Object.entries(lessons).map(([slug, entry]) => [slug, practice[slug] ? { ...entry, ...practice[slug] } : entry]),
+    )]
+  }),
+)

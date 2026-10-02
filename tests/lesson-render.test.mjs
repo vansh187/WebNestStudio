@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { renderLessonContent } from '../src/data/lessons/render.js'
 import { SAMPLE_LESSONS } from '../src/data/codelabDefaults.js'
 import { JAVA_LESSON_CONTENT, JAVA_PRACTICE } from '../src/data/java/index.js'
+import { TUTORIALS_BY_COURSE, TUTORIAL_PRACTICE } from '../src/data/tutorials/index.js'
 
 const base = {
   title: 'Sample', intro: 'Intro.',
@@ -47,14 +48,21 @@ test('practice blocks render once, escape code and hide answers', () => {
 })
 
 test('every practice entry attaches to an existing lesson and is well formed', () => {
-  for (const [slug, practice] of Object.entries(JAVA_PRACTICE)) {
-    assert.ok(JAVA_LESSON_CONTENT[slug]?.title, `practice for unknown lesson: ${slug}`)
-    assert.ok(!('examples' in practice) && !('sections' in practice), `${slug}: practice must not replace lesson prose`)
-    for (const item of practice.quiz || []) {
-      assert.ok(item.options.length >= 2 && item.answer >= 0 && item.answer < item.options.length, `${slug}: quiz answer index`)
-      assert.ok(item.explanation, `${slug}: quiz explanation`)
+  const groups = [
+    ['java', JAVA_PRACTICE, JAVA_LESSON_CONTENT],
+    ...Object.entries(TUTORIAL_PRACTICE).map(([course, practice]) => [course, practice, TUTORIALS_BY_COURSE[course]]),
+  ]
+  for (const [course, entries, lessons] of groups) {
+    for (const [key, practice] of Object.entries(entries)) {
+      const slug = `${course}/${key}`
+      assert.ok(lessons?.[key]?.title, `practice for unknown lesson: ${slug}`)
+      assert.ok(!('examples' in practice) && !('sections' in practice), `${slug}: practice must not replace lesson prose`)
+      for (const item of practice.quiz || []) {
+        assert.ok(item.options.length >= 2 && item.answer >= 0 && item.answer < item.options.length, `${slug}: quiz answer index`)
+        assert.ok(item.explanation, `${slug}: quiz explanation`)
+      }
+      if (practice.exercise) assert.ok(practice.exercise.prompt && practice.exercise.solution, `${slug}: exercise needs a prompt and solution`)
     }
-    if (practice.exercise) assert.ok(practice.exercise.prompt && practice.exercise.solution, `${slug}: exercise needs a prompt and solution`)
   }
 })
 
