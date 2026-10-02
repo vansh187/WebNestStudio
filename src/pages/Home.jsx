@@ -28,7 +28,7 @@ export default function Home() {
   useSeo({
     title: 'Website Development, AI Implementation & Full-Stack Engineering',
     description:
-      'WebNest Studio is an IT consultancy specializing in custom website development, AI implementation, and full-stack engineering — where brands go digital.',
+      'WebNest Studio builds websites, AI products and software, and trains developers with courses and CodeLab — where brands go digital and developers are born.',
     path: '/',
   })
 
@@ -65,16 +65,18 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-500"
               >
-                IT Consultancy &middot; Web &middot; AI
+                IT Consultancy &middot; Web &middot; AI &middot; Training
               </motion.span>
 
               <motion.h1
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1 }}
-                className="mt-4 font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
+                className="mt-4 font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl"
               >
-                Where Brands <span className="text-gradient-gold">Go Digital.</span>
+                Where Brands <span className="text-gradient-gold">Go Digital</span>
+                <br />
+                &amp; Developers <span className="text-gradient-gold">Are Born.</span>
               </motion.h1>
 
               <motion.p
@@ -85,7 +87,8 @@ export default function Home() {
               >
                 WebNest Studio designs and engineers websites, AI-powered products, and
                 enterprise software that make your brand impossible to ignore — built on
-                React, Java, Python, Spring Boot, and more.
+                React, Java, Python, Spring Boot, and more. We also train new developers
+                through our courses and a hands-on CodeLab.
               </motion.p>
 
               <motion.div
