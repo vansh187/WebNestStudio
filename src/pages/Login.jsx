@@ -509,7 +509,7 @@ export default function Login() {
 
   return (
     // Always dark: the "dark" class switches the forms below to their dark styling.
-    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-gradient-to-br from-[#262b3d] via-[#161a27] to-[#0d1019] px-6 py-20 text-ink-100 lg:px-8">
+    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-night px-6 py-20 text-ink-100 lg:px-8">
       <HeroVideo dim={false}><NeuralBackdrop /></HeroVideo>
       {/* Warm light from the top right, so the page reads as lit, not flat black. */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
@@ -536,7 +536,7 @@ export default function Login() {
       </div>
 
       <Reveal className="relative mx-auto w-full max-w-md">
-        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#2a3044]/90 to-[#161a27]/95 [&_input]:border-white/20 [&_input]:bg-black/25 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10">
+        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#3a362f]/90 to-[#1f1d1a]/95 [&_input]:border-white/20 [&_input]:bg-black/25 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10">
           <div className="flex justify-center lg:hidden">
             <Logo size="lg" />
           </div>

@@ -56,9 +56,10 @@ export default function OurStory() {
   })
 
   return (
-    <div className="overflow-hidden bg-white text-ink-900 dark:bg-ink-950 dark:text-white">
-      <section className="relative border-b border-gold-400/20 bg-ink-950 px-6 pt-8 pb-10 text-white sm:pt-10 sm:pb-12 lg:px-8 lg:pt-12 lg:pb-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(230,172,62,0.16),transparent_34%),linear-gradient(135deg,rgba(5,6,9,0.96),rgba(18,21,30,0.88))]" />
+    <div className="-mt-22 overflow-hidden bg-white text-ink-900 dark:bg-ink-950 dark:text-white">
+      {/* The wrapper's -mt-22 pulls this hero up under the floating navbar (see Navbar). */}
+      <section className="relative border-b border-gold-400/20 bg-night px-6 pt-28 pb-10 text-white sm:pb-12 lg:px-8 lg:pt-32 lg:pb-16">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
         <div className="relative mx-auto mb-4 max-w-7xl">
           <BackButton fallback="/" className="!text-white/70 hover:!text-gold-300" />
         </div>
@@ -231,17 +232,18 @@ export default function OurStory() {
         </div>
       </section>
 
-      <section className="bg-ink-950 px-6 py-20 text-white lg:px-8">
-        <Reveal className="mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-night px-6 py-24 text-white lg:px-8">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gold-400/15 blur-[110px]" />
+        <Reveal className="relative mx-auto max-w-4xl text-center">
           <FiCompass className="mx-auto h-10 w-10 text-gold-400" />
           <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-gold-300">
             Our Vision
           </p>
-          <h2 className="mt-5 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            To make WebNest Studio the place where premium brands come to become
-            unforgettable online.
+          <h2 className="mt-5 font-display text-3xl font-bold leading-[1.25] tracking-tight sm:text-4xl">
+            To make WebNest Studio the place where premium brands come to become{' '}
+            <span className="text-gradient-gold">unforgettable online.</span>
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-ink-300">
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-ink-200">
             We see a future where every serious business has access to digital craftsmanship
             that feels world-class: strategic, elegant, intelligent, and engineered to grow.
           </p>

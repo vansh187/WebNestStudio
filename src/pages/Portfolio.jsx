@@ -121,8 +121,9 @@ export default function Portfolio() {
   return (
     <div>
       {/* -mt-22 pulls the hero up under the floating navbar (see Navbar). */}
-      <section className="relative -mt-22 flex min-h-[80vh] items-center overflow-hidden bg-ink-950 px-6 pb-20 pt-44 lg:px-8">
-        <HeroVideo base={HERO_VIDEO}>{!HERO_VIDEO && <NeuralBackdrop />}</HeroVideo>
+      <section className="relative -mt-22 flex min-h-[80vh] items-center overflow-hidden bg-night px-6 pb-20 pt-44 lg:px-8">
+        <HeroVideo base={HERO_VIDEO} dim={Boolean(HERO_VIDEO)}>{!HERO_VIDEO && <NeuralBackdrop fade="left" />}</HeroVideo>
+        {!HERO_VIDEO && <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />}
         <BackButton
           fallback="/"
           className="absolute left-6 top-28 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950! lg:left-8"

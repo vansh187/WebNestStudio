@@ -94,6 +94,21 @@ body {
   background-size: 48px 48px;
 }
 
+/* Lit warm-charcoal surface for dark sections: softer than flat black, and with no blue,
+   so it sits with the black-and-gold logo. */
+.bg-night {
+  background: linear-gradient(135deg, #302d28 0%, #1f1d1a 55%, #141311 100%);
+}
+
+/* Warm cream surface for light hero sections. In the site's dark theme it becomes the
+   charcoal surface, so text set with dark: variants stays readable. */
+.bg-cream {
+  background: linear-gradient(135deg, #fffdf7 0%, #fbf3e0 60%, #f6e7c6 100%);
+}
+.dark .bg-cream {
+  background: linear-gradient(135deg, #302d28 0%, #1f1d1a 55%, #141311 100%);
+}
+
 /* Slow gold glow behind a dark hero; also the backdrop while a hero video loads. */
 .hero-glow {
   position: absolute;

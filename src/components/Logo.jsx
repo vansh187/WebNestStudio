@@ -12,7 +12,7 @@ export default function Logo({ size = 'md', showText = true, className = '' }) {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <div
-        className="relative shrink-0 rounded-full overflow-hidden"
+        className="relative shrink-0 rounded-full overflow-hidden ring-1 ring-gold-400/60 shadow-md shadow-black/30"
         style={{ width: ring, height: ring }}
       >
         <img src={logoMark} alt="WebNest Studio" width={ring} height={ring} decoding="async" className="h-full w-full object-cover" />

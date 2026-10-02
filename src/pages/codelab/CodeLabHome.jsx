@@ -36,8 +36,9 @@ export default function CodeLabHome() {
   return (
     <main>
       {/* -mt-22 pulls the hero up under the floating navbar (see Navbar). */}
-      <section className="relative -mt-22 flex min-h-[80vh] items-center overflow-hidden bg-ink-950 px-6 pb-20 pt-44 lg:px-8">
-        <HeroVideo base={HERO_VIDEO}>{!HERO_VIDEO && <NeuralBackdrop />}</HeroVideo>
+      <section className="relative -mt-22 flex min-h-[80vh] items-center overflow-hidden bg-night px-6 pb-20 pt-44 lg:px-8">
+        <HeroVideo base={HERO_VIDEO} dim={Boolean(HERO_VIDEO)}>{!HERO_VIDEO && <NeuralBackdrop fade="left" />}</HeroVideo>
+        {!HERO_VIDEO && <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />}
         <BackButton fallback="/" className={HERO_BACK_CLASS} />
         <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-2">
           <div className="text-center lg:text-left">
