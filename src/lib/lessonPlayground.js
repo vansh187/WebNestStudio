@@ -63,7 +63,7 @@ function webWorkspace(lesson, language, code) {
 }
 
 // Only build templates for the execution environments CodeLab actually supports.
-function workspaceForCode(lesson, code, language) {
+function workspaceForCode(lesson, code, language, javaCourses = ['java-core']) {
   if (!code || lesson?.course_slug === 'react') return null
   // Setup lessons also contain terminal commands. They are useful to copy, but
   // are not Python/JavaScript programs and must not be sent to those runners.
@@ -72,7 +72,7 @@ function workspaceForCode(lesson, code, language) {
   // Only complete Java Core programs run as they are; Spring, JDBC and servlet examples
   // need libraries the playground does not have.
   if (language === 'java') {
-    return lesson.course_slug === 'java-core' && /\bstatic\s+void\s+main\s*\(/.test(code) ? javaWorkspace(lesson, code) : null
+    return javaCourses.includes(lesson.course_slug) && /\bstatic\s+void\s+main\s*\(/.test(code) ? javaWorkspace(lesson, code) : null
   }
   if (!WEB_LANGUAGES.includes(language)) return null
   return webWorkspace(lesson, language, code)
@@ -94,7 +94,9 @@ export function lessonExerciseTemplate(lesson) {
   if (lesson?.language === 'sql') {
     return lesson.exercise_starter ? pythonWorkspace(lesson, sqlRunnerSource(lesson.exercise_starter)) : null
   }
-  return workspaceForCode(lesson, lesson?.exercise_starter, lesson?.language)
+  // Advanced Java examples need JDBC, servlets or Spring, but its exercises are written for
+  // the plain JDK unless marked runnable: false, which leaves exercise_starter empty.
+  return workspaceForCode(lesson, lesson?.exercise_starter, lesson?.language, ['java-core', 'advanced-java'])
 }
 
 const SCRATCH_NOTES = {

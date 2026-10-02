@@ -36,6 +36,7 @@ import { practice08Collections } from './practice-08-collections.js'
 import { practice09Java8Io } from './practice-09-java8-io.js'
 import { practice10Platform } from './practice-10-platform.js'
 import { practice11Algorithms } from './practice-11-algorithms.js'
+import { practiceAdvRuntimeEngineering } from './practice-adv-03-runtime-engineering.js'
 import { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex } from './topics.js'
 
 // Practice blocks live in their own per-module files, keyed by the same slugs.
@@ -53,6 +54,7 @@ export const JAVA_PRACTICE = {
   ...practice09Java8Io,
   ...practice10Platform,
   ...practice11Algorithms,
+  ...practiceAdvRuntimeEngineering,
 }
 
 const LESSON_PROSE = {
