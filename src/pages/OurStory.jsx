@@ -74,7 +74,7 @@ export default function OurStory() {
           </Reveal>
 
           <Reveal delay={0.12} className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-            <div className="relative mx-auto w-full max-w-[300px] sm:max-w-[340px] lg:max-w-[390px]">
+            <div className="relative mx-auto w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[520px]">
               <div className="absolute -inset-2 rounded-3xl bg-gold-300/10 blur-xl" />
               <div className="relative overflow-hidden rounded-3xl border border-gold-300/25 bg-white/8 p-3 shadow-2xl shadow-black/45 backdrop-blur">
                 <div className="absolute inset-x-3 top-3 h-px bg-gradient-to-r from-transparent via-gold-200/40 to-transparent" />
@@ -135,7 +135,7 @@ export default function OurStory() {
           </Reveal>
           <div className="mt-12 grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
             <Reveal>
-              <div className="border-l-2 border-gold-400 pl-6">
+              <div className="rounded-r-2xl border-l-2 border-gold-400 bg-gold-400/5 py-6 pl-6 pr-6">
                 <p className="text-lg leading-8 text-ink-600 dark:text-ink-200">
                   WebNest Studio is growing with a clear direction: serve ambitious founders
                   and businesses that want their online presence to carry authority, elegance,
@@ -151,7 +151,7 @@ export default function OurStory() {
             <div className="grid gap-5">
               {STORY_MARKERS.map((item, index) => (
                 <Reveal key={item.title} delay={index * 0.08}>
-                  <article className="border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900/40">
+                  <article className="rounded-2xl border border-ink-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-gold-400/60 hover:shadow-md dark:border-ink-800 dark:bg-ink-900/40">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-400">
                       {item.label}
                     </p>
@@ -169,7 +169,7 @@ export default function OurStory() {
         </div>
       </section>
 
-      <section className="bg-ink-50 px-6 py-20 dark:bg-ink-900/40 lg:px-8">
+      <section className="bg-gold-400/10 px-6 py-20 dark:bg-ink-900/40 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <Reveal className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold-600 dark:text-gold-400">
@@ -181,9 +181,9 @@ export default function OurStory() {
           </Reveal>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {SCOPE.map((item, index) => (
-              <Reveal key={item.title} delay={index * 0.06}>
-                <article className="h-full border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-950">
-                  <div className="flex h-11 w-11 items-center justify-center bg-gold-400/10 text-gold-600 dark:text-gold-400">
+              <Reveal key={item.title} delay={index * 0.06} className="h-full">
+                <article className="h-full rounded-2xl border border-gold-400/30 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gold-400 hover:shadow-md dark:border-ink-800 dark:bg-ink-950">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-400/10 text-gold-600 dark:text-gold-400">
                     <item.icon className="h-5 w-5" />
                   </div>
                   <h3 className="mt-5 font-display text-lg font-bold text-ink-900 dark:text-white">
@@ -203,7 +203,7 @@ export default function OurStory() {
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <div className="sticky top-28">
-              <div className="flex h-14 w-14 items-center justify-center border border-gold-400/40 text-gold-600 dark:text-gold-400">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gold-400/40 bg-gold-400/10 text-gold-600 dark:text-gold-400">
                 <FiTarget className="h-7 w-7" />
               </div>
               <p className="mt-6 text-xs font-bold uppercase tracking-[0.28em] text-gold-600 dark:text-gold-400">
@@ -218,7 +218,7 @@ export default function OurStory() {
           <div className="space-y-4">
             {GOALS.map((goal, index) => (
               <Reveal key={goal} delay={index * 0.08}>
-                <div className="flex gap-5 border-b border-ink-200 py-6 dark:border-ink-800">
+                <div className="flex gap-5 rounded-2xl border border-ink-200 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900/40">
                   <span className="font-display text-2xl font-bold text-gold-600 dark:text-gold-400">
                     0{index + 1}
                   </span>
