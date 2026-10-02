@@ -358,7 +358,7 @@ print(area(3, 4))`,
       },
       {
         question: 'How is a comment spanning several lines normally written?',
-        options: ['With a # at the start of each line', 'Between /* and */', 'Between <!-- and -->', 'With // on each line'],
+        options: ['With a # at the start of each line', 'Between /* and */', 'Between &lt;!-- and --&gt;', 'With // on each line'],
         answer: 0,
         explanation: 'Python has no block-comment syntax. Each line starts with #.',
       },

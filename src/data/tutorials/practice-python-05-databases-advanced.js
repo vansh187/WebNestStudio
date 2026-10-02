@@ -742,7 +742,7 @@ print(double("ab"))  # a type checker would report this call; Python runs it`,
       },
       {
         question: 'How is "a list of integers" written as a type hint in current Python?',
-        options: ['list(int)', 'list[int]', 'List<int>', 'int[]'],
+        options: ['list(int)', 'list[int]', 'List&lt;int&gt;', 'int[]'],
         answer: 1,
         explanation: 'Built-in collection types have accepted square brackets since Python 3.9.',
       },
