@@ -59,20 +59,20 @@ public class NotifyDemo {
     quiz: [
       {
         question: 'When is a call to an overloaded method resolved?',
-        options: ['At compile time, from the argument types', 'At runtime, from the object type', 'When the class is loaded', 'It is never resolved'],
-        answer: 0,
+        options: ['It is never resolved', 'At runtime, from the object type', 'When the class is loaded', 'At compile time, from the argument types'],
+        answer: 3,
         explanation: 'Overloading is compile-time polymorphism: the compiler picks the method from the declared types of the arguments.',
       },
       {
         question: 'When is a call to an overridden instance method resolved?',
-        options: ['At compile time, from the reference type', 'At runtime, from the actual object type', 'When the source file is saved', 'By the garbage collector'],
-        answer: 1,
+        options: ['At runtime, from the actual object type', 'At compile time, from the reference type', 'When the source file is saved', 'By the garbage collector'],
+        answer: 0,
         explanation: 'Overriding is runtime polymorphism: the JVM looks at the real class of the object and runs its version.',
       },
       {
         question: 'Dog overrides <code>sound()</code> from Animal. What does <code>Animal a = new Dog(); a.sound();</code> run?',
-        options: ['Animal\'s sound()', 'Dog\'s sound()', 'Both, Animal first', 'It does not compile'],
-        answer: 1,
+        options: ['Animal\'s sound()', 'It does not compile', 'Both, Animal first', 'Dog\'s sound()'],
+        answer: 3,
         explanation: 'The reference type is Animal, but the object is a Dog, so Dog\'s overriding method runs.',
       },
     ],
@@ -143,20 +143,20 @@ public class WheelsDemo {
     quiz: [
       {
         question: 'A parent method is <code>public</code>. Can the overriding method be <code>protected</code>?',
-        options: ['Yes', 'No, an override cannot reduce visibility', 'Only if the class is abstract', 'Only if it is also final'],
-        answer: 1,
+        options: ['Yes', 'Only if the class is abstract', 'No, an override cannot reduce visibility', 'Only if it is also final'],
+        answer: 2,
         explanation: 'An override may keep or widen access but never narrow it, otherwise code using the parent type could lose access to the method.',
       },
       {
         question: 'Can a private method be overridden?',
-        options: ['Yes', 'No, it is not visible to the subclass', 'Only with @Override', 'Only within the same package'],
-        answer: 1,
+        options: ['Yes', 'Only within the same package', 'Only with @Override', 'No, it is not visible to the subclass'],
+        answer: 3,
         explanation: 'A private method is not inherited. A subclass method with the same name is simply a new, separate method.',
       },
       {
         question: 'A parent method returns <code>Shape</code>. Can the override return <code>Circle</code>, a subclass of Shape?',
-        options: ['No, the return type must be identical', 'Yes, this is a covariant return type', 'Only for abstract methods', 'Only if Circle is final'],
-        answer: 1,
+        options: ['Yes, this is a covariant return type', 'No, the return type must be identical', 'Only for abstract methods', 'Only if Circle is final'],
+        answer: 0,
         explanation: 'An overriding method may return a subtype of the original return type. This is called a covariant return type.',
       },
     ],
@@ -264,8 +264,8 @@ public class BindingDemo {
     quiz: [
       {
         question: 'Parent and Child both declare a field <code>name</code>. What does <code>Parent p = new Child(); p.name</code> read?',
-        options: ['The Child field', 'The Parent field', 'Both, joined together', 'It does not compile'],
-        answer: 1,
+        options: ['The Parent field', 'The Child field', 'Both, joined together', 'It does not compile'],
+        answer: 0,
         explanation: 'Field access is bound at compile time from the declared type of the reference, which is Parent.',
       },
       {
@@ -276,8 +276,8 @@ public class BindingDemo {
       },
       {
         question: 'Does assigning a Child object to a Parent variable need an explicit cast?',
-        options: ['Yes, always', 'No, upcasting is implicit', 'Only for abstract classes', 'Only for interfaces'],
-        answer: 1,
+        options: ['Yes, always', 'Only for interfaces', 'Only for abstract classes', 'No, upcasting is implicit'],
+        answer: 3,
         explanation: 'Every Child is a Parent, so the conversion is always safe and the compiler performs it automatically.',
       },
     ],
@@ -339,8 +339,8 @@ public class SessionDemo {
     quiz: [
       {
         question: 'When does an instance initializer block run?',
-        options: ['Once, when the class is loaded', 'Each time an object is created, before the constructor body', 'After the constructor finishes', 'Only when called by name'],
-        answer: 1,
+        options: ['Each time an object is created, before the constructor body', 'Once, when the class is loaded', 'After the constructor finishes', 'Only when called by name'],
+        answer: 0,
         explanation: 'The compiler copies instance initializer code into every constructor, after the call to super() and before the rest of the body.',
       },
       {
@@ -445,14 +445,14 @@ public class PayrollDemo {
     quiz: [
       {
         question: '<code>Shape</code> is an abstract class. What happens with <code>new Shape()</code>?',
-        options: ['It creates an empty Shape', 'It does not compile', 'It throws an exception at runtime', 'It returns null'],
-        answer: 1,
+        options: ['It creates an empty Shape', 'It returns null', 'It throws an exception at runtime', 'It does not compile'],
+        answer: 3,
         explanation: 'An abstract class cannot be instantiated directly. You create objects of its concrete subclasses.',
       },
       {
         question: 'Can an abstract class have no abstract methods at all?',
-        options: ['No, it needs at least one', 'Yes; abstract only means it cannot be instantiated', 'Only if it is also final', 'Only if it implements an interface'],
-        answer: 1,
+        options: ['Yes; abstract only means it cannot be instantiated', 'No, it needs at least one', 'Only if it is also final', 'Only if it implements an interface'],
+        answer: 0,
         explanation: 'A class may be declared abstract purely to prevent direct instantiation, even when every method has a body.',
       },
       {
@@ -525,20 +525,20 @@ public class PayableDemo {
     quiz: [
       {
         question: 'A field declared inside an interface is implicitly what?',
-        options: ['private', 'public, static and final', 'protected and static', 'An instance variable'],
-        answer: 1,
+        options: ['private', 'protected and static', 'public, static and final', 'An instance variable'],
+        answer: 2,
         explanation: 'Interface fields are always constants: public, static and final, whether or not you write those modifiers.',
       },
       {
         question: 'A class implements two interfaces that both define a default method with the same signature. What must the class do?',
-        options: ['Nothing; the first interface wins', 'Override the method itself, or the code does not compile', 'Mark one interface as primary', 'Remove one of the interfaces'],
-        answer: 1,
+        options: ['Nothing; the first interface wins', 'Mark one interface as primary', 'Override the method itself, or the code does not compile', 'Remove one of the interfaces'],
+        answer: 2,
         explanation: 'The compiler cannot choose between the two defaults, so the class must override the method and may call one with InterfaceName.super.method().',
       },
       {
         question: 'Can you create an interface instance with <code>new Payable()</code> on its own?',
-        options: ['Yes', 'No; you need an implementing class, an anonymous class or a lambda', 'Only if it has default methods', 'Only if it has no methods'],
-        answer: 1,
+        options: ['No; you need an implementing class, an anonymous class or a lambda', 'Yes', 'Only if it has default methods', 'Only if it has no methods'],
+        answer: 0,
         explanation: 'An interface has no constructor. new Payable() { ... } works only because the braces define an anonymous implementing class.',
       },
     ],
@@ -634,8 +634,8 @@ public class BirdDemo {
       },
       {
         question: 'How many abstract classes can a class extend, and how many interfaces can it implement?',
-        options: ['One of each', 'One abstract class, any number of interfaces', 'Any number of both', 'Any number of abstract classes, one interface'],
-        answer: 1,
+        options: ['One of each', 'Any number of both', 'One abstract class, any number of interfaces', 'Any number of abstract classes, one interface'],
+        answer: 2,
         explanation: 'Java allows a single superclass but any number of implemented interfaces.',
       },
       {
@@ -717,8 +717,8 @@ public class RectangleDemo {
     quiz: [
       {
         question: 'Which access modifier is normally used for the fields of an encapsulated class?',
-        options: ['public', 'protected', 'private', 'No modifier'],
-        answer: 2,
+        options: ['private', 'protected', 'public', 'No modifier'],
+        answer: 0,
         explanation: 'Private fields can be reached only from inside the class, so all access goes through its methods.',
       },
       {
@@ -729,8 +729,8 @@ public class RectangleDemo {
       },
       {
         question: 'What is a practical benefit of hiding fields behind methods?',
-        options: ['The program uses less memory', 'The internal representation can change without breaking callers', 'Methods run faster than field access', 'The class no longer needs a constructor'],
-        answer: 1,
+        options: ['The program uses less memory', 'Methods run faster than field access', 'The internal representation can change without breaking callers', 'The class no longer needs a constructor'],
+        answer: 2,
         explanation: 'Callers depend only on the methods, so you are free to rename, restructure or recalculate the data inside.',
       },
     ],
@@ -812,20 +812,20 @@ public class WalletDemo {
     quiz: [
       {
         question: 'A member is declared with no access modifier. Where is it visible?',
-        options: ['Everywhere', 'Only inside its own class', 'Only within the same package', 'In the same package and in all subclasses'],
-        answer: 2,
+        options: ['Everywhere', 'Only inside its own class', 'In the same package and in all subclasses', 'Only within the same package'],
+        answer: 3,
         explanation: 'No modifier means package-private (default) access: any class in the same package can use it, and nothing outside can.',
       },
       {
         question: 'Where is a <code>protected</code> member visible?',
-        options: ['Only in subclasses', 'In the same package, and in subclasses in other packages', 'Everywhere', 'Only in its own class'],
-        answer: 1,
+        options: ['In the same package, and in subclasses in other packages', 'Only in subclasses', 'Everywhere', 'Only in its own class'],
+        answer: 0,
         explanation: 'protected is package access plus access from subclasses, even when those subclasses are in a different package.',
       },
       {
         question: 'Which access modifiers are allowed on a top-level class?',
-        options: ['All four', 'public or no modifier', 'public or private', 'protected or private'],
-        answer: 1,
+        options: ['All four', 'protected or private', 'public or private', 'public or no modifier'],
+        answer: 3,
         explanation: 'A top-level class can be public or package-private. private and protected apply only to members and nested classes.',
       },
     ],
@@ -878,8 +878,8 @@ public class FinalDemo {
     quiz: [
       {
         question: 'What does <code>final</code> mean on a method?',
-        options: ['It cannot be called', 'It cannot be overridden by a subclass', 'It cannot be overloaded', 'It must return a constant'],
-        answer: 1,
+        options: ['It cannot be called', 'It cannot be overloaded', 'It cannot be overridden by a subclass', 'It must return a constant'],
+        answer: 2,
         explanation: 'A final method keeps its implementation in every subclass. It can still be called and overloaded.',
       },
       {
@@ -890,8 +890,8 @@ public class FinalDemo {
       },
       {
         question: 'Given <code>final List&lt;String&gt; names = new ArrayList&lt;&gt;();</code>, what happens with <code>names.add("Asha");</code>?',
-        options: ['It does not compile', 'It works; final only prevents reassigning the variable', 'It throws UnsupportedOperationException', 'It is ignored'],
-        answer: 1,
+        options: ['It works; final only prevents reassigning the variable', 'It does not compile', 'It throws UnsupportedOperationException', 'It is ignored'],
+        answer: 0,
         explanation: 'The reference cannot be changed, but the list it refers to is an ordinary mutable ArrayList.',
       },
     ],
@@ -983,14 +983,14 @@ public class EmailDemo {
       },
       {
         question: 'What does the default <code>toString()</code> return?',
-        options: ['The field values', 'The class name, an @ sign and the hash code in hexadecimal', 'An empty string', 'null'],
-        answer: 1,
+        options: ['The field values', 'An empty string', 'The class name, an @ sign and the hash code in hexadecimal', 'null'],
+        answer: 2,
         explanation: 'For example Point@1b6d3586. Override toString() to return something meaningful.',
       },
       {
         question: 'If two objects are equal according to <code>equals()</code>, what must be true of their hash codes?',
-        options: ['They must be different', 'They must be equal', 'They must both be zero', 'There is no requirement'],
-        answer: 1,
+        options: ['They must be different', 'There is no requirement', 'They must both be zero', 'They must be equal'],
+        answer: 3,
         explanation: 'Equal objects must return the same hash code. Unequal objects may share one, although that makes hash tables slower.',
       },
     ],

@@ -64,8 +64,8 @@ public class CopyDemo {
     quiz: [
       {
         question: 'A class overrides <code>clone()</code> and calls <code>super.clone()</code> but does not implement <code>Cloneable</code>. What happens when it is cloned?',
-        options: ['It returns a shallow copy', 'It throws CloneNotSupportedException', 'It returns null', 'It does not compile'],
-        answer: 1,
+        options: ['It throws CloneNotSupportedException', 'It returns a shallow copy', 'It returns null', 'It does not compile'],
+        answer: 0,
         explanation: 'Object.clone() checks at runtime that the class implements Cloneable and throws CloneNotSupportedException if it does not.',
       },
       {
@@ -133,14 +133,14 @@ public class CopyDemo {
       },
       {
         question: 'Which range of values does Java cache for <code>Integer</code> by default?',
-        options: ['0 to 255', '-128 to 127', '-1000 to 1000', 'No values are cached'],
-        answer: 1,
+        options: ['0 to 255', 'No values are cached', '-1000 to 1000', '-128 to 127'],
+        answer: 3,
         explanation: 'Integer.valueOf, which autoboxing uses, returns shared objects for -128 to 127.',
       },
       {
         question: 'Which method returns a primitive <code>int</code> from the text "42"?',
-        options: ['Integer.valueOf("42")', 'Integer.parseInt("42")', 'Integer.toString("42")', 'new String("42")'],
-        answer: 1,
+        options: ['Integer.parseInt("42")', 'Integer.valueOf("42")', 'Integer.toString("42")', 'new String("42")'],
+        answer: 0,
         explanation: 'parseInt returns an int. valueOf returns an Integer object.',
       },
     ],
@@ -203,14 +203,14 @@ Expected output: <code>5.0</code>, <code>1024.0</code>, <code>7</code>`,
       },
       {
         question: 'What does <code>Math.floor(-1.1)</code> return?',
-        options: ['-1.0', '-2.0', '-1.1', '1.0'],
-        answer: 1,
+        options: ['-1.0', '-1.1', '-2.0', '1.0'],
+        answer: 2,
         explanation: 'floor returns the largest whole number that is less than or equal to the argument, which for -1.1 is -2.0.',
       },
       {
         question: 'What range of values can <code>Math.random()</code> return?',
-        options: ['0.0 to 1.0, both inclusive', '0.0 inclusive to 1.0 exclusive', '1 to 100', '-1.0 to 1.0'],
-        answer: 1,
+        options: ['0.0 to 1.0, both inclusive', '-1.0 to 1.0', '1 to 100', '0.0 inclusive to 1.0 exclusive'],
+        answer: 3,
         explanation: 'It returns a double greater than or equal to 0.0 and strictly less than 1.0.',
       },
     ],
@@ -252,8 +252,8 @@ Expected output: <code>true</code>`,
     quiz: [
       {
         question: 'From which Java version is <code>strictfp</code> redundant, because all floating-point arithmetic is strict by default?',
-        options: ['Java 8', 'Java 11', 'Java 17', 'Java 21'],
-        answer: 2,
+        options: ['Java 17', 'Java 11', 'Java 8', 'Java 21'],
+        answer: 0,
         explanation: 'Java 17 restored always-strict floating-point semantics, so the keyword no longer changes behaviour.',
       },
       {
@@ -326,8 +326,8 @@ Expected output: <code>4.0</code> then <code>0.0</code>`,
     quiz: [
       {
         question: 'Where must a varargs parameter appear in a method\'s parameter list?',
-        options: ['First', 'Last', 'Anywhere', 'It must be the only parameter'],
-        answer: 1,
+        options: ['First', 'It must be the only parameter', 'Anywhere', 'Last'],
+        answer: 3,
         explanation: 'The varargs parameter collects all remaining arguments, so it has to come last.',
       },
       {
@@ -384,20 +384,20 @@ public class StaticImportPractice {
     quiz: [
       {
         question: 'Which statement correctly imports the constant PI so it can be used as <code>PI</code>?',
-        options: ['import java.lang.Math.PI;', 'import static java.lang.Math.PI;', 'static import java.lang.Math.PI;', 'import Math.PI static;'],
-        answer: 1,
+        options: ['import java.lang.Math.PI;', 'static import java.lang.Math.PI;', 'import static java.lang.Math.PI;', 'import Math.PI static;'],
+        answer: 2,
         explanation: 'The keywords appear in the order import static, followed by the fully qualified class and member name.',
       },
       {
         question: 'What can a static import bring into scope?',
-        options: ['Any class', 'Only static fields and static methods', 'Instance methods', 'Constructors'],
-        answer: 1,
+        options: ['Any class', 'Constructors', 'Instance methods', 'Only static fields and static methods'],
+        answer: 3,
         explanation: 'A static import applies to static members of a class or interface. Instance members always need an object.',
       },
       {
         question: 'Two static imports bring in methods with the same name and parameters from different classes, and you call that name. What happens?',
-        options: ['The first import wins', 'The last import wins', 'It does not compile because the call is ambiguous', 'Both methods are called'],
-        answer: 2,
+        options: ['The first import wins', 'It does not compile because the call is ambiguous', 'The last import wins', 'Both methods are called'],
+        answer: 1,
         explanation: 'The compiler cannot decide which method you mean, so the call is rejected until you qualify it with the class name.',
       },
     ],
@@ -464,14 +464,14 @@ Expected output: <code>text of length 5</code>, <code>number 42</code>, <code>un
       },
       {
         question: 'An <code>Animal</code> variable refers to a <code>Cat</code> object. What happens with <code>(Dog) animal</code>?',
-        options: ['It returns null', 'It throws ClassCastException at runtime', 'It does not compile', 'It converts the Cat into a Dog'],
-        answer: 1,
+        options: ['It returns null', 'It does not compile', 'It throws ClassCastException at runtime', 'It converts the Cat into a Dog'],
+        answer: 2,
         explanation: 'The cast compiles because an Animal might be a Dog, but at runtime the object is a Cat, so the JVM throws ClassCastException.',
       },
       {
         question: 'With <code>String s = "x";</code>, what happens with <code>s instanceof Integer</code>?',
-        options: ['It is false', 'It is true', 'It does not compile', 'It throws at runtime'],
-        answer: 2,
+        options: ['It is false', 'It is true', 'It throws at runtime', 'It does not compile'],
+        answer: 3,
         explanation: 'String and Integer are unrelated classes, so a String can never be an Integer. The compiler rejects the test as impossible.',
       },
     ],
@@ -530,8 +530,8 @@ public class SortByLength {
     quiz: [
       {
         question: 'How do you create an instance of a non-static inner class <code>Inner</code> from outside its outer class?',
-        options: ['new Inner()', 'outerObject.new Inner()', 'Outer.new Inner()', 'new Outer.Inner() without an outer object'],
-        answer: 1,
+        options: ['outerObject.new Inner()', 'new Inner()', 'Outer.new Inner()', 'new Outer.Inner() without an outer object'],
+        answer: 0,
         explanation: 'An inner class instance is tied to an outer object, so it is created through one: outerObject.new Inner().',
       },
       {
@@ -542,8 +542,8 @@ public class SortByLength {
       },
       {
         question: 'Can an anonymous class declare a constructor?',
-        options: ['Yes', 'No, because it has no name', 'Only a no-argument constructor', 'Only if it extends a class'],
-        answer: 1,
+        options: ['Yes', 'Only a no-argument constructor', 'No, because it has no name', 'Only if it extends a class'],
+        answer: 2,
         explanation: 'A constructor must be named after its class, and an anonymous class has no name. It can use an instance initializer block instead.',
       },
     ],
@@ -599,14 +599,14 @@ public class EntryLoop {
     quiz: [
       {
         question: 'An interface declared inside another interface is implicitly what?',
-        options: ['private', 'public and static', 'protected', 'abstract and final'],
-        answer: 1,
+        options: ['private', 'abstract and final', 'protected', 'public and static'],
+        answer: 3,
         explanation: 'Members of an interface are public, and a nested interface is always static.',
       },
       {
         question: 'Which of these is a well-known nested interface in the JDK?',
-        options: ['Runnable', 'Map.Entry', 'Comparable', 'Serializable'],
-        answer: 1,
+        options: ['Map.Entry', 'Runnable', 'Comparable', 'Serializable'],
+        answer: 0,
         explanation: 'Entry is declared inside the Map interface and represents one key-value pair.',
       },
       {
@@ -666,20 +666,20 @@ public class EntryLoop {
     quiz: [
       {
         question: 'What must differ between two overloaded methods?',
-        options: ['The return type', 'The parameter list', 'The access modifier', 'The method name'],
-        answer: 1,
+        options: ['The return type', 'The access modifier', 'The parameter list', 'The method name'],
+        answer: 2,
         explanation: 'Overloads share a name and must differ in the number or types of their parameters.',
       },
       {
         question: 'Where does overriding take place?',
-        options: ['Within a single class', 'In a subclass, replacing a method inherited from its parent', 'Between unrelated classes', 'Only in interfaces'],
-        answer: 1,
+        options: ['Within a single class', 'Only in interfaces', 'Between unrelated classes', 'In a subclass, replacing a method inherited from its parent'],
+        answer: 3,
         explanation: 'Overriding needs inheritance: the subclass provides its own version of a method with the same signature.',
       },
       {
         question: 'Which of the two allows a completely different return type?',
-        options: ['Overriding', 'Overloading', 'Both', 'Neither'],
-        answer: 1,
+        options: ['Overloading', 'Overriding', 'Both', 'Neither'],
+        answer: 0,
         explanation: 'Overloaded methods are separate methods and may return anything. An override must return the same type or a subtype.',
       },
     ],

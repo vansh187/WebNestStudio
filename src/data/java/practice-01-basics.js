@@ -29,8 +29,8 @@ The output depends on your machine, for example <code>Java 21.0.2 on Windows 11<
     quiz: [
       {
         question: 'Who led the team that created Java, and at which company?',
-        options: ['Bjarne Stroustrup at Bell Labs', 'James Gosling at Sun Microsystems', 'Guido van Rossum at Google', 'Dennis Ritchie at Oracle'],
-        answer: 1,
+        options: ['James Gosling at Sun Microsystems', 'Bjarne Stroustrup at Bell Labs', 'Guido van Rossum at Google', 'Dennis Ritchie at Oracle'],
+        answer: 0,
         explanation: 'James Gosling and his team created Java at Sun Microsystems; it was released in 1995. Oracle acquired Sun in 2010.',
       },
       {
@@ -88,20 +88,20 @@ public class SetupCheck {
     quiz: [
       {
         question: 'Which command compiles <code>Hello.java</code>?',
-        options: ['java Hello.java', 'javac Hello.java', 'javac Hello', 'compile Hello.java'],
-        answer: 1,
+        options: ['java Hello.java', 'compile Hello.java', 'javac Hello', 'javac Hello.java'],
+        answer: 3,
         explanation: 'javac is the compiler and takes the source file name including the .java extension.',
       },
       {
         question: 'What should the <code>JAVA_HOME</code> environment variable point to?',
-        options: ['The folder containing your .java files', 'The JDK installation directory', 'The java.exe file itself', 'The folder containing your .class files'],
-        answer: 1,
+        options: ['The JDK installation directory', 'The folder containing your .java files', 'The java.exe file itself', 'The folder containing your .class files'],
+        answer: 0,
         explanation: 'JAVA_HOME points to the root of the JDK installation. Build tools such as Maven and Gradle use it to find the compiler and runtime.',
       },
       {
         question: 'After compiling, you type <code>java Hello.class</code> and get an error. What is the correct command?',
-        options: ['java Hello', 'javac Hello.class', 'java Hello.java.class', 'run Hello'],
-        answer: 0,
+        options: ['javac Hello.class', 'java Hello', 'java Hello.java.class', 'run Hello'],
+        answer: 1,
         explanation: 'The java launcher expects a class name, not a file name, so the .class extension must be left off.',
       },
     ],
@@ -180,8 +180,8 @@ Expected output:
       },
       {
         question: 'Which of these can you do in C++ but not in Java?',
-        options: ['Create objects', 'Perform pointer arithmetic', 'Write loops', 'Define methods'],
-        answer: 1,
+        options: ['Perform pointer arithmetic', 'Create objects', 'Write loops', 'Define methods'],
+        answer: 0,
         explanation: 'Java has references but no pointer arithmetic, which removes a whole class of memory-corruption bugs.',
       },
     ],
@@ -238,8 +238,8 @@ The output depends on your installation, for example a version such as <code>21.
     quiz: [
       {
         question: 'You need to compile Java source code. Which one must be installed?',
-        options: ['JVM only', 'JRE', 'JDK', 'Any web browser'],
-        answer: 2,
+        options: ['JVM only', 'JDK', 'JRE', 'Any web browser'],
+        answer: 1,
         explanation: 'Only the JDK includes the compiler (javac) and other development tools.',
       },
       {
@@ -250,8 +250,8 @@ The output depends on your installation, for example a version such as <code>21.
       },
       {
         question: 'What does the JRE consist of?',
-        options: ['The compiler and the debugger', 'The JVM plus the core class libraries', 'Only the class libraries', 'The JDK plus an IDE'],
-        answer: 1,
+        options: ['The compiler and the debugger', 'The JDK plus an IDE', 'Only the class libraries', 'The JVM plus the core class libraries'],
+        answer: 3,
         explanation: 'JRE = JVM + the standard class libraries needed to run programs. It has no compiler.',
       },
     ],
@@ -322,8 +322,8 @@ Expected output:
     quiz: [
       {
         question: 'A source file contains <code>public class Invoice</code>. What must the file be named?',
-        options: ['invoice.java', 'Invoice.java', 'Main.java', 'Any name ending in .java'],
-        answer: 1,
+        options: ['Invoice.java', 'invoice.java', 'Main.java', 'Any name ending in .java'],
+        answer: 0,
         explanation: 'The file name must match the public class name exactly, including capitalisation.',
       },
       {
@@ -403,8 +403,8 @@ Expected output:
     quiz: [
       {
         question: 'What happens if you read a local variable before assigning it a value?',
-        options: ['It contains 0', 'It contains null', 'The code does not compile', 'It throws an exception at runtime'],
-        answer: 2,
+        options: ['It contains 0', 'It contains null', 'It throws an exception at runtime', 'The code does not compile'],
+        answer: 3,
         explanation: 'Local variables have no default value. The compiler rejects any read that is not definitely preceded by an assignment.',
       },
       {
@@ -415,8 +415,8 @@ Expected output:
       },
       {
         question: 'A class has one static variable. You create three objects of that class. How many copies of the variable exist?',
-        options: ['Three', 'One', 'Four', 'None until it is assigned'],
-        answer: 1,
+        options: ['Three', 'Four', 'One', 'None until it is assigned'],
+        answer: 2,
         explanation: 'A static variable belongs to the class, so there is exactly one copy shared by all objects.',
       },
     ],
@@ -474,14 +474,14 @@ Expected output: <code>Total: 250</code>`,
       },
       {
         question: 'Are <code>total</code> and <code>Total</code> the same identifier?',
-        options: ['Yes, Java ignores case', 'No, Java is case-sensitive', 'Only inside the same method', 'Only for variables, not for methods'],
-        answer: 1,
+        options: ['Yes, Java ignores case', 'Only for variables, not for methods', 'Only inside the same method', 'No, Java is case-sensitive'],
+        answer: 3,
         explanation: 'Java is case-sensitive, so these are two different names.',
       },
       {
         question: 'Which name follows the Java convention for a constant?',
-        options: ['maxSize', 'MaxSize', 'MAX_SIZE', 'max_size'],
-        answer: 2,
+        options: ['MAX_SIZE', 'MaxSize', 'maxSize', 'max_size'],
+        answer: 0,
         explanation: 'Constants (static final fields) are written in upper case with underscores between words.',
       },
     ],
@@ -521,8 +521,8 @@ Before the fix it prints <code>1471228928</code>. After the fix it should print 
     quiz: [
       {
         question: 'What is the type of the literal <code>3.14</code> in Java?',
-        options: ['float', 'double', 'BigDecimal', 'It depends on the variable it is assigned to'],
-        answer: 1,
+        options: ['double', 'float', 'BigDecimal', 'It depends on the variable it is assigned to'],
+        answer: 0,
         explanation: 'A decimal literal is a double by default. A float literal needs an f suffix, such as 3.14f.',
       },
       {
@@ -533,8 +533,8 @@ Before the fix it prints <code>1471228928</code>. After the fix it should print 
       },
       {
         question: 'Which of these variables can hold <code>null</code>?',
-        options: ['int count', 'boolean active', 'String name', 'double price'],
-        answer: 2,
+        options: ['int count', 'boolean active', 'double price', 'String name'],
+        answer: 3,
         explanation: 'Only reference types can be null. String is a class, so a String variable holds a reference. Primitives always hold a value.',
       },
     ],
@@ -582,20 +582,20 @@ Expected output: <code>65</code>, <code>B</code>, <code>A</code>, each on its ow
     quiz: [
       {
         question: 'How many bits is a Java <code>char</code>?',
-        options: ['7', '8', '16', '32'],
-        answer: 2,
+        options: ['16', '8', '7', '32'],
+        answer: 0,
         explanation: 'A char is a 16-bit UTF-16 code unit.',
       },
       {
         question: 'What does <code>(int) \'A\'</code> evaluate to?',
-        options: ['1', '41', '65', '97'],
-        answer: 2,
+        options: ['1', '65', '41', '97'],
+        answer: 1,
         explanation: 'The code of upper-case A is 65. Lower-case a is 97.',
       },
       {
         question: 'A String contains a single emoji that lies outside the first 65,536 Unicode code points. What does <code>length()</code> return?',
-        options: ['1', '2', '4', '0'],
-        answer: 1,
+        options: ['1', '4', '2', '0'],
+        answer: 2,
         explanation: 'length() counts 16-bit chars, and such a character is stored as two chars (a surrogate pair). codePointCount() would return 1.',
       },
     ],
@@ -639,20 +639,20 @@ Expected output: <code>65</code>, <code>B</code>, <code>A</code>, each on its ow
     quiz: [
       {
         question: 'What is the value of <code>(int) 9.99</code>?',
-        options: ['10', '9', '9.99', 'It does not compile'],
-        answer: 1,
+        options: ['10', 'It does not compile', '9.99', '9'],
+        answer: 3,
         explanation: 'Casting a double to int truncates the fractional part; it does not round.',
       },
       {
         question: 'What is the value of <code>(byte) 130</code>?',
-        options: ['130', '127', '-126', '-130'],
-        answer: 2,
+        options: ['-126', '127', '130', '-130'],
+        answer: 0,
         explanation: 'A byte holds -128 to 127. 130 does not fit, so the value wraps around: 130 - 256 = -126.',
       },
       {
         question: 'If <code>a</code> and <code>b</code> are both of type <code>byte</code>, what is the type of <code>a + b</code>?',
-        options: ['byte', 'short', 'int', 'long'],
-        answer: 2,
+        options: ['byte', 'int', 'short', 'long'],
+        answer: 1,
         explanation: 'byte, short and char operands are promoted to int before arithmetic, so the result is an int.',
       },
     ],
@@ -707,20 +707,20 @@ Expected output: <code>2024 true</code>, <code>1900 false</code>, <code>2000 tru
     quiz: [
       {
         question: 'What does <code>5 / 2</code> evaluate to in Java?',
-        options: ['2.5', '2', '3', '2.0'],
-        answer: 1,
+        options: ['2.5', '3', '2', '2.0'],
+        answer: 2,
         explanation: 'Both operands are ints, so this is integer division, which truncates the result to 2.',
       },
       {
         question: 'Given <code>int a = 5;</code>, what is the value of <code>a++ + ++a</code>?',
-        options: ['10', '11', '12', '13'],
-        answer: 2,
+        options: ['10', '11', '13', '12'],
+        answer: 3,
         explanation: 'a++ yields 5 and then a becomes 6. ++a makes a 7 and yields 7. 5 + 7 = 12.',
       },
       {
         question: 'What happens when Java evaluates <code>false && (10 / 0 == 0)</code>?',
-        options: ['It throws ArithmeticException', 'It evaluates to false without dividing', 'It evaluates to true', 'It does not compile'],
-        answer: 1,
+        options: ['It evaluates to false without dividing', 'It throws ArithmeticException', 'It evaluates to true', 'It does not compile'],
+        answer: 0,
         explanation: '&& short-circuits: the left side is false, so the right side is never evaluated and no division happens.',
       },
     ],
@@ -768,20 +768,20 @@ Expected output: <code>Order 42 total 199.5 new=true</code>`,
     quiz: [
       {
         question: 'Which of these is NOT a Java keyword?',
-        options: ['goto', 'const', 'main', 'strictfp'],
-        answer: 2,
+        options: ['goto', 'main', 'const', 'strictfp'],
+        answer: 1,
         explanation: 'main is just a method name the JVM looks for. goto and const are reserved even though the language does not use them.',
       },
       {
         question: 'What does <code>var</code> do in <code>var count = 10;</code>?',
-        options: ['Makes count dynamically typed', 'Lets the compiler infer the type as int at compile time', 'Makes count a constant', 'Declares a global variable'],
-        answer: 1,
+        options: ['Makes count dynamically typed', 'Makes count a constant', 'Lets the compiler infer the type as int at compile time', 'Declares a global variable'],
+        answer: 2,
         explanation: 'var is compile-time type inference for local variables. count is an int and cannot later hold a String.',
       },
       {
         question: 'How does Java classify <code>true</code>, <code>false</code> and <code>null</code>?',
-        options: ['As keywords', 'As reserved literals', 'As identifiers', 'As operators'],
-        answer: 1,
+        options: ['As keywords', 'As operators', 'As identifiers', 'As reserved literals'],
+        answer: 3,
         explanation: 'They are literals, not keywords, but they are reserved and cannot be used as identifiers either.',
       },
     ],
@@ -838,8 +838,8 @@ Expected output: <code>9</code>`,
     quiz: [
       {
         question: 'Which comment style does the <code>javadoc</code> tool turn into documentation?',
-        options: ['// ...', '/* ... */', '/** ... */', '# ...'],
-        answer: 2,
+        options: ['/** ... */', '/* ... */', '// ...', '# ...'],
+        answer: 0,
         explanation: 'Only comments that begin with /** are processed by javadoc.',
       },
       {
@@ -896,20 +896,20 @@ Running <code>java SumArgs 4 5 6</code> should print <code>Sum: 15</code>. Runni
     quiz: [
       {
         question: 'You run <code>java Demo red green blue</code>. What is <code>args.length</code>?',
-        options: ['4', '3', '2', '0'],
-        answer: 1,
+        options: ['4', '0', '2', '3'],
+        answer: 3,
         explanation: 'The class name is not part of args, so the array holds the three words that follow it.',
       },
       {
         question: 'You run <code>java Demo</code> with no arguments and the program reads <code>args[0]</code>. What happens?',
-        options: ['It reads null', 'It reads an empty String', 'It throws ArrayIndexOutOfBoundsException', 'It does not compile'],
-        answer: 2,
+        options: ['It throws ArrayIndexOutOfBoundsException', 'It reads an empty String', 'It reads null', 'It does not compile'],
+        answer: 0,
         explanation: 'args is an empty array, so index 0 does not exist and the access throws ArrayIndexOutOfBoundsException.',
       },
       {
         question: 'You run <code>java Demo 42</code>. What is the type of <code>args[0]</code>?',
-        options: ['int', 'Integer', 'String', 'char'],
-        answer: 2,
+        options: ['int', 'String', 'Integer', 'char'],
+        answer: 1,
         explanation: 'Every command-line argument arrives as a String. Convert it with Integer.parseInt if you need a number.',
       },
     ],
