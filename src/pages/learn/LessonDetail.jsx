@@ -3,11 +3,11 @@ import AuthorBox from '../../components/AuthorBox'
 import { AUTHOR_PAGE_PATH, TEAM_AUTHOR } from '../../data/authors'
 import LessonVideo from '../../components/LessonVideo'
 import { getLessonVideo } from '../../data/lessonVideos'
-import { lessonTemplate } from '../../lib/lessonPlayground'
+import { lessonExerciseTemplate, lessonScratch, lessonTemplate } from '../../lib/lessonPlayground'
 import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiArrowLeft, FiArrowRight, FiBarChart2, FiBookmark, FiCheckCircle, FiCode, FiList, FiLock, FiMenu, FiSave, FiTrash2 } from 'react-icons/fi'
+import { FiArrowLeft, FiArrowRight, FiBarChart2, FiBookmark, FiCheckCircle, FiCode, FiList, FiLock, FiMenu, FiPlay, FiSave, FiTrash2 } from 'react-icons/fi'
 import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
@@ -249,6 +249,11 @@ export default function LessonDetail() {
 
   if (!lesson) return <NotFoundState title="Lesson not found" backTo="/learn" backLabel="Back to courses" />
 
+  const scratch = lessonScratch(lesson)
+  const exerciseTemplate = lessonExerciseTemplate(lesson)
+  const playgroundLink = (key) => `/codelab/playground?lesson=${encodeURIComponent(lesson.id)}&example=${key}`
+  const trackPractice = (source) => trackEvent('practice_started', { lesson_id: lesson.id, course_slug: lesson.course_slug, source })
+
   const relatedLessons = lessonNavigation?.course.modules.find((module) => module.lessons.some((item) => item.id === lesson.id))?.lessons.filter((item) => item.id !== lesson.id).slice(0, 5) || []
 
   return (
@@ -283,12 +288,24 @@ export default function LessonDetail() {
           </div>
         </ErrorBoundary>
         {bodySegments.trailing.map((video) => <LessonVideo key={video.youtubeId} video={video} lessonId={lesson.id} />)}
-        <section className="mt-6 rounded-xl border border-ink-200 p-5 dark:border-ink-800">
-          <h2 className="text-lg font-semibold">Practice the examples</h2>
-          <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">Change an input, predict the result, then compare it with the output. Explain why the result changes.</p>
+        <section id="playground" className="mt-6 rounded-xl border border-ink-200 p-5 dark:border-ink-800">
+          <h2 className="text-lg font-semibold">Practice in the playground</h2>
+          <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">Write and run your own code for this topic, or start from the exercise or an example. {scratch.note} Your code for each topic is kept in this browser.</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <Link to={playgroundLink('scratch')} onClick={() => trackPractice('scratch')} className="inline-flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2 text-sm font-semibold text-white dark:bg-gold-400 dark:text-ink-950">
+              <FiPlay className="h-4 w-4" /> Open a blank playground
+            </Link>
+            {exerciseTemplate && (
+              <Link to={playgroundLink('exercise')} onClick={() => trackPractice('exercise')} className="inline-flex items-center gap-2 rounded-lg bg-gold-400 px-4 py-2 text-sm font-semibold text-ink-950">
+                <FiCode className="h-4 w-4" /> Solve the exercise
+              </Link>
+            )}
+          </div>
+          <h3 className="mt-5 text-sm font-semibold text-ink-700 dark:text-ink-100">Run the examples</h3>
+          <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">Change an input, predict the result, then compare it with the output. Explain why the result changes.</p>
           <div className="mt-3 flex flex-wrap gap-3">
             {(lesson.examples.length ? lesson.examples : lesson.resources).map((example, index) => lessonTemplate(lesson, index) ? (
-              <Link key={index} to={`/codelab/playground?lesson=${encodeURIComponent(lesson.id)}&example=${index}`} onClick={() => trackEvent('practice_started', { lesson_id: lesson.id, course_slug: lesson.course_slug })} className="rounded-lg bg-gold-400 px-4 py-2 text-sm font-semibold text-ink-950">
+              <Link key={index} to={playgroundLink(index)} onClick={() => trackPractice('example')} className="rounded-lg border border-gold-400 px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-gold-400/10 dark:text-white">
                 Try {example.caption || `example ${index + 1}`} in Webnest Codelab
               </Link>
             ) : (
@@ -298,7 +315,7 @@ export default function LessonDetail() {
               }}>Copy {example.caption || `example ${index + 1}`}</button>
             ))}
           </div>
-          {!lessonTemplate(lesson) && <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">Use your local {lesson.language === 'java' ? 'JDK or project IDE' : 'project environment'} for these examples. Codelab currently runs Python and HTML/CSS/JavaScript; framework examples may need project dependencies.</p>}
+          {!lessonTemplate(lesson) && <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">These examples need {lesson.language === 'java' ? 'a JDK project with their libraries' : 'a project environment'} on your computer, so they can be copied but not run here. Codelab runs Python, plain Java 17 and HTML/CSS/JavaScript.</p>}
         </section>
         {relatedLessons.length > 0 && <nav aria-label="Related concepts" className="mt-6"><h2 className="text-lg font-semibold">Related concepts</h2><ul className="mt-2 space-y-2">{relatedLessons.map((item) => <li key={item.id}><Link className="text-gold-600 underline dark:text-gold-400" to={`/learn/lessons/${item.id}`}>{item.title}</Link></li>)}</ul></nav>}
         <AuthorBox className="mt-6" />
@@ -342,6 +359,9 @@ export default function LessonDetail() {
         )}
       </article>
       <aside className="space-y-3">
+        <Link to={playgroundLink('scratch')} onClick={() => trackPractice('scratch')} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gold-400 px-4 py-3 text-sm font-semibold text-ink-950">
+          <FiPlay className="h-4 w-4" /> Practice in playground
+        </Link>
         <Link to="/codelab/dashboard" className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-ink-200 px-4 py-3 text-sm font-semibold text-ink-700 hover:border-gold-400 hover:text-gold-600 dark:border-ink-800 dark:text-ink-100 dark:hover:text-gold-400">
           <FiBarChart2 className="h-4 w-4" /> View dashboard
         </Link>

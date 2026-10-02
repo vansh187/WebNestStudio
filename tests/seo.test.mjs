@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { canonicalUrl, summarize, breadcrumbSchema, validLastmod } from '../src/lib/seo.js'
 import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../src/data/codelabDefaults.js'
-import { lessonTemplate } from '../src/lib/lessonPlayground.js'
+import { lessonTemplate, lessonWorkspace } from '../src/lib/lessonPlayground.js'
 
 test('canonical URLs discard queries, fragments, trailing slashes and foreign hosts', () => {
   assert.equal(canonicalUrl('/learn/java-core/?utm_source=share#intro'), 'https://www.webneststudio.co.in/learn/java-core')
@@ -57,6 +57,12 @@ test('lesson templates preserve exact code and only use supported runtimes', () 
   assert.equal(lessonTemplate({ ...lesson, language: 'javascript', course_slug: 'react' }), null)
   assert.equal(lessonTemplate(lesson, 50), null)
   assert.equal(lessonTemplate({ ...lesson, examples: [{ code: '# Terminal\npython3 --version' }] }), null)
+  const java = 'public class Demo {\n    public static void main(String[] args) { }\n}\n'
+  const javaLesson = { id: 'j', course_slug: 'java-core', language: 'java', examples: [{ code: java }], exercise_starter: java }
+  assert.equal(lessonTemplate(javaLesson).files[0].name, 'Demo.java')
+  assert.equal(lessonTemplate({ ...javaLesson, course_slug: 'spring-boot' }), null, 'framework Java needs a project')
+  assert.equal(lessonWorkspace(javaLesson, 'exercise').source, java)
+  assert.equal(lessonWorkspace({ ...lesson, examples: [{ code, runnable: false }], exercise_starter: code }, 'exercise'), null)
   const css = lessonTemplate({ ...lesson, language: 'css', course_slug: 'css' })
   assert.equal(css.selectedFile, 'style.css')
   assert.equal(css.files.find((file) => file.name === 'style.css').content, code)
