@@ -3,7 +3,7 @@ import AuthorBox from '../../components/AuthorBox'
 import { RelatedService } from '../../components/RelatedLinks'
 import { AUTHOR_PAGE_PATH, TEAM_AUTHOR } from '../../data/authors'
 import LessonVideo from '../../components/LessonVideo'
-import { getLessonVideo } from '../../data/lessonVideos'
+import { getLessonVideo, videoObjectSchema } from '../../data/lessonVideos'
 import { lessonExerciseTemplate, lessonScratch, lessonTemplate } from '../../lib/lessonPlayground'
 import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -109,6 +109,7 @@ export default function LessonDetail() {
     const entry = lesson ? getLessonVideo(lesson.id) : null
     return entry ? [].concat(entry) : []
   }, [lesson])
+  const videoSchemas = useMemo(() => videos.map(videoObjectSchema).filter(Boolean), [videos])
   const bodySegments = useMemo(() => {
     const body = lesson?.content.body || ''
     const inline = []
@@ -180,6 +181,8 @@ export default function LessonDetail() {
     publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
     isPartOf: { '@type': 'Course', name: lessonNavigation?.course.title, url: `${SITE_URL}/learn/${lesson.course_slug}` },
     inLanguage: 'en',
+    // Lesson videos load on click, so this markup is how crawlers learn they exist.
+    ...(videoSchemas.length ? { video: videoSchemas } : {}),
   } : null)
 
   useEffect(() => {

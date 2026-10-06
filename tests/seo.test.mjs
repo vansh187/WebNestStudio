@@ -6,6 +6,7 @@ import { lessonTemplate, lessonWorkspace } from '../src/lib/lessonPlayground.js'
 import { COMMERCIAL_PAGES, SERVICE_DIRECTORY } from '../src/data/commercialPages.js'
 import { COURSE_RELATIONS } from '../src/data/contentRelations.js'
 import { getCaseStudy } from '../src/data/caseStudies.js'
+import { LESSON_VIDEOS, videoObjectSchema } from '../src/data/lessonVideos.js'
 
 test('canonical URLs discard queries, fragments, trailing slashes and foreign hosts', () => {
   assert.equal(canonicalUrl('/learn/java-core/?utm_source=share#intro'), 'https://www.webneststudio.co.in/learn/java-core')
@@ -72,6 +73,20 @@ test('every course links to an existing service and case study', () => {
     assert.ok(relation && services.has(relation.service), course.slug)
     if (relation.caseStudy) assert.ok(getCaseStudy(relation.caseStudy), relation.caseStudy)
   }
+})
+
+test('every lesson video belongs to a real lesson and has complete VideoObject data', () => {
+  for (const [lessonId, entry] of Object.entries(LESSON_VIDEOS)) {
+    assert.ok(SAMPLE_LESSONS[lessonId], `video for missing lesson ${lessonId}`)
+    for (const video of [].concat(entry)) {
+      const schema = videoObjectSchema(video)
+      assert.ok(schema, `${video.youtubeId}: needs uploadDate from YouTube`)
+      assert.ok(!Number.isNaN(Date.parse(schema.uploadDate)), `${video.youtubeId}: valid uploadDate`)
+      assert.match(schema.duration || '', /^PT(\d+M)?(\d+S)?$/, `${video.youtubeId}: duration`)
+      assert.ok(schema.name && schema.description && schema.thumbnailUrl.length, `${video.youtubeId}: name, description, thumbnail`)
+    }
+  }
+  assert.equal(videoObjectSchema({ youtubeId: 'x', title: 't', description: 'd', uploadDate: '2026-01-01', durationSeconds: 80 }).duration, 'PT1M20S')
 })
 
 test('breadcrumbs use ordered canonical links', () => {
