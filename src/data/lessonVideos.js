@@ -133,6 +133,18 @@ export const LESSON_VIDEOS = {
     title: 'Java OOPs Concepts: The Overall View',
     description: 'Prefer to watch? This video gives a big-picture overview of object-oriented programming in Java: classes, objects and the four pillars.',
   },
+  lesson_java_core_classes_and_objects: {
+    youtubeId: 'fabJ2HKfPLw',
+    afterSection: 0, // right after the introduction, before "Declaring a Class"
+    title: 'Classes and Objects in Java, in Detail',
+    description: 'Prefer to watch? This video explains classes and objects in detail: declaring a class, creating objects with new, and how each object keeps its own state.',
+  },
+  lesson_java_core_java_naming_conventions: {
+    youtubeId: '8_gxk_ebRf0',
+    afterSection: 0, // right after the introduction, before "Conventions by Identifier Type"
+    title: 'Java Naming Conventions, in Detail',
+    description: 'Prefer to watch? This video walks through how Java names classes, methods, variables, constants and packages, and why the conventions matter.',
+  },
 }
 
 export function getLessonVideo(lessonId) {

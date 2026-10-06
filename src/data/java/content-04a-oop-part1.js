@@ -165,6 +165,16 @@ A common real-world analogy: a class is like an architect's blueprint for a hous
           'An uninitialized object reference holds <code>null</code> until assigned with <code>new</code>.',
         ],
       },
+      {
+        heading: 'State, Behavior and Identity',
+        body: `Every object has three characteristics. Its <strong>state</strong> is the current value of its fields, such as a car's model and speed. Its <strong>behavior</strong> is what its methods can do, such as <code>accelerate()</code>. Its <strong>identity</strong> is the fact that it is a distinct object in memory: two cars can have exactly the same model and speed and still be two different objects.`,
+      },
+      {
+        heading: 'References: Two Variables, One Object',
+        body: `Because a variable holds a reference rather than the object itself, assigning one object variable to another copies the reference, not the object. After <code>Car b = a;</code> there is still only one <code>Car</code> on the heap, and <code>a</code> and <code>b</code> both point to it, so a change made through <code>b</code> is visible through <code>a</code>. To get a second, independent object you must call <code>new</code> again.
+
+The <code>==</code> operator on object variables compares these references. It is <code>true</code> only when both variables point to the same object, even if two separate objects hold identical field values. The second example below shows both cases.`,
+      },
     ],
     examples: [
       {
@@ -193,6 +203,35 @@ A common real-world analogy: a class is like an architect's blueprint for a hous
         output: `Riya scored 88
 Kabir scored 92`,
       },
+      {
+        caption: 'Copying a reference does not copy the object; == compares references',
+        code: `public class Car {
+    String model;
+    int speed;
+
+    void accelerate(int amount) {
+        speed += amount;
+    }
+
+    public static void main(String[] args) {
+        Car a = new Car();
+        a.model = "Swift";
+
+        Car b = a; // no new object: b refers to the same Car as a
+        b.accelerate(40);
+        System.out.println(a.model + " speed read through a: " + a.speed);
+
+        Car c = new Car(); // a separate object with the same field values
+        c.model = "Swift";
+        c.speed = 40;
+        System.out.println("a == b: " + (a == b));
+        System.out.println("a == c: " + (a == c));
+    }
+}`,
+        output: `Swift speed read through a: 40
+a == b: true
+a == c: false`,
+      },
     ],
     commonMistakes: [
       'Believing a class occupies memory the way an object does — a class is only a template until an object is instantiated from it.',
@@ -203,6 +242,7 @@ Kabir scored 92`,
       'A class is a blueprint; an object is a runtime instance of that blueprint, created with "new".',
       'Each object has its own copy of instance variables, but all objects share the same method definitions.',
       'Object variables hold references to heap memory, not the object data itself.',
+      'Every object has state (field values), behavior (methods) and identity (being a distinct object), and == on objects compares identity.',
     ],
   },
 
@@ -227,6 +267,16 @@ Kabir scored 92`,
       {
         heading: 'Additional Naming Rules',
         body: `Beyond casing style, identifiers should be descriptive rather than abbreviated (<code>totalPrice</code> rather than <code>tp</code>), and single-letter names are conventionally reserved for loop counters (<code>i</code>, <code>j</code>) or generic type parameters (<code>T</code>, <code>E</code>, <code>K</code>, <code>V</code>). Boolean variables and methods conventionally read as a question or assertion, such as <code>isValid</code> or <code>hasPermission</code>, which makes conditional code read naturally.`,
+      },
+      {
+        heading: 'Enums, Generics, Getters and Acronyms',
+        body: `A few more cases come up in almost every real project, and the second example below shows each of them:`,
+        list: [
+          '<strong>Enums</strong> — the enum type is PascalCase like any class (<code>OrderStatus</code>), and its constants are UPPER_SNAKE_CASE because they are fixed values (<code>PLACED</code>, <code>OUT_FOR_DELIVERY</code>).',
+          '<strong>Generic type parameters</strong> — a single capital letter: <code>T</code> for a type, <code>E</code> for a collection element, <code>K</code> and <code>V</code> for map keys and values, <code>R</code> for a return type.',
+          '<strong>Getters and setters</strong> — <code>get</code> or <code>set</code> plus the field name in PascalCase (<code>getCustomerName()</code>, <code>setCustomerName()</code>). A boolean getter uses <code>is</code> instead (<code>isActive()</code>). Frameworks such as Spring and Jackson find properties by these exact names.',
+          '<strong>Acronyms</strong> — treat them as ordinary words so the casing stays readable: <code>HttpClient</code> and <code>parseJson()</code> rather than <code>HTTPClient</code> and <code>parseJSON()</code>. The JDK is not fully consistent here (it has both <code>HttpClient</code> and <code>URL</code>), but most style guides recommend the word form for new code.',
+        ],
       },
     ],
     examples: [
@@ -254,16 +304,59 @@ public class InventoryItem { // class: PascalCase
 }`,
         output: 'Notebook in stock: true',
       },
+      {
+        caption: 'Enums, generics, getters and setters named the way the JDK names them',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public class OrderService {
+    enum OrderStatus { PLACED, SHIPPED, DELIVERED } // enum type: PascalCase; constants: UPPER_SNAKE_CASE
+
+    static class Box<T> { // generic type parameter: a single capital letter
+        private final T item;
+        Box(T item) { this.item = item; }
+        T getItem() { return item; }
+    }
+
+    private String customerName; // field: camelCase
+    private boolean active;      // boolean field: plain adjective
+
+    public String getCustomerName() { return customerName; }      // getter: get + field name
+    public void setCustomerName(String name) { customerName = name; } // setter: set + field name
+    public boolean isActive() { return active; }                  // boolean getter: is + field name
+    public void setActive(boolean active) { this.active = active; }
+
+    public static void main(String[] args) {
+        OrderService service = new OrderService();
+        service.setCustomerName("Asha");
+        service.setActive(true);
+
+        List<OrderStatus> history = new ArrayList<>();
+        history.add(OrderStatus.PLACED);
+        history.add(OrderStatus.SHIPPED);
+
+        Box<OrderStatus> latest = new Box<>(OrderStatus.SHIPPED);
+        System.out.println(service.getCustomerName() + " active: " + service.isActive());
+        System.out.println("Status history: " + history);
+        System.out.println("Latest status: " + latest.getItem());
+    }
+}`,
+        output: `Asha active: true
+Status history: [PLACED, SHIPPED]
+Latest status: SHIPPED`,
+      },
     ],
     commonMistakes: [
       'Naming a class in camelCase (like "bankAccount") instead of PascalCase, which makes it visually indistinguishable from a variable.',
       'Using ALL_CAPS for a regular mutable field instead of reserving that style for true constants declared with "static final".',
       'Mixing underscores into camelCase names (like "student_Name"), combining two different conventions inconsistently.',
       'Using vague single-letter or abbreviated names for fields and methods outside of loop counters or generics, which hurts readability.',
+      'Naming a boolean getter "getActive()" instead of "isActive()", which breaks the JavaBeans pattern that frameworks such as Spring and Jackson rely on.',
     ],
     keyPoints: [
       'Classes and interfaces use PascalCase; methods and variables use camelCase.',
       'Constants (static final fields) use UPPER_SNAKE_CASE; packages are all lowercase.',
+      'Enum constants use UPPER_SNAKE_CASE, generic type parameters are single capital letters, and getters/setters follow get, set and is + the field name.',
       'These rules are conventions, not compiler-enforced syntax, but ignoring them harms readability for every other Java developer.',
     ],
   },
