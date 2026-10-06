@@ -127,6 +127,12 @@ export const LESSON_VIDEOS = {
     title: 'How StringBuilder Fixes Java Memory',
     description: 'A quick video on how one growing buffer replaces the throwaway Strings that += creates in a loop.',
   },
+  lesson_java_core_oops_concepts_in_java: {
+    youtubeId: 'FOQ8OL-_WPM',
+    afterSection: 0, // right after the introduction, before "The Four Pillars of OOP"
+    title: 'Java OOPs Concepts: The Overall View',
+    description: 'Prefer to watch? This video gives a big-picture overview of object-oriented programming in Java: classes, objects and the four pillars.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
