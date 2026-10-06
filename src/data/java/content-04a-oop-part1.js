@@ -384,6 +384,19 @@ Method overloading is the ability to define multiple methods in the same class t
         heading: 'What Does NOT Count as Overloading',
         body: `Changing only the return type while keeping the exact same name and parameter list is not valid overloading — it causes a compile-time error, because the compiler determines which method to call based on the arguments passed, not on what the caller does with the return value. Two methods with an identical signature (name + parameter types) cannot coexist no matter what their return types are.`,
       },
+      {
+        heading: 'How the Compiler Picks an Overload',
+        body: `When a call could match more than one overload, the compiler searches in phases and stops at the first phase that finds a match. Within a phase, it chooses the most specific method.`,
+        list: [
+          '<strong>1. Exact match or widening</strong> — a parameter of the same type, or a wider primitive (<code>byte</code> → <code>short</code> → <code>int</code> → <code>long</code> → <code>float</code> → <code>double</code>).',
+          '<strong>2. Autoboxing</strong> — only if phase 1 found nothing, the compiler tries boxing an <code>int</code> to <code>Integer</code> (or unboxing the reverse).',
+          '<strong>3. Varargs</strong> — a <code>...</code> parameter is the last resort, used only when no fixed-parameter method fits.',
+        ],
+      },
+      {
+        heading: 'Overloading You Already Use',
+        body: `The JDK relies on overloading everywhere. <code>System.out.println</code> has separate versions for <code>int</code>, <code>double</code>, <code>char</code>, <code>boolean</code>, <code>String</code> and <code>Object</code>, which is why one method name prints anything. <code>Math.max</code> and <code>Math.abs</code> have <code>int</code>, <code>long</code>, <code>float</code> and <code>double</code> versions so the result keeps the type you passed in. Overload when the operations really do the same job for different inputs; if they do different jobs, give them different names.`,
+      },
     ],
     examples: [
       {
@@ -412,6 +425,36 @@ Method overloading is the ability to define multiple methods in the same class t
 6.0
 6`,
       },
+      {
+        caption: 'Which overload runs: widening beats boxing, and varargs comes last',
+        code: `public class OverloadResolution {
+    static void show(long value) {
+        System.out.println("long version: " + value);
+    }
+
+    static void show(Integer value) {
+        System.out.println("Integer version: " + value);
+    }
+
+    static void show(int... values) {
+        System.out.println("varargs version: " + values.length + " values");
+    }
+
+    public static void main(String[] args) {
+        show(5);                  // no show(int): widening int -> long beats boxing to Integer
+        byte small = 3;
+        show(small);              // byte also widens to long
+        show(Integer.valueOf(7)); // exact match for Integer
+        show();                   // only varargs accepts zero arguments
+        show(1, 2, 3);            // only varargs accepts three arguments
+    }
+}`,
+        output: `long version: 5
+long version: 3
+Integer version: 7
+varargs version: 0 values
+varargs version: 3 values`,
+      },
     ],
     commonMistakes: [
       'Trying to overload two methods that differ only in return type — this is a compile error, not valid overloading.',
@@ -423,6 +466,7 @@ Method overloading is the ability to define multiple methods in the same class t
       'Overloading requires a different parameter list — different count, types, or order.',
       'Return type alone is never enough to distinguish overloaded methods.',
       'Method overloading is compile-time (static) polymorphism, resolved by the compiler based on argument types.',
+      'The compiler tries exact match or widening first, then autoboxing, then varargs, so show(5) prefers show(long) over show(Integer).',
     ],
   },
 
