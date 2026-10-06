@@ -145,6 +145,12 @@ export const LESSON_VIDEOS = {
     title: 'Java Naming Conventions, in Detail',
     description: 'Prefer to watch? This video walks through how Java names classes, methods, variables, constants and packages, and why the conventions matter.',
   },
+  lesson_java_core_java_methods_and_method_overloading: {
+    youtubeId: 'Xsouk_ybico',
+    afterSection: 1, // just before the "Rules for Overloading" section
+    title: 'Java Method Overloading, in Detail',
+    description: 'Prefer to watch? This video explains method overloading: same method name, different parameter lists, and how the compiler chooses which one to call.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
