@@ -1,4 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
+import { trackEvent } from '../lib/analytics'
+import { SERVICE_DIRECTORY } from '../data/commercialPages'
 import { Link, useParams } from 'react-router-dom'
 import { FiArrowDown, FiArrowLeft, FiArrowRight, FiExternalLink } from 'react-icons/fi'
 import Breadcrumbs from '../components/Breadcrumbs'
@@ -40,6 +42,7 @@ export default function CaseStudyDetail() {
     keywords: study.technologies.join(', '),
   }, [study, image, path])
   useStructuredData(schema)
+  useEffect(() => { if (study) trackEvent('case_study_view', { case_study_slug: study.slug }) }, [study])
 
   if (!study) return <NotFound />
 
@@ -195,6 +198,16 @@ export default function CaseStudyDetail() {
               </span>
             ))}
           </p>
+          {study.relatedServices?.length > 0 && (
+            <nav aria-label="Related services" className="mt-8">
+              <h3 className="font-display text-lg font-semibold text-ink-900 dark:text-white">Related services</h3>
+              <ul className="mt-3 space-y-2">
+                {SERVICE_DIRECTORY.filter((item) => study.relatedServices.includes(item.to)).map((item) => (
+                  <li key={item.to}><Link to={item.to} className="font-semibold text-gold-600 underline dark:text-gold-400">{item.title}</Link> <span className="text-ink-500 dark:text-ink-300">· {item.summary}</span></li>
+                ))}
+              </ul>
+            </nav>
+          )}
         </Reveal>
       </section>
 

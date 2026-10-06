@@ -1,6 +1,6 @@
 export const SITE_NAME = 'WebNest Studio'
 export const SITE_URL = 'https://www.webneststudio.co.in'
-export const DEFAULT_DESCRIPTION = 'WebNest Studio is an IT consultancy in Gurugram, India, building websites, AI integrations and full-stack software.'
+export const DEFAULT_DESCRIPTION = 'WebNest Studio is a web & AI software development company in Gurugram, Haryana, building websites, AI integrations and custom software.'
 export const DEFAULT_IMAGE = `${SITE_URL}/favicon.png`
 
 export function canonicalUrl(path = '/') {

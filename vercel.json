@@ -27,6 +27,16 @@
       "permanent": true
     },
     {
+      "source": "/services/software-development",
+      "destination": "/software-development-company-gurugram",
+      "permanent": true
+    },
+    {
+      "source": "/services/ai-development",
+      "destination": "/ai-development-company-india",
+      "permanent": true
+    },
+    {
       "source": "/learn/java",
       "destination": "/learn/java-core",
       "permanent": true
@@ -115,31 +125,31 @@
   "rewrites": [
     {
       "source": "/login",
-      "destination": "/app"
+      "destination": "/app-private"
     },
     {
       "source": "/admin/:path*",
-      "destination": "/app"
+      "destination": "/app-private"
     },
     {
       "source": "/portal/:path*",
-      "destination": "/app"
+      "destination": "/app-private"
     },
     {
       "source": "/projects/:path*",
-      "destination": "/app"
+      "destination": "/app-private"
     },
     {
       "source": "/delete-account",
-      "destination": "/app"
+      "destination": "/app-private"
     },
     {
       "source": "/s/:path*",
-      "destination": "/app"
+      "destination": "/app-private"
     },
     {
       "source": "/codelab/dashboard",
-      "destination": "/app"
+      "destination": "/app-private"
     }
   ]
 }

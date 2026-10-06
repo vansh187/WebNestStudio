@@ -22,6 +22,20 @@ The motivation behind OOP is managing complexity. Procedural code tends to scatt
         body: `All four pillars are built on top of two foundational concepts: a class, which is a blueprint describing what fields and methods a category of objects will have, and an object, which is an actual instance created from that blueprint at runtime, occupying its own memory on the heap. Nothing else in OOP makes sense without this class/object distinction, which is why it is the very next topic.`,
       },
       {
+        heading: 'OOP vs Procedural Programming',
+        body: `In procedural programming, a program is a sequence of functions that pass data around. In object-oriented programming, a program is a set of objects that each look after their own data and talk to each other through methods. The difference shows up as a program grows.`,
+        list: [
+          '<strong>Organisation</strong> — procedural code groups by steps; OOP groups by things (a <code>Customer</code>, an <code>Order</code>, a <code>Payment</code>), each with its own data and methods.',
+          '<strong>Data safety</strong> — procedural data is often shared and changed from anywhere; OOP keeps fields <code>private</code> and changes them only through methods that can validate input.',
+          '<strong>Reuse</strong> — procedural code reuses functions; OOP also reuses whole types through inheritance and composition.',
+          '<strong>Change</strong> — adding a new kind of thing in OOP usually means adding a new class, not editing every function that handles the old kinds.',
+        ],
+      },
+      {
+        heading: 'How the Four Pillars Work Together',
+        body: `The pillars are rarely used one at a time. In the second example below, <code>Shape</code> is abstract, so callers only know that every shape has an area (abstraction). Its <code>name</code> field is <code>private</code> and read through a getter (encapsulation). <code>Circle</code> and <code>Rectangle</code> extend <code>Shape</code> and reuse its name handling (inheritance). Finally, the loop calls <code>shape.area()</code> on each element of a <code>Shape[]</code> array, and Java runs the right version for each object at runtime (polymorphism). Adding a <code>Triangle</code> later would mean writing one new class; the loop would not change.`,
+      },
+      {
         heading: 'Why Java Enforces OOP Structure',
         body: `Unlike some multi-paradigm languages, Java requires almost all code to live inside a class — there are no free-floating functions outside a class the way there are in C or Python. This is a deliberate design decision: it forces every piece of behavior to have an owner (a class), which keeps large codebases organized and makes dependencies explicit rather than implicit.`,
       },
@@ -54,6 +68,66 @@ The motivation behind OOP is managing complexity. Procedural code tends to scatt
 }`,
         output: 'Balance: 650.0',
       },
+      {
+        caption: 'All four pillars in one program: abstraction, encapsulation, inheritance and polymorphism',
+        code: `public class ShapeDemo {
+    public static void main(String[] args) {
+        Shape[] shapes = { new Circle(2), new Rectangle(3, 4) };
+        for (Shape shape : shapes) {
+            // Polymorphism: the same call runs Circle's or Rectangle's area()
+            System.out.printf("%s area: %.2f%n", shape.getName(), shape.area());
+        }
+    }
+}
+
+// Abstraction: callers know every Shape has an area, not how it is calculated
+abstract class Shape {
+    private final String name; // Encapsulation: private, read through a getter
+
+    Shape(String name) {
+        this.name = name;
+    }
+
+    String getName() {
+        return name;
+    }
+
+    abstract double area();
+}
+
+// Inheritance: Circle and Rectangle reuse Shape's name handling
+class Circle extends Shape {
+    private final double radius;
+
+    Circle(double radius) {
+        super("Circle");
+        this.radius = radius;
+    }
+
+    @Override
+    double area() {
+        return Math.PI * radius * radius;
+    }
+}
+
+class Rectangle extends Shape {
+    private final double width;
+    private final double height;
+
+    Rectangle(double width, double height) {
+        super("Rectangle");
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    double area() {
+        return width * height;
+    }
+}`,
+        output: `Circle area: 12.57
+Rectangle area: 12.00`,
+      },
     ],
     commonMistakes: [
       'Treating OOP as just "using classes" — without encapsulation, inheritance, polymorphism, and abstraction actually being applied, a class-based program is not meaningfully object-oriented.',
@@ -64,6 +138,7 @@ The motivation behind OOP is managing complexity. Procedural code tends to scatt
       'The four pillars of OOP are encapsulation, inheritance, polymorphism, and abstraction.',
       'A class is a blueprint; an object is a runtime instance created from that blueprint.',
       'Java requires almost all code to live inside a class, enforcing object-oriented structure by design.',
+      'The pillars work together: an abstract type, private state, subclasses and one polymorphic call site is the typical shape of OOP code.',
     ],
   },
 

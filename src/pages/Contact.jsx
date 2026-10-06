@@ -1,12 +1,12 @@
 import { trackEvent } from '../lib/analytics'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FiMail, FiPhone, FiMapPin, FiSend, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi'
+import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import { FormField, ConsentCheckbox } from '../components/forms/FormField'
 import BackButton from '../components/coding/BackButton'
-import { CONTACT } from '../data/site'
+import { COMPANY, CONTACT } from '../data/site'
 import { submitLead } from '../api/leads'
 import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
 import { getUtmParams } from '../lib/utm'
@@ -77,6 +77,7 @@ function ContactForm() {
     try {
       await submitLead({ source: 'contact_form', ...values })
       trackEvent('consultation_requested', { source: 'contact_form' })
+      trackEvent('project_enquiry_submitted', { source: 'contact_form' })
       toast.success('Message sent — we\'ll reply within one business day.')
       setSuccess(values.email)
     } catch (error) {
@@ -115,6 +116,7 @@ function StartProjectForm() {
     try {
       await submitLead({ source: 'start_project', ...values, ...getUtmParams() })
       trackEvent('consultation_requested', { source: 'start_project' })
+      trackEvent('project_enquiry_submitted', { source: 'start_project' })
       toast.success('Got it — we\'ll reach out within 1 business day with next steps.')
       setSuccess(values.email)
     } catch (error) {
@@ -177,6 +179,7 @@ function ConsultationForm() {
     try {
       await submitLead({ source: 'consultation_booking', ...values })
       trackEvent('consultation_requested', { source: 'consultation_booking' })
+      trackEvent('project_enquiry_submitted', { source: 'consultation_booking' })
       toast.success('Consultation requested — we\'ll confirm your slot by email.')
       setSuccess(values.email)
     } catch (error) {
@@ -228,6 +231,7 @@ export default function Contact() {
   })
 
   const [tab, setTab] = useState('contact_form')
+  const startedForms = useRef(new Set())
   const ActiveForm = FORM_COMPONENTS[tab]
 
   return (
@@ -294,6 +298,21 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-ink-400 dark:text-ink-500">
+                    Based In
+                  </p>
+                  <address className="mt-1 font-display font-semibold not-italic text-ink-900 dark:text-white">
+                    {COMPANY.location}
+                  </address>
+                  <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">{COMPANY.serviceArea}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-6">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-400/10 text-gold-500">
+                  <FiClock className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-ink-400 dark:text-ink-500">
                     Working Hours
                   </p>
                   <p className="mt-1 font-display font-semibold text-ink-900 dark:text-white">
@@ -325,7 +344,10 @@ export default function Contact() {
                   </button>
                 ))}
               </div>
-              <ActiveForm key={tab} />
+              {/* First focus inside a form counts as the enquiry starting (once per form type). */}
+              <div onFocusCapture={() => { if (!startedForms.current.has(tab)) { startedForms.current.add(tab); trackEvent('project_enquiry_started', { source: tab }) } }}>
+                <ActiveForm key={tab} />
+              </div>
             </div>
           </div>
         </div>

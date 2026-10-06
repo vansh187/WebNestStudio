@@ -1,5 +1,6 @@
 import Breadcrumbs from '../../components/Breadcrumbs'
 import AuthorBox from '../../components/AuthorBox'
+import { RelatedService } from '../../components/RelatedLinks'
 import { AUTHOR_PAGE_PATH, TEAM_AUTHOR } from '../../data/authors'
 import LessonVideo from '../../components/LessonVideo'
 import { getLessonVideo } from '../../data/lessonVideos'
@@ -319,6 +320,7 @@ export default function LessonDetail() {
         </section>
         {relatedLessons.length > 0 && <nav aria-label="Related concepts" className="mt-6"><h2 className="text-lg font-semibold">Related concepts</h2><ul className="mt-2 space-y-2">{relatedLessons.map((item) => <li key={item.id}><Link className="text-gold-600 underline dark:text-gold-400" to={`/learn/lessons/${item.id}`}>{item.title}</Link></li>)}</ul></nav>}
         <AuthorBox className="mt-6" />
+        <RelatedService courseSlug={lesson.course_slug} className="mt-6" />
         {lessonNavigation && (
           <nav className="mt-6 grid gap-3 rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40 sm:grid-cols-2" aria-label="Lesson pagination">
             {lessonNavigation.previous ? (

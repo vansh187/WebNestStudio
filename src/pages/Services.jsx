@@ -1,4 +1,4 @@
-import { SERVICE_PAGES } from '../data/servicePages'
+import { SERVICE_DIRECTORY } from '../data/commercialPages'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -88,8 +88,9 @@ export default function Services() {
 
       <section className="bg-gold-400/10 dark:bg-ink-900/40"><div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <h2 className="text-2xl font-semibold">Explore our development services</h2>
-        <p className="mt-3 text-ink-500 dark:text-ink-300">Based in Gurugram, India, WebNest Studio helps businesses plan, build and integrate software.</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">{SERVICE_PAGES.map((service) => <Link key={service.slug} to={`/services/${service.slug}`} className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-gold-400 hover:shadow-md dark:border-ink-800 dark:bg-ink-950"><h3 className="font-semibold">{service.title}</h3><p className="mt-3 text-sm text-ink-500 dark:text-ink-300">{service.intro}</p><span className="mt-4 block text-sm font-semibold text-gold-600 dark:text-gold-400">Explore service</span></Link>)}</div>
+        <p className="mt-3 text-ink-500 dark:text-ink-300">Based in Gurugram, Haryana, WebNest Studio helps businesses across Delhi NCR, India and abroad plan, build and integrate software.</p>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{SERVICE_DIRECTORY.map((service) => <Link key={service.to} to={service.to} className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-gold-400 hover:shadow-md dark:border-ink-800 dark:bg-ink-950"><h3 className="font-semibold">{service.title}</h3><p className="mt-3 text-sm text-ink-500 dark:text-ink-300">{service.summary}</p><span className="mt-4 block text-sm font-semibold text-gold-600 dark:text-gold-400">Explore service</span></Link>)}</div>
+        <p className="mt-6 text-sm text-ink-500 dark:text-ink-300">See how we approach real builds in our <Link to="/case-studies" className="font-semibold text-gold-600 underline dark:text-gold-400">engineering case studies</Link>.</p>
       </div></section>
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         {services === null && !error && <SkeletonGrid count={4} columns="md:grid-cols-2" />}

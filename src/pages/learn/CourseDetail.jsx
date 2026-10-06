@@ -1,4 +1,5 @@
 import Breadcrumbs from '../../components/Breadcrumbs'
+import { RelatedService } from '../../components/RelatedLinks'
 import { trackEvent } from '../../lib/analytics'
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -91,6 +92,7 @@ export default function CourseDetail() {
           </section>
         ))}
       </div>
+      <RelatedService courseSlug={course.slug} className="mt-8" />
     </div>
   )
 }

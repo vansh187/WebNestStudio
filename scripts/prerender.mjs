@@ -9,6 +9,12 @@ const dist = path.resolve('dist')
 const manifest = JSON.parse(await readFile('.seo-build/routes.json', 'utf8'))
 const shell = await readFile(path.join(dist, 'app.html'), 'utf8').catch(() => readFile(path.join(dist, 'index.html'), 'utf8'))
 await writeFile(path.join(dist, 'app.html'), shell)
+// AdSense policy: no ads on screens without publisher content. vercel.json rewrites
+// login/admin/portal/account routes to this ad-free copy; app.html stays the
+// pristine template so re-running prerender is safe.
+const ADSENSE_SCRIPT = /\s*<script\b[^>]*pagead2\.googlesyndication\.com[^>]*><\/script>/g
+const withoutAds = (html) => html.replace(ADSENSE_SCRIPT, '')
+await writeFile(path.join(dist, 'app-private.html'), withoutAds(shell))
 const server = await preview({ preview: { port: 4174, strictPort: true } })
 const origin = server.resolvedUrls.local[0].replace(/\/$/, '')
 let browser
@@ -42,8 +48,8 @@ try {
             && !!document.querySelector('h1')?.textContent.trim()
             && (noindex || !robots.includes('noindex'))
         }, { expected: canonicalUrl(entry.path), noindex: entry.noindex }, { timeout: 65000 })
-        // Local lessons need no API data. Give API-backed public pages time to settle.
-        if (!entry.path.startsWith('/learn') && !entry.path.startsWith('/services/')) {
+        // Local lessons and service/case-study pages need no API data. Give API-backed public pages time to settle.
+        if (!entry.local && !entry.path.startsWith('/learn')) {
           await page.waitForLoadState('networkidle', { timeout: 65000 })
         }
         if (!entry.noindex && await page.locator('meta[name="robots"]').getAttribute('content').then((value) => value.includes('noindex'))) throw new Error('Page is noindex or unavailable')
@@ -59,7 +65,9 @@ try {
         await mkdir(path.dirname(output), { recursive: true })
         // Vite adds <link rel="modulepreload"> tags with absolute URLs of this local
         // preview server; left as-is, every visitor's browser would try localhost.
-        const html = (await page.content()).replaceAll(`${origin}/`, '/')
+        const rendered = (await page.content()).replaceAll(`${origin}/`, '/')
+        // 404.html keeps ads: Vercel also serves it for content published after this build.
+        const html = entry.noindex && entry.path !== '/404' ? withoutAds(rendered) : rendered
         await writeFile(output, html, 'utf8')
         completed.push(entry.path)
         if (completed.length % 25 === 0) console.log(`[prerender] ${completed.length}/${manifest.length + 1} rendered`)

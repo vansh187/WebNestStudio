@@ -41,13 +41,18 @@ const LEARN_LINKS = [
 const ICON_CYCLE = [FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer]
 const CATEGORY_ICONS = { FiGlobe, FiCpu, FiCloud, FiDatabase, FiShare2, FiServer }
 
+const webLink = (value) => (typeof value === 'string' && /^https?:\/\//i.test(value) ? value : undefined)
+
 export default function Home() {
   const { state, reload } = useHomeData()
   // Our own client feedback always shows; admin-managed testimonials follow once loaded.
   const apiTestimonials = state.testimonials.status === 'success' ? state.testimonials.data : []
   const testimonials = [
     ...CLIENT_TESTIMONIALS,
-    ...apiTestimonials.filter((t) => !CLIENT_TESTIMONIALS.some((own) => own.quote === t.quote)),
+    // Links from the backend are shown only when they are plain web addresses.
+    ...apiTestimonials
+      .filter((t) => !CLIENT_TESTIMONIALS.some((own) => own.quote === t.quote))
+      .map((t) => ({ ...t, url: webLink(t.url), review_url: webLink(t.review_url) })),
   ]
   // The first one gets the wide featured card; any others sit in a grid below it.
   const [featured, ...moreTestimonials] = testimonials
