@@ -1,6 +1,6 @@
 import { track } from '@vercel/analytics'
 
-const ALLOWED_FIELDS = new Set(['course_slug', 'lesson_id', 'service_slug', 'source', 'language', 'problem_slug'])
+const ALLOWED_FIELDS = new Set(['course_slug', 'lesson_id', 'service_slug', 'case_study_slug', 'source', 'page', 'language', 'problem_slug'])
 
 export function trackEvent(name, properties = {}) {
   if (typeof window === 'undefined' || window.__PRERENDER__) return

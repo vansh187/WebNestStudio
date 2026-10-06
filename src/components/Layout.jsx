@@ -6,7 +6,7 @@ import FloatingThemeToggle from './FloatingThemeToggle'
 import ChatWidget from './aiBuilder/ChatWidget'
 import ErrorBoundary from './ErrorBoundary'
 import { useStructuredData, SITE_NAME, SITE_URL } from '../hooks/useSeo'
-import { CONTACT } from '../data/site'
+import { COMPANY, CONTACT } from '../data/site'
 
 // Organization schema mounted once for every public page (Layout persists across
 // route changes) - gives Google/AI answer engines a canonical entity to attach
@@ -23,9 +23,13 @@ const ORGANIZATION_SCHEMA = {
   alternateName: ['Webnest', 'Webnest Studio', 'WebnestStudio', 'WebNest'],
   url: SITE_URL,
   logo: `${SITE_URL}/favicon.png`,
+  slogan: COMPANY.positioning,
+  description: `${SITE_NAME} is a web and AI software development company in ${COMPANY.location}, building websites, AI features and custom software.`,
   email: CONTACT.email,
   telephone: CONTACT.phone,
-  address: { '@type': 'PostalAddress', addressLocality: 'Gurugram', addressCountry: 'IN' },
+  address: { '@type': 'PostalAddress', addressLocality: COMPANY.locality, addressRegion: COMPANY.region, addressCountry: COMPANY.countryCode },
+  areaServed: [{ '@type': 'City', name: 'Gurugram' }, { '@type': 'Place', name: 'Delhi NCR' }, { '@type': 'Country', name: 'India' }],
+  // Verified official profiles only.
   sameAs: [CONTACT.instagramHref, CONTACT.linkedinHref],
 }
 

@@ -4,8 +4,21 @@ export const CONTACT = {
   email: 'vansh.duggal@webneststudio.co.in',
   emailHref: 'mailto:vansh.duggal@webneststudio.co.in',
   whatsappHref: 'https://wa.me/917276971875?text=Hello%20WebNest%20Studio%2C%20I%27d%20like%20to%20discuss%20a%20premium%20digital%20experience%20for%20my%20brand.%20Please%20share%20the%20next%20steps.',
-  instagramHref: 'https://www.instagram.com/webneststudio112026',
+  instagramHref: 'https://www.instagram.com/webneststudio112026/',
   linkedinHref: 'https://www.linkedin.com/company/webneststudio.co.in',
+}
+
+// The one company identity used by the footer, contact page and Organization
+// schema. Primary location vs. service area are kept separate on purpose.
+export const COMPANY = {
+  name: 'WebNest Studio',
+  positioning: 'Web & AI Software Development Company',
+  locality: 'Gurugram',
+  region: 'Haryana',
+  country: 'India',
+  countryCode: 'IN',
+  location: 'Gurugram, Haryana, India',
+  serviceArea: 'Serving Gurugram, Delhi NCR, India and remote clients worldwide.',
 }
 
 export const NAV_LINKS = [
@@ -35,9 +48,10 @@ export const FOOTER_SECTIONS = [
   {
     title: 'Services',
     links: [
+      { label: 'Software Development', to: '/software-development-company-gurugram' },
+      { label: 'AI Development', to: '/ai-development-company-india' },
+      { label: 'CRM Development', to: '/custom-crm-development' },
       { label: 'Website Development', to: '/services/web-development' },
-      { label: 'AI Implementation', to: '/services/ai-development' },
-      { label: 'Software Development', to: '/services/software-development' },
     ],
   },
   {
@@ -83,78 +97,9 @@ export const TECH_STACK = [
   { name: 'GraphQL', category: 'API' },
 ]
 
-export const SERVICES = [
-  {
-    title: 'Custom Website Development',
-    description:
-      'Multi-language, pixel-perfect websites built to your brand — from marketing sites to complex web apps, in any language stack you need.',
-    icon: 'FiGlobe',
-  },
-  {
-    title: 'AI Implementation',
-    description:
-      'Chatbots, recommendation engines, intelligent automation, and LLM-powered features integrated directly into your product.',
-    icon: 'FiCpu',
-  },
-  {
-    title: 'Full-Stack Engineering',
-    description:
-      'React front ends paired with Java, Python, and Spring Boot back ends — architected for scale from day one.',
-    icon: 'FiLayers',
-  },
-  {
-    title: 'Enterprise Database Solutions',
-    description:
-      'MySQL and Oracle schema design, tuning, and migration for systems that can not afford downtime.',
-    icon: 'FiDatabase',
-  },
-  {
-    title: 'API & Integration Layer',
-    description:
-      'GraphQL and REST APIs that connect your services cleanly, with Maven-managed builds and CI-ready pipelines.',
-    icon: 'FiShare2',
-  },
-  {
-    title: 'WebLogic & Enterprise Deployment',
-    description:
-      'Production-grade deployment, configuration, and support on WebLogic and enterprise Java infrastructure.',
-    icon: 'FiServer',
-  },
-]
-
-export const STATS = [
-  { value: '9+', label: 'Technologies Mastered' },
-  { value: '24/7', label: 'Client Support' },
-  { value: '100%', label: 'Custom-Built Solutions' },
-  { value: '∞', label: 'Languages Supported' },
-]
-
 export const PROCESS = [
   { step: '01', title: 'Discover', description: 'We learn your business, goals, and audience before writing a line of code.' },
   { step: '02', title: 'Design', description: 'Trend-forward UI/UX crafted to convert visitors into customers.' },
   { step: '03', title: 'Develop', description: 'Clean, scalable code across your chosen stack — React, Java, Python, and more.' },
   { step: '04', title: 'Deploy & Grow', description: 'Launch, monitor, and iterate with AI-driven insight and ongoing support.' },
-]
-
-export const PORTFOLIO = [
-  {
-    title: 'RetailNest E-Commerce Platform',
-    tag: 'React · Spring Boot · MySQL',
-    description: 'A high-conversion storefront with real-time inventory and an AI recommendation engine.',
-  },
-  {
-    title: 'OracleFlow Enterprise Dashboard',
-    tag: 'Java · Oracle · WebLogic',
-    description: 'Mission-critical operations dashboard processing millions of records daily.',
-  },
-  {
-    title: 'GraphLink API Gateway',
-    tag: 'GraphQL · Maven · Python',
-    description: 'A unified API layer connecting five legacy systems into one modern interface.',
-  },
-  {
-    title: 'InsightAI Support Assistant',
-    tag: 'Python · React · AI/ML',
-    description: 'An AI chatbot that cut customer support response time by 70%.',
-  },
 ]

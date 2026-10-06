@@ -34,6 +34,7 @@ import NotFound from './pages/NotFound'
 // Split out of the main bundle - only visitors who actually open /card should
 // pay for the QR-code library it pulls in.
 const ServiceDetail = lazyWithReload(() => import('./pages/ServiceDetail'))
+const CommercialService = lazyWithReload(() => import('./pages/CommercialService'))
 const DigitalCard = lazyWithReload(() => import('./pages/DigitalCard'))
 
 // Coding platform - Monaco + its language workers are heavy, and only visitors who
@@ -125,7 +126,13 @@ function App() {
                     <Route path="case-studies" element={<CaseStudies />} />
                     <Route path="case-studies/:slug" element={<CaseStudyDetail />} />
                     <Route path="services" element={<Services />} />
+                    {/* Superseded by the commercial pages below; vercel.json 301s them too. */}
+                    <Route path="services/software-development" element={<Navigate to="/software-development-company-gurugram" replace />} />
+                    <Route path="services/ai-development" element={<Navigate to="/ai-development-company-india" replace />} />
                     <Route path="services/:slug" element={<ServiceDetail />} />
+                    <Route path="software-development-company-gurugram" element={<CommercialService path="/software-development-company-gurugram" />} />
+                    <Route path="ai-development-company-india" element={<CommercialService path="/ai-development-company-india" />} />
+                    <Route path="custom-crm-development" element={<CommercialService path="/custom-crm-development" />} />
                     <Route path="portfolio" element={<Portfolio />} />
                     <Route path="portfolio/:slug" element={<PortfolioDetail />} />
                     <Route path="blog" element={<Blog />} />

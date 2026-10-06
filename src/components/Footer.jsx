@@ -3,7 +3,7 @@ import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
 import { FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
-import { CONTACT, FOOTER_SECTIONS, TECH_STACK } from '../data/site'
+import { COMPANY, CONTACT, FOOTER_SECTIONS, TECH_STACK } from '../data/site'
 
 export default function Footer() {
   return (
@@ -12,10 +12,11 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.2fr]">
           <div className="md:col-span-2 lg:col-span-1">
             <Logo size="md" />
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500 dark:text-ink-300">
-              WebNest Studio is an IT consultancy building websites, AI-driven products, and
-              enterprise software, and a learning platform for new developers — where brands
-              go digital and developers are born.
+            <p className="mt-4 text-sm font-semibold text-ink-900 dark:text-white">{COMPANY.positioning}</p>
+            <address className="mt-1 text-sm not-italic text-ink-500 dark:text-ink-300">{COMPANY.location}</address>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+              We build websites, AI features and custom software, and publish free programming
+              courses for new developers. {COMPANY.serviceArea}
             </p>
             <div className="mt-5 flex gap-3">
               <a

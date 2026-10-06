@@ -168,6 +168,7 @@ export const CASE_STUDIES = [
       { to: '/learn/postgresql', label: 'PostgreSQL tutorial' },
       { to: '/learn/database-design', label: 'Database design tutorial' },
     ],
+    relatedServices: ['/software-development-company-gurugram', '/services/web-development', '/ai-development-company-india'],
     seo: {
       title: 'VStitch E-Commerce Case Study | React, Python & PostgreSQL | WebNest Studio',
       description: 'See how WebNest Studio engineered VStitch using React, Python, PostgreSQL, Razorpay, vector capabilities, Resend, automated PDF invoices and custom dress workflows.',

@@ -3,6 +3,9 @@ import assert from 'node:assert/strict'
 import { canonicalUrl, summarize, breadcrumbSchema, validLastmod } from '../src/lib/seo.js'
 import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../src/data/codelabDefaults.js'
 import { lessonTemplate, lessonWorkspace } from '../src/lib/lessonPlayground.js'
+import { COMMERCIAL_PAGES, SERVICE_DIRECTORY } from '../src/data/commercialPages.js'
+import { COURSE_RELATIONS } from '../src/data/contentRelations.js'
+import { getCaseStudy } from '../src/data/caseStudies.js'
 
 test('canonical URLs discard queries, fragments, trailing slashes and foreign hosts', () => {
   assert.equal(canonicalUrl('/learn/java-core/?utm_source=share#intro'), 'https://www.webneststudio.co.in/learn/java-core')
@@ -41,6 +44,34 @@ test('every course link resolves to a canonical lesson with unique metadata and 
     }
   }
   for (const lesson of Object.values(SAMPLE_LESSONS)) assert.ok(lesson && linked.has(lesson.id), 'No broken aliases or orphan lessons')
+})
+
+test('commercial pages have unique metadata and only link to real pages', () => {
+  const services = new Set(['/services/web-development', ...COMMERCIAL_PAGES.map((page) => page.path)])
+  const courses = new Set(SAMPLE_COURSES.map((course) => `/learn/${course.slug}`))
+  const seen = new Set()
+  for (const page of COMMERCIAL_PAGES) {
+    for (const value of [page.seo.title, page.seo.description, page.h1]) {
+      assert.ok(!seen.has(value), `duplicate: ${value}`)
+      seen.add(value)
+    }
+    assert.ok(page.seo.description.length <= 160, `${page.path} description length`)
+    assert.ok(getCaseStudy(page.proof.caseStudy), `${page.path} case study`)
+    page.learning.forEach((link) => assert.ok(courses.has(link.to), link.to))
+    page.related.forEach((to) => assert.ok(services.has(to), to))
+    // Guard against invented metrics creeping into sales copy.
+    assert.ok(!/\d+\s?%|\d+\+ (clients|projects)|rated|award/i.test(JSON.stringify(page)), `${page.path} has no unverified figures`)
+  }
+  SERVICE_DIRECTORY.forEach((item) => assert.ok(services.has(item.to), item.to))
+})
+
+test('every course links to an existing service and case study', () => {
+  const services = new Set(['/services/web-development', ...COMMERCIAL_PAGES.map((page) => page.path)])
+  for (const course of SAMPLE_COURSES) {
+    const relation = COURSE_RELATIONS[course.slug]
+    assert.ok(relation && services.has(relation.service), course.slug)
+    if (relation.caseStudy) assert.ok(getCaseStudy(relation.caseStudy), relation.caseStudy)
+  }
 })
 
 test('breadcrumbs use ordered canonical links', () => {

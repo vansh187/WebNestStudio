@@ -1,5 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { SERVICE_PAGES } from '../data/servicePages'
+import { SERVICE_DIRECTORY } from '../data/commercialPages'
+import { RelatedCaseStudy, EngineeringCTA } from '../components/RelatedLinks'
+import { trackEvent } from '../lib/analytics'
+import { useEffect } from 'react'
 import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../hooks/useSeo'
 import Breadcrumbs from '../components/Breadcrumbs'
 import NotFound from './NotFound'
@@ -13,11 +17,12 @@ export default function ServiceDetail() {
     description: service.description, url: `${SITE_URL}/services/${slug}`,
     provider: { '@type': 'Organization', '@id': `${SITE_URL}/#organization`, name: SITE_NAME },
   } : null)
+  useEffect(() => { if (service) trackEvent('service_page_view', { service_slug: service.slug }) }, [service])
   if (!service) return <NotFound />
   return (
     <article className="mx-auto max-w-4xl px-6 py-12 text-ink-700 dark:text-ink-200">
       <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Services', to: '/services' }, { label: service.title, to: `/services/${slug}` }]} />
-      <p className="text-sm font-semibold text-gold-600 dark:text-gold-400">IT consultancy · Gurugram, India</p>
+      <p className="text-sm font-semibold text-gold-600 dark:text-gold-400">Web &amp; AI software development · Gurugram, Haryana</p>
       <h1 className="mt-3 font-display text-4xl font-bold text-ink-900 dark:text-white">{service.title}</h1>
       <p className="mt-6 text-lg leading-relaxed">{service.intro}</p>
       <Link className="mt-6 inline-flex rounded-full bg-gold-400 px-6 py-3 font-semibold text-ink-950" to="/contact">Discuss your project</Link>
@@ -26,7 +31,9 @@ export default function ServiceDetail() {
       <section className="mt-10"><h2 className="text-2xl font-semibold">From discovery to delivery</h2><p className="mt-4 leading-relaxed">{service.approach}</p><h3 className="mt-6 font-semibold">Technology choices</h3><p className="mt-2">{service.technologies}</p></section>
       <section className="mt-10"><h2 className="text-2xl font-semibold">Questions before you start</h2>{service.questions.map(([question, answer]) => <div className="mt-6" key={question}><h3 className="font-semibold">{question}</h3><p className="mt-2 leading-relaxed">{answer}</p></div>)}</section>
       <section className="mt-10 rounded-2xl border border-ink-200 p-6 dark:border-ink-800"><h2 className="text-xl font-semibold">Explore our work and expertise</h2><p className="mt-3">Browse our <Link to="/portfolio" className="underline">project portfolio</Link>, meet <Link to="/about" className="underline">WebNest Studio</Link>, or read our <Link to={`/learn/${service.course}`} className="underline">{service.courseLabel}</Link>.</p><p className="mt-3"><Link className="font-semibold underline" to="/contact">Tell us about your requirements</Link></p></section>
-      <nav aria-label="Related services" className="mt-10"><h2 className="text-xl font-semibold">Related services</h2><ul className="mt-3 space-y-2">{SERVICE_PAGES.filter((item) => item.slug !== slug).map((item) => <li key={item.slug}><Link className="underline" to={`/services/${item.slug}`}>{item.title}</Link></li>)}</ul></nav>
+      <nav aria-label="Related services" className="mt-10"><h2 className="text-xl font-semibold">Related services</h2><ul className="mt-3 space-y-2">{SERVICE_DIRECTORY.filter((item) => item.to !== `/services/${slug}`).map((item) => <li key={item.to}><Link className="underline" to={item.to}>{item.title}</Link></li>)}</ul></nav>
+      <div className="mt-10"><RelatedCaseStudy slug="vstitch-by-anjali-nanda" /></div>
+      <div className="mt-10"><EngineeringCTA text="Share your goals, the pages you need and any systems the site must connect to." /></div>
     </article>
   )
 }
