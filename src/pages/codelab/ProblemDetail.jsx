@@ -47,7 +47,7 @@ export default function ProblemDetail() {
   // The slug whose request has finished; until it matches, the problem is still loading.
   const [loadedSlug, setLoadedSlug] = useState(null)
 
-  useSeo({ title: problem?.title ? `${problem.title} | CodeLab` : 'CodeLab Problem', description: problem?.statement || 'Solve a Webnest CodeLab problem.', noindex: !problem && Boolean(error), path: `/codelab/problems/${slug || ''}` })
+  useSeo({ title: problem?.title ? `${problem.title} | CodeLab` : 'CodeLab Problem', description: problem?.statement || 'Solve a Webnest CodeLab problem.', noindex: slug === 'sum-two-smoke' || (!problem && Boolean(error)), path: `/codelab/problems/${slug || ''}` })
 
   useEffect(() => {
     let alive = true

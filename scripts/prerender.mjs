@@ -42,17 +42,22 @@ try {
       const entry = queue.shift()
       try {
         await page.goto(`${origin}${entry.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 })
+        // Wait for the robots value the manifest expects, so a noindex snapshot can't
+        // be captured before useSeo has committed it.
         await page.waitForFunction(({ expected, noindex }) => {
           const robots = document.querySelector('meta[name="robots"]')?.content || ''
           return document.querySelector('link[rel="canonical"]')?.href === expected
             && !!document.querySelector('h1')?.textContent.trim()
-            && (noindex || !robots.includes('noindex'))
+            && robots.includes('noindex') === !!noindex
         }, { expected: canonicalUrl(entry.path), noindex: entry.noindex }, { timeout: 65000 })
         // Local lessons and service/case-study pages need no API data. Give API-backed public pages time to settle.
         if (!entry.local && !entry.path.startsWith('/learn')) {
           await page.waitForLoadState('networkidle', { timeout: 65000 })
         }
-        if (!entry.noindex && await page.locator('meta[name="robots"]').getAttribute('content').then((value) => value.includes('noindex'))) throw new Error('Page is noindex or unavailable')
+        const robots = await page.locator('meta[name="robots"]').getAttribute('content') || ''
+        if (robots.includes('noindex') !== !!entry.noindex) {
+          throw new Error(entry.noindex ? 'Expected noindex but page is indexable' : 'Page is noindex or unavailable')
+        }
         await page.evaluate(() => {
           document.body.style.overflow = ''
           document.documentElement.style.overflow = ''

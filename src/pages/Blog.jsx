@@ -10,6 +10,7 @@ import BackButton from '../components/coding/BackButton'
 import { getBlogPosts } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
+import { isBlogIndexable, BLOG_REDIRECT_SLUGS } from '../lib/seo'
 import { useSeo } from '../hooks/useSeo'
 import HeroVideo from '../components/HeroVideo'
 import NeuralBackdrop from '../components/NeuralBackdrop'
@@ -44,9 +45,10 @@ export default function Blog() {
     return () => { cancelled = true }
   }, [tag, reloadKey])
 
-  // Live backend posts win once published; curated fallback content keeps the page
-  // (and its SEO value) populated in the meantime rather than showing an empty state.
-  const displayPosts = useMemo(() => [...(posts || []), ...FALLBACK_POSTS.filter((fallback) => !posts?.some((post) => post.slug === fallback.slug))], [posts])
+  // Live backend posts win once published; curated fallback posts fill in only
+  // once they clear the same word-count bar, so the list can legitimately be empty.
+  const displayPosts = useMemo(() => [...(posts || []), ...FALLBACK_POSTS.filter((fallback) => !posts?.some((post) => post.slug === fallback.slug))]
+    .filter((post) => isBlogIndexable(post) && !BLOG_REDIRECT_SLUGS.has(post.slug)), [posts])
   const visiblePosts = useMemo(
     () => (tag ? displayPosts.filter((p) => (p.tags || []).includes(tag)) : displayPosts),
     [displayPosts, tag]
@@ -96,6 +98,25 @@ export default function Blog() {
 
             {posts === null && !error && <SkeletonGrid count={4} columns="sm:grid-cols-1" />}
             {error && <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />}
+            {posts !== null && !error && visiblePosts.length === 0 && (
+              <div className="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-8 text-center">
+                <h2 className="font-display text-lg font-semibold text-ink-900 dark:text-white">
+                  {tag ? `No articles tagged “${tag}” yet` : 'New articles are on the way'}
+                </h2>
+                <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">
+                  {tag ? 'Try another topic, or browse the full list.' : 'Subscribe to the newsletter and we’ll send them to you when they’re published.'}
+                </p>
+                {tag && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({})}
+                    className="mt-4 text-sm font-semibold text-gold-500 hover:underline"
+                  >
+                    View all articles
+                  </button>
+                )}
+              </div>
+            )}
             {visiblePosts.length > 0 && (
               <div className="space-y-6">
                 {visiblePosts.map((p, i) => (

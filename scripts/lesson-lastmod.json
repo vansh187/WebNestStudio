@@ -1,0 +1,2278 @@
+{
+  "lesson_java_core_history_and_features_of_java": {
+    "hash": "d8f9b569531efe94",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_setting_up_the_java_development_environment": {
+    "hash": "6e93bade8fcf385a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_c_vs_java_key_differences": {
+    "hash": "cab7305666072072",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_jvm_jdk_and_jre": {
+    "hash": "c2b005263e12ecd3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_program_structure_and_first_program": {
+    "hash": "fe681190e1a6e22c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_variables": {
+    "hash": "e408f53ce54de36f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_identifiers_in_java": {
+    "hash": "71e006e283216fdf",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_data_types": {
+    "hash": "ef3de4798a458b2d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_unicode_system_in_java": {
+    "hash": "a5d9fae12c331298",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_type_casting_and_type_promotion": {
+    "hash": "58251f70eaad95f7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_operators": {
+    "hash": "c8d5df0a3c9a0de5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_keywords": {
+    "hash": "c816f33fb0e5938d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_comments": {
+    "hash": "562b44adfbb89612",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_command_line_arguments": {
+    "hash": "6e944424d153257a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_if_else_statement": {
+    "hash": "98646b10a446e90f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_switch_statement": {
+    "hash": "7e5a280705ac7e5c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_for_loop": {
+    "hash": "579fe2e7431f4d26",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_while_and_do_while_loop": {
+    "hash": "e9298ae59182749a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_for_each_loop": {
+    "hash": "e7e8553f3cbb447d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_break_and_continue": {
+    "hash": "71e6a22fddf16844",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_arrays": {
+    "hash": "95f1300457c177b1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_multidimensional_arrays": {
+    "hash": "472f71e360cb8f45",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_arrays_class_and_copying_arrays": {
+    "hash": "2573954b6900370f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_recursion": {
+    "hash": "8c358d887af5a613",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_string": {
+    "hash": "032ee0cb275a7d9c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_why_strings_are_immutable_in_java": {
+    "hash": "2b8406872a045a84",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_string_methods": {
+    "hash": "1789e15183596070",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_stringbuffer": {
+    "hash": "1e0eb304639fad57",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_stringbuilder": {
+    "hash": "b3cfe0496df15332",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_string_vs_stringbuffer_vs_stringbuilder": {
+    "hash": "7cba0eaf6ea3dd74",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_string_comparison_and_the_string_pool": {
+    "hash": "75cf9443ea6bf0f5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_how_to_create_an_immutable_class_in_java": {
+    "hash": "98b585e616afdcd7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_stringtokenizer_class_in_java": {
+    "hash": "3ce46f216eae0fa1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_regular_expressions_regex": {
+    "hash": "1abd64cba3806162",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_oops_concepts_in_java": {
+    "hash": "8200824a051bdc03",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_classes_and_objects": {
+    "hash": "823612d48a4625d5",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_java_naming_conventions": {
+    "hash": "e84f31b54c489ea8",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_java_methods_and_method_overloading": {
+    "hash": "f9c6925a52b80eb4",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_call_by_value_in_java": {
+    "hash": "cd978f5119204274",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_constructors_and_constructor_overloading": {
+    "hash": "14d379b3024ec105",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_static_keyword": {
+    "hash": "a4116c35c7ff428d",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_this_keyword": {
+    "hash": "9aa78ab4b8e7b78f",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_java_inheritance": {
+    "hash": "4637cad96296d3a2",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_aggregation_in_java": {
+    "hash": "52166e678209a593",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_super_keyword": {
+    "hash": "f6a827448464177e",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_polymorphism_in_java_an_overview": {
+    "hash": "6d7a265972269cb7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_method_overriding": {
+    "hash": "b6b78bbd28489dc1",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_runtime_polymorphism_and_dynamic_binding": {
+    "hash": "e2fc3f40bb423d84",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_instance_initializer_block": {
+    "hash": "0fdefa0ed076229e",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_java_core_abstraction_and_abstract_classes": {
+    "hash": "04882f13bba4c8a1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_interfaces_in_java": {
+    "hash": "c4d65f3c256b0b68",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_abstract_class_vs_interface": {
+    "hash": "18ad67e61a67f857",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_encapsulation": {
+    "hash": "cd96aee3c763849b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_packages_and_access_modifiers": {
+    "hash": "d1c83860ef466ca6",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_final_keyword": {
+    "hash": "841ce2c545884647",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_object_class_and_its_methods": {
+    "hash": "16b61a0ac35ec258",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_object_cloning": {
+    "hash": "edea8689b5df9dfc",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_wrapper_classes": {
+    "hash": "e1ba34ef6ddfc8e5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_math_class_and_utility_methods": {
+    "hash": "e6dfdb37de8ae2de",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_strictfp_keyword_in_java": {
+    "hash": "499132a825d7efdd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_varargs": {
+    "hash": "d5aa9682b29908de",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_static_import": {
+    "hash": "a0bd2c44121a5aba",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_instanceof_and_downcasting": {
+    "hash": "1d3581dcc76b433d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_nested_and_inner_classes": {
+    "hash": "a0699fb834268569",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_nested_interfaces_in_java": {
+    "hash": "b9cee6c787697242",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_method_overloading_vs_method_overriding_a_comparison": {
+    "hash": "426c046c3b32fe87",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_exception_handling_basics": {
+    "hash": "739d87c8866b62ed",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_try_catch_and_finally": {
+    "hash": "6ad81346364ab3c9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_throw_and_throws": {
+    "hash": "45137fbcea7cd782",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_exception_propagation_and_nested_try_blocks": {
+    "hash": "f0fb658d0e45f865",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_final_vs_finally_vs_finalize": {
+    "hash": "94277519b6c5d103",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_exception_handling_rules_with_method_overriding": {
+    "hash": "222d424304e8e95a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_custom_exceptions": {
+    "hash": "bdf34e8c09faf1a7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_checked_vs_unchecked_exceptions": {
+    "hash": "7020e11616381693",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_exception_hierarchy": {
+    "hash": "f793714154012f8a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_multithreading_basics_and_thread_life_cycle": {
+    "hash": "5f23d050c76d7750",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_creating_threads_thread_class_vs_runnable": {
+    "hash": "a62c367e8ec6db80",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_thread_priority_and_sleep": {
+    "hash": "f805e441cf9cf39b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_daemon_threads_thread_naming_and_start_vs_run": {
+    "hash": "7713f098b642f43b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_thread_scheduler_threadgroup_and_shutdown_hooks_in_java": {
+    "hash": "6e40283681179861",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_multitasking_vs_multithreading_in_java": {
+    "hash": "5d2ba1e244086010",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_synchronization": {
+    "hash": "1d821e38ea081e01",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_advanced_synchronization_reentrant_locks_and_interrupting_threads": {
+    "hash": "693926503c200f2f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_inter_thread_communication_wait_notify_notifyall": {
+    "hash": "7b725d151e996b4c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_deadlock": {
+    "hash": "bcaa5f7e43500c30",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_thread_pool_and_the_executor_framework": {
+    "hash": "4b8bf51324aee5ad",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_callable_future_and_completablefuture": {
+    "hash": "56ac17244202a9a8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_memory_management_stack_vs_heap": {
+    "hash": "8a51d6fb0a16726c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_garbage_collection_in_java": {
+    "hash": "b15201645579c3ca",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_volatile_keyword_in_java": {
+    "hash": "b11583027031fab3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_transient_keyword_in_java": {
+    "hash": "d06f9dcc33960a96",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_collections_framework_overview": {
+    "hash": "006306fe21ed88a7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_list_interface_arraylist_linkedlist_vector": {
+    "hash": "79597cf8df2ce8bb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_set_interface_hashset_linkedhashset_treeset": {
+    "hash": "ccf250ff0739df49",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_map_interface_hashmap_linkedhashmap_treemap_hashtable": {
+    "hash": "4eb811e7506853f2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_how_hashmap_works_internally": {
+    "hash": "c51ce57f151c9c13",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_queue_and_deque_priorityqueue_arraydeque": {
+    "hash": "33fb1c2d53755f02",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_iterator_and_listiterator": {
+    "hash": "1d1374d242c4e40e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_comparable_vs_comparator": {
+    "hash": "a4836ef48e7943f0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_generics_in_java": {
+    "hash": "0ba4dd13d139c6d1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_collections_utility_methods_and_fail_fast_vs_fail_safe_iterators": {
+    "hash": "193f8dd897807930",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_concurrent_collections_concurrenthashmap_and_copyonwritearraylist": {
+    "hash": "af441d3c84a94d75",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_enummap_enumset_properties_class_and_how_hashset_works_internally": {
+    "hash": "80ce88f58d53b10a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_lambda_expressions": {
+    "hash": "afd45181a8bf4be8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_functional_interfaces": {
+    "hash": "f0639226057996cf",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_stream_api": {
+    "hash": "ef2c28e4f7eb86c9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_method_references": {
+    "hash": "a5304cc7f62bfd4a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_optional_class": {
+    "hash": "2e0ee06c747aa3b8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_date_and_time_api": {
+    "hash": "d793ef9020c5d2be",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_i_o_streams_fundamentals": {
+    "hash": "9d734f65435c080c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_scanner_and_reading_user_input": {
+    "hash": "6ec2da00476d5a42",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_byte_stream_classes_fileinputstream_fileoutputstream_bufferedstream_bytearraystream_datastream_objectstream_and_printstream": {
+    "hash": "b4020f552b1b5794",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_character_stream_classes_filereader_writer_bufferedreader_writer_chararrayreader_writer_stringreader_writer_and_printwriter": {
+    "hash": "64a64c2017a89407",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_file_handling_file_filereader_filewriter_bufferedreader": {
+    "hash": "9e4051e1c928e8a3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_advanced_file_handling_randomaccessfile_the_path_api_nio_2_and_zip_files": {
+    "hash": "aa77ab2f97d9f9f7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_serialization": {
+    "hash": "8fe086c90c93cba1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_modern_java_features_var_records_sealed_classes_pattern_matching_and_text_blocks": {
+    "hash": "cfc3fa059dc1db9f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_networking_sockets_url_urlconnection_httpurlconnection_and_inetaddress": {
+    "hash": "7e1d8883b9bded87",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_reflection_api_and_the_javap_tool": {
+    "hash": "9f251c90bea713a8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_java_rmi_remote_method_invocation": {
+    "hash": "2976f1dc87eeb5d8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_searching_algorithms_in_java_linear_search_and_binary_search": {
+    "hash": "caf4b1ab58ca44cd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_sorting_algorithms_in_java_bubble_selection_insertion_and_merge_sort": {
+    "hash": "3588aa2f5b8b4c7f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_java_core_internationalization_i18n_in_java": {
+    "hash": "7f632366f0564e86",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_jdbc_introduction_and_architecture": {
+    "hash": "68740b3778f5875c",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_jdbc_drivers": {
+    "hash": "6346999c704f4dde",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_connecting_to_a_database_with_drivermanager": {
+    "hash": "e5a326b443385778",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_statement_preparedstatement_and_callablestatement": {
+    "hash": "2901846b5ce6fdd0",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_working_with_resultset": {
+    "hash": "20dd8ac5781a68a4",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_transactions_in_jdbc": {
+    "hash": "9f9f4b24530a0203",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_connection_pooling_concepts": {
+    "hash": "0386453871405393",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_servlet_introduction_and_lifecycle": {
+    "hash": "c73b3df515db3c8a",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_servlet_configuration_web_xml_vs_annotations": {
+    "hash": "e87b56167a3d9df7",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_request_and_response_objects": {
+    "hash": "d00e57293104806e",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_session_tracking_cookies_httpsession_url_rewriting": {
+    "hash": "f5ab2c1e4c85976b",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_servlet_filters_and_listeners": {
+    "hash": "7fc2439b7e7d55d5",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_requestdispatcher_forward_vs_include": {
+    "hash": "99a430a4b6936bab",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_jsp_introduction_and_lifecycle": {
+    "hash": "7051068d0402173f",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_jsp_scripting_elements": {
+    "hash": "48e1a09f60c1d66d",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_jsp_implicit_objects": {
+    "hash": "13034590d879b955",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_jsp_directives_and_actions": {
+    "hash": "dbf4427096fad056",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_mvc_architecture_with_servlets_and_jsp": {
+    "hash": "c44b7c27dc3edebd",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_advanced_java_hibernate_introduction_and_architecture": {
+    "hash": "4ec7a5677c7ccca2",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_entity_mapping_and_configuration": {
+    "hash": "2db8dc3ed2edb4c8",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_hibernate_relationships_one_to_one_one_to_many_many_to_many": {
+    "hash": "b75d5b7dd5985124",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_hibernate_inheritance_mapping_strategies": {
+    "hash": "8825936fab27abb3",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_hibernate_caching_first_level_and_second_level": {
+    "hash": "c913d82ea8b8804f",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_hql_and_the_criteria_api": {
+    "hash": "5d810c70f05a73fd",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_spring_ioc_container_and_dependency_injection": {
+    "hash": "dcf8a894524bb448",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_bean_scopes_autowiring_and_java_configuration": {
+    "hash": "b20e7f0d395aba41",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_aspect_oriented_programming_aop_in_spring": {
+    "hash": "7289c3241252a540",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_spring_boot_fundamentals_and_auto_configuration": {
+    "hash": "3eb57336a55ea9cf",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_spring_mvc_and_the_dispatcherservlet": {
+    "hash": "30de4fbfb6a49430",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_building_rest_apis_with_spring_boot": {
+    "hash": "149180d6f35b734e",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_spring_data_jpa_repositories": {
+    "hash": "09e8ede2e08d3e30",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_validation_and_exception_handling_in_spring": {
+    "hash": "4366cc5a72bf3e25",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_spring_security_fundamentals": {
+    "hash": "3729edbbe39dc1d2",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_securing_rest_apis_with_jwt": {
+    "hash": "a12a9489144b9fe4",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_microservices_architecture_fundamentals": {
+    "hash": "289900df27c24990",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_service_discovery_and_api_gateways_with_spring_cloud": {
+    "hash": "6164bd1123cbce2f",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_resilience_circuit_breakers_and_distributed_tracing": {
+    "hash": "0ce9a5c197eaaf45",
+    "lastmod": "2026-09-22"
+  },
+  "lesson_advanced_java_networking_basics_socket_serversocket_and_url": {
+    "hash": "155164b713fa99c6",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_reflection_api": {
+    "hash": "2ad7edcb89196536",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_java_annotations": {
+    "hash": "ca079f4cbbac468f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_enums_in_java": {
+    "hash": "a68d5ff37f026753",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_java_nio_basics_channels_and_buffers": {
+    "hash": "0ea76d75d2c8992c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_design_patterns_overview_singleton_factory_builder_observer": {
+    "hash": "99031628afad0c68",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_build_tools_maven_basics": {
+    "hash": "fc1565f16e1281b3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_build_tools_gradle_basics": {
+    "hash": "bcba969ec99855be",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_logging_in_java_applications": {
+    "hash": "f7f48b0dce7775b5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_unit_testing_with_junit": {
+    "hash": "1f8c5e16fbae242d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_mockito_and_testing_spring_applications": {
+    "hash": "b8d628456e1a200b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_advanced_java_packaging_and_deployment_jar_and_war": {
+    "hash": "2055d3628a3dbc4b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_framework_spring_framework_overview_and_modules": {
+    "hash": "0ca7c9c46fca3045",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_installing_the_jdk_on_windows_macos_and_linux": {
+    "hash": "6c9e21880acae1a0",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_installing_maven_and_gradle": {
+    "hash": "02443ad3cd3ab66e",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_setting_up_your_ide_for_spring": {
+    "hash": "27871a10be217bf8",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_setting_up_a_spring_project": {
+    "hash": "65d8fc258c4c1bb3",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_framework_creating_a_project_with_spring_initializr": {
+    "hash": "06e1f4b8d7195ef7",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_your_first_spring_application": {
+    "hash": "cb01d91765cf6782",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_your_first_spring_boot_web_application": {
+    "hash": "5d40bfbc3172937a",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_running_packaging_and_troubleshooting_spring_applications": {
+    "hash": "da0f46997bf43158",
+    "lastmod": "2026-09-26"
+  },
+  "lesson_spring_framework_ioc_and_dependency_injection": {
+    "hash": "7d5f3786cf53848c",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_beans": {
+    "hash": "6382293305170c82",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_framework_application_context": {
+    "hash": "1a8fd7d94f861a20",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_component_scanning": {
+    "hash": "734e3212fd96207d",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_configuration": {
+    "hash": "0762fd6162546ec9",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_framework_bean_lifecycle": {
+    "hash": "bf2b9151f4fe7602",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_profiles": {
+    "hash": "c42453c0dde7a535",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_framework_events": {
+    "hash": "e51634868b18bbc8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_framework_resource_handling": {
+    "hash": "c23724cf014c80af",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_spring_mvc": {
+    "hash": "f6ff73b53a164176",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_validation": {
+    "hash": "9c603983ec7d6cb8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_framework_exception_handling": {
+    "hash": "4bbd629621245b31",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_framework_aop": {
+    "hash": "ef4ccc47dd25e8d1",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_spring_data_fundamentals": {
+    "hash": "78374caf000e4059",
+    "lastmod": "2026-09-21"
+  },
+  "lesson_spring_framework_transactions": {
+    "hash": "a8cbe0b70695d30e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_framework_testing": {
+    "hash": "04f2914b310957d4",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_framework_spring_reactive_programming_overview": {
+    "hash": "ff1f0347fad7b014",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_vs_spring_boot_vs_spring_mvc": {
+    "hash": "b1b56e989810b451",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_project_setup": {
+    "hash": "923526f5928adf29",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_what_is_new_in_spring_boot_4": {
+    "hash": "d7c723f0afb9b83e",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_dependency_management_and_the_starter_parent": {
+    "hash": "6ed0aa01ad8a58a0",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_starters": {
+    "hash": "52b846b3212e849a",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_boot_annotations_reference": {
+    "hash": "4679413048df5a66",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_auto_configuration": {
+    "hash": "5abcaab48034fe49",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_configuration_properties": {
+    "hash": "a06d786f7c204da8",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_application_properties_and_common_settings": {
+    "hash": "d284901bcd8ca70c",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_profiles": {
+    "hash": "90665e65432746b2",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_boot_devtools": {
+    "hash": "70cc1bdbd5d4442a",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_application_startup_runners_and_lifecycle_events": {
+    "hash": "1b548cfb3da6d529",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_multi_module_projects": {
+    "hash": "5a4ae56b94668051",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_packaging_and_deployment_jar_war_and_external_tomcat": {
+    "hash": "281c9202dc5a9a32",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_creating_a_custom_starter": {
+    "hash": "7006810f1d09573b",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_aspect_oriented_programming_aop_with_spring_boot": {
+    "hash": "762a8a769dde935f",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_aop_advice_types_before_after_around_after_returning_and_after_throwing": {
+    "hash": "314c7580c71462a4",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_rest_apis": {
+    "hash": "2d06857a81262a8a",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_request_mapping_and_parameters": {
+    "hash": "540b9584d2318d02",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_dtos": {
+    "hash": "0991047f65bae06a",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_json_with_jackson_3": {
+    "hash": "27b82495f08e600a",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_validation": {
+    "hash": "1b128799e47b60ec",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_boot_exception_handling": {
+    "hash": "91f9f04b0681e95c",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_file_upload_and_download": {
+    "hash": "b3a1951baab3ddaa",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_api_versioning": {
+    "hash": "42cca571c35dfbcd",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_filters_and_interceptors": {
+    "hash": "ee23ef983b9d19b8",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_content_negotiation_json_and_xml": {
+    "hash": "041bc4c7017b9e58",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_filtering_api_responses_static_and_dynamic": {
+    "hash": "bc0ca285e4f7491e",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_internationalization_i18n": {
+    "hash": "a8b6d9ea8f04d3f2",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_hateoas": {
+    "hash": "8af44ba682d26bbc",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_openapi": {
+    "hash": "e448f288b35db9f1",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_server_side_rendering_with_thymeleaf": {
+    "hash": "216768c405d257eb",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_rest_api_best_practices_and_the_richardson_maturity_model": {
+    "hash": "4e0f45f3b7ba2463",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_restclient": {
+    "hash": "0d58811d4f1a89df",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_http_service_clients_with_httpexchange": {
+    "hash": "93c4655813be5dd9",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_data_jpa": {
+    "hash": "5585444617ef3a05",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_h2_database_and_a_complete_crud_application": {
+    "hash": "1a0d543abfc2c6c3",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_connecting_to_postgresql_and_mysql": {
+    "hash": "2a0edabcf2011a24",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_hibernate": {
+    "hash": "fcf8984876c2b3d6",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_entity_relationships_in_depth": {
+    "hash": "2b6dc093a2914df6",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_custom_queries_and_projections": {
+    "hash": "4a7f55f8e0c17c30",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_pagination": {
+    "hash": "c16a1d435a3e60e2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_boot_transactions_in_spring_boot": {
+    "hash": "89674c0b2fbabae2",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_database_migrations_with_flyway_and_liquibase": {
+    "hash": "5ebefc8e9a949be1",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_solving_the_n_1_problem": {
+    "hash": "8123d08b2f0bd7e5",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_auditing_optimistic_locking_and_soft_deletes": {
+    "hash": "80e53a44b5ce26b0",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_jdbcclient_and_spring_data_jdbc": {
+    "hash": "73aa3d42c5e53345",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_data_mongodb": {
+    "hash": "37b95161aa126919",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_caching_with_spring_cache": {
+    "hash": "e94d35db7962cf29",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_redis_with_spring_boot": {
+    "hash": "e3d94be3f3e55dc5",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_security_concepts": {
+    "hash": "65bbec8169699d32",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_jwt_concepts": {
+    "hash": "76467a802ffdf78f",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_security_architecture_and_the_filter_chain": {
+    "hash": "7475e14f469e015b",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_authentication_with_users_and_roles": {
+    "hash": "e3e22fb76b5a85bb",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_password_encoding": {
+    "hash": "29cffa1cb177e759",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_authorization_rules_and_method_security": {
+    "hash": "8f7305d141c7deac",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_jwt_authentication_with_oauth2_resource_server": {
+    "hash": "2b1742c2884f58ac",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_oauth2_login_with_google_and_github": {
+    "hash": "d90bb503f8829777",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_authorization_server": {
+    "hash": "dbc52009290587ef",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_csrf_and_cors_in_spring_security": {
+    "hash": "808b1e827a2493a2",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_passkeys_and_one_time_token_login": {
+    "hash": "9cfe146215507b50",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_testing_secured_endpoints": {
+    "hash": "9d96366e572dcc93",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_security_hardening_checklist": {
+    "hash": "6be0816232f306d4",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_introduction_to_spring_ai": {
+    "hash": "89f0baaac89344b4",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_chatclient_and_prompt_templates": {
+    "hash": "96972bd08cba8879",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_structured_output": {
+    "hash": "7980fd7e46de843c",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_chat_memory": {
+    "hash": "bbd40dd511d9d00e",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_tool_calling": {
+    "hash": "09c52a91fa3ff8df",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_embeddings_and_vector_stores": {
+    "hash": "52138ddce6941eb7",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_retrieval_augmented_generation_rag": {
+    "hash": "35d281c255319edd",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_model_context_protocol_mcp_servers_and_clients": {
+    "hash": "7a71533ab4336d5f",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_running_local_models_with_ollama": {
+    "hash": "d9a13df2b7e76694",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_testing_and_observing_ai_applications": {
+    "hash": "83651780ff5031b8",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_async_processing_with_async": {
+    "hash": "ebbfdaa48c70253c",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_scheduling_tasks_with_scheduled": {
+    "hash": "09a1cd451b2ccba9",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_application_events": {
+    "hash": "c4587a83fd70086d",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_apache_kafka_with_spring_boot": {
+    "hash": "7250f8a994322f7c",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_rabbitmq_with_spring_boot": {
+    "hash": "ea6adf1e82458739",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_sending_email": {
+    "hash": "be9acc9666f55074",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_websockets_and_stomp": {
+    "hash": "12b9928f22ce5512",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_reactive_programming_with_project_reactor": {
+    "hash": "439f9c1681819a45",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_webflux": {
+    "hash": "0af3079c96dd4f7d",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_webclient": {
+    "hash": "c317633164bddf5b",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_r2dbc_reactive_database_access": {
+    "hash": "365a681b91a934fc",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_testing": {
+    "hash": "5c60501858aa2bd8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_boot_unit_testing_with_junit_and_mockito": {
+    "hash": "d40a837b61114152",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_web_layer_tests_with_webmvctest": {
+    "hash": "3d4f2f270bd995e8",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_data_layer_tests_with_datajpatest": {
+    "hash": "e8fa6a8b71e7a845",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_integration_tests_with_testcontainers": {
+    "hash": "07b6f145c46d7546",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_actuator": {
+    "hash": "4a409bd4804ee48d",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_health_checks_readiness_and_liveness_probes": {
+    "hash": "df0cef6b33a03ea1",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_logging": {
+    "hash": "a37da7d3db1839e1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_spring_boot_structured_logging": {
+    "hash": "23f3b2cc88c60e61",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_metrics_with_micrometer_and_prometheus": {
+    "hash": "347040ba7c8012a8",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_distributed_tracing_with_opentelemetry": {
+    "hash": "b5bde2c7a28118ec",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_resilience_retries_rate_limits_and_circuit_breakers": {
+    "hash": "18249742e1ac0b08",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_virtual_threads_in_spring_boot": {
+    "hash": "4af66e7595f61c6b",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_production_configuration": {
+    "hash": "22f364d9f9b63768",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_docker_deployment_concepts": {
+    "hash": "558558488f305640",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_building_container_images_with_buildpacks": {
+    "hash": "8e3eeebb9797b515",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_boot_3_and_graalvm_native_images": {
+    "hash": "2a61abdd16d83d61",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_deploying_to_kubernetes": {
+    "hash": "fe406b33ab0b5ecc",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_ci_cd_with_github_actions": {
+    "hash": "bb0e492a5cb2d493",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_microservices_architecture_with_spring_boot": {
+    "hash": "955c8510590648ad",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_centralized_configuration_with_spring_cloud_config": {
+    "hash": "47a0b210aa5dee01",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_service_discovery_with_eureka_and_load_balancing": {
+    "hash": "38db51c1878de7b5",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_api_gateway_with_spring_cloud_gateway": {
+    "hash": "196da515c6402867",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_event_driven_microservices_with_spring_cloud_stream": {
+    "hash": "adb9bbbf3625dfa8",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_distributed_transactions_and_the_saga_pattern": {
+    "hash": "fd60a46f40360850",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_modular_monoliths_with_spring_modulith": {
+    "hash": "83cef9156fd3acfa",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_batch_processing_with_spring_batch": {
+    "hash": "45f01ee6a68c2ddb",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_graphql_with_spring_boot": {
+    "hash": "d4af557610326de3",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_grpc_with_spring_boot": {
+    "hash": "22d5913541050c6b",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_capstone_project_building_a_production_ready_course_platform_api": {
+    "hash": "10e98a6be94ba0bf",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_spring_boot_spring_boot_interview_questions_and_answers": {
+    "hash": "b35a60a1dfb472ff",
+    "lastmod": "2026-09-27"
+  },
+  "lesson_python_introduction_to_python": {
+    "hash": "1f9db617e591419e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_setting_up_the_python_environment": {
+    "hash": "8477c5860804bd7d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_python_ides_and_tools": {
+    "hash": "b6bf157b422fe40c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_hello_world_program": {
+    "hash": "f5cbf43285dbd596",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_syntax": {
+    "hash": "404b8b149651fc5a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_keywords_and_identifiers": {
+    "hash": "55f8199618edb4ef",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_comments_and_docstrings": {
+    "hash": "4e09a87415994276",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_input_and_output": {
+    "hash": "67bcbeff1a976c9d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_variables": {
+    "hash": "f73399a004834eea",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_data_types": {
+    "hash": "5606dc8297ee59e6",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_literals": {
+    "hash": "b242fb2cd4cb2db0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_numbers_and_math": {
+    "hash": "5b6cad81c1d44bc3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_booleans_and_none": {
+    "hash": "6909bd9a8a6e5983",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_type_casting": {
+    "hash": "11ffd1fb2fa88e78",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_operators": {
+    "hash": "c6120e0ff3c974df",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_control_flow": {
+    "hash": "5ec988a600de8ae2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_conditional_statements_and_match": {
+    "hash": "69f4c3d9d4a3f02c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_loops_for_and_while": {
+    "hash": "097b0da63cb98129",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_break_continue_and_pass": {
+    "hash": "afc136a8bb98f668",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_strings": {
+    "hash": "bad6ee53dc1ef4cd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_string_methods_reference": {
+    "hash": "d2eea573ae17f54a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_string_formatting": {
+    "hash": "4529faeaf40fcbc2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_lists_tuples_sets_dictionaries": {
+    "hash": "b804985ca318752b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_lists_and_list_methods": {
+    "hash": "60f5d6f2fd7d037a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_tuples_and_tuple_methods": {
+    "hash": "910d1a18155e95b3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_sets_and_set_methods": {
+    "hash": "226ca09570766016",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_dictionaries_and_dictionary_methods": {
+    "hash": "6f716e98ad86ab80",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_choosing_the_right_data_structure": {
+    "hash": "6d46a7123bbed9d4",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_comprehensions": {
+    "hash": "ae4f1276a88fcf88",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_arrays_stacks_and_queues": {
+    "hash": "7bdbec9014f164ec",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_the_collections_module": {
+    "hash": "91babb8910c9d169",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_functions": {
+    "hash": "f3c9a0b2053467fb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_function_arguments": {
+    "hash": "8ea5d0f57ff3a897",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_lambda_functions": {
+    "hash": "41b53b28fa71ecf6",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_higher_order_functions_map_filter_and_reduce": {
+    "hash": "5c367e8674a34c45",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_recursion": {
+    "hash": "dd8a897e0222f44e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_scope_closures_and_namespaces": {
+    "hash": "5083bf3d6bd2db06",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_built_in_functions_reference": {
+    "hash": "a0fec70da1bd0953",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_oop": {
+    "hash": "29ec58e7e4a248ef",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_classes_and_objects": {
+    "hash": "78300ddde00e0546",
+    "lastmod": "2026-10-06"
+  },
+  "lesson_python_constructors_and_the_init_method": {
+    "hash": "71563020ae68382e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_instance_class_and_static_methods": {
+    "hash": "f5867bf46d364dcb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_inheritance": {
+    "hash": "ec2d81426dcd5293",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_polymorphism_and_method_overriding": {
+    "hash": "191876bf31e6ea2a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_method_overloading_in_python": {
+    "hash": "d1eb97ca5a34de85",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_encapsulation_and_access_modifiers": {
+    "hash": "7f7028b69606ee04",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_abstraction_and_abstract_base_classes": {
+    "hash": "a1bfd0551b5e2d15",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_magic_methods_and_operator_overloading": {
+    "hash": "d215bb1887a6b073",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_properties_and_descriptors": {
+    "hash": "d4b4665792a3feba",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_dataclasses": {
+    "hash": "e90da537f8a6669c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_enums": {
+    "hash": "6549087d800ffb0b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_composition_vs_inheritance": {
+    "hash": "f3c6e1596c8a2fe1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_design_patterns_in_python": {
+    "hash": "85e297dece717ccd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_modules": {
+    "hash": "1c26bfce6e3f8891",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_packages": {
+    "hash": "8f44e42c060422c1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_standard_library": {
+    "hash": "68e1cf32708c0e4e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_math_random_and_statistics_modules": {
+    "hash": "bb253568674b3453",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_os_sys_and_pathlib": {
+    "hash": "7c8a3b839d1479e9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_command_line_arguments": {
+    "hash": "f51cdd36f17f22eb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_virtual_environments": {
+    "hash": "5434ebe9f5c981b5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_pip_and_dependency_management": {
+    "hash": "5dd6a93524031257",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_exceptions": {
+    "hash": "ba897808b06ee9d8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_handling_multiple_exceptions_and_finally": {
+    "hash": "0a93bc4e1f888eaf",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_raising_and_custom_exceptions": {
+    "hash": "8d0953d265aea85e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_built_in_exceptions_reference": {
+    "hash": "241dd357fbcab571",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_assertions_and_debugging": {
+    "hash": "9b89b0801f461311",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_logging": {
+    "hash": "578a767eec6e10ce",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_files": {
+    "hash": "5f42ab36c1a32fe0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_csv_files": {
+    "hash": "b7b3950ca64dd7f0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_excel_files": {
+    "hash": "f2b7abb405c7eb72",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_json": {
+    "hash": "f203807dfd6c33f8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_context_managers": {
+    "hash": "63e0a96d5c2d0140",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_database_connectivity_with_sqlite3": {
+    "hash": "0f944e836328f60d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_crud_operations_with_sqlite3": {
+    "hash": "1a91e9693d612ce3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_transactions_and_sql_injection": {
+    "hash": "8f6a46b6967aa6e0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_connecting_to_mysql": {
+    "hash": "93de883600047566",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_connecting_to_postgresql": {
+    "hash": "1ba4741e3908124b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_sqlalchemy_orm": {
+    "hash": "d8d6686b3ef9290a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_mongodb_with_pymongo": {
+    "hash": "4d88fdee02045950",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_iterators_generators": {
+    "hash": "409c3fe94d415d64",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_decorators": {
+    "hash": "28a96b5d07c76b5b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_type_hints": {
+    "hash": "3625c1561e24dc0e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_itertools_and_functools": {
+    "hash": "cc2165e4e878c130",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_regular_expressions": {
+    "hash": "b70f4bb9675207e7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_date_and_time": {
+    "hash": "9f507ac5253ce751",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_async_programming_with_asyncio": {
+    "hash": "a9931facb1b214a8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_multithreading": {
+    "hash": "91155d3ae5b65388",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_multiprocessing": {
+    "hash": "078268e799da3d8a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_searching_algorithms": {
+    "hash": "83c1e63bd75f2ffc",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_sorting_algorithms": {
+    "hash": "29309ba4ec9714e8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_classic_python_programs": {
+    "hash": "b9004d0917ec1225",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_testing": {
+    "hash": "e5da91c7a0484014",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_http_api_basics": {
+    "hash": "fa3759a0028ae4e9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_introductory_data_handling": {
+    "hash": "fe360d483e6823eb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_introduction_to_fastapi": {
+    "hash": "9bcdbacd49e07198",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_path_and_query_parameters": {
+    "hash": "1c4273390acab38d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_request_body_and_pydantic_models": {
+    "hash": "3d5406fcfd3782aa",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_response_models_status_codes_and_errors": {
+    "hash": "7263b3f374182dab",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_dependency_injection_and_routers": {
+    "hash": "68a01eff814445a3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_fastapi_with_a_database": {
+    "hash": "d388fb93c63208fb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_authentication_with_oauth2_and_jwt": {
+    "hash": "ea1564000681ca0f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_middleware_background_tasks_and_websockets": {
+    "hash": "b365821dab953678",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_testing_fastapi_applications": {
+    "hash": "d305560d76018e72",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_deploying_fastapi_applications": {
+    "hash": "0b4df89eeb6244ca",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_flask_basics": {
+    "hash": "4ed6d793efab7297",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_introduction_to_numpy": {
+    "hash": "000d70718e261043",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_numpy_indexing_and_array_operations": {
+    "hash": "4b54d8e9147a104a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_numpy_for_math_statistics_and_linear_algebra": {
+    "hash": "1149e038acdd40b0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_introduction_to_pandas": {
+    "hash": "3d33ff265f3e0fb7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_selecting_and_filtering_data_with_pandas": {
+    "hash": "a29a5d61a2955a9e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_cleaning_data_with_pandas": {
+    "hash": "4d1d42f5a9b0f376",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_grouping_merging_and_pivoting_in_pandas": {
+    "hash": "85e5a372adb4cf53",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_data_visualization_with_matplotlib": {
+    "hash": "825c5ab61a7e46bb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_exploratory_data_analysis_project": {
+    "hash": "a2ba2aa29eee3695",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_introduction_to_machine_learning": {
+    "hash": "55c947fb9342fd00",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_linear_regression_with_scikit_learn": {
+    "hash": "62194649d01c2205",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_classification_with_scikit_learn": {
+    "hash": "dd9bb1fac6fadc67",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_data_preprocessing_and_pipelines": {
+    "hash": "0d2a6d86e2dc7545",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_model_evaluation_and_hyperparameter_tuning": {
+    "hash": "ff5002dd77276551",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_clustering_with_k_means": {
+    "hash": "2fbb37279e340906",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_python_saving_and_deploying_ml_models": {
+    "hash": "906583df4509e690",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_setting_up_your_editor_and_browser_devtools": {
+    "hash": "b5bccceee4652728",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_document_structure": {
+    "hash": "a223535040f2eace",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_semantic_html": {
+    "hash": "14ae1c164f402aac",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_headings": {
+    "hash": "38f6bc6549273b53",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_links": {
+    "hash": "1ff32d56e4c6ca73",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_metadata": {
+    "hash": "dd6f6d7ce537c212",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_images": {
+    "hash": "d7d5d303940d77a0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_lists": {
+    "hash": "bf74aaaa1e948d52",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_tables": {
+    "hash": "cd9cde06fba168d9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_media": {
+    "hash": "418702a48841fd4a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_iframe_concepts": {
+    "hash": "e72fcd0745307fd0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_forms": {
+    "hash": "2182ceb2954cabf1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_inputs": {
+    "hash": "13d0532cf6ad99fe",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_validation": {
+    "hash": "4627e8919f5fe297",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_accessibility": {
+    "hash": "26e66087e4d256b2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_seo_basics": {
+    "hash": "d614a1234cf6263d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_best_practices": {
+    "hash": "05d3348b67d702ad",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_html_web_components_basics": {
+    "hash": "92435b7d3633c9d2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_setting_up_a_css_workflow": {
+    "hash": "bb428e6b1fc186eb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_selectors": {
+    "hash": "44d012003c497b66",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_cascade": {
+    "hash": "047a5c2e15383d67",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_specificity": {
+    "hash": "014c723ea36f7f55",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_box_model": {
+    "hash": "bbaac3b7630acda0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_units": {
+    "hash": "e3093f9c8bebea87",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_typography": {
+    "hash": "f8303d37e6e3f5e0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_positioning": {
+    "hash": "9b395852e8f90899",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_display": {
+    "hash": "c2cf681333c8058d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_flexbox": {
+    "hash": "620d78976b7c283d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_grid": {
+    "hash": "09dd6f595a0be60f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_responsive_design": {
+    "hash": "ef9c737533283908",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_media_queries": {
+    "hash": "2c25b4d67da3622c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_variables": {
+    "hash": "ebf1f557b4a03450",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_transitions": {
+    "hash": "ce28552200b78b17",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_transforms": {
+    "hash": "a3bd4de1f982b94f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_animations": {
+    "hash": "7cc7f5c0a11dd9c6",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_pseudo_classes_elements": {
+    "hash": "9d1714ffc25365c7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_architecture": {
+    "hash": "cff58b016341de38",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_accessibility": {
+    "hash": "05dcdf225acdaf28",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_css_container_queries": {
+    "hash": "ac563b5b31b185bb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_setting_up_a_javascript_environment": {
+    "hash": "67ae30ec77afedb9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_syntax": {
+    "hash": "bd9796bac9e16f39",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_variables": {
+    "hash": "a3b0604ce1bf632a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_types": {
+    "hash": "84e04428fad1d7e2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_functions": {
+    "hash": "e1b6459158c6c289",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_arrays_objects": {
+    "hash": "be2ad0dcc9546bfa",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_scope": {
+    "hash": "72c1da8e0603aefc",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_closures": {
+    "hash": "427adb31fad211df",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_classes": {
+    "hash": "e207e5ae57b8cce3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_modern_es_features": {
+    "hash": "8643a870fd1f3704",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_event_loop_concepts": {
+    "hash": "07d1b94fbdd4293a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_dom": {
+    "hash": "6d1d35d7155359bf",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_events": {
+    "hash": "fa242d529a28f092",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_modules": {
+    "hash": "fb4462a57bc273fb",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_local_storage": {
+    "hash": "2224e2e37654bb5a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_promises": {
+    "hash": "d17954a38f73cc09",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_async_await": {
+    "hash": "b5ebcdcbbca8d76b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_fetch": {
+    "hash": "b0fd0ab1fa4f9e37",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_error_handling": {
+    "hash": "52e24d22447c7e90",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_debugging": {
+    "hash": "e0d2a647ce19569a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_testing_fundamentals": {
+    "hash": "4f28f32be5600d97",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_javascript_introduction_to_typescript": {
+    "hash": "6f83ce38b136131d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_setting_up_a_react_project": {
+    "hash": "4936963fae403195",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_jsx": {
+    "hash": "7c2c3f1cfa928a48",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_components": {
+    "hash": "e981083609e003a5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_props": {
+    "hash": "5114a2315022b0c0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_state": {
+    "hash": "c923a737abc1fb68",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_events": {
+    "hash": "56ec523a1e88fb86",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_conditional_rendering": {
+    "hash": "a79e01049325416b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_lists_keys": {
+    "hash": "96f47cad980530d0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_forms": {
+    "hash": "8fa03236bd39ed49",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_hooks": {
+    "hash": "886a5b554f1e59bd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_useeffect": {
+    "hash": "9e9f8594154a1fd8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_usememo_usecallback_concepts": {
+    "hash": "074ff2c7042b77d0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_custom_hooks": {
+    "hash": "cc0a7662a467cfdd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_context": {
+    "hash": "6b4d4dc33eb86590",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_routing": {
+    "hash": "33923c80bd881f69",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_api_integration": {
+    "hash": "84ceaef6fb3e443c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_state_management_concepts": {
+    "hash": "c935cec48aefef80",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_performance": {
+    "hash": "919a798e4b0a9da3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_error_boundaries": {
+    "hash": "5dfb4c987745c7d7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_testing": {
+    "hash": "9cab250c834e8357",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_deployment": {
+    "hash": "c7525a34025d2228",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_react_typescript_in_react": {
+    "hash": "e45c38ee2af2e8c0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_setting_up_a_local_database_for_practice": {
+    "hash": "14f6fa83cf13bd01",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_database_fundamentals": {
+    "hash": "968e37fe2f993831",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_relational_model": {
+    "hash": "266059ec5163da9e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_tables_rows_columns": {
+    "hash": "b4f8eb7358a5ba49",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_keys": {
+    "hash": "33bc48431ff1295d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_constraints": {
+    "hash": "b23c3f3221c796f5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_normalization": {
+    "hash": "6b65a7d5769021de",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_er_modelling": {
+    "hash": "0ad32c0a6a609bf2",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_sql_crud": {
+    "hash": "ce50cafc7d1f088a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_filtering": {
+    "hash": "4fa4454bc81d68f3",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_joins": {
+    "hash": "6fb2072191933ace",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_grouping": {
+    "hash": "4ee3102b2979f5a8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_subqueries": {
+    "hash": "e71052b4bc23b9ff",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_views": {
+    "hash": "f33b94e5a91d9f4e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_indexes": {
+    "hash": "8efa09805dabaec4",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_transactions": {
+    "hash": "83c2f295252c986b",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_acid": {
+    "hash": "190fd1cb07d1853e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_isolation": {
+    "hash": "d3c312ad007aadc9",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_locking_concepts": {
+    "hash": "d3c316b8aa6611dd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_query_optimization": {
+    "hash": "30cd0e6aaf5cd181",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_stored_procedures_concepts": {
+    "hash": "adb267bd154717f1",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_sql_security": {
+    "hash": "dbd9c6d7d669b871",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_postgresql_setup_concepts": {
+    "hash": "3260f2869cd302bd",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_data_types": {
+    "hash": "95d7631fb189f9fe",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_schemas": {
+    "hash": "69b111820b2ac1f0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_sequences_identity": {
+    "hash": "5935546831c388a5",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_json_jsonb": {
+    "hash": "c41b07f80a458a5d",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_arrays": {
+    "hash": "b64124fd7ad4bb10",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_practical_schema_design": {
+    "hash": "a6b3a3edd778e86a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_indexes": {
+    "hash": "5b6e024b5ccfd496",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_ctes": {
+    "hash": "bf00026894c19c92",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_window_functions": {
+    "hash": "05625fa8b5615683",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_functions": {
+    "hash": "03c31279643da833",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_transactions": {
+    "hash": "b70c1faf25410e02",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_roles_permissions": {
+    "hash": "74f114524d6ce06e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_explain_plans": {
+    "hash": "a9fd69b524fb907a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_performance_basics": {
+    "hash": "e26d0f9d3d3c7dd7",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_postgresql_backup_restore_concepts": {
+    "hash": "62513315d66b74ea",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_tools_for_database_design_erd_software": {
+    "hash": "52afa6d2c483f144",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_requirement_to_schema_workflow": {
+    "hash": "e42bb62853806ea8",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_entities": {
+    "hash": "828364f076494a6a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_relationships": {
+    "hash": "1b097e8e77b71d7e",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_cardinality": {
+    "hash": "a63ba79f9c64e569",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_normalization_denormalization_trade_offs": {
+    "hash": "710a7f6af6c7e3d0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_naming_standards": {
+    "hash": "28a33e84b4507f7f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_data_integrity": {
+    "hash": "d277e898afacd98a",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_audit_fields": {
+    "hash": "989f7b83f9708d37",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_soft_delete": {
+    "hash": "6c6dc702cda2b207",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_versioning": {
+    "hash": "d1288b86d882cf9c",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_migration_strategy": {
+    "hash": "db8d76218c4f4af0",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_indexing_strategy": {
+    "hash": "70f230a18b6bd73f",
+    "lastmod": "2026-10-02"
+  },
+  "lesson_database_design_scalable_api_oriented_database_design": {
+    "hash": "017f71c5f59c7929",
+    "lastmod": "2026-10-02"
+  }
+}

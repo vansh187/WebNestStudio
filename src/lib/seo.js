@@ -1,7 +1,10 @@
+import vercelConfig from '../../vercel.json' with { type: 'json' }
+
 export const SITE_NAME = 'WebNest Studio'
 export const SITE_URL = 'https://www.webneststudio.co.in'
 export const DEFAULT_DESCRIPTION = 'WebNest Studio is a web & AI software development company in Gurugram, Haryana, building websites, AI integrations and custom software.'
-export const DEFAULT_IMAGE = `${SITE_URL}/favicon.png`
+// 1200x630 social card; favicon.png stays the square Organization logo.
+export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`
 
 export function canonicalUrl(path = '/') {
   const pathname = new URL(path || '/', SITE_URL).pathname.replace(/\/+$/, '')
@@ -18,6 +21,31 @@ export function summarize(value, limit = 160) {
   const text = plainText(value)
   if (text.length <= limit) return text
   return `${text.slice(0, limit - 1).replace(/\s+\S*$/, '')}…`
+}
+
+// Use a conservative editorial threshold for public blog pages. Word count is
+// only a screening rule; publishers still need to review usefulness and originality.
+export const BLOG_INDEXABLE_WORD_COUNT = 800
+// vercel.json is the single source of truth for redirected blog slugs.
+export const BLOG_REDIRECT_SLUGS = new Set(vercelConfig.redirects
+  .map((redirect) => redirect.source.match(/^\/blog\/([a-zA-Z0-9_-]+)$/)?.[1])
+  .filter(Boolean))
+
+// Returns null when the payload carries neither word_count nor content (e.g. a
+// summary-only list item), so callers don't mistake "unknown" for "thin".
+export function blogWordCount(post) {
+  if (Number.isFinite(Number(post?.word_count)) && Number(post.word_count) > 0) {
+    return Number(post.word_count)
+  }
+  if (!post?.content) return null
+  return plainText(post.content).split(/\s+/).filter(Boolean).length
+}
+
+// Unknown length counts as indexable: the detail page re-checks against the full
+// post, and prerender drops any sitemap entry whose page turns out noindex.
+export function isBlogIndexable(post) {
+  const words = blogWordCount(post)
+  return words === null || words >= BLOG_INDEXABLE_WORD_COUNT
 }
 
 export function breadcrumbSchema(items) {

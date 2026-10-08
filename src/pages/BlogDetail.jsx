@@ -9,6 +9,7 @@ import BackButton from '../components/coding/BackButton'
 import { getBlogPostBySlug } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_POSTS } from '../data/blogContent'
+import { isBlogIndexable } from '../lib/seo'
 import { useSeo, useStructuredData, SITE_NAME } from '../hooks/useSeo'
 
 const MARKDOWN_COMPONENTS = {
@@ -82,7 +83,9 @@ export default function BlogDetail() {
     path: `/blog/${slug}`,
     image: livePost?.cover_image_url,
     type: 'article',
-    noindex: state === 'not-found' || state === 'error',
+    noindex: state === 'not-found' || state === 'error' || (state === 'success' && !isBlogIndexable(livePost)),
+    // Hold ads until the post has loaded and cleared the quality bar.
+    ads: state === 'success' && isBlogIndexable(livePost),
     keywords: livePost?.keywords,
   })
   // Injects BlogPosting structured data so search engines can better understand
