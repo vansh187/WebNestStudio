@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'September 21, 2026'
+const EFFECTIVE_DATE = 'October 9, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -209,9 +209,36 @@ export default function PrivacyPolicy() {
             website or other websites.
           </p>
           <p>
-            You can manage cookies in your browser settings and manage Google ad personalization in your Google
-            account settings. If required in your region, we will request consent before using non-essential
-            advertising cookies.
+            Google&rsquo;s use of advertising cookies enables it and its partners to serve ads to you based on your
+            visit to this site and/or other sites on the Internet. Third-party vendors and ad networks may also
+            use cookies and similar technologies to serve and measure ads. Learn more about{' '}
+            <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
+              how Google uses information from sites that use its services
+            </a>
+            .
+          </p>
+          <p>Your choices:</p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              Opt out of personalized advertising from Google in{' '}
+              <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
+                Google Ads Settings
+              </a>
+              . You will still see ads, but they will be less relevant to you.
+            </li>
+            <li>
+              Opt out of personalized advertising from many third-party vendors at{' '}
+              <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
+                www.aboutads.info
+              </a>
+              .
+            </li>
+            <li>Block or delete cookies in your browser settings. Some parts of the site may not work as intended without them.</li>
+          </ul>
+          <p>
+            If required in your region (for example in the EEA, the UK or Switzerland), we will ask for your
+            consent before using non-essential advertising cookies, through a consent message that meets
+            Google&rsquo;s requirements.
           </p>
         </Section>
 
