@@ -31,14 +31,15 @@ export const BLOG_REDIRECT_SLUGS = new Set(vercelConfig.redirects
   .map((redirect) => redirect.source.match(/^\/blog\/([a-zA-Z0-9_-]+)$/)?.[1])
   .filter(Boolean))
 
-// Returns null when the payload carries neither word_count nor content (e.g. a
-// summary-only list item), so callers don't mistake "unknown" for "thin".
+// Counts the actual content when present, since the stored word_count may not be
+// recalculated after an edit. Falls back to word_count for summary-only payloads,
+// and returns null when neither exists so callers don't mistake "unknown" for "thin".
 export function blogWordCount(post) {
+  if (post?.content) return plainText(post.content).split(/\s+/).filter(Boolean).length
   if (Number.isFinite(Number(post?.word_count)) && Number(post.word_count) > 0) {
     return Number(post.word_count)
   }
-  if (!post?.content) return null
-  return plainText(post.content).split(/\s+/).filter(Boolean).length
+  return null
 }
 
 // Unknown length counts as indexable: the detail page re-checks against the full
