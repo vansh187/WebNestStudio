@@ -31,7 +31,15 @@ function upsertTag(selector, create, content) {
  * `path` should be the route path (e.g. '/about') so the canonical URL is
  * stable regardless of which host/preview deployment served the page.
  */
-export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', image = DEFAULT_IMAGE, type = 'website', noindex = false, keywords }) {
+export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', image = DEFAULT_IMAGE, type = 'website', noindex = false, keywords, ads = !noindex }) {
+  // AdSense policy: no ads on pages we tell search engines are below the bar.
+  // index.html starts ad requests paused; only an ads-eligible page resumes them.
+  useEffect(() => {
+    const adsbygoogle = (window.adsbygoogle = window.adsbygoogle || [])
+    adsbygoogle.pauseAdRequests = ads ? 0 : 1
+    return () => { adsbygoogle.pauseAdRequests = 1 }
+  }, [ads])
+
   useEffect(() => {
     const resolvedImage = image || DEFAULT_IMAGE
     // Some titles (e.g. a backend-supplied blog meta_title) already end with some
@@ -89,7 +97,7 @@ export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', im
         const meta = document.createElement('meta')
         meta.setAttribute('name', 'twitter:card')
         return meta
-      }, image && image !== DEFAULT_IMAGE ? 'summary_large_image' : 'summary'),
+      }, 'summary_large_image'),
       upsertTag('meta[name="twitter:title"]', () => {
         const meta = document.createElement('meta')
         meta.setAttribute('name', 'twitter:title')

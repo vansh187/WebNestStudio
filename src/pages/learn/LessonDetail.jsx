@@ -173,7 +173,8 @@ export default function LessonDetail() {
     setCourseProgress(readLearningProgress(userKey))
   }, [userKey, lessonId])
 
-  useStructuredData(lesson && lesson.indexable ? {
+  // Memoized so typing a note or toggling a bookmark doesn't rewrite the JSON-LD tag.
+  const lessonSchema = useMemo(() => (lesson && lesson.indexable ? {
     '@context': 'https://schema.org', '@type': 'TechArticle',
     headline: lesson.title, description: lesson.description,
     url: `${SITE_URL}/learn/lessons/${lesson.id}`,
@@ -183,7 +184,8 @@ export default function LessonDetail() {
     inLanguage: 'en',
     // Lesson videos load on click, so this markup is how crawlers learn they exist.
     ...(videoSchemas.length ? { video: videoSchemas } : {}),
-  } : null)
+  } : null), [lesson, lessonNavigation, videoSchemas])
+  useStructuredData(lessonSchema)
 
   useEffect(() => {
     if (lesson) trackEvent('lesson_viewed', { lesson_id: lesson.id, course_slug: lesson.course_slug })

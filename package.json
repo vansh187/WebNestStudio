@@ -8,7 +8,7 @@
     "dev": "vite",
     "prebuild": "node scripts/copy-pyodide.mjs && node scripts/generate-sitemap.mjs",
     "build": "vite build && node scripts/prerender.mjs",
-    "sitemap": "node scripts/generate-sitemap.mjs",
+    "sitemap": "node scripts/generate-sitemap.mjs --write-lastmod",
     "prerender": "node scripts/prerender.mjs",
     "build:prerender": "npm run build",
     "prepreview": "node scripts/copy-pyodide.mjs",

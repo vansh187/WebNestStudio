@@ -37,6 +37,16 @@
       "permanent": true
     },
     {
+      "source": "/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses-2",
+      "destination": "/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses",
+      "permanent": true
+    },
+    {
+      "source": "/blog/react-frontend-with-python-and-java-backend-the-ultimate-tech-stack-for-growing-businesses",
+      "destination": "/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses",
+      "permanent": true
+    },
+    {
       "source": "/learn/java",
       "destination": "/learn/java-core",
       "permanent": true
@@ -58,6 +68,12 @@
     }
   ],
   "headers": [
+    {
+      "source": "/codelab/problems/sum-two-smoke",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, follow" }
+      ]
+    },
     {
       "source": "/login",
       "headers": [
