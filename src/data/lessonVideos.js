@@ -175,6 +175,38 @@ export const LESSON_VIDEOS = {
     title: 'Java Method Overloading, in Detail',
     description: 'Prefer to watch? This video explains method overloading: same method name, different parameter lists, and how the compiler chooses which one to call.',
   },
+  lesson_java_core_call_by_value_in_java: {
+    youtubeId: 'Tvb1DIZfYyQ',
+    uploadDate: '2026-10-08T13:34:18-07:00', durationSeconds: 74,
+    format: 'short',
+    thumbnail: 'https://i.ytimg.com/vi/Tvb1DIZfYyQ/hq2.jpg',
+    afterSection: 0, // right after the introduction, before the field-mutation section
+    title: 'How Call By Value Works in Java',
+    description: 'A quick look at how Java hands every method a copy of its arguments, and why that copy is a value for primitives but a reference for objects.',
+  },
+  lesson_java_core_constructors_and_constructor_overloading: {
+    youtubeId: 'AvOqftuCj-s',
+    uploadDate: '2026-10-08T13:56:52-07:00', durationSeconds: 457,
+    afterSection: 0, // after the introduction, before "Default Constructor"
+    title: 'Java Constructors and Overloading',
+    description: 'A walkthrough of Java constructors: how they initialise a new object, and how overloading lets one class offer several ways to create it.',
+  },
+  lesson_java_core_static_keyword: {
+    youtubeId: '0rHlhGSjgsk',
+    uploadDate: '2026-10-08T14:26:16-07:00', durationSeconds: 513,
+    afterSection: 0, // after the introduction, before "Static Variables"
+    title: 'Java Constructors and the static Keyword',
+    description: 'A walkthrough that connects constructors with the static keyword: what each object gets for itself, and what the whole class shares.',
+  },
+  lesson_java_core_this_keyword: {
+    youtubeId: 'jMfD9O9EhXE',
+    uploadDate: '2026-10-08T14:32:48-07:00', durationSeconds: 72,
+    format: 'short',
+    thumbnail: 'https://i.ytimg.com/vi/jMfD9O9EhXE/hq2.jpg',
+    afterSection: 0, // right before "this.field — Resolving Naming Conflicts"
+    title: 'How Java\'s this Keyword Resolves Shadowing',
+    description: 'A quick look at how this tells a field apart from a parameter with the same name, and what goes wrong when it is left out.',
+  },
 }
 
 export function getLessonVideo(lessonId) {

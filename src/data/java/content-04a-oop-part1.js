@@ -484,12 +484,37 @@ varargs version: 3 values`,
       },
       {
         heading: 'Constructor Chaining with this()',
-        body: `Inside one constructor, you can call another constructor of the same class using <code>this(...)</code> with matching arguments. This is called constructor chaining, and it lets you centralize common initialization logic in one constructor instead of duplicating it across several. The <code>this(...)</code> call, if used, must be the very first statement in the constructor — the compiler rejects any code before it.`,
+        body: `Inside one constructor, you can call another constructor of the same class using <code>this(...)</code> with matching arguments. This is called constructor chaining, and it lets you centralize common initialization logic in one constructor instead of duplicating it across several. A constructor can make at most one such call. Until Java 24 it had to be the very first statement. Since Java 25 (flexible constructor bodies), statements may come before it, but only ones that do not use the object being built: they cannot use <code>this</code>, read its fields or call its instance methods.`,
         list: [
           'Constructor name must exactly match the class name, with matching capitalization.',
           'Constructors never declare a return type, including <code>void</code>.',
-          'A call to <code>this(...)</code> must be the first statement in the constructor body.',
+          'A constructor can call <code>this(...)</code> or <code>super(...)</code> once at most; code before that call must not touch the object being built.',
           'A class loses its free compiler-provided default constructor once any constructor is written explicitly.',
+        ],
+      },
+      {
+        heading: 'Parameterized Constructors and this.field',
+        body: `A parameterized constructor takes the starting values as arguments, so an object is complete the moment it is created. Parameters are usually given the same names as the fields they fill, which hides the fields inside the constructor. Writing <code>this.name = name</code> tells Java to assign the parameter <code>name</code> to the field <code>name</code> of the object being created. Without <code>this.</code>, <code>name = name</code> just assigns the parameter to itself and the field keeps its default value.`,
+      },
+      {
+        heading: 'Validating Arguments in the Constructor',
+        body: `Because every object passes through a constructor, it is the best place to reject bad data. Check the arguments and throw an <code>IllegalArgumentException</code> (or <code>NullPointerException</code> via <code>Objects.requireNonNull</code>) if they make no sense. A caller then can never hold a half-valid object, such as a bank account with a negative balance or a person without a name.`,
+      },
+      {
+        heading: 'Copy Constructors',
+        body: `A copy constructor takes another object of the same class and copies its values, as in <code>Book(Book other)</code>. Java does not generate one for you, but it is a common and readable way to duplicate an object. Copying a field that refers to a mutable object (such as a list) copies only the reference, so for an independent copy, create a new list from the original.`,
+      },
+      {
+        heading: 'Private Constructors',
+        body: `A constructor can be <code>private</code>, which stops other classes from calling <code>new</code> on it. This is used for utility classes that only hold static methods (like <code>java.lang.Math</code>), and for classes that control how instances are made through a static factory method such as <code>of(...)</code>.`,
+      },
+      {
+        heading: 'Constructors vs Methods',
+        body: `The two look alike, but they play different roles:`,
+        list: [
+          'A constructor runs automatically, once per object, when you use <code>new</code>. A method runs only when you call it, as many times as you like.',
+          'A constructor has the class name and no return type. A method can have any name and must declare a return type (or <code>void</code>).',
+          'Constructors are not inherited, although a subclass calls a superclass constructor with <code>super(...)</code>. Methods are inherited and can be overridden.',
         ],
       },
     ],
@@ -531,18 +556,59 @@ varargs version: 3 values`,
 25
 24`,
       },
+      {
+        caption: 'this.field assignment, argument validation and a copy constructor',
+        code: `class Book {
+    String title;
+    int pages;
+
+    Book(String title, int pages) {
+        if (pages <= 0) {
+            throw new IllegalArgumentException("pages must be positive: " + pages);
+        }
+        this.title = title; // this.title is the field, title is the parameter
+        this.pages = pages;
+    }
+
+    Book(Book other) { // copy constructor
+        this(other.title, other.pages);
+    }
+}
+
+public class BookDemo {
+    public static void main(String[] args) {
+        Book original = new Book("Java Basics", 320);
+        Book copy = new Book(original);
+        copy.title = "Java Basics, 2nd Edition";
+
+        System.out.println(original.title + " (" + original.pages + " pages)");
+        System.out.println(copy.title + " (" + copy.pages + " pages)");
+
+        try {
+            new Book("Empty", 0);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Rejected: " + e.getMessage());
+        }
+    }
+}`,
+        output: `Java Basics (320 pages)
+Java Basics, 2nd Edition (320 pages)
+Rejected: pages must be positive: 0`,
+      },
     ],
     commonMistakes: [
       'Accidentally giving a constructor a return type like "void", which turns it into a regular method that must be called explicitly rather than a constructor invoked by "new".',
       'Writing a custom constructor and then being surprised that "new MyClass()" no longer compiles, because defining any constructor removes the automatic default one.',
-      'Placing statements before the this(...) call inside a constructor, which is a compile-time error since the chaining call must be the first statement.',
+      'Using this or reading a field before the this(...) call. Since Java 25 statements may come before it, but they must not touch the object being built (and before Java 25 nothing at all could come first).',
       'Confusing this(...) (calls another constructor of the same class) with super(...) (calls a constructor of the parent class).',
+      'Writing "name = name;" in a constructor instead of "this.name = name;", which assigns the parameter to itself and leaves the field at its default value.',
     ],
     keyPoints: [
       'A constructor has the same name as the class and no return type, not even void.',
       'The compiler supplies a default no-argument constructor only if you define no constructor yourself.',
       'Constructors can be overloaded like methods, differing by parameter list.',
-      'this(...) chains to another constructor in the same class and must be the first statement.',
+      'this(...) chains to another constructor in the same class; code before it must not use the object being built.',
+      'Validate arguments in the constructor so no object can exist in an invalid state.',
     ],
   },
 
@@ -565,6 +631,35 @@ varargs version: 3 values`,
           'Static members are loaded once per class, not once per object.',
           'Static methods cannot use <code>this</code> or <code>super</code>, since there is no object context.',
           'Static blocks run once, at class-loading time, before any constructor or instance code.',
+        ],
+      },
+      {
+        heading: 'Static vs Instance: Shared State vs Per-Object State',
+        body: `An instance variable gets a fresh copy inside every object, so two objects can hold different values. A static variable has exactly one copy for the whole class, so every object reads and writes the same value. Choose by asking whose data it is: a customer's name belongs to each customer object, while the total number of customers belongs to the class. Constructors usually work on instance state, but they can also update static state, as the counter example shows.`,
+      },
+      {
+        heading: 'Call Static Members Through the Class Name',
+        body: `Java lets you write <code>object.staticMethod()</code>, but the object is ignored: the compiler decides which method to call from the variable's declared type, and it even works when the variable is <code>null</code>. Because this hides the fact that the member is shared, the compiler warns about it (<code>javac -Xlint:static</code>), and most style guides forbid it. Always write <code>ClassName.member</code>, as in <code>Math.max(a, b)</code> or <code>Counter.getCount()</code>.`,
+      },
+      {
+        heading: 'Constants with static final',
+        body: `Combining <code>static</code> with <code>final</code> creates a class-level constant: one shared value that can never change, such as <code>Math.PI</code> or <code>Integer.MAX_VALUE</code>. By convention constants are named in <code>UPPER_SNAKE_CASE</code>. A class made only of constants and static helper methods (a utility class, like <code>java.lang.Math</code>) usually also has a <code>private</code> constructor, so nobody creates pointless objects of it.`,
+      },
+      {
+        heading: 'Static Methods Are Hidden, Not Overridden',
+        body: `A subclass can declare a static method with the same signature as one in its parent, but this <strong>hides</strong> the parent's method rather than overriding it. Overriding is decided at runtime by the actual object; hiding is decided at compile time by the declared type of the variable. So with <code>Animal pet = new Dog()</code>, <code>pet.sound()</code> runs Dog's instance method, while the static <code>kind()</code> still runs Animal's version.`,
+      },
+      {
+        heading: 'Static Nested Classes',
+        body: `A class declared <code>static</code> inside another class is a static nested class. Unlike an inner class, it does not hold a reference to an outer object, so you can create it with <code>new Outer.Nested()</code> without any <code>Outer</code> instance. It is commonly used for helper types that only make sense alongside the outer class, such as a <code>Builder</code> or a <code>Node</code> in a linked list.`,
+      },
+      {
+        heading: 'When to Use static, and When Not To',
+        body: `Static fits things that truly belong to the class rather than to any object:`,
+        list: [
+          '<strong>Good uses:</strong> constants, stateless helper methods (<code>Math.abs</code>, <code>Integer.parseInt</code>), static factory methods (<code>List.of(...)</code>), and the <code>main</code> entry point.',
+          '<strong>Use with care:</strong> mutable static fields are global state shared by the whole program. They make code harder to test and are unsafe when several threads change them at once.',
+          '<strong>Avoid:</strong> making methods static just to skip creating an object. If a method needs an object\'s data, it should be an instance method.',
         ],
       },
     ],
@@ -597,17 +692,95 @@ varargs version: 3 values`,
         output: `Static block: class Counter is being loaded
 Objects created: 3`,
       },
+      {
+        caption: 'One shared static count vs a separate instance count per object',
+        code: `class Visitor {
+    static int totalVisitors; // one copy, shared by the whole class
+    int visits;               // one copy per object
+
+    void visit() {
+        totalVisitors++;
+        visits++;
+    }
+}
+
+public class SharedVsOwn {
+    public static void main(String[] args) {
+        Visitor asha = new Visitor();
+        Visitor ravi = new Visitor();
+
+        asha.visit();
+        asha.visit();
+        ravi.visit();
+
+        System.out.println("Asha visits: " + asha.visits);
+        System.out.println("Ravi visits: " + ravi.visits);
+        System.out.println("Total visitors: " + Visitor.totalVisitors);
+    }
+}`,
+        output: `Asha visits: 2
+Ravi visits: 1
+Total visitors: 3`,
+      },
+      {
+        caption: 'A utility class with a static final constant and a private constructor',
+        code: `final class Temperature {
+    static final double FREEZING_C = 0.0; // a constant: static and final
+
+    private Temperature() { } // utility class: no objects needed
+
+    static double toFahrenheit(double celsius) {
+        return celsius * 9 / 5 + 32;
+    }
+}
+
+public class TemperatureDemo {
+    public static void main(String[] args) {
+        System.out.println(Temperature.toFahrenheit(Temperature.FREEZING_C));
+        System.out.println(Temperature.toFahrenheit(100));
+    }
+}`,
+        output: `32.0
+212.0`,
+      },
+      {
+        caption: 'Static methods are hidden (compile time), instance methods are overridden (runtime)',
+        code: `class Animal {
+    static String kind() { return "Animal"; }
+    String sound() { return "..."; }
+}
+
+class Dog extends Animal {
+    static String kind() { return "Dog"; } // hides Animal.kind(), does not override it
+    @Override
+    String sound() { return "Woof"; }      // overrides Animal.sound()
+}
+
+public class HidingDemo {
+    public static void main(String[] args) {
+        Animal pet = new Dog();
+        System.out.println(pet.sound()); // chosen at runtime by the object: Dog
+        System.out.println(pet.kind());  // chosen at compile time by the variable type: Animal
+    }
+}`,
+        output: `Woof
+Animal`,
+      },
     ],
     commonMistakes: [
       'Trying to access an instance variable directly inside a static method — this fails to compile because static methods have no implicit object to work with.',
       'Assuming each object gets its own copy of a static variable, then being confused when changing it through one object affects every other object.',
       'Forgetting that a static block runs only once per class load, not once per object creation.',
       'Calling an instance (non-static) method from main without first creating an object.',
+      'Calling a static method through an object (pet.kind()) and expecting the object\'s class to decide which version runs; static methods are chosen by the declared type.',
+      'Using mutable static fields as convenient global variables, which makes code hard to test and unsafe across threads.',
     ],
     keyPoints: [
       'Static members belong to the class, not to individual objects, and are shared across all instances.',
       'Static methods can only directly access other static members and have no implicit "this".',
       'Static blocks run once, at class-loading time, before any object is constructed.',
+      'Access static members through the class name; static final fields are constants named in UPPER_SNAKE_CASE.',
+      'A static method in a subclass hides the parent\'s version; it is never overridden.',
     ],
   },
 
@@ -621,16 +794,32 @@ Objects created: 3`,
       },
       {
         heading: 'this(...) — Constructor Chaining',
-        body: `When used as a method-call-like expression, <code>this(...)</code> invokes another constructor of the same class, matched by argument list, as covered in the constructors topic. This is a completely different use from <code>this.field</code> — <code>this(...)</code> only appears as the first statement of a constructor, while <code>this.field</code> can appear anywhere inside an instance method or constructor.`,
+        body: `When used as a method-call-like expression, <code>this(...)</code> invokes another constructor of the same class, matched by argument list, as covered in the constructors topic. This is a completely different use from <code>this.field</code>: <code>this(...)</code> can only appear inside a constructor, at most once, while <code>this.field</code> can appear anywhere inside an instance method or constructor. Until Java 24 the <code>this(...)</code> call had to be the first statement; since Java 25 it may follow statements that don't use the object being built, such as argument checks.`,
       },
       {
         heading: 'Other Uses of this',
         body: `<code>this</code> can also be passed as an argument to another method (for example, registering the current object as a listener), returned from a method to support method chaining (<code>return this;</code>), and used to explicitly call another instance method of the current object (<code>this.someMethod()</code>), although that explicit form is usually optional since the method name alone resolves to the current object by default.`,
         list: [
           '<code>this.field</code> — refers to the current object\'s field, most often to resolve shadowing.',
-          '<code>this(...)</code> — calls another constructor in the same class; must be the first statement.',
+          '<code>this(...)</code> — calls another constructor in the same class; code before it must not use the object being built.',
           '<code>this</code> is never available inside a static context, because static code has no current object.',
         ],
+      },
+      {
+        heading: 'How Java Resolves a Name: Why Shadowing Happens',
+        body: `When Java sees a plain name like <code>balance</code>, it looks in the closest scope first: local variables and parameters, then the fields of the current class, then inherited fields. So inside a constructor with a parameter called <code>balance</code>, the plain name always means the parameter, and the field is hidden (shadowed). <code>this.balance</code> skips the local scope and goes straight to the current object's field. When there is no clash, for example a field <code>balance</code> and a parameter <code>amount</code>, writing <code>balance</code> already means the field, so <code>this.</code> is optional.`,
+      },
+      {
+        heading: 'Why the Bug Is Silent',
+        body: `<code>owner = owner;</code> is perfectly legal Java: it assigns the parameter to itself. The compiler doesn't reject it, the program runs, and the field simply keeps its default value (<code>null</code>, <code>0</code> or <code>false</code>). You only notice later, when something reads the field. Two habits prevent it: always write <code>this.field = field</code> when the names match, and make fields <code>final</code> where you can. The compiler then reports a <code>final</code> field the constructor forgot to assign.`,
+      },
+      {
+        heading: 'Outer.this in Inner Classes',
+        body: `Inside an inner (non-static nested) class, <code>this</code> means the inner object. To reach the enclosing object, write the outer class name followed by <code>.this</code>, as in <code>Course.this.title</code>. This is the only way to read an outer field that the inner class has shadowed with a field of the same name. Static nested classes have no enclosing object, so <code>Outer.this</code> is not available there.`,
+      },
+      {
+        heading: 'Passing this Safely',
+        body: `Handing <code>this</code> to another object (as an argument or a callback) is normal in methods. Avoid doing it inside a constructor, though: the other object then holds a reference to an object that isn't fully initialised yet, which can expose half-set fields. Finish construction first, then register the object from a method or a factory.`,
       },
     ],
     examples: [
@@ -658,17 +847,109 @@ Objects created: 3`,
 }`,
         output: 'Dev now earns 53500.0',
       },
+      {
+        caption: 'The silent shadowing bug: a field left at its default value',
+        code: `class Account {
+    String owner;
+    double balance;
+
+    Account(String owner, double balance) {
+        owner = owner;          // bug: assigns the parameter to itself
+        this.balance = balance; // correct: assigns the parameter to the field
+    }
+}
+
+public class ShadowingBug {
+    public static void main(String[] args) {
+        Account acc = new Account("Meera", 2500.0);
+        System.out.println("Owner: " + acc.owner);
+        System.out.println("Balance: " + acc.balance);
+    }
+}`,
+        output: `Owner: null
+Balance: 2500.0`,
+      },
+      {
+        caption: 'A local variable, this.field and Outer.this.field with the same name',
+        code: `class Course {
+    String title = "Core Java";
+
+    class Lesson {
+        String title = "this Keyword";
+
+        void describe() {
+            String title = "local variable";
+            System.out.println(title);              // the local variable
+            System.out.println(this.title);         // the Lesson object's field
+            System.out.println(Course.this.title);  // the enclosing Course object's field
+        }
+    }
+}
+
+public class OuterThisDemo {
+    public static void main(String[] args) {
+        Course course = new Course();
+        Course.Lesson lesson = course.new Lesson();
+        lesson.describe();
+    }
+}`,
+        output: `local variable
+this Keyword
+Core Java`,
+      },
+      {
+        caption: 'Passing this from a method so another object can keep a reference',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+class Classroom {
+    private final List<Student> students = new ArrayList<>();
+
+    void enrol(Student student) {
+        students.add(student);
+    }
+
+    int size() {
+        return students.size();
+    }
+}
+
+class Student {
+    final String name;
+
+    Student(String name) {
+        this.name = name;
+    }
+
+    void join(Classroom room) {
+        room.enrol(this); // hand this object to another object
+    }
+}
+
+public class PassThisDemo {
+    public static void main(String[] args) {
+        Classroom room = new Classroom();
+        new Student("Asha").join(room);
+        new Student("Ravi").join(room);
+        System.out.println("Students enrolled: " + room.size());
+    }
+}`,
+        output: 'Students enrolled: 2',
+      },
     ],
     commonMistakes: [
       'Forgetting "this." when a constructor parameter shadows an instance field, causing the field to silently stay at its default value.',
       'Trying to use "this" inside a static method, which does not compile since static code has no current object.',
-      'Placing this(...) somewhere other than the first line of a constructor.',
+      'Using the object (this, its fields or instance methods) before the this(...) call in a constructor.',
       'Confusing this(...) (same-class constructor chaining) with super(...) (parent-class constructor call).',
+      'Passing "this" to other objects from inside a constructor, exposing an object that is not fully initialised yet.',
     ],
     keyPoints: [
       '"this" refers to the current object inside instance methods and constructors.',
       '"this.field" resolves naming conflicts between fields and parameters/local variables (shadowing).',
-      '"this(...)" chains to another constructor in the same class and must be the first statement.',
+      'A plain name resolves to the nearest scope first, so "this." is only required when a local name hides the field.',
+      '"this(...)" chains to another constructor in the same class; code before it must not touch the object being built.',
+      '"Outer.this" reaches the enclosing object from inside an inner class.',
       '"this" cannot be used in a static context, since static members have no associated object.',
     ],
   },

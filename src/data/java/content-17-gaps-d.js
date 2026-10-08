@@ -24,6 +24,27 @@ For a primitive (int, double, boolean, and so on), the value is the literal data
           'Passing an object and reassigning the parameter: only the local copy of the reference changes; the caller\'s reference is untouched.',
         ],
       },
+      {
+        heading: 'What Happens in Memory During a Call',
+        body: `Each method call gets its own stack frame, and every parameter is a brand-new local variable in that frame. When the call starts, Java copies the argument's value into the parameter. When the call ends, the frame and all its parameters are thrown away. Objects live separately on the heap, so they survive the call. That is why a change made through a reference outlives the method, while a change made to the parameter variable itself disappears with the frame.`,
+      },
+      {
+        heading: 'The Classic Test: Why a swap Method Fails',
+        body: `A <code>swap(int a, int b)</code> method that exchanges its two parameters looks correct but changes nothing for the caller, because it only swaps the two local copies. The same is true for <code>swap(Employee a, Employee b)</code>: it swaps the copied references, not the caller's variables. To swap for real, swap the contents of something both sides share, such as two elements of the same array, or return the result.`,
+      },
+      {
+        heading: 'Strings and Wrapper Types Look Like Primitives',
+        body: `<code>String</code>, <code>Integer</code> and the other wrapper classes are objects, so a copy of the reference is passed. They are also <strong>immutable</strong>: no method can change them in place. Something like <code>text = text + "!"</code> builds a new <code>String</code> and points only the local copy at it, so the caller still sees the original. A mutable type such as <code>StringBuilder</code> behaves differently, because <code>append</code> changes the one object both references share.`,
+      },
+      {
+        heading: 'How to Get a Changed Value Back to the Caller',
+        body: `Since a method can never rebind the caller's variable, pick one of these instead:`,
+        list: [
+          '<strong>Return the new value</strong> and let the caller store it (<code>score = addBonus(score);</code>). This is the clearest option and the usual choice.',
+          '<strong>Change a shared mutable object</strong>, such as a field of an object, an array element or a collection, when updating that object is the method\'s job.',
+          '<strong>Return a small result object or record</strong> when a method needs to hand back several values at once.',
+        ],
+      },
     ],
     examples: [
       {
@@ -63,6 +84,76 @@ public class CallByValueDemo {
         output: `Changed Inside Method
 Changed Inside Method
 10`,
+      },
+      {
+        caption: 'A swap method fails on primitives but works on a shared array',
+        code: `public class SwapDemo {
+    static void swap(int a, int b) {
+        int temp = a;
+        a = b;
+        b = temp; // swaps the local copies only
+    }
+
+    static void swapInArray(int[] values) {
+        int temp = values[0];
+        values[0] = values[1];
+        values[1] = temp; // changes the one array both references point to
+    }
+
+    public static void main(String[] args) {
+        int x = 1, y = 2;
+        swap(x, y);
+        System.out.println("After swap: x = " + x + ", y = " + y);
+
+        int[] pair = {1, 2};
+        swapInArray(pair);
+        System.out.println("After swapInArray: " + pair[0] + ", " + pair[1]);
+    }
+}`,
+        output: `After swap: x = 1, y = 2
+After swapInArray: 2, 1`,
+      },
+      {
+        caption: 'An immutable String is unaffected; a mutable StringBuilder changes',
+        code: `public class StringParamDemo {
+    static void addMark(String text) {
+        text = text + "!"; // builds a new String; only the local reference moves to it
+    }
+
+    static void addMark(StringBuilder text) {
+        text.append("!"); // changes the one StringBuilder the caller also points to
+    }
+
+    public static void main(String[] args) {
+        String greeting = "Hello";
+        addMark(greeting);
+        System.out.println(greeting);
+
+        StringBuilder builder = new StringBuilder("Hello");
+        addMark(builder);
+        System.out.println(builder);
+    }
+}`,
+        output: `Hello
+Hello!`,
+      },
+      {
+        caption: 'Returning the new value is how a method hands a change back',
+        code: `public class ReturnValueDemo {
+    static int addBonus(int score) {
+        return score + 100; // hand the new value back instead of changing the parameter
+    }
+
+    public static void main(String[] args) {
+        int score = 10;
+        addBonus(score);              // result ignored, score unchanged
+        System.out.println(score);
+        score = addBonus(score);      // caller chooses to store the result
+        System.out.println(score);
+    }
+}`,
+        output: `10
+110`,
       },
     ],
     commonMistakes: [

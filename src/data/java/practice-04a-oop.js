@@ -421,7 +421,7 @@ public class PointDemo {
 }`,
       hints: [
         'Use <code>this.x = x;</code> to assign the parameter to the field with the same name.',
-        '<code>this(0, 0);</code> must be the first statement in the no-argument constructor.',
+        'The no-argument constructor only needs one statement: <code>this(0, 0);</code>.',
       ],
       solution: `class Point {
     int x;
@@ -462,10 +462,10 @@ public class PointDemo {
         explanation: 'A constructor declares no return type, not even void. Adding one turns it into an ordinary method.',
       },
       {
-        question: 'Where must a call to <code>this(...)</code> appear inside a constructor?',
-        options: ['Anywhere in the body', 'Inside an if block', 'As the last statement', 'As the first statement'],
-        answer: 3,
-        explanation: 'A call to another constructor of the same class must be the first statement, so the object is initialised before any other code runs.',
+        question: 'In Java 25, what may come before a call to <code>this(...)</code> inside a constructor?',
+        options: ['Any code at all', 'Only statements that do not use the object being created', 'Nothing: it must always be the first statement', 'Only a return statement'],
+        answer: 1,
+        explanation: 'Since Java 25, a constructor can run statements such as argument checks before this(...), but that code cannot use this, read fields or call instance methods. Before Java 25, this(...) had to be the first statement.',
       },
     ],
     interviewQuestions: [
