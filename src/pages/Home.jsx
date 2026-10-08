@@ -23,10 +23,9 @@ import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
 import { useSeo } from '../hooks/useSeo'
 
-// Course totals shown on the landing page. Kept here as plain numbers because the course
-// data itself is a very large file that the landing page should not load. Update when
-// courses are added (the Learn page shows the exact live counts).
-const LEARNING = { courses: 12, lessons: '550+' }
+// Course totals shown on the landing page. vite.config.js counts them from the course
+// data at build time, the same way the Learn page does, so the two always match.
+const LEARNING = __LEARN_STATS__
 
 // Colour scheme of the hero and the learning band: true = cream and gold with dark
 // accents (navbar, footer, review and call-to-action panels); false = warm charcoal.

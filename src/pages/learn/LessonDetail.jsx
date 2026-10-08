@@ -365,15 +365,17 @@ export default function LessonDetail() {
           </nav>
         )}
       </article>
+      {/* On phones this column stacks below the article, which already has its own
+          playground section and Previous/Next links, so those repeats are desktop-only. */}
       <aside className="space-y-3">
-        <Link to={playgroundLink('scratch')} onClick={() => trackPractice('scratch')} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gold-400 px-4 py-3 text-sm font-semibold text-ink-950">
+        <Link to={playgroundLink('scratch')} onClick={() => trackPractice('scratch')} className="hidden w-full items-center justify-center gap-2 rounded-lg bg-gold-400 px-4 py-3 text-sm font-semibold text-ink-950 lg:inline-flex">
           <FiPlay className="h-4 w-4" /> Practice in playground
         </Link>
         <Link to="/codelab/dashboard" className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-ink-200 px-4 py-3 text-sm font-semibold text-ink-700 hover:border-gold-400 hover:text-gold-600 dark:border-ink-800 dark:text-ink-100 dark:hover:text-gold-400">
           <FiBarChart2 className="h-4 w-4" /> View dashboard
         </Link>
         {lessonNavigation && (
-          <div className="rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40">
+          <div className="hidden rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40 lg:block">
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-400">
               Lesson {lessonNavigation.currentIndex + 1} of {lessonNavigation.total}
             </p>

@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { SAMPLE_COURSES } from './src/data/codelabDefaults.js'
+
+// Course totals for the landing page, counted the same way as the Learn page
+// (CoursesList.jsx) but at build time, so Home doesn't load the course data.
+const LEARN_STATS = {
+  courses: SAMPLE_COURSES.length,
+  lessons: SAMPLE_COURSES.reduce((sum, course) => sum + Number(course.lessons_count || 0), 0),
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: { __LEARN_STATS__: JSON.stringify(LEARN_STATS) },
   server: {
     host: '127.0.0.1',
     proxy: {
