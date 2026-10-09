@@ -975,6 +975,31 @@ public class PassThisDemo {
           'Every class ultimately inherits from <code>java.lang.Object</code> if it extends nothing else.',
         ],
       },
+      {
+        heading: 'Types of Inheritance in Java',
+        body: `Inheritance is usually described in five shapes. Java classes support three of them directly. The other two are possible only through interfaces.`,
+        list: [
+          '<strong>Single</strong>: one class extends one class, such as <code>Car extends Vehicle</code>.',
+          '<strong>Multilevel</strong>: a chain, such as <code>Dog extends Mammal</code> and <code>Mammal extends Animal</code>. <code>Dog</code> inherits from both classes above it.',
+          '<strong>Hierarchical</strong>: several classes extend the same parent, such as <code>Car</code>, <code>Bike</code> and <code>Truck</code> all extending <code>Vehicle</code>.',
+          '<strong>Multiple</strong>: one class with two parents. Classes cannot do this, but a class can implement several interfaces: <code>class Duck implements Flyer, Swimmer</code>.',
+          '<strong>Hybrid</strong>: a mix of the shapes above. Java allows it only when the multiple-parent part uses interfaces.',
+        ],
+      },
+      {
+        heading: 'Constructor Order in an Inheritance Chain',
+        body: `When you create a subclass object, the constructors run from the top of the chain down. Each constructor first calls its parent's constructor through <code>super(...)</code>, written by you or inserted by the compiler, so the <code>Object</code> part is built first, then each parent, and the subclass last. This guarantees that inherited fields are set up before the subclass code uses them. In the multilevel example below, creating a <code>Dog</code> prints the <code>Animal</code>, <code>Mammal</code> and <code>Dog</code> constructor messages in that order.`,
+      },
+      {
+        heading: 'Access Modifiers Across the Hierarchy',
+        body: `The access modifier on a member decides whether a subclass can use it by name.`,
+        list: [
+          '<code>public</code>: visible to the subclass and to everyone else.',
+          '<code>protected</code>: visible to subclasses, even in other packages, and to classes in the same package. Use it for members meant for subclasses.',
+          'Default (no modifier): visible only to subclasses in the same package.',
+          '<code>private</code>: never visible by name in a subclass. Reach it through a public or protected method of the parent.',
+        ],
+      },
     ],
     examples: [
       {
@@ -1006,6 +1031,60 @@ public class InheritanceDemo {
         output: `Toyota vehicle starting
 Toyota car honking with 4 doors`,
       },
+      {
+        caption: 'Multilevel inheritance: constructors run top-down, and Dog inherits from every class above it',
+        code: `public class MultilevelDemo {
+    public static void main(String[] args) {
+        Dog dog = new Dog("Rex");
+        dog.eat();     // from Animal
+        dog.breathe(); // from Mammal
+        dog.bark();    // from Dog
+        System.out.println(dog instanceof Animal);
+    }
+}
+
+class Animal {
+    protected String name;
+
+    Animal(String name) {
+        this.name = name;
+        System.out.println("Animal constructor");
+    }
+
+    void eat() {
+        System.out.println(name + " is eating");
+    }
+}
+
+class Mammal extends Animal {
+    Mammal(String name) {
+        super(name);
+        System.out.println("Mammal constructor");
+    }
+
+    void breathe() {
+        System.out.println(name + " breathes air");
+    }
+}
+
+class Dog extends Mammal {
+    Dog(String name) {
+        super(name);
+        System.out.println("Dog constructor");
+    }
+
+    void bark() {
+        System.out.println(name + " says woof");
+    }
+}`,
+        output: `Animal constructor
+Mammal constructor
+Dog constructor
+Rex is eating
+Rex breathes air
+Rex says woof
+true`,
+      },
     ],
     commonMistakes: [
       'Trying to make a class extend two classes at once (e.g. "class C extends A, B") — Java does not allow multiple class inheritance.',
@@ -1017,6 +1096,8 @@ Toyota car honking with 4 doors`,
       'Inheritance lets a subclass reuse fields and methods of a superclass via "extends", modeling an "is-a" relationship.',
       'Java allows only single inheritance between classes, but a class can implement multiple interfaces.',
       'Constructors are not inherited, and every class ultimately extends java.lang.Object.',
+      'Java classes support single, multilevel and hierarchical inheritance; multiple and hybrid inheritance need interfaces.',
+      'Constructors in a chain run from the top superclass down to the subclass.',
     ],
   },
 

@@ -186,6 +186,17 @@ A classic example is a Department that has Employees. An Employee can be transfe
         ],
       },
       {
+        heading: 'How Aggregation Protects the Part Objects',
+        body: `In aggregation, the container only stores a reference to an object that was created somewhere else. Removing the container, or setting its variable to <code>null</code>, removes that one reference and nothing else. The garbage collector frees an object only when no live reference to it is left, so the part stays alive as long as any other code still points to it.
+
+This is what keeps the parts safe. Deleting a <code>Department</code> does not delete its employees. One <code>Address</code> object can be shared by several <code>Employee</code> objects, and it is still usable after all of them are gone.`,
+        list: [
+          'The part is created outside the container and passed in through a constructor or setter.',
+          'Several containers can hold references to the same part at the same time.',
+          'When a container is gone, the part survives as long as another reference to it exists.',
+        ],
+      },
+      {
         heading: 'Why This Distinction Matters',
         body: `Recognizing aggregation versus composition helps you design classes that reflect real-world lifecycle rules. Modeling a relationship as aggregation when it should be composition (or vice versa) can lead to objects that are deleted too aggressively (losing data that should persist independently) or objects that linger unnecessarily (memory leaks, orphaned references) when they should have been cleaned up with their container.`,
       },
@@ -232,6 +243,42 @@ public class AggregationDemo {
 }`,
         output: `Engineering has 2 employees
 Riya still exists after the department reference is gone`,
+      },
+      {
+        caption: 'One Address shared by two Employees outlives both of them',
+        code: `public class SharedPartDemo {
+    public static void main(String[] args) {
+        Address office = new Address("Pune");
+
+        Employee riya = new Employee("Riya", office);
+        Employee karan = new Employee("Karan", office);
+
+        System.out.println(riya.name + " works in " + riya.address.city);
+        System.out.println(karan.name + " works in " + karan.address.city);
+
+        riya = null;  // one owner is gone
+        karan = null; // and the other one too
+        System.out.println("Address still usable: " + office.city);
+    }
+}
+
+class Address {
+    String city;
+    Address(String city) { this.city = city; }
+}
+
+class Employee {
+    String name;
+    Address address; // HAS-A Address, but does not own it
+
+    Employee(String name, Address address) {
+        this.name = name;
+        this.address = address; // receives an existing object
+    }
+}`,
+        output: `Riya works in Pune
+Karan works in Pune
+Address still usable: Pune`,
       },
     ],
     commonMistakes: [
