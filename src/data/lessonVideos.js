@@ -207,6 +207,22 @@ export const LESSON_VIDEOS = {
     title: 'How Java\'s this Keyword Resolves Shadowing',
     description: 'A quick look at how this tells a field apart from a parameter with the same name, and what goes wrong when it is left out.',
   },
+  lesson_java_core_java_inheritance: {
+    youtubeId: 'N-pvCBSTe-c',
+    uploadDate: '2026-10-09T11:47:57-07:00', durationSeconds: 400,
+    afterSection: 0, // after the introduction, before "What Gets Inherited"
+    title: 'Core Java Inheritance Concept',
+    description: 'A walkthrough of inheritance in core Java: how a child class extends a parent class, what it inherits, and how it reuses the parent\'s code.',
+  },
+  lesson_java_core_aggregation_in_java: {
+    youtubeId: '5kXvd_rXNMQ',
+    uploadDate: '2026-10-09T12:30:20-07:00', durationSeconds: 74,
+    format: 'short',
+    thumbnail: 'https://i.ytimg.com/vi/5kXvd_rXNMQ/hq2.jpg',
+    afterSection: 1, // just before "How Aggregation Protects the Part Objects"
+    title: 'Java Aggregation Protects Objects',
+    description: 'A quick look at how aggregation keeps a part object alive when the object that holds it is gone, because the container only stores a reference.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
