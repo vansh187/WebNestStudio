@@ -152,6 +152,28 @@ This matters because version mismatches between related libraries are one of the
         heading: 'How Starters Affect the Classpath',
         body: `Adding a starter to your pom.xml or build.gradle changes what is on the classpath, and that in turn changes what auto-configuration activates. For example, spring-boot-starter-data-jpa brings in Hibernate and the JPA API, which makes classes like <code>EntityManager</code> and <code>DataSource</code> available — and that presence is exactly what Spring Boot's auto-configuration checks for before wiring up a JPA-based persistence layer automatically.`,
       },
+      {
+        heading: 'What Changed in Spring Boot 4',
+        body: `Spring Boot 3 shipped one large <code>spring-boot-autoconfigure</code> jar containing the auto-configuration for every supported technology. Spring Boot 4 splits it into small modules, one per technology, and each starter brings in only the module it needs. Applications get a smaller classpath and fewer surprise configurations. Two practical consequences:`,
+        list: [
+          'Some starters were renamed. <code>spring-boot-starter-web</code> still exists in 4.x but is deprecated in favour of <code>spring-boot-starter-webmvc</code>.',
+          'Every technology starter has a matching test starter, such as <code>spring-boot-starter-webmvc-test</code> or <code>spring-boot-starter-data-jpa-test</code>, which brings in the test slices for that technology.',
+          'When upgrading a large Boot 3 application, <code>spring-boot-starter-classic</code> and <code>spring-boot-starter-test-classic</code> bring back the full set of auto-configuration modules. They are a stepping stone for migration; move to the specific starters afterwards.',
+        ],
+      },
+      {
+        heading: 'Seeing What a Starter Brings In',
+        body: `A starter is just a POM with dependencies, so you can inspect it. <code>mvn dependency:tree</code> (or <code>gradle dependencies</code>) prints every library and its version. Use it when you need to know which Tomcat, Hibernate or Jackson version you are actually running, or when two libraries pull in conflicting versions of the same dependency. The versions come from the <code>spring-boot-dependencies</code> BOM, which is why you normally write no <code>&lt;version&gt;</code> for anything Spring Boot manages.`,
+      },
+      {
+        heading: 'Choosing Starters for a Typical Project',
+        list: [
+          '<strong>REST API with a SQL database:</strong> webmvc, data-jpa, validation, the JDBC driver (such as <code>org.postgresql:postgresql</code>), and actuator for health checks.',
+          '<strong>Add login or JWT:</strong> security, or security-oauth2-resource-server for an API that accepts tokens.',
+          '<strong>Calling other services:</strong> restclient for blocking calls, webclient for reactive ones.',
+          '<strong>Only what you use:</strong> every extra starter adds startup work, attack surface and auto-configuration to understand, so remove the ones a project no longer needs.',
+        ],
+      },
     ],
     examples: [
       {
@@ -173,8 +195,54 @@ This matters because version mismatches between related libraries are one of the
 </dependencies>`,
         output: '(No console output — this changes the resolved dependency tree; run "mvn dependency:tree" to confirm Tomcat, Jackson, Hibernate, and HikariCP are now present.)',
       },
+      {
+        caption: 'What four starters actually resolve to (mvn dependency:tree, Spring Boot 4.1.1, trimmed)',
+        code: `<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.1</version>
+</parent>
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+</dependencies>
+
+$ mvn dependency:tree -Dscope=compile`,
+        output: `+- org.springframework.boot:spring-boot-starter-webmvc:jar:4.1.1:compile
+|  |  +- org.springframework.boot:spring-boot-starter-logging:jar:4.1.1:compile
+|  |  |  +- ch.qos.logback:logback-classic:jar:1.5.38:compile
+|  |     \\- tools.jackson.core:jackson-databind:jar:3.1.5:compile
+|  |  |  +- org.apache.tomcat.embed:tomcat-embed-core:jar:11.0.24:compile
+|     \\- org.springframework:spring-webmvc:jar:7.0.9:compile
++- org.springframework.boot:spring-boot-starter-actuator:jar:4.1.1:compile
+|     \\- io.micrometer:micrometer-core:jar:1.17.1:compile
++- org.springframework.boot:spring-boot-starter-validation:jar:4.1.1:compile
+|     \\- org.hibernate.validator:hibernate-validator:jar:9.1.3.Final:compile
+\\- org.springframework.boot:spring-boot-starter-data-jpa:jar:4.1.1:compile
+   |  \\- com.zaxxer:HikariCP:jar:7.0.2:compile
+   |  |  +- org.hibernate.orm:hibernate-core:jar:7.4.5.Final:compile
+
+(No versions were written in the POM; the parent's BOM chose all of them.)`,
+      },
     ],
     commonMistakes: [
+      'Following a Spring Boot 3 tutorial in a Boot 4 project and adding spring-boot-starter-web. It still works but is deprecated; use spring-boot-starter-webmvc.',
+      'Adding a test dependency such as @WebMvcTest support without the matching test starter (spring-boot-starter-webmvc-test), so the test slice annotations cannot be found.',
       'Manually specifying versions for individual libraries already managed by a starter, which can reintroduce the version-conflict problems starters are designed to avoid.',
       'Adding spring-boot-starter-security "just in case" and being surprised every endpoint suddenly returns 401 Unauthorized — the starter enables security by default the moment it is on the classpath.',
       'Forgetting that starters are transitive — removing a starter can silently remove auto-configuration you were relying on elsewhere.',
@@ -210,27 +278,90 @@ This matters because version mismatches between related libraries are one of the
         heading: 'Inspecting What Auto-Configured',
         body: `When auto-configuration behaves unexpectedly, enabling debug logging (<code>--debug</code> flag or <code>debug=true</code> in application.properties) prints an auto-configuration report at startup listing every candidate class as "Positive match" or "Negative match," along with the exact condition that decided it — this is the single most useful diagnostic tool for auto-configuration issues.`,
       },
+      {
+        heading: 'Customize First, Replace Last',
+        body: `There are three levels of control, and the lightest one that works is usually the right one:`,
+        list: [
+          '<strong>Properties.</strong> Most auto-configured beans read <code>spring.*</code> properties, such as <code>spring.jackson.*</code>, <code>spring.datasource.*</code> or <code>server.*</code>. Try these first.',
+          '<strong>Customizer beans.</strong> Many auto-configurations accept customizers, such as <code>JsonMapperBuilderCustomizer</code> for Jackson or <code>WebServerFactoryCustomizer</code> for the embedded server. A customizer adjusts the bean Spring Boot builds, so all the other defaults and the <code>spring.*</code> properties keep working.',
+          '<strong>Your own bean.</strong> Declaring a bean of the same type makes the auto-configured one back off completely. You then own every setting, and the related properties and customizers stop applying. Use this only when you truly need full control.',
+        ],
+      },
+      {
+        heading: 'Excluding an Auto-Configuration',
+        body: `Sometimes a library on the classpath triggers configuration you do not want, for example a DataSource being configured in a service that has no database. Exclude it with <code>@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)</code> or the property <code>spring.autoconfigure.exclude</code>. Excluding is better than adding a dummy bean, because the intent is explicit and shows in the debug report.`,
+      },
+      {
+        heading: 'Jackson in Spring Boot 4',
+        body: `Spring Boot 4 auto-configures Jackson 3, whose classes live in the <code>tools.jackson</code> package. The main bean is a <code>JsonMapper</code> rather than the Jackson 2 <code>ObjectMapper</code> from <code>com.fasterxml.jackson.databind</code>, which older tutorials override. Jackson 3 also writes <code>java.time</code> values such as <code>LocalDate</code> as ISO strings (<code>"2026-11-30"</code>) by default, so the old <code>JavaTimeModule</code> and <code>WRITE_DATES_AS_TIMESTAMPS</code> setup is no longer needed.`,
+      },
     ],
     examples: [
       {
-        caption: 'Overriding an auto-configured bean with your own',
-        code: `@Configuration
-public class WebConfig {
+        caption: 'Customizing Spring Boot\'s JsonMapper instead of replacing it (tested on Spring Boot 4.1.1)',
+        code: `import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.SerializationFeature;
 
-    // Because ObjectMapper auto-configuration is @ConditionalOnMissingBean,
-    // defining this bean replaces Spring Boot's default JSON mapper.
+@Configuration
+public class JsonConfig {
+
+    // Adjusts the JsonMapper that Spring Boot builds, instead of replacing it.
     @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper;
+    JsonMapperBuilderCustomizer prettyJsonWithoutNulls() {
+        return builder -> builder
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL));
+    }
+}
+
+@RestController
+public class InvoiceController {
+
+    public record Invoice(String number, LocalDate dueDate, BigDecimal amount, String note) {}
+
+    @GetMapping("/api/invoice")
+    public Invoice invoice() {
+        return new Invoice("INV-1042", LocalDate.of(2026, 11, 30), new BigDecimal("1499.00"), null);
     }
 }`,
-        output: '(No console output at request time — verify with --debug at startup: "ObjectMapper defined user-supplied bean" appears in the auto-configuration report.)',
+        output: `GET /api/invoice
+{
+  "number" : "INV-1042",
+  "dueDate" : "2026-11-30",
+  "amount" : 1499.00
+}
+(pretty-printed, and the null "note" field is left out)`,
+      },
+      {
+        caption: 'Replacing the bean completely, and what --debug reports',
+        code: `@Configuration
+public class OwnMapperConfig {
+
+    // Replaces Spring Boot's JsonMapper completely. Boot's version backs off,
+    // and customizers and spring.jackson.* properties no longer apply.
+    @Bean
+    JsonMapper jsonMapper() {
+        return JsonMapper.builder().build();
+    }
+}
+
+// Run with: java -jar app.jar --debug`,
+        output: `GET /api/invoice
+{"number":"INV-1042","dueDate":"2026-11-30","amount":1499.00,"note":null}
+(the customizer above no longer runs, so the output is compact and includes nulls)
+
+From the CONDITIONS EVALUATION REPORT, under "Negative matches":
+   JacksonAutoConfiguration#jacksonJsonMapper:
+      Did not match:
+         - @ConditionalOnMissingBean (types: tools.jackson.databind.json.JsonMapper; SearchStrategy: all) found beans of type 'tools.jackson.databind.json.JsonMapper' jsonMapper (OnBeanCondition)`,
       },
     ],
     commonMistakes: [
+      'Replacing an auto-configured bean (such as the JsonMapper) when a customizer or a spring.* property would do. The replacement silently drops every other default and stops the related properties from working.',
+      'Copying a Spring Boot 2/3 ObjectMapper override into a Spring Boot 4 project. Boot 4 auto-configures a Jackson 3 JsonMapper from tools.jackson, so a com.fasterxml ObjectMapper bean does not replace it.',
       'Assuming auto-configuration always "just works" and skipping the --debug report when something behaves unexpectedly, instead of guessing.',
       'Defining a bean of a slightly different type than Spring Boot expects, so @ConditionalOnMissingBean does not detect it and you end up with two competing beans.',
       'Believing @EnableAutoConfiguration scans your own code for components — it only evaluates registered auto-configuration classes, not your @Component classes (that is @ComponentScan\'s job).',
@@ -240,6 +371,8 @@ public class WebConfig {
       '@ConditionalOnClass, @ConditionalOnMissingBean, and @ConditionalOnProperty are the most common conditions guarding auto-configuration.',
       'Defining your own @Bean of the same type is the standard way to override an auto-configured default.',
       'Run with --debug to print the auto-configuration match/no-match report when behavior is unclear.',
+      'Prefer properties, then customizer beans, and replace a bean only when you need full control.',
+      'Exclude unwanted auto-configuration with exclude = … or spring.autoconfigure.exclude.',
     ],
   },
 
@@ -258,6 +391,22 @@ public class WebConfig {
       {
         heading: 'Type-Safe Binding with @ConfigurationProperties',
         body: `For a related group of settings, @ConfigurationProperties binds an entire prefix of properties onto a strongly typed Java class in one step, with support for nested objects, lists, and maps. The class must be registered as a bean, typically via @ConfigurationProperties combined with @Component, or explicitly with @EnableConfigurationProperties on a configuration class.`,
+      },
+      {
+        heading: 'Immutable Settings with a Record',
+        body: `A Java record is the cleanest way to hold settings: the values are bound once through the constructor, and nothing can change them afterwards. A record needs no setters and no <code>@Component</code>. Instead, add <code>@ConfigurationPropertiesScan</code> to the main application class, and Spring Boot finds every <code>@ConfigurationProperties</code> class in your packages. <code>@DefaultValue</code> on a component supplies a value when the property is missing.`,
+      },
+      {
+        heading: 'Durations, Sizes and Lists',
+        body: `Spring Boot converts readable strings into proper types. A <code>Duration</code> field accepts <code>30s</code>, <code>5m</code> or <code>2h</code>, a <code>DataSize</code> field accepts <code>10MB</code>, and a <code>List&lt;String&gt;</code> binds from a YAML list or from a comma-separated value. This is much safer than an <code>int timeoutMillis</code>, where nobody can tell whether 30 means seconds or milliseconds.`,
+      },
+      {
+        heading: 'Failing Fast with @Validated',
+        body: `Add <code>@Validated</code> to the class and Bean Validation annotations to its fields, and Spring Boot checks the values at startup. A bad value, such as a port of 70000, stops the application with a message naming the property, the value, where it came from and the rule it broke. Failing at startup is far better than failing at 3 a.m. when the first email is sent.`,
+      },
+      {
+        heading: 'Where Values Can Come From',
+        body: `The same property can be set in several places, and the more specific one wins. From lowest to highest priority, the common sources are: <code>application.properties</code> or <code>.yml</code> inside the jar, profile-specific files, environment variables, and command-line arguments. Environment variables use relaxed binding: <code>APP_MAIL_PORT=2525</code> overrides <code>app.mail.port</code>, which is how containers and cloud platforms usually pass configuration.`,
       },
     ],
     examples: [
@@ -303,8 +452,80 @@ public class MailService {
 }`,
         output: 'smtp.webnest.com:587 retries=3',
       },
+      {
+        caption: 'An immutable, validated settings record with defaults, a Duration, a DataSize and a list (tested on Spring Boot 4.1.1)',
+        code: `# application.yml
+app:
+  mail:
+    host: smtp.webnest.dev
+    port: 587
+    timeout: 30s
+    admin-emails:
+      - ops@webnest.dev
+      - asha@webnest.dev
+
+// MailProperties.java
+@Validated
+@ConfigurationProperties(prefix = "app.mail")
+public record MailProperties(
+        @NotBlank String host,
+        @Min(1) @Max(65535) int port,
+        @DefaultValue("3") int retryAttempts,
+        @DefaultValue("10s") Duration timeout,
+        @DefaultValue("10MB") DataSize maxAttachmentSize,
+        List<String> adminEmails) {
+}
+
+// App.java
+@SpringBootApplication
+@ConfigurationPropertiesScan   // registers every @ConfigurationProperties class
+public class App {
+    public static void main(String[] args) { SpringApplication.run(App.class, args); }
+}
+
+// MailReport.java
+@Component
+public class MailReport implements CommandLineRunner {
+
+    private final MailProperties mail;
+
+    public MailReport(MailProperties mail) {
+        this.mail = mail;
+    }
+
+    @Override
+    public void run(String... args) {
+        System.out.println(mail.host() + ":" + mail.port() + " retries=" + mail.retryAttempts()
+                + " timeout=" + mail.timeout().toSeconds() + "s"
+                + " maxAttachment=" + mail.maxAttachmentSize().toMegabytes() + "MB"
+                + " admins=" + mail.adminEmails());
+    }
+}`,
+        output: `$ java -jar app.jar
+smtp.webnest.dev:587 retries=3 timeout=30s maxAttachment=10MB admins=[ops@webnest.dev, asha@webnest.dev]
+
+$ APP_MAIL_PORT=2525 java -jar app.jar
+smtp.webnest.dev:2525 retries=3 timeout=30s maxAttachment=10MB admins=[ops@webnest.dev, asha@webnest.dev]
+
+$ java -jar app.jar --app.mail.port=70000
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Binding to target demo.cfg.MailProperties failed:
+
+    Property: app.mail.port
+    Value: "70000"
+    Origin: "app.mail.port" from property source "commandLineArgs"
+    Reason: must be less than or equal to 65535`,
+      },
     ],
     commonMistakes: [
+      'Storing durations as plain numbers (timeoutMillis = 30000) instead of a Duration, so every reader has to guess the unit.',
+      'Leaving settings unvalidated, so a typo in production is only discovered when the code that uses the value finally runs.',
+      'Putting secrets such as SMTP passwords in application.yml inside the repository instead of supplying them through environment variables or a secrets manager.',
       'Forgetting getters/setters on a @ConfigurationProperties class, which silently breaks binding since Spring uses standard JavaBean conventions.',
       'Mixing kebab-case, camelCase, and snake_case inconsistently — Spring Boot\'s relaxed binding accepts several forms, but readability suffers without a consistent style (kebab-case is conventional in YAML).',
       'Using @Value scattered across many classes for what is really one configuration group, instead of consolidating into a single @ConfigurationProperties class.',
@@ -313,8 +534,11 @@ public class MailService {
     keyPoints: [
       'application.properties and application.yml both configure the app externally; .properties wins over .yml if both define the same key.',
       '@Value injects single values; @ConfigurationProperties binds a whole related group into a typed class.',
-      'A @ConfigurationProperties class needs standard getters/setters and must be registered as a Spring bean.',
+      'A JavaBean-style @ConfigurationProperties class needs getters and setters; a record binds through its constructor instead. Either way it must be registered as a bean.',
       'Externalized configuration lets the same build run correctly in different environments.',
+      'A record with @ConfigurationPropertiesScan gives immutable settings without setters or @Component.',
+      '@Validated plus constraint annotations makes bad configuration fail at startup with a clear message.',
+      'Environment variables (APP_MAIL_PORT) and command-line arguments override values from application files.',
     ],
   },
 
@@ -333,6 +557,27 @@ public class MailService {
       {
         heading: 'Profile-Specific Beans',
         body: `Beyond properties, the <code>@Profile("dev")</code> annotation on a @Bean method or @Component class restricts that bean to only be created when the named profile is active — useful for swapping a real payment gateway client for a mock one during local development and testing.`,
+      },
+      {
+        heading: 'Profile Expressions: !, & and |',
+        body: `<code>@Profile</code> accepts simple expressions. <code>@Profile("!prod")</code> creates the bean in every environment except production, which is the safest way to declare a fake payment gateway: a new "staging" or "demo" profile automatically gets the fake one, and only prod can ever charge a real card. <code>@Profile("prod &amp; eu")</code> needs both profiles, and <code>@Profile("dev | test")</code> needs either.`,
+      },
+      {
+        heading: 'Profile Groups',
+        body: `Large applications often split production settings into several files, such as one for the database and one for mail. Instead of asking everyone to remember <code>--spring.profiles.active=prod,prod-db,prod-mail</code>, define a group in the base file: <code>spring.profiles.group.prod=prod-db,prod-mail</code>. Activating <code>prod</code> then switches on all three, and the startup log lists every one of them.`,
+      },
+      {
+        heading: 'Which Value Wins',
+        body: `Properties from an active profile file override the same keys in <code>application.properties</code>, and keys that a profile file does not mention keep their base values. When several profiles are active and set the same key, the profile listed last wins: with <code>dev,prod</code> you get the prod value, and with <code>prod,dev</code> you get the dev value. When no profile is set at all, Spring Boot uses one called <code>default</code> and logs <code>No active profile set, falling back to 1 default profile: "default"</code>.`,
+      },
+      {
+        heading: 'When to Use Profiles, and When Not To',
+        list: [
+          '<strong>Use them</strong> for real differences between environments: database URLs, log levels, which implementation of an interface is wired in, and whether test data is seeded.',
+          '<strong>Use them in tests</strong> with <code>@ActiveProfiles("test")</code> on a test class, so tests get their own settings without touching the developer\'s local configuration.',
+          '<strong>Do not use them for secrets.</strong> Passwords and API keys belong in environment variables or a secrets manager, which override files without being committed.',
+          '<strong>Do not use them as feature flags.</strong> A profile is fixed for the whole run, so a setting you want to switch per customer or at runtime should be an ordinary property or a feature-flag service.',
+        ],
       },
     ],
     examples: [
@@ -368,9 +613,71 @@ public class PaymentConfig {
 ... HikariPool-1 - Starting... url=jdbc:h2:mem:devdb
 ... Started WebnestAppApplication in 1.65 seconds`,
       },
+      {
+        caption: 'A profile group, a "!prod" bean and the override order (tested on Spring Boot 4.1.1)',
+        code: `# application.properties
+app.greeting=Hello from the base file
+app.region=ap-south-1
+spring.profiles.group.prod=prod-db,prod-mail
+
+# application-dev.properties
+app.greeting=Hello from dev
+
+# application-prod.properties
+app.greeting=Hello from prod
+
+# application-prod-db.properties
+app.db=managed postgres
+
+// ProfileReport.java
+@Configuration
+public class ProfileReport {
+
+    interface PaymentGateway { String name(); }
+
+    @Bean
+    @Profile("!prod")   // every environment except production
+    PaymentGateway fakeGateway() { return () -> "fake gateway (no real charges)"; }
+
+    @Bean
+    @Profile("prod")
+    PaymentGateway realGateway() { return () -> "real gateway"; }
+
+    @Bean
+    CommandLineRunner report(Environment env, PaymentGateway gateway,
+                             @Value("\${app.greeting}") String greeting,
+                             @Value("\${app.region}") String region,
+                             @Value("\${app.db:none}") String db) {
+        return args -> {
+            System.out.println("active=" + String.join(",", env.getActiveProfiles()));
+            System.out.println("greeting=" + greeting + " | region=" + region + " | db=" + db);
+            System.out.println("gateway=" + gateway.name());
+        };
+    }
+}`,
+        output: `$ java -jar app.jar
+No active profile set, falling back to 1 default profile: "default"
+active=
+greeting=Hello from the base file | region=ap-south-1 | db=none
+gateway=fake gateway (no real charges)
+
+$ java -jar app.jar --spring.profiles.active=prod
+The following 3 profiles are active: "prod", "prod-db", "prod-mail"
+active=prod,prod-db,prod-mail
+greeting=Hello from prod | region=ap-south-1 | db=managed postgres
+gateway=real gateway
+
+$ java -jar app.jar --spring.profiles.active=prod,dev
+The following 4 profiles are active: "prod", "prod-db", "prod-mail", "dev"
+active=prod,prod-db,prod-mail,dev
+greeting=Hello from dev | region=ap-south-1 | db=managed postgres
+gateway=real gateway`,
+      },
     ],
     commonMistakes: [
       'Forgetting to set spring.profiles.active anywhere and being confused why "default" configuration always loads instead of the intended dev/prod file.',
+      'Marking the fake implementation @Profile("dev") instead of @Profile("!prod"). A new staging or demo profile then has no PaymentGateway bean at all, and startup fails.',
+      'Expecting the first profile in spring.profiles.active to win a conflict. The last one listed wins.',
       'Duplicating every property in each profile file instead of putting shared defaults in application.properties and only the differences in the profile-specific files.',
       'Hardcoding "prod" behavior directly in code with if-statements instead of using @Profile beans or profile-specific properties.',
       'Committing a profile file containing real production secrets (passwords, API keys) directly into version control.',
@@ -380,6 +687,8 @@ public class PaymentConfig {
       'spring.profiles.active selects the active profile(s), settable via property, environment variable, or command-line argument.',
       '@Profile restricts a bean definition to specific named profiles, useful for swapping implementations between environments.',
       'Keep shared configuration in the base file and only environment-specific differences in profile files.',
+      '@Profile accepts !, & and | expressions; "!prod" is the safe way to declare fakes.',
+      'spring.profiles.group.<name> activates several profiles at once, and the last active profile wins a conflicting key.',
     ],
   },
 
@@ -404,6 +713,25 @@ public class PaymentConfig {
       {
         heading: 'Controlling the Response with ResponseEntity',
         body: `Returning a plain object always responds with HTTP 200 and that object serialized as JSON. When you need to control the exact status code or headers — 201 Created after a POST, 404 Not Found when a resource doesn't exist — wrap the response in <code>ResponseEntity&lt;T&gt;</code>, which gives full control over status, headers, and body together.`,
+      },
+      {
+        heading: 'Designing the URLs',
+        body: `Good REST URLs name things, not actions. Use plural nouns for collections (<code>/api/tasks</code>), an ID for one item (<code>/api/tasks/42</code>), and nesting only for real ownership (<code>/api/projects/7/tasks</code>). The HTTP method says what to do, so <code>POST /api/tasks</code> replaces <code>/api/createTask</code> and <code>DELETE /api/tasks/42</code> replaces <code>/api/deleteTask?id=42</code>. Filters, sorting and paging go in the query string: <code>/api/tasks?done=false&amp;sort=dueDate</code>.`,
+      },
+      {
+        heading: 'Status Codes for Each Operation',
+        list: [
+          '<strong>GET</strong> one item: 200 with the item, or 404 if it does not exist. GET a collection: 200, with an empty list rather than 404 when nothing matches.',
+          '<strong>POST</strong> (create): 201 Created, the new item in the body, and a <code>Location</code> header pointing at its URL. <code>ResponseEntity.created(uri)</code> sets both status and header.',
+          '<strong>PUT</strong> (replace the whole item): 200 with the updated item, or 404.',
+          '<strong>PATCH</strong> (change some fields): 200. Only offer it when clients really need partial updates, and remember that a missing field and a field set to null mean different things.',
+          '<strong>DELETE</strong>: 204 No Content with an empty body, or 404.',
+          'A method you did not map, such as PATCH on a resource that only supports PUT, gets 405 Method Not Allowed from Spring automatically.',
+        ],
+      },
+      {
+        heading: 'Safe and Idempotent Methods',
+        body: `GET must never change data, because browsers, crawlers and caches feel free to repeat it. PUT and DELETE are idempotent: sending the same request twice leaves the server in the same state as sending it once, so a client can safely retry after a timeout. POST is not idempotent, so a retried POST can create a duplicate order. If clients may retry creates, accept an idempotency key header and ignore repeats of a key you have already processed.`,
       },
     ],
     examples: [
@@ -441,8 +769,73 @@ public class ProductController {
 POST /api/products    -> 201 Created {"id":6,"name":"USB Hub","price":24.5}
 GET /api/products?page=0 -> 200 OK [{"id":1,...}, {"id":2,...}]`,
       },
+      {
+        caption: 'A complete CRUD API with records, a Location header and 204 on delete (tested on Spring Boot 4.1.1)',
+        code: `@RestController
+@RequestMapping("/api/tasks")
+public class TaskController {
+
+    public record TaskRequest(String title, boolean done) {}
+    public record Task(long id, String title, boolean done) {}
+
+    // In-memory storage keeps the example self-contained; a real API calls a service.
+    private final Map<Long, Task> tasks = new ConcurrentHashMap<>();
+    private final AtomicLong nextId = new AtomicLong(1);
+
+    @GetMapping
+    public Collection<Task> list() {
+        return tasks.values();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Task> get(@PathVariable long id) {
+        Task task = tasks.get(id);
+        return task == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(task);
+    }
+
+    @PostMapping
+    public ResponseEntity<Task> create(@RequestBody TaskRequest request) {
+        Task task = new Task(nextId.getAndIncrement(), request.title(), request.done());
+        tasks.put(task.id(), task);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}").buildAndExpand(task.id()).toUri();
+        return ResponseEntity.created(location).body(task);   // 201 + Location header
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> replace(@PathVariable long id, @RequestBody TaskRequest request) {
+        if (!tasks.containsKey(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        Task task = new Task(id, request.title(), request.done());
+        tasks.put(id, task);
+        return ResponseEntity.ok(task);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable long id) {
+        return tasks.remove(id) == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.noContent().build();                   // 204, no body
+    }
+}`,
+        output: `$ curl -i -X POST localhost:8080/api/tasks -H "Content-Type: application/json" -d '{"title":"Write the invoice","done":false}'
+HTTP/1.1 201
+Location: http://localhost:8080/api/tasks/1
+{"id":1,"title":"Write the invoice","done":false}
+
+GET    /api/tasks/1  -> 200 {"id":1,"title":"Write the invoice","done":false}
+PUT    /api/tasks/1  -> 200 {"id":1,"title":"Write the invoice","done":true}
+GET    /api/tasks    -> 200 [{"id":1,"title":"Write the invoice","done":true}]
+DELETE /api/tasks/1  -> 204 (empty body)
+GET    /api/tasks/1  -> 404 (empty body: ResponseEntity.notFound() sends no JSON)
+PATCH  /api/tasks/1  -> 405 {"status":405,"error":"Method Not Allowed","path":"/api/tasks/1",...}`,
+      },
     ],
     commonMistakes: [
+      'Returning 200 with an error message in the body, such as {"success":false}, instead of a real 4xx or 5xx status. Clients, monitoring and caches all rely on the status code.',
+      'Returning 404 for a collection that happens to be empty. GET /api/tasks?done=true with no matches should be 200 with [].',
+      'Putting verbs in URLs (/api/getTasks, /api/deleteTask) instead of letting the HTTP method carry the action.',
       'Using @Controller instead of @RestController and forgetting @ResponseBody, causing Spring to try (and fail) to resolve the return value as a view template name.',
       'Returning the raw entity object for every case instead of ResponseEntity, which makes it impossible to return a proper 404 or 201 with the right semantics.',
       'Mismatching @PathVariable name and the {placeholder} in the mapping path when they are not identical identifiers, without using the explicit @PathVariable("id") form.',
@@ -453,6 +846,9 @@ GET /api/products?page=0 -> 200 OK [{"id":1,...}, {"id":2,...}]`,
       '@GetMapping/@PostMapping/@PutMapping/@DeleteMapping map HTTP verbs to controller methods.',
       '@PathVariable reads URL segments, @RequestParam reads query parameters, @RequestBody deserializes the JSON body.',
       'ResponseEntity<T> gives full control over status code, headers, and body for the response.',
+      'Use plural nouns in URLs and let the HTTP method express the action.',
+      'POST returns 201 with a Location header, DELETE returns 204, and missing items return 404.',
+      'GET is safe, PUT and DELETE are idempotent, and POST needs an idempotency key if clients retry it.',
     ],
   },
 
@@ -550,7 +946,23 @@ public class UserController {
       },
       {
         heading: 'Customizing the Validation Error Response',
-        body: `The default 400 response is functional but verbose and inconsistent across projects. Pairing @Valid with a @ControllerAdvice/@ExceptionHandler for MethodArgumentNotValidException lets you shape a clean, consistent error payload (field name, rejected value, message) instead of exposing Spring's raw exception structure.`,
+        body: `Spring Boot's default 400 response says almost nothing: <code>{"timestamp":…,"status":400,"error":"Bad Request","path":"/api/users"}</code>. It does not tell the client which field failed or why. Pairing @Valid with a @RestControllerAdvice that handles MethodArgumentNotValidException lets you return every field and its message in one consistent payload, so a form can highlight the right inputs.`,
+      },
+      {
+        heading: 'Validating Nested Objects and Lists',
+        body: `Validation stops at the outer object unless you tell it to go deeper. Put <code>@Valid</code> on a field that holds another object, or on the element type of a list (<code>List&lt;@Valid OrderLine&gt;</code>), and each nested object is checked too. The error then names the exact path, such as <code>lines[0].quantity</code>. Add <code>@NotEmpty</code> on the list itself if an order with no lines should be rejected.`,
+      },
+      {
+        heading: 'Validating Query and Path Parameters',
+        body: `Since Spring Framework 6.1, constraint annotations work directly on <code>@RequestParam</code> and <code>@PathVariable</code> parameters, for example <code>@RequestParam @Min(1) @Max(100) int limit</code>. You no longer need <code>@Validated</code> on the controller class for this. A failure raises <code>HandlerMethodValidationException</code> instead of MethodArgumentNotValidException, so a global handler needs a method for each.`,
+      },
+      {
+        heading: 'Where Validation Belongs',
+        list: [
+          '<strong>At the API edge</strong> with Bean Validation: required fields, lengths, formats and ranges. These are rules about the shape of one request.',
+          '<strong>In the service layer</strong>: rules that need the database or other data, such as "this email is already registered" or "stock is too low". Throw a specific exception and map it to 409 or 422.',
+          '<strong>In the database</strong>: NOT NULL, UNIQUE and foreign-key constraints as the last line of defence, because code paths other than your API (scripts, batch jobs, other services) can write data too.',
+        ],
       },
     ],
     examples: [
@@ -573,17 +985,82 @@ public class UserController {
 }
 
 // POST /api/users {"name":"", "email":"not-an-email", "password":"123"}`,
-        output: `-> 400 Bad Request
-{
-  "errors": [
-    "Name is required",
-    "Email must be valid",
-    "Password must be at least 8 characters"
-  ]
+        output: `-> 400 Bad Request   (Spring Boot's default body, with no handler of your own)
+{"timestamp":"2026-10-09T21:18:38.467Z","status":400,"error":"Bad Request","path":"/api/users"}
+
+The controller method never runs. The next example shows how to tell the client which fields failed.`,
+      },
+      {
+        caption: 'Returning every failed field as an RFC 9457 ProblemDetail (tested on Spring Boot 4.1.1)',
+        code: `public record OrderLine(@NotBlank String sku, @Positive int quantity) {}
+
+public record CreateOrderRequest(@NotEmpty List<@Valid OrderLine> lines) {}
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @PostMapping("/users")
+    public ResponseEntity<String> create(@Valid @RequestBody CreateUserRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created: " + request.name());
+    }
+
+    @PostMapping("/orders")
+    public String order(@Valid @RequestBody CreateOrderRequest request) {
+        return "order with " + request.lines().size() + " lines";
+    }
+
+    @GetMapping("/users")
+    public String list(@RequestParam @Min(1) @Max(100) int limit) {
+        return "listing " + limit + " users";
+    }
+}
+
+@RestControllerAdvice
+public class ApiExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleInvalidBody(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Some fields are invalid");
+        problem.setTitle("Validation failed");
+        problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ProblemDetail handleInvalidParameter(HandlerMethodValidationException ex) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        ex.getParameterValidationResults().forEach(result -> result.getResolvableErrors().forEach(error ->
+                errors.put(result.getMethodParameter().getParameterName(), error.getDefaultMessage())));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Some parameters are invalid");
+        problem.setTitle("Validation failed");
+        problem.setProperty("errors", errors);
+        return problem;
+    }
 }`,
+        output: `POST /api/users {"name":"","email":"not-an-email","password":"123"}
+-> 400 {"detail":"Some fields are invalid","instance":"/api/users","status":400,"title":"Validation failed",
+        "errors":{"password":"Password must be at least 8 characters","email":"Email must be valid","name":"Name is required"}}
+
+POST /api/orders {"lines":[{"sku":"A1","quantity":0}]}
+-> 400 {..., "errors":{"lines[0].quantity":"must be greater than 0"}}
+
+POST /api/orders {"lines":[]}
+-> 400 {..., "errors":{"lines":"must not be empty"}}
+
+GET /api/users?limit=500
+-> 400 {"detail":"Some parameters are invalid", ..., "errors":{"limit":"must be less than or equal to 100"}}
+
+(The order of fields inside "errors" can change between runs.)`,
       },
     ],
     commonMistakes: [
+      'Writing a handler only for MethodArgumentNotValidException. Constraint failures on @RequestParam and @PathVariable raise HandlerMethodValidationException instead, and fall back to the bare default 400.',
+      'Annotating a list field with @NotEmpty but not its elements with @Valid, so every line item inside the list goes unchecked.',
       'Forgetting @Valid on the controller parameter — the constraint annotations exist on the DTO but are silently never checked.',
       'Forgetting to add spring-boot-starter-validation, so @NotNull/@NotBlank/etc. compile but have no runtime effect.',
       'Validating only at the controller layer and assuming that protects the database — internal service calls or batch jobs bypassing the controller still need their own checks.',
@@ -594,6 +1071,8 @@ public class UserController {
       '@Valid on a @RequestBody parameter triggers validation automatically before the controller method runs.',
       'Failed validation throws MethodArgumentNotValidException, which defaults to an HTTP 400 response.',
       'Pair @Valid with a global exception handler to produce a clean, consistent validation error format.',
+      'Use @Valid on nested objects and list elements (List<@Valid T>) to validate them too.',
+      'Constraints on @RequestParam/@PathVariable work without @Validated since Spring 6.1 and raise HandlerMethodValidationException.',
     ],
   },
 
@@ -612,6 +1091,25 @@ public class UserController {
       {
         heading: 'Designing a Consistent Error Body',
         body: `Client applications benefit enormously from every error response sharing the same JSON shape — typically a timestamp, status code, an error message, and the request path. Defining one small ErrorResponse record and using it in every @ExceptionHandler keeps error handling predictable across the whole API.`,
+      },
+      {
+        heading: 'ProblemDetail: the Standard Error Format',
+        body: `Instead of inventing your own error record, you can use <code>ProblemDetail</code>, Spring's implementation of RFC 9457 ("Problem Details for HTTP APIs"). It has standard fields (<code>type</code>, <code>title</code>, <code>status</code>, <code>detail</code>, <code>instance</code>) and accepts extra properties such as a product ID. Many HTTP clients and API gateways already understand it. Throw an exception that extends <code>ErrorResponseException</code> and it carries its own status and ProblemDetail, so it needs no handler method at all. Setting <code>spring.mvc.problemdetails.enabled=true</code> makes Spring MVC's built-in errors (unknown URL, wrong parameter type and so on) use the same format.`,
+      },
+      {
+        heading: 'The Catch-All Trap',
+        body: `A handler for <code>Exception.class</code> looks like a safe net, but on its own it catches Spring MVC's own exceptions too. An unknown URL raises <code>NoResourceFoundException</code> and a path variable like <code>/api/stock/abc</code> raises a type-mismatch exception. Both normally become 404 and 400, but a plain catch-all turns them into 500 "Unexpected error". The fix is to extend <code>ResponseEntityExceptionHandler</code>: the base class maps every standard Spring MVC exception to its correct status first, and only genuinely unexpected errors reach your catch-all method. Log those with the full stack trace, and return a generic message so internal details never reach the client.`,
+      },
+      {
+        heading: 'Choosing the Status Code',
+        list: [
+          '<strong>400 Bad Request</strong>: the request is malformed or fails validation.',
+          '<strong>401 Unauthorized / 403 Forbidden</strong>: not logged in, or logged in without permission. Spring Security produces these before your controller runs.',
+          '<strong>404 Not Found</strong>: the resource does not exist.',
+          '<strong>409 Conflict</strong>: the request clashes with current state, such as a duplicate email or a stale version.',
+          '<strong>422 Unprocessable Content</strong>: the request is well formed but breaks a business rule, such as ordering more than is in stock.',
+          '<strong>500 Internal Server Error</strong>: a bug or an unexpected failure. This should never be used for a problem the client caused.',
+        ],
       },
     ],
     examples: [
@@ -651,10 +1149,73 @@ public class GlobalExceptionHandler {
 }`,
         output: `GET /api/products/999
 -> 404 Not Found
-{"timestamp":"2026-09-21T10:20:00","status":404,"message":"Product not found with id: 999","path":"/api/products/999"}`,
+{"timestamp":"2026-09-21T10:20:00","status":404,"message":"Product not found with id: 999","path":"/api/products/999"}
+
+Careful: handleGeneric(Exception) also catches Spring MVC's own exceptions, so
+GET /api/no-such-page and GET /api/products/abc come back as 500 "Unexpected error"
+instead of 404 and 400. The next example fixes that.`,
+      },
+      {
+        caption: 'ProblemDetail errors with a safe catch-all (tested on Spring Boot 4.1.1)',
+        code: `// The exception carries its own status and ProblemDetail, so it needs no handler method.
+public class ProductNotFoundException extends ErrorResponseException {
+
+    public ProductNotFoundException(long id) {
+        super(HttpStatus.NOT_FOUND, problem(id), null);
+    }
+
+    private static ProblemDetail problem(long id) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Product " + id + " does not exist");
+        problem.setTitle("Product not found");
+        problem.setType(URI.create("https://api.webnest.dev/problems/product-not-found"));
+        problem.setProperty("productId", id);
+        return problem;
+    }
+}
+
+@RestController
+public class StockController {
+
+    @GetMapping("/api/stock/{id}")
+    public String stock(@PathVariable long id) {
+        if (id == 999) {
+            throw new ProductNotFoundException(id);
+        }
+        if (id == 500) {
+            throw new IllegalStateException("database password expired");
+        }
+        return "product " + id + " has 12 in stock";
+    }
+}
+
+@RestControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    // Spring MVC's own exceptions (404 for unknown paths, 400 for bad input,
+    // 405, 415 ...) and any ErrorResponseException are handled by the base class
+    // with the right status. Only truly unexpected errors reach this method.
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleUnexpected(Exception ex) {
+        log.error("Unhandled error", ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Something went wrong. Please try again later.");
+    }
+}`,
+        output: `GET /api/stock/7    -> 200 product 7 has 12 in stock
+GET /api/stock/999  -> 404 {"detail":"Product 999 does not exist","instance":"/api/stock/999","status":404,
+                            "title":"Product not found","type":"https://api.webnest.dev/problems/product-not-found","productId":999}
+GET /api/stock/500  -> 500 {"detail":"Something went wrong. Please try again later.","instance":"/api/stock/500",
+                            "status":500,"title":"Internal Server Error"}
+                       (the log holds: IllegalStateException: database password expired)
+GET /api/no-such-page -> 404 {"detail":"No static resource api/no-such-page.","status":404,"title":"Not Found",...}
+GET /api/stock/abc  -> 400 {"detail":"Failed to convert 'id' with value: 'abc'","status":400,"title":"Bad Request",...}`,
       },
     ],
     commonMistakes: [
+      'Adding a plain @ExceptionHandler(Exception.class) without extending ResponseEntityExceptionHandler, which turns unknown URLs (404) and bad parameters (400) into 500 errors.',
+      'Logging nothing in the catch-all handler. The client should see a generic message, but the server log must keep the real exception and stack trace.',
       'Writing duplicate try-catch blocks in every controller instead of centralizing handling in one @ControllerAdvice class.',
       'Catching the generic Exception.class before more specific handlers, which prevents the specific handler from ever being reached (Spring picks the most specific match, but ordering and inheritance mistakes still cause confusion).',
       'Leaking internal details (stack traces, SQL exception messages) directly into the client-facing error response.',
@@ -665,6 +1226,8 @@ public class GlobalExceptionHandler {
       '@ExceptionHandler(SomeException.class) methods intercept a specific exception type wherever it is thrown in request handling.',
       'Map each exception type to the correct HTTP status code rather than letting everything fall back to 500.',
       'A consistent ErrorResponse shape across all handlers makes the API predictable for clients.',
+      'ProblemDetail (RFC 9457) is the standard error body; ErrorResponseException subclasses carry their own status and details.',
+      'Extend ResponseEntityExceptionHandler so a catch-all handler never swallows Spring MVC\'s 400 and 404 errors.',
     ],
   },
 
@@ -673,48 +1236,140 @@ public class GlobalExceptionHandler {
     intro: `As a REST API grows, keeping documentation in sync by hand becomes unreliable. springdoc-openapi is a library that inspects your Spring MVC controllers, request/response DTOs, and validation annotations at runtime and automatically generates an OpenAPI (formerly Swagger) specification — plus a browsable Swagger UI page — without you writing separate documentation files.`,
     sections: [
       {
+        heading: 'What OpenAPI Is',
+        body: `OpenAPI is a standard, language-neutral format (JSON or YAML) for describing an HTTP API: its paths, parameters, request and response bodies, status codes and security. Because the format is standard, one file serves many tools. Swagger UI turns it into interactive documentation, code generators build typed clients in TypeScript, Kotlin or Python from it, API gateways import it, and contract-testing tools check that the running API still matches it. "Swagger" was the name of version 2 of the specification; since version 3 it is called OpenAPI, and Swagger is the name of the tooling around it.`,
+      },
+      {
         heading: 'Adding springdoc-openapi',
-        body: `Adding the <code>springdoc-openapi-starter-webmvc-ui</code> dependency is enough to get a working setup: once the app starts, the raw OpenAPI JSON is available at <code>/v3/api-docs</code>, and an interactive documentation UI is served at <code>/swagger-ui.html</code>, where you can browse every endpoint, see its parameters and response shapes, and even send test requests directly from the browser.`,
+        body: `Adding the <code>springdoc-openapi-starter-webmvc-ui</code> dependency is enough to get a working setup: once the app starts, the raw OpenAPI JSON is available at <code>/v3/api-docs</code> (and YAML at <code>/v3/api-docs.yaml</code>), and an interactive documentation UI is served at <code>/swagger-ui.html</code>, which redirects to <code>/swagger-ui/index.html</code>. There you can browse every endpoint, see its parameters and response shapes, and even send test requests directly from the browser. Use springdoc 3.x with Spring Boot 4 (3.1.1 is current); the 2.x line is for Spring Boot 3. springdoc 3 generates an OpenAPI 3.1 document.`,
+      },
+      {
+        heading: 'What springdoc Reads from Your Code',
+        body: `Without a single annotation, springdoc already knows a lot. It reads the paths and HTTP methods from <code>@GetMapping</code>, <code>@PostMapping</code> and friends, path and query parameters from <code>@PathVariable</code> and <code>@RequestParam</code>, and the body types from <code>@RequestBody</code> and the return type. It also turns Bean Validation annotations into schema rules: <code>@NotBlank</code> or <code>@NotNull</code> marks the field as required, <code>@Size(max = 80)</code> becomes <code>maxLength: 80</code>, and <code>@DecimalMin("0.01")</code> becomes <code>minimum: 0.01</code>. Your validation rules and your documentation therefore cannot drift apart, because they are the same annotations.`,
       },
       {
         heading: 'Enriching the Generated Documentation',
-        body: `The base generation is inferred purely from your code, but annotations let you add human-readable detail: <code>@Operation(summary, description)</code> on a controller method, <code>@ApiResponse</code> to document specific status codes and their meaning, and <code>@Schema</code> on DTO fields to describe individual fields or mark examples. This turns a bare technical listing into documentation another team (or a frontend developer) can actually use without reading your source code.`,
+        body: `The base generation is inferred purely from your code, but annotations let you add human-readable detail: <code>@Tag</code> groups a controller's endpoints under one heading, <code>@Operation(summary, description)</code> describes a controller method, <code>@ApiResponse</code> documents specific status codes and their meaning, <code>@Parameter</code> explains a parameter, and <code>@Schema</code> on DTO fields describes individual fields and gives example values. This turns a bare technical listing into documentation another team (or a frontend developer) can actually use without reading your source code. For the API as a whole, put <code>@OpenAPIDefinition(info = @Info(title, version, description))</code> on any configuration class.`,
       },
       {
         heading: 'Documenting Security Requirements',
-        body: `For an API protected by JWT or another auth scheme, springdoc supports declaring a security scheme (e.g. bearer authentication) once in configuration, after which Swagger UI shows an "Authorize" button letting a developer paste in a token and have it automatically attached to every test request they send from the UI.`,
+        body: `For an API protected by JWT or another auth scheme, declare the scheme once with <code>@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")</code>. Then mark protected operations with <code>security = @SecurityRequirement(name = "bearerAuth")</code> inside <code>@Operation</code>, or put <code>@SecurityRequirement</code> on the whole controller. Swagger UI then shows an "Authorize" button and a lock icon on those operations; a developer pastes in a token once and it is sent with every test request. This only documents the security; Spring Security still has to enforce it.`,
+      },
+      {
+        heading: 'Turning It Off in Production',
+        body: `The springdoc endpoints are on by default, and springdoc logs a WARN at startup to remind you. For an internal API, disable both in the production profile with <code>springdoc.api-docs.enabled=false</code> and <code>springdoc.swagger-ui.enabled=false</code>; both URLs then return 404. If the documentation must stay available, protect the paths <code>/v3/api-docs/**</code> and <code>/swagger-ui/**</code> with Spring Security instead. You can also move them with <code>springdoc.api-docs.path</code> and <code>springdoc.swagger-ui.path</code>.`,
       },
     ],
     examples: [
       {
-        caption: 'Enriching an endpoint with OpenAPI annotations',
-        code: `@RestController
+        caption: 'Annotated controller, DTOs and API metadata (tested with springdoc 3.1.1 on Spring Boot 4.1.1)',
+        code: `<!-- pom.xml -->
+<dependency>
+  <groupId>org.springdoc</groupId>
+  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+  <version>3.1.1</version>
+</dependency>
+
+---
+
+@SpringBootApplication
+@OpenAPIDefinition(info = @Info(title = "Webnest Product API", version = "1.4.0",
+        description = "Catalog endpoints used by the storefront"))
+@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP,
+        scheme = "bearer", bearerFormat = "JWT")
+public class App {
+    public static void main(String[] args) { SpringApplication.run(App.class, args); }
+}
+
+---
+
+@RestController
 @RequestMapping("/api/products")
 @Tag(name = "Products", description = "Operations for managing catalog products")
 public class ProductController {
 
+    public record ProductResponse(
+            @Schema(description = "Product ID", example = "5") Long id,
+            @Schema(description = "Display name", example = "Wireless Mouse") String name,
+            @Schema(description = "Price in USD", example = "19.99") BigDecimal price) {}
+
+    public record CreateProductRequest(
+            @Schema(description = "Display name", example = "Wireless Mouse")
+            @NotBlank @Size(max = 80) String name,
+            @Schema(description = "Price in USD", example = "19.99")
+            @DecimalMin("0.01") BigDecimal price) {}
+
     @Operation(summary = "Get a product by ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Product found"),
-        @ApiResponse(responseCode = "404", description = "Product not found")
+        @ApiResponse(responseCode = "404", description = "Product not found",
+                     content = @Content)          // no body for 404
     })
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getById(
             @Parameter(description = "ID of the product to retrieve") @PathVariable Long id) {
-        // implementation
-        return ResponseEntity.ok(new ProductResponse(id, "Wireless Mouse", 19.99));
+        if (id > 100) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(new ProductResponse(id, "Wireless Mouse", new BigDecimal("19.99")));
     }
-}
 
-// pom.xml dependency:
-// <dependency>
-//   <groupId>org.springdoc</groupId>
-//   <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-//   <version>3.0.0</version>   <!-- springdoc 3.x supports Spring Boot 4; 2.x is for Boot 3 -->
-// </dependency>`,
-        output: `Swagger UI available at: http://localhost:8080/swagger-ui.html
-Raw spec available at:   http://localhost:8080/v3/api-docs
-"Products" group shows GET /api/products/{id} with documented 200 and 404 responses.`,
+    @Operation(summary = "Create a product", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "201", description = "Product created")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductResponse create(@Valid @RequestBody CreateProductRequest request) {
+        return new ProductResponse(6L, request.name(), request.price());
+    }
+}`,
+        output: `GET /swagger-ui.html      -> 302 redirect to /swagger-ui/index.html (Swagger UI)
+GET /v3/api-docs.yaml    -> 200 (the same spec as YAML)
+GET /v3/api-docs         -> (shortened)
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Webnest Product API", "description": "Catalog endpoints used by the storefront", "version": "1.4.0"},
+  "tags": [{"name": "Products", "description": "Operations for managing catalog products"}],
+  "paths": {
+    "/api/products": {"post": {"summary": "Create a product", "operationId": "create",
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateProductRequest"}}}, "required": true},
+        "responses": {"201": {"description": "Product created", ...}},
+        "security": [{"bearerAuth": []}]}},
+    "/api/products/{id}": {"get": {"summary": "Get a product by ID", "operationId": "getById",
+        "parameters": [{"name": "id", "in": "path", "description": "ID of the product to retrieve",
+                        "required": true, "schema": {"type": "integer", "format": "int64"}}],
+        "responses": {"200": {"description": "Product found", "content": {"*/*": {"schema": {"$ref": "#/components/schemas/ProductResponse"}}}},
+                      "404": {"description": "Product not found"}}}}
+  },
+  "components": {
+    "schemas": {
+      "CreateProductRequest": {"type": "object", "required": ["name"], "properties": {
+          "name":  {"type": "string", "description": "Display name", "example": "Wireless Mouse", "maxLength": 80, "minLength": 0},
+          "price": {"type": "number", "description": "Price in USD", "example": 19.99, "minimum": 0.01}}},
+      "ProductResponse": {...}
+    },
+    "securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}}
+  }
+}`,
+      },
+      {
+        caption: 'Why the 404 response needs content = @Content',
+        code: `// Without content = @Content:
+@ApiResponse(responseCode = "404", description = "Product not found")`,
+        output: `"404": {"description": "Product not found",
+        "content": {"*/*": {"schema": {"$ref": "#/components/schemas/ProductResponse"}}}}
+
+(springdoc copies the method's return type onto every documented response, so the docs
+ claim a 404 returns a product. An empty @Content removes the body from that response.)`,
+      },
+      {
+        caption: 'Disabling the docs in the prod profile',
+        code: `# application-prod.properties
+springdoc.api-docs.enabled=false
+springdoc.swagger-ui.enabled=false`,
+        output: `Without these settings springdoc logs at startup:
+WARN ... SpringDocAppInitializer : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+
+With them:
+GET /v3/api-docs      -> 404
+GET /swagger-ui.html  -> 404`,
       },
     ],
     commonMistakes: [
@@ -722,12 +1377,17 @@ Raw spec available at:   http://localhost:8080/v3/api-docs
       'Leaving the Swagger UI publicly exposed in production without any access restriction, which reveals your full API surface to anyone.',
       'Not annotating DTOs with @Schema descriptions, leaving the generated docs technically complete but not actually explanatory for consumers.',
       'Confusing springdoc-openapi (current, active library) with the older springfox-swagger2, which is largely unmaintained for modern Spring Boot versions.',
+      'Using springdoc 2.x on Spring Boot 4. The 2.x line targets Boot 3; Boot 4 needs springdoc 3.x.',
+      'Documenting an error status with @ApiResponse but no content = @Content, so the docs show the success body under 404 or 400.',
+      'Thinking @SecurityRequirement protects the endpoint. It only tells readers a token is needed; Spring Security does the actual checking.',
     ],
     keyPoints: [
       'springdoc-openapi generates an OpenAPI spec and Swagger UI automatically from your controllers and DTOs.',
-      '/v3/api-docs exposes the raw spec; /swagger-ui.html exposes the interactive browsable UI.',
-      '@Operation, @ApiResponse, and @Schema annotations enrich the generated documentation with human-readable detail.',
-      'Restrict or disable Swagger UI in production environments unless the API is intentionally public-facing.',
+      '/v3/api-docs exposes the raw spec (/v3/api-docs.yaml for YAML); /swagger-ui.html opens the interactive browsable UI.',
+      'Bean Validation annotations such as @NotBlank, @Size and @DecimalMin show up as required, maxLength and minimum in the schema.',
+      '@Tag, @Operation, @ApiResponse, @Parameter and @Schema annotations enrich the generated documentation with human-readable detail; @OpenAPIDefinition sets the title and version.',
+      '@SecurityScheme plus @SecurityRequirement adds the Authorize button and marks protected operations.',
+      'Disable the docs in production with springdoc.api-docs.enabled=false and springdoc.swagger-ui.enabled=false, or protect them with Spring Security.',
     ],
   },
 
@@ -746,6 +1406,27 @@ Raw spec available at:   http://localhost:8080/v3/api-docs
       {
         heading: 'Custom Queries with @Query',
         body: `When a query is too complex to express as a method name, or you need specific join/aggregation logic, <code>@Query</code> lets you write JPQL (object-oriented, referencing entity fields) or native SQL (with <code>nativeQuery = true</code>) directly above the method signature, while Spring Data still handles binding the method's parameters into the query.`,
+      },
+      {
+        heading: 'Return Types: Optional, Counts and Existence Checks',
+        body: `The return type of a repository method is part of the query. A method returning <code>Optional&lt;Product&gt;</code> gives you an empty Optional instead of <code>null</code> when nothing matches, which forces the caller to decide what "not found" means. <code>countBy…</code> returns a number computed in the database, and <code>existsBy…</code> returns a boolean without loading any entity, which is far cheaper than fetching a list just to check whether it is empty. <code>findFirstBy…</code> or <code>findTop3By…</code> limit the result size in SQL.`,
+      },
+      {
+        heading: 'Bulk Updates with @Modifying',
+        body: `A JPQL <code>UPDATE</code> or <code>DELETE</code> needs <code>@Modifying</code> next to <code>@Query</code>, and it must run inside a transaction, so annotate the method or its caller with <code>@Transactional</code>. The method returns how many rows changed. Bulk statements go straight to the database and skip the persistence context: entities you already loaded in the same transaction keep their old values unless you set <code>@Modifying(clearAutomatically = true)</code> or reload them.`,
+      },
+      {
+        heading: 'Choosing How to Write a Query',
+        list: [
+          '<strong>Derived method names</strong> for simple filters on one or two fields. They are checked at startup, so a typo fails fast.',
+          '<strong>@Query with JPQL</strong> when the name would get long, or you need joins, grouping or a bulk update.',
+          '<strong>Native SQL</strong> (<code>nativeQuery = true</code>) only for database-specific features such as window functions or full-text search, because it ties the query to one database.',
+          '<strong>Specifications</strong> (<code>JpaSpecificationExecutor</code>) when users can combine many optional filters, such as a product search page, where writing one method per combination is impossible.',
+        ],
+      },
+      {
+        heading: 'When Spring Data JPA Is the Right Tool',
+        body: `It fits applications that mostly load, change and save business objects: orders, users, products. It is a weaker fit for reporting queries over millions of rows or for heavy batch jobs, where loading every row as a managed entity wastes memory. There, a projection, <code>JdbcClient</code> or a dedicated batch tool is usually faster, and you can use both in the same application.`,
       },
     ],
     examples: [
@@ -776,8 +1457,102 @@ public class ProductService {
         output: `cheapElectronics() ->
 [Product{id=3, name='USB Cable', price=8.99}, Product{id=7, name='Phone Stand', price=14.50}]`,
       },
+      {
+        caption: 'A complete, runnable catalogue: entity, repository and a startup runner (tested on Spring Boot 4.1.1 with H2)',
+        code: `// Product.java
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String name;
+    private String category;
+    private BigDecimal price;
+    private int stock;
+
+    protected Product() { } // JPA needs a no-argument constructor
+
+    public Product(String name, String category, String price, int stock) {
+        this.name = name;
+        this.category = category;
+        this.price = new BigDecimal(price);
+        this.stock = stock;
+    }
+
+    @Override
+    public String toString() { return name + " (" + price + ", stock " + stock + ")"; }
+}
+
+// ProductRepository.java
+public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    List<Product> findByCategoryAndPriceLessThan(String category, BigDecimal price);
+
+    List<Product> findByCategoryOrderByPriceAsc(String category);
+
+    Optional<Product> findFirstByNameIgnoreCase(String name);
+
+    long countByStockLessThan(int stock);
+
+    boolean existsByName(String name);
+
+    @Query("SELECT p FROM Product p WHERE p.stock < :threshold ORDER BY p.stock")
+    List<Product> findLowStock(@Param("threshold") int threshold);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Product p SET p.stock = p.stock + :amount WHERE p.category = :category")
+    int restock(@Param("category") String category, @Param("amount") int amount);
+}
+
+// CatalogDemo.java
+@Component
+public class CatalogDemo implements CommandLineRunner {
+
+    private final ProductRepository products;
+
+    public CatalogDemo(ProductRepository products) {
+        this.products = products;
+    }
+
+    @Override
+    public void run(String... args) {
+        products.saveAll(List.of(
+                new Product("USB Cable", "Electronics", "8.99", 120),
+                new Product("Phone Stand", "Electronics", "14.50", 4),
+                new Product("Mechanical Keyboard", "Electronics", "89.00", 2),
+                new Product("Notebook", "Stationery", "3.25", 300)));
+
+        System.out.println("count = " + products.count());
+        System.out.println("cheap electronics = "
+                + products.findByCategoryAndPriceLessThan("Electronics", new BigDecimal("50.00")));
+        System.out.println("electronics by price = " + products.findByCategoryOrderByPriceAsc("Electronics"));
+        System.out.println("find 'notebook' = " + products.findFirstByNameIgnoreCase("notebook").orElse(null));
+        System.out.println("find 'stapler' = " + products.findFirstByNameIgnoreCase("stapler").orElse(null));
+        System.out.println("low stock (< 5) = " + products.findLowStock(5));
+        System.out.println("rows restocked = " + products.restock("Electronics", 10));
+        System.out.println("low stock after restock = " + products.countByStockLessThan(5));
+        System.out.println("exists 'USB Cable' = " + products.existsByName("USB Cable"));
+    }
+}
+
+// pom.xml: spring-boot-starter-data-jpa and com.h2database:h2 (runtime scope)`,
+        output: `count = 4
+cheap electronics = [USB Cable (8.99, stock 120), Phone Stand (14.50, stock 4)]
+electronics by price = [USB Cable (8.99, stock 120), Phone Stand (14.50, stock 4), Mechanical Keyboard (89.00, stock 2)]
+find 'notebook' = Notebook (3.25, stock 300)
+find 'stapler' = null
+low stock (< 5) = [Mechanical Keyboard (89.00, stock 2), Phone Stand (14.50, stock 4)]
+rows restocked = 3
+low stock after restock = 0
+exists 'USB Cable' = true`,
+      },
     ],
     commonMistakes: [
+      'Writing an @Modifying UPDATE or DELETE without a transaction, which fails with InvalidDataAccessApiUsageException caused by TransactionRequiredException ("No active transaction"). Put @Transactional on the repository method or on the service method that calls it.',
+      'Expecting entities loaded earlier in the same transaction to see the result of a bulk @Modifying query. Bulk statements bypass the persistence context; use clearAutomatically = true or reload the entity.',
+      'Loading a whole list with findBy… just to check whether it is empty, instead of using existsBy… or countBy…, which the database answers without building entities.',
       'Misspelling an entity field name inside a derived query method name — Spring Data fails at application startup with a clear but often overlooked "No property X found" error.',
       'Writing overly long derived method names for complex filters instead of switching to @Query once readability suffers.',
       'Forgetting @Param in a @Query method when using named parameters (:name) instead of positional ones.',
@@ -788,6 +1563,8 @@ public class ProductService {
       'Derived query methods build queries automatically from a method name following Spring Data\'s keyword conventions.',
       '@Query supports JPQL or native SQL for queries too complex to express as a method name.',
       'Repository interfaces are auto-implemented as proxy beans at application startup.',
+      'Return types shape the query: Optional for one result, countBy/existsBy for cheap checks, findFirst/findTopN to limit rows.',
+      'Bulk UPDATE/DELETE queries need @Modifying and a transaction, and they skip the persistence context.',
     ],
   },
 
@@ -806,17 +1583,37 @@ public class ProductService {
         ],
       },
       {
+        heading: 'Default Names and Reserved Words',
+        body: `Without <code>@Table</code> and <code>@Column</code>, Spring Boot derives names from your Java code: <code>OrderLine</code> becomes the table <code>order_line</code> and <code>createdAt</code> becomes the column <code>created_at</code>. That is convenient until a class name is also an SQL keyword. An entity called <code>Order</code> maps to a table called <code>order</code>, and <code>ORDER</code> is reserved in every SQL database. On H2 every DDL statement for it fails with <code>Syntax error in SQL statement "create table [*]order ..."</code>. Hibernate only logs these failures as warnings, so the application starts, but the table was never created. Give such entities a safe name with <code>@Table(name = "orders")</code>; the same applies to <code>User</code>, <code>Group</code> and <code>Select</code>.`,
+      },
+      {
+        heading: 'Generated Schema Details',
+        body: `With <code>spring.jpa.show-sql=true</code> you can read the DDL Hibernate generates. A few details often surprise people. A <code>BigDecimal</code> without <code>@Column(precision, scale)</code> becomes <code>numeric(38,2)</code> in Hibernate 6 and 7 (older tutorials show <code>numeric(19,2)</code> from Hibernate 5), so set the precision you actually need, such as <code>@Column(precision = 10, scale = 2)</code> for money. Columns are not created in field order. And for an embedded database like H2, Spring Boot defaults <code>spring.jpa.hibernate.ddl-auto</code> to <code>create-drop</code>: tables are created at startup and dropped at shutdown. For a real database the default is <code>none</code>, and the schema should come from Flyway or Liquibase migrations rather than from Hibernate.`,
+      },
+      {
         heading: 'Mapping Relationships',
-        body: `JPA models real-world relationships between entities using dedicated annotations: <code>@OneToMany</code>/<code>@ManyToOne</code> for parent-child relationships (e.g. one Customer has many Orders), <code>@ManyToMany</code> for relationships needing a join table (e.g. Students and Courses), and <code>@OneToOne</code> for a strict one-to-one link. The "owning side" of a relationship (the one holding the foreign key) is marked with <code>mappedBy</code> on the inverse side to avoid Hibernate trying to manage the relationship from both directions.`,
+        body: `JPA models real-world relationships between entities using dedicated annotations: <code>@OneToMany</code>/<code>@ManyToOne</code> for parent-child relationships (e.g. one Customer has many Orders), <code>@ManyToMany</code> for relationships needing a join table (e.g. Students and Courses), and <code>@OneToOne</code> for a strict one-to-one link. The "owning side" of a relationship is the one holding the foreign key (here <code>Order.customer</code>). The inverse side is marked with <code>mappedBy</code>, which tells Hibernate "this list is described by the <code>customer</code> field on the other class". Leave <code>mappedBy</code> out and Hibernate treats the list as a second, unrelated relationship: it creates an extra join table <code>customer_orders</code> and writes every link twice.`,
+      },
+      {
+        heading: 'Keeping Both Sides in Sync',
+        body: `In a bidirectional relationship Hibernate only reads the owning side when it writes SQL. If you add an order to <code>customer.getOrders()</code> but never call <code>order.setCustomer(customer)</code>, the <code>customer_id</code> column stays empty. The usual fix is a pair of helper methods on the parent, <code>addOrder()</code> and <code>removeOrder()</code>, that update both sides at once, and to use only those methods from the rest of the code.`,
+      },
+      {
+        heading: 'Cascade and orphanRemoval',
+        body: `<code>cascade = CascadeType.ALL</code> passes operations from the parent to its children: saving a customer saves its new orders, and deleting the customer deletes its orders first. <code>orphanRemoval = true</code> goes one step further: an order removed from the list is deleted from the database, even though the customer still exists. Use both only when the children really belong to the parent (order lines in an order, addresses of a customer). Never cascade from a child to a shared parent, for example <code>cascade = ALL</code> on <code>Order.customer</code>, because deleting one order would then delete the customer and all their other orders.`,
       },
       {
         heading: 'Fetch Types and Lazy Loading',
-        body: `Every association has a fetch strategy — <code>FetchType.LAZY</code> (load on first access) or <code>FetchType.EAGER</code> (load immediately with the parent). @ManyToOne and @OneToOne default to EAGER; @OneToMany and @ManyToMany default to LAZY. Lazy associations accessed outside an active persistence context throw a LazyInitializationException, which is one of the most common runtime errors in JPA-based applications.`,
+        body: `Every association has a fetch strategy — <code>FetchType.LAZY</code> (load on first access) or <code>FetchType.EAGER</code> (load immediately with the parent). @ManyToOne and @OneToOne default to EAGER; @OneToMany and @ManyToMany default to LAZY. Lazy associations accessed outside an active persistence context throw a LazyInitializationException, which is one of the most common runtime errors in JPA-based applications. Set <code>fetch = FetchType.LAZY</code> on every <code>@ManyToOne</code> and decide per query what to load.`,
+      },
+      {
+        heading: 'The N+1 Query Problem',
+        body: `Lazy loading has a cost that is easy to miss. Load 3 customers and then read each customer's orders, and Hibernate runs 1 query for the customers plus 1 more per customer: 4 queries. With 500 customers on a page that becomes 501 round trips to the database. The fix is to load what the screen needs in one query, either with a <code>JOIN FETCH</code> in JPQL (<code>select distinct c from Customer c left join fetch c.orders</code>) or with <code>@EntityGraph(attributePaths = "orders")</code> on a Spring Data repository method. Turning on <code>show-sql</code> while you develop is the simplest way to notice the problem early.`,
       },
     ],
     examples: [
       {
-        caption: 'A one-to-many relationship between Customer and Order',
+        caption: 'A one-to-many relationship between Customer and Order (tested on Spring Boot 4.1.1 / Hibernate 7 / H2)',
         code: `@Entity
 public class Customer {
     @Id
@@ -826,11 +1623,19 @@ public class Customer {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
+
+    protected Customer() {}                       // required by JPA
+    public Customer(String name) { this.name = name; }
+
+    public void addOrder(Order order)    { orders.add(order);    order.setCustomer(this); }
+    public void removeOrder(Order order) { orders.remove(order); order.setCustomer(null); }
+    // getters omitted
 }
 
 @Entity
+@Table(name = "orders")                           // "order" is an SQL keyword
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -841,10 +1646,96 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;
-}`,
+
+    protected Order() {}
+    public Order(BigDecimal total) { this.total = total; }
+    void setCustomer(Customer customer) { this.customer = customer; }
+    // getters omitted
+}
+
+# application.properties
+spring.jpa.show-sql=true`,
         output: `Hibernate: create table customer (id bigint generated by default as identity, name varchar(255) not null, primary key (id))
-Hibernate: create table orders (id bigint generated by default as identity, total numeric(19,2), customer_id bigint, primary key (id))
-Hibernate: alter table orders add constraint FK... foreign key (customer_id) references customer`,
+Hibernate: create table orders (total numeric(38,2), customer_id bigint, id bigint generated by default as identity, primary key (id))
+Hibernate: alter table if exists orders add constraint FK624gtjin3po807j3vix093tlf foreign key (customer_id) references customer
+
+Saving a customer with two orders (cascade):
+Hibernate: insert into customer (name,id) values (?,default)
+Hibernate: insert into orders (customer_id,total,id) values (?,?,default)
+Hibernate: insert into orders (customer_id,total,id) values (?,?,default)`,
+      },
+      {
+        caption: 'LazyInitializationException, N+1 queries and the JOIN FETCH fix',
+        code: `public interface CustomerRepository extends JpaRepository<Customer, Long> {
+    @Query("select distinct c from Customer c left join fetch c.orders")
+    List<Customer> findAllWithOrders();
+}
+
+// 1. Outside a transaction: the session is already closed
+Customer first = customers.findAll().get(0);
+first.getOrders().size();
+
+// 2. Inside a transaction: works, but one extra query per customer
+tx.executeWithoutResult(s -> customers.findAll()
+        .forEach(c -> System.out.println(c.getName() + " has " + c.getOrders().size() + " orders")));
+
+// 3. One query for everything
+customers.findAllWithOrders()
+        .forEach(c -> System.out.println(c.getName() + " has " + c.getOrders().size() + " orders"));`,
+        output: `1.
+Hibernate: select c1_0.id,c1_0.name from customer c1_0
+LazyInitializationException: Cannot lazily initialize collection of role 'demo.Customer.orders' with key '1' (no session)
+
+2.
+Hibernate: select c1_0.id,c1_0.name from customer c1_0
+Hibernate: select o1_0.customer_id,o1_0.id,o1_0.total from orders o1_0 where o1_0.customer_id=?
+Asha has 2 orders
+Hibernate: select o1_0.customer_id,o1_0.id,o1_0.total from orders o1_0 where o1_0.customer_id=?
+Ravi has 2 orders
+Hibernate: select o1_0.customer_id,o1_0.id,o1_0.total from orders o1_0 where o1_0.customer_id=?
+Meera has 2 orders
+
+3.
+Hibernate: select distinct c1_0.id,c1_0.name,o1_0.customer_id,o1_0.id,o1_0.total from customer c1_0 left join orders o1_0 on c1_0.id=o1_0.customer_id
+Asha has 2 orders
+Ravi has 2 orders
+Meera has 2 orders`,
+      },
+      {
+        caption: 'orphanRemoval and cascading delete',
+        code: `// Remove one order from Asha's list (inside a transaction)
+tx.executeWithoutResult(s -> {
+    Customer asha = customers.findById(1L).orElseThrow();
+    asha.removeOrder(asha.getOrders().get(0));
+});
+
+// Delete Ravi entirely
+customers.deleteById(2L);`,
+        output: `Hibernate: select c1_0.id,c1_0.name from customer c1_0 where c1_0.id=?
+Hibernate: select o1_0.customer_id,o1_0.id,o1_0.total from orders o1_0 where o1_0.customer_id=?
+Hibernate: delete from orders where id=?                <- orphanRemoval
+
+Hibernate: select c1_0.id,c1_0.name from customer c1_0 where c1_0.id=?
+Hibernate: select o1_0.customer_id,o1_0.id,o1_0.total from orders o1_0 where o1_0.customer_id=?
+Hibernate: delete from orders where id=?                <- cascade REMOVE
+Hibernate: delete from orders where id=?
+Hibernate: delete from customer where id=?`,
+      },
+      {
+        caption: 'What goes wrong without mappedBy',
+        code: `// Customer, with mappedBy removed:
+@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Order> orders = new ArrayList<>();`,
+        output: `Hibernate: create table customer_orders (customer_id bigint not null, orders_id bigint not null unique)
+...
+Hibernate: insert into customer (name,id) values (?,default)
+Hibernate: insert into orders (customer_id,total,id) values (?,?,default)
+Hibernate: insert into orders (customer_id,total,id) values (?,?,default)
+Hibernate: insert into customer_orders (customer_id,orders_id) values (?,?)
+Hibernate: insert into customer_orders (customer_id,orders_id) values (?,?)
+
+(The link is now stored twice: in orders.customer_id and in the extra
+ customer_orders table.)`,
       },
     ],
     commonMistakes: [
@@ -852,12 +1743,19 @@ Hibernate: alter table orders add constraint FK... foreign key (customer_id) ref
       'Forgetting mappedBy on the inverse side of a bidirectional relationship, which causes Hibernate to create an unwanted extra join table.',
       'Using FetchType.EAGER everywhere "to be safe," which quietly loads far more data than needed and hurts performance at scale.',
       'Not setting cascade carefully on @OneToMany, leading to either orphaned child rows or unintended deletions when the parent changes.',
+      'Naming an entity Order, User or Group without @Table. The DDL fails on the reserved word, Hibernate only logs a warning, and the missing table shows up later as query errors.',
+      'Updating only one side of a bidirectional relationship, so the foreign key column is never written.',
+      'Leaving @ManyToOne at its EAGER default, which adds a join or an extra query every time the child is loaded.',
+      'Relying on ddl-auto=update in production instead of versioned migrations with Flyway or Liquibase.',
     ],
     keyPoints: [
       'Hibernate is the default JPA implementation used by Spring Data JPA in Spring Boot.',
-      '@Entity, @Id, @GeneratedValue, and @Column define how a class maps to a table.',
+      '@Entity, @Id, @GeneratedValue, and @Column define how a class maps to a table; use @Table for names that clash with SQL keywords.',
       '@OneToMany, @ManyToOne, @ManyToMany, and @OneToOne map relationships between entities, with mappedBy identifying the inverse side.',
+      'Helper methods such as addOrder()/removeOrder() keep both sides of a bidirectional relationship consistent.',
+      'cascade passes save and delete from parent to children; orphanRemoval deletes children removed from the collection.',
       'LAZY vs EAGER fetch strategy controls when related data loads, and mismanaging it is a very common source of bugs.',
+      'Watch for N+1 queries with show-sql and fix them with JOIN FETCH or @EntityGraph.',
     ],
   },
 
@@ -877,12 +1775,25 @@ Hibernate: alter table orders add constraint FK... foreign key (customer_id) ref
         heading: 'Accepting Pagination Parameters from the Client',
         body: `Spring MVC can bind an incoming Pageable directly from query parameters (e.g. <code>?page=0&size=20&sort=price,desc</code>) when a controller method parameter is typed as Pageable — Spring Data Web support resolves it automatically, so you rarely construct PageRequest by hand inside a controller.`,
       },
+      {
+        heading: 'Defaults and Limits',
+        body: `When the client sends no paging parameters, Spring Boot uses page 0 with 20 items and no sort. <code>@PageableDefault(size = 10, sort = "price", direction = DESC)</code> on the controller parameter sets a different default for one endpoint. Clients can never ask for an unlimited page: <code>size</code> is capped at 2000 by default, and you can lower that cap with <code>spring.data.web.pageable.max-page-size</code>. A request for <code>?size=5000</code> then quietly gets the cap instead.`,
+      },
+      {
+        heading: 'Returning Stable JSON',
+        body: `If a controller returns a <code>Page</code> directly, Spring Data logs a warning on the first request: "Serializing PageImpl instances as-is is not supported, meaning that there is no guarantee about the stability of the resulting JSON structure". The default JSON carries internal fields such as <code>pageable.paged</code> and <code>sort.unsorted</code>, and their names may change between versions. Set <code>spring.data.web.pageable.serialization-mode=via-dto</code> and the response becomes a small, stable shape: <code>content</code> plus a <code>page</code> object with <code>size</code>, <code>number</code>, <code>totalElements</code> and <code>totalPages</code>. If you configure this with <code>@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)</code> instead, note that declaring that annotation turns off Spring Boot's own paging configuration, so the <code>spring.data.web.pageable.*</code> properties above stop working.`,
+      },
+      {
+        heading: 'Page or Slice?',
+        body: `<code>Page</code> runs a second <code>COUNT</code> query so it can report <code>totalElements</code> and <code>totalPages</code>, which you need for numbered pagination ("page 3 of 12"). <code>Slice</code> skips the count and only knows whether another slice exists, which is all an infinite-scroll feed or a "Load more" button needs. On a large table the count query can cost as much as the page itself, so choose Slice when nobody looks at the total. For very deep pages, offset paging gets slower because the database still walks past every skipped row; Spring Data's keyset scrolling (<code>ScrollPosition</code> and <code>Window</code>) avoids that by continuing from the last row seen.`,
+      },
     ],
     examples: [
       {
-        caption: 'Paginating and sorting a product listing endpoint',
+        caption: 'Paginating and sorting a product listing endpoint (tested on Spring Boot 4.1.1)',
         code: `public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategory(String category, Pageable pageable);
+    Slice<Product> findSliceByCategory(String category, Pageable pageable);
 }
 
 @RestController
@@ -892,36 +1803,48 @@ public class ProductController {
     public ProductController(ProductRepository repository) { this.repository = repository; }
 
     @GetMapping
-    public Page<Product> list(@RequestParam String category, Pageable pageable) {
+    public Page<Product> list(@RequestParam String category,
+                              @PageableDefault(size = 2, sort = "price", direction = Sort.Direction.DESC) Pageable pageable) {
         return repository.findByCategory(category, pageable);
+    }
+
+    @GetMapping("/feed")
+    public Slice<Product> feed(@RequestParam String category, Pageable pageable) {
+        return repository.findSliceByCategory(category, pageable);
     }
 }
 
-// GET /api/products?category=Electronics&page=0&size=2&sort=price,desc`,
-        output: `{
-  "content": [
-    {"id":9,"name":"4K Monitor","price":299.99},
-    {"id":4,"name":"Mechanical Keyboard","price":89.00}
-  ],
-  "pageable": {"pageNumber":0,"pageSize":2},
-  "totalElements": 14,
-  "totalPages": 7,
-  "first": true,
-  "last": false
-}`,
+# application.properties
+spring.data.web.pageable.serialization-mode=via-dto
+spring.data.web.pageable.max-page-size=50`,
+        output: `GET /api/products?category=Electronics
+{"content":[{"name":"Mechanical Keyboard","category":"Electronics","price":89.00,"stock":12,"id":3},
+            {"name":"Phone Stand","category":"Electronics","price":14.50,"stock":14,"id":2}],
+ "page":{"size":2,"number":0,"totalElements":3,"totalPages":2}}
+
+GET /api/products?category=Electronics&size=5000
+-> "page":{"size":50,"number":0,"totalElements":3,"totalPages":1}   (size capped at 50)
+
+GET /api/products/feed?category=Electronics&size=2
+-> a Slice: "content", "first", "last", "number", "size" ... but no totalElements or totalPages`,
       },
     ],
     commonMistakes: [
       'Fetching the entire table into memory and paginating it in Java code instead of pushing LIMIT/OFFSET down to the database via Pageable.',
       'Confusing Page (includes total count, an extra query) with Slice (no total count, cheaper) when only "has more" is actually needed.',
-      'Not capping the client-supplied page size, allowing a request like ?size=1000000 to load an unreasonable amount of data.',
+      'Leaving the page size cap at its default of 2000 for an endpoint that returns heavy objects. Lower it with spring.data.web.pageable.max-page-size.',
       'Assuming page numbers are 1-based — Spring Data\'s Pageable page numbers are 0-based.',
+      'Returning Page from a controller without serialization-mode=via-dto, so the frontend depends on a JSON shape that Spring Data explicitly says is not stable.',
+      'Adding @EnableSpringDataWebSupport to a Spring Boot app and then wondering why spring.data.web.pageable.* properties no longer have any effect.',
+      'Sorting by a field the client controls without checking it. An unknown sort property makes the query fail, so validate or whitelist sortable fields on public APIs.',
     ],
     keyPoints: [
       'Pageable describes a page request (number, size, sort); PageRequest.of() is the standard way to build one.',
       'Page<T> returns the requested data slice plus pagination metadata (total elements, total pages, first/last).',
       'A Pageable controller parameter is automatically bound from query parameters like page, size, and sort.',
       'Page numbers in Spring Data are zero-based, not one-based.',
+      'Defaults are page 0, size 20, max size 2000; @PageableDefault and spring.data.web.pageable.* change them.',
+      'Use serialization-mode=via-dto for a stable JSON shape, and Slice when the total count is not needed.',
     ],
   },
 
@@ -941,12 +1864,36 @@ public class ProductController {
         heading: 'Configuring Access Rules',
         body: `Modern Spring Security (5.7+) configures access rules through a <code>SecurityFilterChain</code> @Bean rather than extending WebSecurityConfigurerAdapter (deprecated and removed in newer versions). Inside it, <code>authorizeHttpRequests()</code> declares which paths require authentication, which require a specific role, and which are open to everyone.`,
       },
+      {
+        heading: 'Rules Are Checked in Order',
+        body: `Spring Security checks the <code>requestMatchers</code> rules from top to bottom and uses the first one that matches. Put specific rules first and the catch-all <code>anyRequest()</code> last. If <code>.requestMatchers("/api/**").authenticated()</code> came before <code>.requestMatchers("/api/admin/**").hasRole("ADMIN")</code>, every signed-in user could reach the admin pages, because the broader rule would match first.`,
+      },
+      {
+        heading: 'Rules Need a Way to Log In',
+        body: `Access rules only say who may do what. The filter chain also needs at least one authentication mechanism, such as <code>httpBasic()</code>, <code>formLogin()</code> or <code>oauth2ResourceServer()</code> for JWTs, plus a source of users such as a <code>UserDetailsService</code>. Without a mechanism there is no way to sign in, and every protected URL answers 403 Forbidden, even for requests that carry a correct username and password. The mechanism also decides what "not logged in" looks like: HTTP Basic answers 401 with a <code>WWW-Authenticate</code> header, and form login redirects to the login page.`,
+      },
+      {
+        heading: '401 or 403?',
+        list: [
+          '<strong>401 Unauthorized</strong> means "I do not know who you are": no credentials, wrong password or an expired token. The client should sign in, or sign in again.',
+          '<strong>403 Forbidden</strong> means "I know who you are, and you may not do this": a signed-in user without the required role. Signing in again will not help.',
+          'Roles are stored as authorities with a <code>ROLE_</code> prefix. <code>.roles("ADMIN")</code> creates the authority <code>ROLE_ADMIN</code>, and <code>hasRole("ADMIN")</code> checks for it.',
+        ],
+      },
+      {
+        heading: 'Choosing an Authentication Mechanism',
+        list: [
+          '<strong>Form login with a session cookie</strong>: server-rendered web applications. Keep CSRF protection on.',
+          '<strong>HTTP Basic</strong>: internal tools, scripts and quick tests. Only over HTTPS, because the password travels with every request.',
+          '<strong>JWT bearer tokens</strong> (OAuth2 resource server): APIs used by single-page apps, mobile apps and other services.',
+          '<strong>OAuth2 login</strong> ("Sign in with Google"): when users should not create a password on your site at all.',
+        ],
+      },
     ],
     examples: [
       {
-        caption: 'A modern SecurityFilterChain configuration with role-based authorization',
+        caption: 'Role-based rules with HTTP Basic and two in-memory users (tested on Spring Boot 4.1.1)',
         code: `@Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -958,23 +1905,49 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .csrf(csrf -> csrf.disable()) // typically disabled for stateless REST APIs
+            .httpBasic(Customizer.withDefaults())   // how clients prove who they are
+            .csrf(csrf -> csrf.disable())           // no browser session, so no CSRF risk
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
+    }
+
+    // Demo users. A real application loads users from a database instead.
+    @Bean
+    public UserDetailsService users(PasswordEncoder encoder) {
+        return new InMemoryUserDetailsManager(
+            User.withUsername("asha").password(encoder.encode("asha-pass")).roles("USER").build(),
+            User.withUsername("ravi").password(encoder.encode("ravi-pass")).roles("USER", "ADMIN").build());
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+}
+
+@RestController
+public class Endpoints {
+    @GetMapping("/api/public/info") public String info() { return "public info"; }
+    @GetMapping("/api/products/{id}") public String product(@PathVariable long id) { return "product " + id; }
+    @GetMapping("/api/admin/reports") public String reports() { return "admin reports"; }
+    @GetMapping("/api/orders") public String orders(Principal user) { return "orders for " + user.getName(); }
 }`,
-        output: `GET  /api/public/info     -> 200 OK (no auth required)
-GET  /api/products/5      -> 200 OK (no auth required)
-GET  /api/admin/reports   -> 403 Forbidden (authenticated but missing ROLE_ADMIN)
-GET  /api/orders          -> 401 Unauthorized (no credentials supplied)`,
+        output: `GET /api/public/info                     -> 200 public info        (no login needed)
+GET /api/products/5                      -> 200 product 5          (no login needed)
+GET /api/orders                          -> 401                    (no credentials)
+GET /api/orders        -u asha:asha-pass -> 200 orders for asha
+GET /api/orders        -u asha:wrong     -> 401                    (wrong password)
+GET /api/admin/reports -u asha:asha-pass -> 403 Forbidden          (signed in, but no ADMIN role)
+GET /api/admin/reports -u ravi:ravi-pass -> 200 admin reports
+
+Without the .httpBasic(...) line, every request to /api/orders and
+/api/admin/reports returns 403, with or without a correct password.`,
       },
     ],
     commonMistakes: [
+      'Writing authorizeHttpRequests rules without any authentication mechanism (httpBasic, formLogin or oauth2ResourceServer). Nobody can sign in, and every protected URL returns 403.',
+      'Placing a broad rule such as requestMatchers("/api/**").authenticated() above a narrower admin rule, so the admin rule is never reached.',
+      'Writing hasRole("ROLE_ADMIN"). hasRole adds the ROLE_ prefix itself, and the application fails at startup with "ROLE_ADMIN should not start with ROLE_ since ROLE_ is automatically prepended". Use hasRole("ADMIN") or hasAuthority("ROLE_ADMIN").',
       'Confusing 401 Unauthorized (authentication is missing or invalid) with 403 Forbidden (authenticated, but not authorized for this resource).',
       'Storing plaintext passwords instead of hashing them with a PasswordEncoder like BCryptPasswordEncoder.',
       'Leaving CSRF protection enabled on a stateless, token-based REST API where it provides no benefit and only blocks legitimate non-browser clients.',
@@ -985,6 +1958,8 @@ GET  /api/orders          -> 401 Unauthorized (no credentials supplied)`,
       'Authentication establishes identity ("who are you"); authorization decides access ("what are you allowed to do").',
       'SecurityFilterChain with authorizeHttpRequests() is the current, non-deprecated way to configure access rules.',
       'Passwords must always be hashed (e.g. with BCryptPasswordEncoder), never stored or compared as plaintext.',
+      'Rules are matched top to bottom, first match wins, so specific rules go before anyRequest().',
+      'Access rules need an authentication mechanism; 401 means "sign in", 403 means "signed in but not allowed".',
     ],
   },
 
@@ -1065,40 +2040,138 @@ Request with tampered payload -> signature check fails, token rejected before cl
       },
       {
         heading: 'Controlling Exposure',
-        body: `By default, only <code>/health</code> and <code>/info</code> are exposed over HTTP for security reasons — most other endpoints (env, beans, mappings, threaddump) reveal internal detail that should not be public. Exposure is controlled with the <code>management.endpoints.web.exposure.include</code> property, and sensitive endpoints should additionally be secured behind authentication and, ideally, a separate management port in production.`,
+        body: `Out of the box, only <code>/actuator/health</code> is exposed over HTTP. Every other endpoint, <code>/actuator/info</code> included, returns 404 until you opt in. That default exists because most endpoints (env, beans, mappings, threaddump, heapdump) reveal internal detail that should never be public. You choose what to expose with <code>management.endpoints.web.exposure.include</code>, which takes a comma-separated list of endpoint IDs. Anything sensitive should also sit behind Spring Security, and ideally on a separate management port that is not reachable from the internet.`,
+      },
+      {
+        heading: 'How Much Detail /actuator/health Shows',
+        body: `<code>management.endpoint.health.show-details</code> decides whether the health response includes the per-component breakdown:`,
+        list: [
+          '<code>never</code> (the default): only the overall status, for example <code>{"status":"UP"}</code>.',
+          '<code>when-authorized</code>: the components appear only for an authenticated user with the right role. Without Spring Security nobody is authorized, so the response still shows only the status.',
+          '<code>always</code>: everyone sees every component and its details, such as the database type and the free disk space.',
+        ],
+      },
+      {
+        heading: 'Adding Your Own Health Check',
+        body: `The built-in checks cover the database, disk space and message brokers, but not the services your application depends on, such as a payment provider. Implement <code>HealthIndicator</code> (in Spring Boot 4 it lives in <code>org.springframework.boot.health.contributor</code>) and register it as a bean. Spring Boot names the component after the bean, minus the "HealthIndicator" suffix, so <code>PaymentServiceHealthIndicator</code> appears as <code>paymentService</code> and can be queried on its own at <code>/actuator/health/paymentService</code>. When any component reports DOWN, the overall status becomes DOWN and the endpoint answers with HTTP 503, so a load balancer stops sending traffic to that instance.`,
+      },
+      {
+        heading: 'Recording Business Metrics',
+        body: `JVM and HTTP metrics come for free, but the numbers a team actually watches are usually business events: orders placed, payments failed, emails sent. Inject Micrometer's <code>MeterRegistry</code>, register a <code>Counter</code> (or a <code>Timer</code> for durations), and increment it in your code. The metric then appears under <code>/actuator/metrics/&lt;name&gt;</code>, and Micrometer can export it to Prometheus or another monitoring backend without any further changes.`,
+      },
+      {
+        heading: 'When to Use Which Endpoint',
+        list: [
+          '<strong>health</strong>: always on. Load balancers, Kubernetes probes and uptime monitors call it.',
+          '<strong>info</strong>: expose it when you want a quick way to see which version and build is deployed.',
+          '<strong>metrics</strong> or <strong>prometheus</strong>: expose one of them to whatever collects your metrics, but not to the public internet.',
+          '<strong>env, beans, mappings, loggers, threaddump</strong>: debugging tools. Enable them locally or behind authentication, never on a public port.',
+        ],
       },
     ],
     examples: [
       {
-        caption: 'Enabling and querying Actuator health and metrics endpoints',
+        caption: 'Exposing health, info and metrics (tested on Spring Boot 4.1.1)',
         code: `# application.properties
 management.endpoints.web.exposure.include=health,metrics,info
-management.endpoint.health.show-details=when-authorized
+management.endpoint.health.show-details=always
 management.info.env.enabled=true
 
 info.app.name=Webnest Product API
 info.app.version=1.4.0`,
         output: `GET /actuator/health
--> {"status":"UP","components":{"db":{"status":"UP"},"diskSpace":{"status":"UP"}}}
+-> {"components":{"db":{"details":{"database":"H2","validationQuery":"isValid()"},"status":"UP"},
+    "diskSpace":{"details":{"total":183500795904,"free":130478673920,"threshold":10485760,...},"status":"UP"},
+    "ping":{"status":"UP"}, ...},"status":"UP"}
 
 GET /actuator/info
--> {"app":{"name":"Webnest Product API","version":"1.4.0"}}
+-> {"app":{"version":"1.4.0","name":"Webnest Product API"}}
 
 GET /actuator/metrics/jvm.memory.used
--> {"name":"jvm.memory.used","measurements":[{"statistic":"VALUE","value":1.87E8}]}`,
+-> {"baseUnit":"bytes","description":"The amount of used memory",
+    "measurements":[{"statistic":"VALUE","value":1.5507056E8}],"name":"jvm.memory.used",...}
+
+(With show-details=when-authorized and no Spring Security, /actuator/health
+returns only {"status":"UP"}.)`,
+      },
+      {
+        caption: 'A custom health indicator for an external payment service',
+        code: `import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.stereotype.Component;
+
+@Component
+public class PaymentServiceHealthIndicator implements HealthIndicator {
+
+    private final PaymentClient client;
+
+    public PaymentServiceHealthIndicator(PaymentClient client) {
+        this.client = client;
+    }
+
+    @Override
+    public Health health() {
+        long started = System.currentTimeMillis();
+        boolean reachable = client.ping();
+        long tookMs = System.currentTimeMillis() - started;
+        if (!reachable) {
+            return Health.down().withDetail("reason", "payment provider did not answer").build();
+        }
+        return Health.up().withDetail("responseTimeMs", tookMs).build();
+    }
+}`,
+        output: `GET /actuator/health/paymentService
+-> {"details":{"responseTimeMs":0},"status":"UP"}
+
+(after the provider stops answering)
+GET /actuator/health
+-> HTTP 503, {"components":{..., "paymentService":{"details":{"reason":"payment provider did not answer"},"status":"DOWN"}, ...},"status":"DOWN"}`,
+      },
+      {
+        caption: 'Counting a business event with Micrometer',
+        code: `import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class OrderController {
+
+    private final Counter ordersPlaced;
+
+    public OrderController(MeterRegistry registry) {
+        this.ordersPlaced = Counter.builder("orders.placed")
+                .description("Orders accepted by the API")
+                .register(registry);
+    }
+
+    @PostMapping("/orders")
+    public String placeOrder() {
+        ordersPlaced.increment();
+        return "order accepted";
+    }
+}`,
+        output: `POST /orders   (twice)
+GET /actuator/metrics/orders.placed
+-> {"availableTags":[],"description":"Orders accepted by the API",
+    "measurements":[{"statistic":"COUNT","value":2.0}],"name":"orders.placed"}`,
       },
     ],
     commonMistakes: [
       'Exposing all Actuator endpoints (management.endpoints.web.exposure.include=*) publicly in production, revealing environment variables, bean definitions, and internal request mappings to anyone.',
-      'Relying on /actuator/health without show-details configured, then being surprised the JSON gives only "UP"/"DOWN" with no component breakdown.',
+      'Expecting /actuator/info to work after adding the starter. Only health is exposed by default, so info returns 404 until it is added to management.endpoints.web.exposure.include.',
+      'Setting show-details=when-authorized in an application without Spring Security and wondering why the component breakdown never appears.',
       'Never securing Actuator endpoints with Spring Security, leaving operational internals unauthenticated.',
       'Forgetting that /actuator/health checks configured components (database, disk) and can report DOWN even when the web server itself is running fine.',
+      'Doing slow work inside a custom HealthIndicator, such as a full API call with a long timeout. Probes call health often, so keep the check quick and give it a short timeout.',
     ],
     keyPoints: [
       'spring-boot-starter-actuator adds production-ready monitoring endpoints with minimal setup.',
       '/actuator/health reports UP/DOWN status for the app and its key dependencies, commonly polled by load balancers.',
       '/actuator/metrics exposes JVM, HTTP, and datasource metrics, and integrates with Micrometer for external monitoring tools.',
-      'Only health and info are exposed by default; explicitly opt in to other endpoints and secure them appropriately.',
+      'Only health is exposed over HTTP by default; opt in to info, metrics and others explicitly and secure them.',
+      'A custom HealthIndicator adds your own dependencies to the health check, and a DOWN component makes the endpoint return HTTP 503.',
+      'Use MeterRegistry counters and timers to publish business metrics alongside the built-in ones.',
     ],
   },
 
@@ -1117,6 +2190,39 @@ GET /actuator/metrics/jvm.memory.used
       {
         heading: 'Configuring Log Levels per Package',
         body: `Log levels are configured through properties using the <code>logging.level.*</code> prefix, letting you set different verbosity for different parts of the application — for example, keeping your own code at DEBUG while leaving noisy third-party libraries at WARN. This is far more useful than a single global level, especially when diagnosing an issue in one specific layer (e.g. Hibernate SQL logging) without flooding logs from everything else.`,
+      },
+      {
+        heading: 'Reading a Default Log Line',
+        body: `Spring Boot 4 prints each console line in a fixed layout. Knowing the fields makes it much faster to scan a log during an incident:`,
+        list: [
+          '<code>2026-10-10T14:50:55.817+05:30</code>: an ISO-8601 timestamp with milliseconds and the UTC offset.',
+          '<code>INFO</code>: the level, padded to five characters so the columns line up.',
+          '<code>25764</code>: the process ID, useful when several instances write to the same machine.',
+          '<code>[webnest-orders]</code>: the value of <code>spring.application.name</code>. It is left out when the property is not set.',
+          '<code>[nio-8093-exec-2]</code>: the thread name, cut to its last 15 characters. Request threads in Tomcat are called <code>http-nio-&lt;port&gt;-exec-N</code>.',
+          '<code>demo.log.OrderService</code>: the logger name, normally the class. Long names are shortened to fit 40 characters (for example <code>o.s.web.servlet.DispatcherServlet</code>).',
+          'Everything after the colon is your message.',
+        ],
+      },
+      {
+        heading: 'Logging Groups',
+        body: `Real applications spread one feature over several packages: a controller package, a service package, a repository package. Listing each one under <code>logging.level</code> gets tedious, and you have to remember all of them when something breaks. A logging group gives a set of loggers one name: <code>logging.group.orders=com.webnest.orders.web,com.webnest.orders.service</code>. After that, <code>logging.level.orders=DEBUG</code> changes all of them at once. Spring Boot ships two groups of its own: <code>web</code> (Spring MVC, codecs, HTTP logging) and <code>sql</code> (Spring JDBC, jOOQ and Hibernate SQL), so <code>logging.level.sql=DEBUG</code> is the quickest way to see the SQL your application runs.`,
+      },
+      {
+        heading: 'Adding Request Context with MDC',
+        body: `When fifty requests run at the same time, their log lines interleave and you can no longer tell which line belongs to which customer. SLF4J's <strong>MDC</strong> (Mapped Diagnostic Context) solves this. <code>MDC.put("customerId", "42")</code> attaches a value to the current thread, and the logging pattern can print it on every line that thread writes until you remove it. Spring Boot reserves a slot for this in its default layout: <code>logging.pattern.correlation</code> is printed between the thread name and the logger name. Setting it to <code>[%X{customerId:-}] </code> prints the customer ID in brackets, or empty brackets when none is set. Always remove the key in a <code>finally</code> block, because Tomcat reuses threads and a leftover value would be printed on a different customer's request. If you add Micrometer Tracing, Spring Boot fills the same slot with the trace and span IDs for you.`,
+      },
+      {
+        heading: 'Writing Logs to a File',
+        body: `By default Spring Boot logs only to the console, which is right for containers: Docker and Kubernetes collect standard output for you. On a plain server you usually want a file as well. Set <code>logging.file.name=logs/app.log</code> (a full file path) or <code>logging.file.path=/var/log/webnest</code> (a folder; the file is called <code>spring.log</code>). The file uses the same layout as the console, except that the thread name is not cut short. Logback rolls the file over when it reaches 10 MB and keeps 7 days of archives by default, which you can change with <code>logging.logback.rollingpolicy.max-file-size</code> and <code>logging.logback.rollingpolicy.max-history</code>.`,
+      },
+      {
+        heading: 'Structured JSON Logs',
+        body: `Log platforms such as Elasticsearch, Loki, Datadog and CloudWatch search JSON fields far better than free text. Since Spring Boot 3.4 you do not need an extra library for this: <code>logging.structured.format.console=ecs</code> (Elastic Common Schema), <code>logstash</code> or <code>gelf</code> switches the console to one JSON object per line. MDC values become top-level fields automatically, so <code>customerId</code> can be filtered on directly. A common setup is plain text in development and JSON in the <code>prod</code> profile. <code>logging.structured.format.file</code> does the same for the log file.`,
+      },
+      {
+        heading: 'Changing Levels at Runtime with Actuator',
+        body: `Restarting a production instance just to see DEBUG output is slow, and the problem may disappear on restart. With Actuator's <code>loggers</code> endpoint exposed (and secured), you can read and change levels while the application runs. <code>GET /actuator/loggers/orders</code> shows a group's configured level and its members. <code>POST</code> the JSON <code>{"configuredLevel":"DEBUG"}</code> to the same URL to raise it; the response is HTTP 204 and the very next request logs at DEBUG. Posting <code>{}</code> clears the override so the logger falls back to its parent's level. The change lives only in memory, so it is lost on restart, which is usually what you want for a temporary investigation.`,
       },
     ],
     examples: [
@@ -1147,8 +2253,100 @@ public class OrderService {
         }
     }
 }`,
-        output: `2026-09-21 10:32:11.502 DEBUG 8412 --- [nio-8080-exec-1] c.w.app.OrderService : Processing order for customer 42
-2026-09-21 10:32:11.548 INFO  8412 --- [nio-8080-exec-1] c.w.app.OrderService : Order 1007 placed successfully`,
+        output: `2026-10-10T10:32:11.502+05:30 DEBUG 8412 --- [webnest-app] [nio-8080-exec-1] com.webnest.app.OrderService             : Processing order for customer 42
+2026-10-10T10:32:11.548+05:30  INFO 8412 --- [webnest-app] [nio-8080-exec-1] com.webnest.app.OrderService             : Order 1007 placed successfully`,
+      },
+      {
+        caption: 'A logging group, MDC context and a log file (tested on Spring Boot 4.1.1)',
+        code: `# application.properties
+spring.application.name=webnest-orders
+logging.group.orders=demo.log
+logging.level.orders=INFO
+logging.pattern.correlation=[%X{customerId:-}]
+logging.file.name=logs/app.log
+management.endpoints.web.exposure.include=health,loggers
+
+---
+
+package demo.log;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
+    public String placeOrder(long customerId, int quantity) {
+        MDC.put("customerId", String.valueOf(customerId));   // printed on every line below
+        try {
+            log.debug("Validating order: quantity={}", quantity);
+            if (quantity <= 0) {
+                throw new IllegalArgumentException("quantity must be positive");
+            }
+            log.info("Order placed for {} items", quantity);
+            return "placed";
+        } catch (IllegalArgumentException ex) {
+            log.warn("Rejected order: {}", ex.getMessage());
+            return "rejected";
+        } finally {
+            MDC.remove("customerId");                         // threads are reused
+        }
+    }
+}
+
+// A @RestController maps POST /orders?customer=..&quantity=.. to placeOrder.`,
+        output: `POST /orders?customer=42&quantity=3  -> placed
+POST /orders?customer=42&quantity=0  -> rejected
+
+Console (and logs/app.log):
+2026-10-10T14:50:16.607+05:30  INFO 24252 --- [webnest-orders] [           main] [] demo.App                                 : Starting App v1 using Java 17.0.12 with PID 24252 (...)
+2026-10-10T14:50:25.943+05:30  INFO 24252 --- [webnest-orders] [nio-8092-exec-2] [42] demo.log.OrderService                    : Order placed for 3 items
+2026-10-10T14:50:26.018+05:30  WARN 24252 --- [webnest-orders] [nio-8092-exec-3] [42] demo.log.OrderService                    : Rejected order: quantity must be positive
+
+(The DEBUG "Validating order" line is not printed because the orders group is at INFO.
+ Startup lines show [] because no customerId is in the MDC on the main thread.)`,
+      },
+      {
+        caption: 'Raising a group to DEBUG at runtime through /actuator/loggers',
+        code: `# Read the current level of the "orders" group
+curl localhost:8080/actuator/loggers/orders
+
+# Switch it to DEBUG without restarting
+curl -X POST -H "Content-Type: application/json" \\
+     -d '{"configuredLevel":"DEBUG"}' \\
+     localhost:8080/actuator/loggers/orders
+
+# Place another order, then remove the override again
+curl -X POST "localhost:8080/orders?customer=7&quantity=2"
+curl -X POST -H "Content-Type: application/json" -d '{}' \\
+     localhost:8080/actuator/loggers/orders`,
+        output: `{"configuredLevel":"INFO","members":["demo.log"]}
+
+HTTP 204   (level changed)
+
+2026-10-10T14:50:26.509+05:30 DEBUG 24252 --- [webnest-orders] [nio-8092-exec-2] [7] demo.log.OrderService                    : Validating order: quantity=2
+2026-10-10T14:50:26.510+05:30  INFO 24252 --- [webnest-orders] [nio-8092-exec-2] [7] demo.log.OrderService                    : Order placed for 2 items
+
+HTTP 204   (override removed)
+GET /actuator/loggers/orders -> {"members":["demo.log"]}`,
+      },
+      {
+        caption: 'Switching the console to JSON (Elastic Common Schema)',
+        code: `# application-prod.properties
+logging.structured.format.console=ecs
+
+# Other built-in formats: logstash, gelf`,
+        output: `{"@timestamp":"2026-10-10T09:21:05.624294500Z","log":{"level":"INFO","logger":"demo.log.OrderService"},
+ "process":{"pid":21928,"thread":{"name":"http-nio-8093-exec-2"}},
+ "service":{"name":"webnest-orders","version":"1","node":{}},
+ "message":"Order placed for 3 items","customerId":"42","ecs":{"version":"8.11"}}
+
+(One JSON object per line; shown wrapped here. The MDC value customerId
+ becomes its own field without any extra configuration.)`,
       },
     ],
     commonMistakes: [
@@ -1156,12 +2354,20 @@ public class OrderService {
       'Building log messages by string concatenation instead of SLF4J\'s parameterized {} placeholders, which wastes CPU formatting strings even when the log level would filter them out.',
       'Logging entire exception objects with ex.toString() instead of passing the exception as the last argument, which loses the full stack trace in the output.',
       'Leaving DEBUG or TRACE enabled globally in production, generating excessive log volume and potentially leaking sensitive request/response data.',
+      'Calling MDC.put() without MDC.remove() in a finally block. Tomcat reuses request threads, so the value leaks onto later, unrelated requests.',
+      'Logging passwords, tokens, card numbers or full request bodies. Logs are copied to many systems and kept for a long time; mask or leave out sensitive fields.',
+      'Exposing /actuator/loggers without authentication. Anyone who can reach it can switch every logger to TRACE and flood the disk.',
+      'Writing to a log file inside a container instead of standard output, so the platform\'s log collector never sees the lines and they vanish with the container.',
     ],
     keyPoints: [
       'Spring Boot uses SLF4J as a logging facade with Logback as the default implementation, working out of the box.',
       'Log levels (TRACE, DEBUG, INFO, WARN, ERROR) control verbosity, with INFO as the default root level.',
-      'logging.level.<package>=LEVEL configures verbosity independently per package.',
+      'logging.level.<package>=LEVEL configures verbosity independently per package; logging.group.<name> lets one property control several packages, and web and sql groups are built in.',
       'Use parameterized logging ("{}", value) instead of string concatenation, and pass exceptions as the final argument to preserve the stack trace.',
+      'MDC adds request context such as a customer or correlation ID to every line; logging.pattern.correlation prints it in the default layout.',
+      'logging.file.name or logging.file.path adds a rolling log file (10 MB per file, 7 days of history by default).',
+      'logging.structured.format.console=ecs|logstash|gelf produces JSON logs with no extra dependency.',
+      '/actuator/loggers reads and changes levels at runtime; the change lasts until the next restart.',
     ],
   },
 
@@ -1255,51 +2461,79 @@ Tests run: 2, Failures: 0, Errors: 0, Skipped: 0`,
         body: `A multi-stage build uses one stage with a full JDK and build tool to compile and package the application, then copies only the resulting jar into a second, much smaller stage based on a minimal JRE (not JDK) base image. This keeps the final image small (no build tools, no source code, no Maven cache) and reduces the attack surface, since the shipped image only needs a runtime, not a development toolchain.`,
       },
       {
+        heading: 'Layers: Why the Order of COPY Lines Matters',
+        body: `Docker caches each instruction as a layer and rebuilds only from the first layer that changed. A Spring Boot jar mixes two very different things: dependencies (tens of megabytes that change maybe once a month) and your own classes (a few kilobytes that change on every commit). Copying the whole jar as one layer means every code change re-uploads and re-downloads all of it. Spring Boot can split the jar for you: <code>java -Djarmode=tools -jar app.jar extract --layers --destination extracted</code> writes four folders, <code>dependencies</code>, <code>spring-boot-loader</code>, <code>snapshot-dependencies</code> and <code>application</code>. Copy them in that order and a typical code change only touches the last, tiny layer. For a small web + JPA application the split was 78 jars and 54 MB in <code>dependencies</code> against one 8 KB jar in <code>application</code>.`,
+      },
+      {
+        heading: 'Memory, Users and Signals',
+        body: `Three details decide whether a container behaves well in production. <strong>Memory:</strong> the JVM reads the container's memory limit, but by default it only uses 25% of it for the heap. Set <code>-XX:MaxRAMPercentage=75</code> so the heap uses most of the limit while leaving room for metaspace, threads and buffers. <strong>User:</strong> images run as root unless told otherwise, so create a normal user and switch to it with <code>USER</code>. <strong>Signals:</strong> use the exec form <code>ENTRYPOINT ["java", ...]</code>, not the shell form. In the shell form, a shell is process 1 and does not pass SIGTERM on to Java, so the orchestrator kills the application after its timeout instead of letting it shut down cleanly.`,
+      },
+      {
         heading: 'Deployment Considerations',
-        body: `In production, containers are typically run under an orchestrator (Kubernetes, ECS, etc.) that expects the container to expose a health check (Actuator's /actuator/health fits this role well), receive configuration through environment variables rather than baked-in files, and shut down gracefully on a SIGTERM signal so in-flight requests can finish (Spring Boot supports graceful shutdown via <code>server.shutdown=graceful</code>).`,
+        body: `In production, containers are typically run under an orchestrator (Kubernetes, ECS, etc.) that expects the container to expose a health check (Actuator's /actuator/health fits this role well), receive configuration through environment variables rather than baked-in files, and shut down gracefully on a SIGTERM signal so in-flight requests can finish. Spring Boot's embedded web server does this by default: it stops accepting new requests and waits up to 30 seconds (<code>spring.lifecycle.timeout-per-shutdown-phase</code>) for active ones to complete.`,
+      },
+      {
+        heading: 'Building Without a Dockerfile',
+        body: `If you do not need full control over the image, <code>./mvnw spring-boot:build-image</code> (or <code>./gradlew bootBuildImage</code>) builds an OCI image with Cloud Native Buildpacks. It picks a JRE, applies the layering above, runs as a non-root user and sets memory flags for you. A Dockerfile is still the better choice when you need a specific base image or extra operating-system packages.`,
       },
     ],
     examples: [
       {
         caption: 'A multi-stage Dockerfile for a Spring Boot application',
-        code: `# --- Stage 1: build ---
-FROM eclipse-temurin:21-jdk AS build
+        code: `# --- Stage 1: build (the Maven image has both JDK and Maven) ---
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
+RUN mvn -q dependency:go-offline          # cached until pom.xml changes
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn -q -DskipTests package
+RUN mvn -q -DskipTests package && cp target/*.jar app.jar
+RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
 
-# --- Stage 2: run ---
+# --- Stage 2: run (JRE only, no build tools) ---
 FROM eclipse-temurin:21-jre
+RUN useradd --system --create-home spring
+USER spring
 WORKDIR /app
-COPY --from=build /app/target/webnest-app-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/extracted/dependencies/ ./
+COPY --from=build /app/extracted/spring-boot-loader/ ./
+COPY --from=build /app/extracted/snapshot-dependencies/ ./
+COPY --from=build /app/extracted/application/ ./
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
 
 # Build and run:
 # docker build -t webnest-app .
-# docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod webnest-app`,
-        output: `[+] Building 42.3s (12/12) FINISHED
- => exporting to image
- => => naming to docker.io/library/webnest-app
+# docker run -p 8080:8080 -m 512m -e SPRING_PROFILES_ACTIVE=prod webnest-app`,
+        output: `extract --layers produces (checked on Spring Boot 4.1.1):
+extracted/dependencies/lib/        78 jars, 54 MB   -> changes rarely
+extracted/spring-boot-loader/      empty for this layout
+extracted/snapshot-dependencies/   empty unless you use -SNAPSHOT versions
+extracted/application/app.jar      8 KB             -> changes on every commit
 
-$ docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod webnest-app
-... The following 1 profile is active: "prod"
-... Tomcat started on port(s): 8080 (http)
-... Started WebnestAppApplication in 2.13 seconds`,
+The four folders copied into one directory give app.jar + lib/, and
+java -jar app.jar starts normally from there:
+... Started App in 5.593 seconds (process running for 5.906)
+GET /actuator/health -> {"groups":["liveness","readiness"],"status":"UP"}
+
+(The exec-form ENTRYPOINT makes java process 1, so it receives SIGTERM directly.)`,
       },
     ],
     commonMistakes: [
       'Using a single-stage Dockerfile based on a full JDK image for the final runtime, producing a needlessly large image that also ships the build toolchain.',
+      'Running mvn in an eclipse-temurin JDK image. Those images contain Java but not Maven; use a maven:… image or the project\'s ./mvnw wrapper.',
       'Baking environment-specific configuration (database URLs, secrets) directly into the image instead of injecting them at runtime via environment variables or a secrets manager.',
-      'Not handling SIGTERM gracefully, causing in-flight requests to be dropped abruptly whenever the container is stopped or rescheduled.',
-      'Forgetting to set an explicit JVM memory limit relative to the container\'s memory limit, risking the container being OOM-killed by the host.',
+      'Copying the whole jar as a single layer, so every one-line code change pushes and pulls all the dependencies again.',
+      'Using the shell form of ENTRYPOINT (ENTRYPOINT java -jar app.jar). The shell does not forward SIGTERM, so graceful shutdown never runs.',
+      'Leaving the JVM at its default heap of 25% of the container limit, or setting -Xmx equal to the limit so the container is OOM-killed. MaxRAMPercentage=75 is a common middle ground.',
+      'Running the container as root when nothing in the application needs it.',
     ],
     keyPoints: [
       'Spring Boot packages a self-contained executable jar, which is exactly what a Docker image needs to run the app.',
-      'A multi-stage Dockerfile builds with a full JDK image, then ships only the jar on a minimal JRE base image for a smaller, safer runtime image.',
+      'A multi-stage Dockerfile builds with a JDK + Maven image, then ships only the application on a minimal JRE base image for a smaller, safer runtime image.',
+      'java -Djarmode=tools -jar app.jar extract --layers splits the jar so dependencies and code are cached as separate Docker layers.',
       'Configuration should be injected at container run time (environment variables, profiles) rather than baked into the image.',
-      'Production containers should expose a health check and shut down gracefully on SIGTERM.',
+      'Use the exec form of ENTRYPOINT, a non-root user and -XX:MaxRAMPercentage; graceful shutdown on SIGTERM is on by default.',
+      'spring-boot:build-image builds a well-configured image without a Dockerfile.',
     ],
   },
 
@@ -1313,29 +2547,46 @@ $ docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod webnest-app
       },
       {
         heading: 'Using Environment Variables',
-        body: `Spring Boot's relaxed binding automatically maps environment variables to the equivalent property — <code>SPRING_DATASOURCE_URL</code> maps to <code>spring.datasource.url</code>, and <code>SERVER_PORT</code> maps to <code>server.port</code>. This lets container orchestration platforms and CI/CD pipelines inject configuration without the application needing any awareness of where it's actually deployed.`,
+        body: `Spring Boot's relaxed binding automatically maps environment variables to the equivalent property — <code>SPRING_DATASOURCE_URL</code> maps to <code>spring.datasource.url</code>, and <code>SERVER_PORT</code> maps to <code>server.port</code>. The rule is: upper-case the name, replace dots with underscores and drop dashes, so <code>app.api-key</code> becomes <code>APP_APIKEY</code>. This lets container orchestration platforms and CI/CD pipelines inject configuration without the application needing any awareness of where it's actually deployed. Because the environment variable already outranks every properties file, you do not need a line like <code>spring.datasource.url=\${SPRING_DATASOURCE_URL}</code> at all.`,
+      },
+      {
+        heading: 'Seeing the Precedence in Action',
+        body: `The order is easiest to remember after watching one property change hands. Below, <code>app.greeting</code> is defined in four places, and each run adds one more source. Actuator's <code>/actuator/env/app.greeting</code> reports both the winning value and where it came from, which is the quickest way to answer "why is production using this value?":`,
+        list: [
+          'Only <code>application.properties</code>: the base file wins.',
+          'Add <code>SPRING_PROFILES_ACTIVE=prod</code>: <code>application-prod.properties</code> overrides the base file.',
+          'Add the environment variable <code>APP_GREETING</code>: the source becomes <code>systemEnvironment</code>, beating both files.',
+          'Add <code>--app.greeting=...</code> on the command line: <code>commandLineArgs</code> beats everything above.',
+        ],
+      },
+      {
+        heading: 'Defaults and Required Values',
+        body: `A placeholder can carry a fallback: <code>app.pool=\${DB_POOL_SIZE:10}</code> uses the environment variable when it is set and 10 otherwise. That suits tuning values with a sensible default. Secrets are different: they must not have a default, and a missing one should stop the application at startup rather than fail later on the first request. Be aware that a missing variable does not always produce a clear message. When <code>SPRING_DATASOURCE_URL</code> was not set, the literal text <code>\${SPRING_DATASOURCE_URL}</code> reached the connection pool, and startup failed with <code>'url' must start with "jdbc"</code>. Binding required settings to a <code>@ConfigurationProperties</code> class with <code>@Validated</code> and <code>@NotBlank</code> gives a much clearer error.`,
+      },
+      {
+        heading: 'Secrets from Files (Kubernetes and Docker Secrets)',
+        body: `Environment variables can leak: they show up in process listings, crash reports and the <code>/actuator/env</code> endpoint if someone exposes it. Kubernetes and Docker can instead mount each secret as a file. Spring Boot reads such a folder with <code>spring.config.import=optional:configtree:/run/secrets/</code>: every file becomes a property named after the file, with the file's content as the value. A file called <code>app.api-key</code> becomes the property <code>app.api-key</code>, and Actuator lists its source as "Config tree". The <code>optional:</code> prefix lets the application still start locally where the folder does not exist.`,
       },
       {
         heading: 'Production-Oriented Settings',
-        body: `A handful of practical adjustments distinguish a production configuration from a development one: setting <code>spring.profiles.active=prod</code>, disabling Swagger UI or restricting it, raising log levels to WARN/INFO for verbose libraries, enabling connection pool tuning (HikariCP settings like <code>maximum-pool-size</code>), restricting exposed Actuator endpoints, and enabling <code>server.shutdown=graceful</code> so deployments and restarts do not drop in-flight requests.`,
+        body: `A handful of practical adjustments distinguish a production configuration from a development one: setting <code>spring.profiles.active=prod</code>, disabling Swagger UI or restricting it, raising log levels to WARN/INFO for verbose libraries, enabling connection pool tuning (HikariCP settings like <code>maximum-pool-size</code>), and restricting exposed Actuator endpoints. Graceful shutdown no longer needs a setting: since Spring Boot 3.4 the embedded server stops taking new requests on shutdown and waits for active ones, up to <code>spring.lifecycle.timeout-per-shutdown-phase</code> (30 seconds by default).`,
         list: [
           'Never commit real secrets to application.properties in version control — use environment variables, a vault, or a cloud secrets manager instead.',
           'Set explicit connection pool sizes rather than relying on defaults tuned for development-scale traffic.',
           'Expose only the Actuator endpoints actually needed operationally, and secure them.',
           'Configure appropriate log levels and, ideally, structured (JSON) log output for aggregation tools.',
+          'Set spring.jpa.open-in-view=false. It is on by default, Spring Boot logs a WARN about it at startup, and it keeps a database connection open for the whole web request.',
         ],
       },
     ],
     examples: [
       {
-        caption: 'A production properties file relying on environment variables for secrets',
+        caption: 'A production profile for an app with a database (tested on Spring Boot 4.1.1)',
         code: `# application-prod.properties
-spring.datasource.url=\${SPRING_DATASOURCE_URL}
-spring.datasource.username=\${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=\${SPRING_DATASOURCE_PASSWORD}
+# No datasource URL/username/password lines: the SPRING_DATASOURCE_* environment
+# variables bind to them directly.
 spring.datasource.hikari.maximum-pool-size=20
-
-server.shutdown=graceful
+spring.jpa.open-in-view=false
 spring.lifecycle.timeout-per-shutdown-phase=30s
 
 management.endpoints.web.exposure.include=health,metrics
@@ -1350,24 +2601,82 @@ logging.level.com.webnest.app=INFO
 # SPRING_DATASOURCE_USERNAME=app_user \\
 # SPRING_DATASOURCE_PASSWORD=**** \\
 # java -jar app.jar`,
-        output: `... The following 1 profile is active: "prod"
-... HikariPool-1 - Start completed. maximumPoolSize=20
-... Tomcat started on port(s): 8080 (http)
-... Started WebnestAppApplication in 3.05 seconds
-(On SIGTERM) ... Commencing graceful shutdown. Waiting for active requests to complete`,
+        output: `INFO  ... : The following 1 profile is active: "prod"
+INFO  ... : Started App in 4.987 seconds (process running for 5.497)
+
+(With root at WARN, the Tomcat and HikariCP startup lines are no longer printed;
+ only your own INFO lines and warnings remain.)
+
+GET /actuator/health                          -> {"groups":["liveness","readiness"],"status":"UP"}
+GET /actuator/metrics/hikaricp.connections.max -> ... "measurements":[{"statistic":"VALUE","value":20.0}] ...
+GET /actuator/env                             -> 404 (not exposed)
+
+On shutdown, with a 4-second request still running (these lines are INFO,
+so they appear only with root, or org.springframework.boot, at INFO):
+INFO  ... GracefulShutdown : Commencing graceful shutdown. Waiting for active requests to complete
+INFO  ... GracefulShutdown : Graceful shutdown complete
+INFO  ... HikariDataSource : HikariPool-1 - Shutdown initiated...
+(the running request still returned 200; new connections were refused)`,
+      },
+      {
+        caption: 'Which source wins? Checked with /actuator/env/app.greeting',
+        code: `# application.properties
+app.greeting=from application.properties
+app.pool=\${DB_POOL_SIZE:10}
+spring.config.import=optional:configtree:./secrets/
+
+# application-prod.properties
+app.greeting=from application-prod.properties
+
+# ./secrets/app.api-key   (a file whose content is the secret)
+from-a-mounted-secret`,
+        output: `Run 1: java -jar app.jar
+  app.greeting = from application.properties       <- application.properties
+  app.pool     = 10                                <- default from the placeholder
+  app.api-key  = from-a-mounted-secret             <- Config tree '...\\secrets'
+
+Run 2: SPRING_PROFILES_ACTIVE=prod
+  app.greeting = from application-prod.properties
+
+Run 3: + APP_GREETING="from env var" DB_POOL_SIZE=25
+  app.greeting = from env var                      <- systemEnvironment
+  app.pool     = 25
+
+Run 4: + --app.greeting="from command line"
+  app.greeting = from command line                 <- commandLineArgs`,
+      },
+      {
+        caption: 'What a missing environment variable looks like',
+        code: `# application-prod.properties (the pattern to avoid)
+spring.datasource.url=\${SPRING_DATASOURCE_URL}
+
+# Started with SPRING_PROFILES_ACTIVE=prod but no SPRING_DATASOURCE_URL`,
+        output: `ERROR ... o.s.boot.SpringApplication : Application run failed
+...
+Caused by: java.lang.IllegalArgumentException: 'url' must start with "jdbc"
+
+(The unresolved text "\${SPRING_DATASOURCE_URL}" was used as the URL.
+ Removing the line and relying on the environment variable directly, or
+ validating required settings with @ConfigurationProperties, avoids this.)`,
       },
     ],
     commonMistakes: [
       'Committing real database passwords or API keys directly into application-prod.properties in version control.',
       'Leaving development-tuned defaults (small connection pools, verbose DEBUG logging, exposed management endpoints) unchanged when deploying to production.',
       'Not testing the "prod" profile locally before deployment, discovering missing or misspelled environment variable names only after a failed rollout.',
-      'Ignoring graceful shutdown configuration, causing dropped requests and inconsistent data during routine deployments or autoscaling events.',
+      'Writing spring.datasource.url=${SPRING_DATASOURCE_URL}: the line is unnecessary, and when the variable is missing the error message is confusing.',
+      'Giving a secret a placeholder default such as ${DB_PASSWORD:changeme}, so a forgotten variable silently runs production with a known password.',
+      'Exposing /actuator/env in production. It shows where every value came from and, if values are not masked, the values themselves.',
+      'Setting logging.level.root=WARN and then searching the logs for "Tomcat started" during an incident. Keep your own packages at INFO.',
     ],
     keyPoints: [
-      'Spring Boot resolves configuration from multiple sources with a defined precedence — environment variables and command-line arguments override file-based properties.',
-      'Secrets belong in environment variables or a secrets manager, never committed to application.properties in source control.',
+      'Spring Boot resolves configuration from multiple sources with a defined precedence — command-line arguments beat environment variables, which beat profile files, which beat application.properties.',
+      'Environment variables bind by relaxed rules (SPRING_DATASOURCE_URL -> spring.datasource.url), so no placeholder line is needed.',
+      '${NAME:default} gives tuning values a fallback; required secrets should have no default and be validated at startup.',
+      'spring.config.import=optional:configtree:/run/secrets/ reads mounted secret files as properties.',
+      'Secrets belong in environment variables, mounted files or a secrets manager, never committed to application.properties in source control.',
       'Production configuration should tune connection pools, restrict Actuator exposure, and reduce log verbosity compared to development defaults.',
-      'server.shutdown=graceful lets in-flight requests finish cleanly during restarts and deployments.',
+      'Graceful shutdown is on by default; spring.lifecycle.timeout-per-shutdown-phase sets how long active requests get to finish.',
     ],
   },
 }
