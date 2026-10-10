@@ -333,7 +333,7 @@ A StringBuilder keeps one resizable character array instead. It starts with room
     }
 }`,
         output: `Numbers: 1, 2, 3, 4, 5
-Length: 15
+Length: 13
 [1, 2, 3, 4, 5]`,
       },
       {

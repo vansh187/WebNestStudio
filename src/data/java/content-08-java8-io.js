@@ -171,7 +171,7 @@ public class StreamDemo {
         List<String> names = Arrays.asList("Charlie", "amy", "Bob", "diana");
 
         List<String> result = names.stream()
-                .filter(n -> n.length() > 3)
+                .filter(n -> n.length() > 3) // "amy" and "Bob" are dropped here
                 .map(String::toUpperCase)
                 .sorted()
                 .collect(Collectors.toList());
@@ -183,7 +183,7 @@ public class StreamDemo {
         System.out.println("Total length: " + totalLength);
     }
 }`,
-        output: `[AMY, CHARLIE, DIANA]
+        output: `[CHARLIE, DIANA]
 Total length: 18`,
       },
     ],

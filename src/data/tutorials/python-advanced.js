@@ -509,6 +509,7 @@ with ThreadPoolExecutor() as pool:
       {
         caption: 'A race condition and fixing it with a Lock',
         code: `import threading
+import time
 
 counter = 0
 lock = threading.Lock()
@@ -517,26 +518,31 @@ def unsafe_increment(n):
     global counter
     for _ in range(n):
         value = counter
-        value += 1
-        counter = value
+        time.sleep(0)  # give another thread a chance to run mid-update
+        counter = value + 1
 
 def safe_increment(n):
     global counter
     for _ in range(n):
         with lock:
-            counter += 1
+            value = counter
+            time.sleep(0)
+            counter = value + 1
 
 for worker in (unsafe_increment, safe_increment):
     counter = 0
-    threads = [threading.Thread(target=worker, args=(200_000,)) for _ in range(4)]
+    threads = [threading.Thread(target=worker, args=(10_000,)) for _ in range(4)]
     [t.start() for t in threads]
     [t.join() for t in threads]
-    print(f"{worker.__name__}: {counter} (expected 800000)")
+    print(f"{worker.__name__}: {counter} (expected 40000)")
 
-# The unsafe total varies from run to run and can even come out right by luck —
-# that unpredictability is exactly what makes race conditions dangerous.`,
-        output: `unsafe_increment: 312489 (expected 800000)
-safe_increment: 800000 (expected 800000)`,
+# Without time.sleep(0), CPython's GIL rarely switches threads between the read
+# and the write, so the bug can hide for a long time. It is still a bug: real
+# code does I/O or other work there, and that is when updates get lost.`,
+        output: `unsafe_increment: 10296 (expected 40000)
+safe_increment: 40000 (expected 40000)
+
+(The unsafe total is different on every run. The locked total is always 40000.)`,
         runnable: false,
       },
       {

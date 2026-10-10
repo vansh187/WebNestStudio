@@ -170,6 +170,7 @@ public class FinalDemo {
 
     public static void main(String[] args) {
         try {
+            // divide() runs, and its finally prints, before println prints the result
             System.out.println("Result: " + divide(10, 2));
             System.out.println("Result: " + divide(10, 0));
         } catch (ArithmeticException e) {
@@ -186,8 +187,8 @@ public class FinalDemo {
         // writer.close() is called automatically here, deterministically
     }
 }`,
-        output: `Result: 5
-finally block runs even though we are returning
+        output: `finally block runs even though we are returning
+Result: 5
 finally block runs even though we are returning
 Caught: / by zero
 Wrote: hello`,
@@ -388,6 +389,7 @@ Inside worker2, running on: Worker-2`,
 
         Thread task = new Thread(() -> System.out.println("Task ran once"));
         task.start();
+        task.join(); // wait, so "Task ran once" always prints first
         try {
             task.start(); // starting the same Thread object twice
         } catch (IllegalThreadStateException e) {
