@@ -228,6 +228,13 @@ export const LESSON_VIDEOS = {
     title: 'Demystifying the super Keyword in Java | Constructors, Methods & Variables Explained',
     description: 'Using an Animal parent and a Dog child, this video shows super() calling the parent constructor as the first line, super.method() running the parent\'s version of an overridden method, super.variable reaching a hidden parent field, and how constructor chaining works, with common mistakes and interview questions.',
   },
+  lesson_java_core_polymorphism_in_java_an_overview: {
+    youtubeId: 'rjXj9gmSgL4',
+    uploadDate: '2026-10-10T05:08:18-07:00', durationSeconds: 421,
+    afterSection: 0, // after the introduction, before "Compile-Time (Static) Polymorphism"
+    title: 'Java Polymorphism Masterclass: Method Overloading, Overriding and Dynamic Dispatch',
+    description: 'From "one interface, many forms" to how the JVM picks a method at runtime: overloading rules, overriding and dynamic method dispatch, upcasting and downcasting with ClassCastException, why static, private and final methods are not overridden, covariant return types, interfaces and abstract classes, a payment-system example, and tricky interview output questions.',
+  },
 }
 
 export function getLessonVideo(lessonId) {

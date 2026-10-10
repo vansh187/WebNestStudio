@@ -397,6 +397,29 @@ Java supports two distinct kinds of polymorphism: compile-time (static) polymorp
         heading: 'Why the Distinction Matters',
         body: `Compile-time polymorphism is about convenience and readability — one intuitive method name covering several related use cases. Runtime polymorphism is far more powerful architecturally: it is the mechanism behind interfaces, abstract classes, and extensible frameworks, because it lets code work with a general supertype while automatically running the correct specific behavior for whatever object is actually supplied at runtime.`,
       },
+      {
+        heading: 'How the JVM Picks the Method: Dynamic Method Dispatch',
+        body: `A call such as <code>animal.sound()</code> is handled in two steps. At compile time, the compiler looks only at the declared type of the variable (<code>Animal</code>) and checks that this type has a <code>sound()</code> method; if it does not, the code does not compile, whatever the object will be. At runtime, the JVM looks at the class of the actual object and runs the most specific version of <code>sound()</code> it finds, starting at that class and walking up through its parents. This runtime lookup is called dynamic method dispatch. It is why the declared type decides <em>which methods you may call</em>, while the object decides <em>which code actually runs</em>.`,
+      },
+      {
+        heading: 'Upcasting and Downcasting',
+        body: `Storing a <code>Dog</code> in an <code>Animal</code> variable is an <strong>upcast</strong>. It is always safe, so Java does it automatically, and it is what makes polymorphism possible: a list of <code>Animal</code> can hold dogs, cats and any future subclass. Going the other way, from <code>Animal</code> back to <code>Dog</code> to call a dog-only method such as <code>fetch()</code>, is a <strong>downcast</strong>. It needs an explicit cast and can fail: if the object is really a <code>Cat</code>, the JVM throws <code>ClassCastException</code>. Check first with <code>instanceof</code>; since Java 16 you can check and cast in one step with <code>if (a instanceof Dog d) { d.fetch(); }</code>. Frequent downcasting is often a sign that the behaviour belongs in an overridden method instead.`,
+      },
+      {
+        heading: 'What Is Not Polymorphic',
+        body: `Only instance methods that are inherited and overridable take part in runtime dispatch. Everything else is decided by the compiler from the declared type:`,
+        list: [
+          '<code>static</code> methods belong to the class, not the object. A subclass may declare a static method with the same signature, but that <em>hides</em> the parent\'s method rather than overriding it, and <code>@Override</code> on it is a compile error.',
+          '<code>private</code> methods are not inherited, so a subclass method with the same name is simply a new, unrelated method.',
+          '<code>final</code> methods cannot be overridden at all; the compiler reports "overridden method is final".',
+          'Fields are never overridden. A subclass field with the same name hides the parent\'s, and which one you read depends on the variable\'s declared type.',
+          'Overload selection also uses declared types: with <code>print(Animal)</code> and <code>print(Dog)</code>, calling <code>print(a)</code> on an <code>Animal</code> variable picks <code>print(Animal)</code> even when <code>a</code> holds a <code>Dog</code>.',
+        ],
+      },
+      {
+        heading: 'Polymorphism with Interfaces and Abstract Classes',
+        body: `In real projects the parent type is usually an interface or an abstract class rather than a concrete class. An interface such as <code>PaymentMethod</code> states what every payment can do (<code>pay(amount)</code>) without saying how. Card, UPI and wallet payments each implement it differently, and the checkout code works with <code>PaymentMethod</code> only, so adding a new payment type needs no change there. An abstract class sits in between: it can implement the steps that are the same for every subclass and leave one step abstract, as <code>OnlinePayment</code> does below with <code>transfer()</code>. Overriding methods may also narrow the return type, for example a <code>copy()</code> that returns <code>Shape</code> in the parent and <code>Circle</code> in the child. This is called a covariant return type and is covered in the Method Overriding lesson.`,
+      },
     ],
     examples: [
       {
@@ -431,18 +454,160 @@ public class PolymorphismOverviewDemo {
 6.0
 Woof!`,
       },
+      {
+        caption: 'A payment system: one loop, three behaviours, through an interface and an abstract class',
+        code: `import java.math.BigDecimal;
+import java.util.List;
+
+public class PaymentDemo {
+    public static void main(String[] args) {
+        List<PaymentMethod> methods = List.of(
+                new CardPayment("4111111111111111"),
+                new UpiPayment("asha@okbank"),
+                new WalletPayment(new BigDecimal("300.00")));
+
+        BigDecimal amount = new BigDecimal("499.00");
+        for (PaymentMethod method : methods) {        // one loop, three behaviours
+            System.out.println(method.name() + ": " + method.pay(amount));
+        }
+    }
+}
+
+interface PaymentMethod {
+    String pay(BigDecimal amount);
+
+    default String name() {                           // shared default, can be overridden
+        return getClass().getSimpleName();
+    }
+}
+
+abstract class OnlinePayment implements PaymentMethod {
+    // Every online payment is formatted the same way; only the transfer differs
+    @Override
+    public final String pay(BigDecimal amount) {
+        return "Rs." + amount + " " + transfer(amount);
+    }
+
+    protected abstract String transfer(BigDecimal amount);
+}
+
+class CardPayment extends OnlinePayment {
+    private final String cardNumber;
+    CardPayment(String cardNumber) { this.cardNumber = cardNumber; }
+
+    @Override
+    protected String transfer(BigDecimal amount) {
+        return "charged to card ending " + cardNumber.substring(cardNumber.length() - 4);
+    }
+}
+
+class UpiPayment extends OnlinePayment {
+    private final String upiId;
+    UpiPayment(String upiId) { this.upiId = upiId; }
+
+    @Override
+    protected String transfer(BigDecimal amount) {
+        return "requested from " + upiId;
+    }
+
+    @Override
+    public String name() { return "UPI"; }
+}
+
+class WalletPayment implements PaymentMethod {
+    private BigDecimal balance;
+    WalletPayment(BigDecimal balance) { this.balance = balance; }
+
+    @Override
+    public String pay(BigDecimal amount) {
+        if (balance.compareTo(amount) < 0) {
+            return "declined, wallet balance is Rs." + balance;
+        }
+        balance = balance.subtract(amount);
+        return "paid from wallet";
+    }
+}`,
+        output: `CardPayment: Rs.499.00 charged to card ending 1111
+UPI: Rs.499.00 requested from asha@okbank
+WalletPayment: declined, wallet balance is Rs.300.00`,
+      },
+      {
+        caption: 'Interview-style output questions: what is dispatched at runtime and what is not',
+        code: `public class TrickyOutput {
+    static void print(Animal a) { System.out.println("print(Animal)"); }
+    static void print(Dog d)    { System.out.println("print(Dog)"); }
+
+    public static void main(String[] args) {
+        Animal a = new Dog();                 // upcast: automatic
+
+        a.sound();                            // Q1
+        print(a);                             // Q2
+        System.out.println(a.legs);           // Q3
+        a.describe();                         // Q4
+
+        if (a instanceof Dog d) {             // Q5: check and downcast in one step (Java 16+)
+            d.fetch();
+        }
+
+        Animal cat = new Cat();
+        try {
+            Dog wrong = (Dog) cat;            // Q6
+            wrong.fetch();
+        } catch (ClassCastException e) {
+            System.out.println("ClassCastException: " + e.getMessage());
+        }
+    }
+}
+
+class Animal {
+    int legs = 4;
+    void sound() { System.out.println("Animal sound"); }
+    static void info() { System.out.println("Animal.info"); }
+    void describe() { info(); }
+}
+
+class Dog extends Animal {
+    int legs = 3;                             // hides Animal.legs (a three-legged dog)
+    @Override void sound() { System.out.println("Woof"); }
+    static void info() { System.out.println("Dog.info"); }   // hides, does not override
+    void fetch() { System.out.println("Dog fetches"); }
+}
+
+class Cat extends Animal {
+    @Override void sound() { System.out.println("Meow"); }
+}`,
+        output: `Woof
+print(Animal)
+4
+Animal.info
+Dog fetches
+ClassCastException: class Cat cannot be cast to class Dog (Cat and Dog are in unnamed module of loader ...)
+
+Q1 Woof: sound() is an overridden instance method, so the Dog object decides.
+Q2 print(Animal): overloads are chosen at compile time from the declared type Animal.
+Q3 4: fields are not overridden; a.legs reads the field declared in Animal.
+Q4 Animal.info: static methods are hidden, not overridden, so describe() calls Animal's.
+Q5 the pattern match succeeds because the object really is a Dog.
+Q6 the object is a Cat, so the cast fails at runtime, not at compile time.`,
+      },
     ],
     commonMistakes: [
       'Using "overloading" and "overriding" interchangeably — they are resolved at different times (compile-time vs runtime) and follow completely different rules.',
       'Believing overload resolution can happen at runtime — the compiler picks the overloaded method based purely on the declared/static types of the arguments.',
       'Forgetting that overriding requires an identical method signature, while overloading requires a different one — an "override" with a slightly different parameter list actually just creates an accidental overload.',
       'Assuming polymorphism only applies to classes — interfaces and abstract classes rely on runtime polymorphism just as heavily, if not more.',
+      'Downcasting without an instanceof check, so a wrong object type crashes with ClassCastException at runtime.',
+      'Expecting a static method or a field in the subclass to override the parent\'s; both are only hidden and are chosen by the declared type.',
+      'Writing if/else chains on instanceof to pick behaviour, instead of putting the behaviour in an overridden method.',
     ],
     keyPoints: [
       'Polymorphism means one name or reference type behaving in multiple forms depending on context.',
       'Compile-time (static) polymorphism = method overloading, resolved by the compiler using argument types.',
       'Runtime (dynamic) polymorphism = method overriding, resolved using the actual object type at runtime.',
       'Runtime polymorphism is the foundation of flexible, extensible designs built on interfaces and abstract classes.',
+      'The declared type decides which methods may be called; the actual object decides which overriding version runs (dynamic method dispatch).',
+      'Upcasting is automatic and safe; downcasting needs a cast and an instanceof check to avoid ClassCastException.',
+      'static, private and final methods and all fields are resolved at compile time and are not polymorphic.',
     ],
   },
 
