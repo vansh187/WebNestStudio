@@ -86,6 +86,11 @@ public class NotifyDemo {
         answer: `No. Only instance methods are dispatched on the actual object. Fields and static methods are resolved from the declared type of the reference at compile time. A subclass that declares a field or static method with the same name hides the parent's version rather than overriding it.`,
       },
     ],
+    seeAlso: [
+      { lessonId: 'lesson_java_core_method_overriding', label: 'Method Overriding' },
+      { lessonId: 'lesson_java_core_runtime_polymorphism_and_dynamic_binding', label: 'Runtime Polymorphism and Dynamic Binding' },
+      { lessonId: 'lesson_java_core_instanceof_and_downcasting', label: 'instanceof and Downcasting' },
+    ],
   },
 
   'method-overriding': {

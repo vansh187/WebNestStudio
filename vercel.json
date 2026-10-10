@@ -65,6 +65,71 @@
       "source": "/learn/lessons/lesson_python_input",
       "destination": "/learn/lessons/lesson_python_http_api_basics",
       "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_spring_ioc_container_and_dependency_injection",
+      "destination": "/learn/lessons/lesson_spring_framework_ioc_and_dependency_injection",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_bean_scopes_autowiring_and_java_configuration",
+      "destination": "/learn/lessons/lesson_spring_framework_configuration",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_aspect_oriented_programming_aop_in_spring",
+      "destination": "/learn/lessons/lesson_spring_framework_aop",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_spring_boot_fundamentals_and_auto_configuration",
+      "destination": "/learn/lessons/lesson_spring_boot_auto_configuration",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_spring_mvc_and_the_dispatcherservlet",
+      "destination": "/learn/lessons/lesson_spring_framework_spring_mvc",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_building_rest_apis_with_spring_boot",
+      "destination": "/learn/lessons/lesson_spring_boot_rest_apis",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_spring_data_jpa_repositories",
+      "destination": "/learn/lessons/lesson_spring_boot_spring_data_jpa",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_validation_and_exception_handling_in_spring",
+      "destination": "/learn/lessons/lesson_spring_boot_validation",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_spring_security_fundamentals",
+      "destination": "/learn/lessons/lesson_spring_boot_security_concepts",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_securing_rest_apis_with_jwt",
+      "destination": "/learn/lessons/lesson_spring_boot_jwt_concepts",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_microservices_architecture_fundamentals",
+      "destination": "/learn/lessons/lesson_spring_boot_microservices_architecture_with_spring_boot",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_service_discovery_and_api_gateways_with_spring_cloud",
+      "destination": "/learn/lessons/lesson_spring_boot_service_discovery_with_eureka_and_load_balancing",
+      "permanent": true
+    },
+    {
+      "source": "/learn/lessons/lesson_advanced_java_resilience_circuit_breakers_and_distributed_tracing",
+      "destination": "/learn/lessons/lesson_spring_boot_resilience_retries_rate_limits_and_circuit_breakers",
+      "permanent": true
     }
   ],
   "headers": [

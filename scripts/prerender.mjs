@@ -14,7 +14,10 @@ await writeFile(path.join(dist, 'app.html'), shell)
 // pristine template so re-running prerender is safe.
 const ADSENSE_SCRIPT = /\s*<script\b[^>]*pagead2\.googlesyndication\.com[^>]*><\/script>/g
 const withoutAds = (html) => html.replace(ADSENSE_SCRIPT, '')
-await writeFile(path.join(dist, 'app-private.html'), withoutAds(shell))
+// Every private route is noindex, so say so in the raw HTML too, not only in the
+// X-Robots-Tag header and the tag useSeo adds after the app boots.
+const noindexed = (html) => html.replace(/<head>/, '<head>\n    <meta name="robots" content="noindex, follow" />')
+await writeFile(path.join(dist, 'app-private.html'), noindexed(withoutAds(shell)))
 const server = await preview({ preview: { port: 4174, strictPort: true } })
 const origin = server.resolvedUrls.local[0].replace(/\/$/, '')
 let browser

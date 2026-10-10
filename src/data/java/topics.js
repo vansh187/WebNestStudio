@@ -192,25 +192,6 @@ export const ADVANCED_JAVA_MODULES = [
     'Hibernate Caching: First-Level and Second-Level',
     'HQL and the Criteria API',
   ]],
-  ['Spring Framework Core', [
-    'Spring IoC Container and Dependency Injection',
-    'Bean Scopes, Autowiring, and Java Configuration',
-    'Aspect-Oriented Programming (AOP) in Spring',
-  ]],
-  ['Spring Boot and REST APIs', [
-    'Spring Boot Fundamentals and Auto-Configuration',
-    'Spring MVC and the DispatcherServlet',
-    'Building REST APIs with Spring Boot',
-    'Spring Data JPA Repositories',
-    'Validation and Exception Handling in Spring',
-  ]],
-  ['Spring Security, Cloud, and Microservices', [
-    'Spring Security Fundamentals',
-    'Securing REST APIs with JWT',
-    'Microservices Architecture Fundamentals',
-    'Service Discovery and API Gateways with Spring Cloud',
-    'Resilience: Circuit Breakers and Distributed Tracing',
-  ]],
   ['Advanced Runtime Concepts', [
     'Networking Basics: Socket, ServerSocket, and URL',
     'Reflection API',

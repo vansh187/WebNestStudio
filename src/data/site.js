@@ -58,6 +58,7 @@ export const FOOTER_SECTIONS = [
     title: 'Resources',
     links: [
       { label: 'Blog', to: '/blog' },
+      { label: 'Best Laptops for Coding', to: '/best-laptops-for-coding' },
       { label: 'FAQs', to: '/faqs' },
       { label: 'Visiting Card', to: '/card' },
       { label: 'Contact Us', to: '/contact' },
@@ -77,7 +78,6 @@ export const FOOTER_SECTIONS = [
       { label: 'Webnest CodeLab', to: '/codelab' },
       { label: 'Learn programming', to: '/learn' },
       { label: 'Coding practice', to: '/codelab/problems' },
-      { label: 'Make a Project', to: '/projects' },
     ],
   },
 ]

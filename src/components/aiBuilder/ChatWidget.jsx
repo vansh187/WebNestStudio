@@ -20,9 +20,21 @@ export default function ChatWidget() {
   // as an unwanted side effect of releasing the mouse.
   const wasDraggedRef = useRef(false)
 
+  // The greeting waits for a real visitor to interact. Crawlers and prerender
+  // snapshots never do, so the line doesn't become body text on every page.
   useEffect(() => {
-    const timer = setTimeout(() => setShowBubble(true), 2000)
-    return () => clearTimeout(timer)
+    if (window.__PRERENDER__) return
+    const events = ['pointermove', 'scroll', 'touchstart', 'keydown']
+    let timer
+    const arm = () => {
+      events.forEach((e) => window.removeEventListener(e, arm))
+      timer = setTimeout(() => setShowBubble(true), 2000)
+    }
+    events.forEach((e) => window.addEventListener(e, arm, { passive: true }))
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, arm))
+      clearTimeout(timer)
+    }
   }, [])
 
   const openPanel = () => {

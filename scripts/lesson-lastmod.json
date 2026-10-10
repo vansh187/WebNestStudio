@@ -112,8 +112,8 @@
     "lastmod": "2026-10-02"
   },
   "lesson_java_core_java_stringbuilder": {
-    "hash": "7059d05fde488b76",
-    "lastmod": "2026-10-02"
+    "hash": "ca8d783ece488c1c",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_string_vs_stringbuffer_vs_stringbuilder": {
     "hash": "22ab6c2cf27c9490",
@@ -168,20 +168,20 @@
     "lastmod": "2026-10-08"
   },
   "lesson_java_core_java_inheritance": {
-    "hash": "36ec7d761e259a42",
-    "lastmod": "2026-10-06"
+    "hash": "7703eddff8774397",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_aggregation_in_java": {
-    "hash": "fed7d56e55c747a5",
-    "lastmod": "2026-10-02"
+    "hash": "8a9e4f59f16858d3",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_super_keyword": {
-    "hash": "60c25214978f8198",
-    "lastmod": "2026-10-06"
+    "hash": "b6a9db2fb2ee0824",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_polymorphism_in_java_an_overview": {
-    "hash": "930d456176f58d8b",
-    "lastmod": "2026-10-02"
+    "hash": "71ef29c8b0c4e7cb",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_method_overriding": {
     "hash": "ea5866528fb09992",
@@ -280,8 +280,8 @@
     "lastmod": "2026-10-02"
   },
   "lesson_java_core_final_vs_finally_vs_finalize": {
-    "hash": "8cd5360dbe8986c3",
-    "lastmod": "2026-10-02"
+    "hash": "5577b225efbb6bcd",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_exception_handling_rules_with_method_overriding": {
     "hash": "fc3f12c1338add21",
@@ -312,8 +312,8 @@
     "lastmod": "2026-10-02"
   },
   "lesson_java_core_daemon_threads_thread_naming_and_start_vs_run": {
-    "hash": "2229d70464525d17",
-    "lastmod": "2026-10-02"
+    "hash": "bdee481f75b5c5d0",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_thread_scheduler_threadgroup_and_shutdown_hooks_in_java": {
     "hash": "39b0399f449f0d4f",
@@ -420,8 +420,8 @@
     "lastmod": "2026-10-02"
   },
   "lesson_java_core_stream_api": {
-    "hash": "48cab6b8a0c196e7",
-    "lastmod": "2026-10-02"
+    "hash": "8d6ae153fa99ffbe",
+    "lastmod": "2026-10-10"
   },
   "lesson_java_core_method_references": {
     "hash": "3be4dafa9b2cac6d",
@@ -500,20 +500,20 @@
     "lastmod": "2026-09-21"
   },
   "lesson_advanced_java_connecting_to_a_database_with_drivermanager": {
-    "hash": "302779b7bd8abb83",
-    "lastmod": "2026-09-21"
+    "hash": "768954b0911f4d4e",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_statement_preparedstatement_and_callablestatement": {
-    "hash": "830f1232dfa8404f",
-    "lastmod": "2026-09-21"
+    "hash": "50e9176cb132684f",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_working_with_resultset": {
-    "hash": "2283ff74b8cdcb80",
-    "lastmod": "2026-09-21"
+    "hash": "27c40fd97ea2f785",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_transactions_in_jdbc": {
-    "hash": "f025b876ff4a979c",
-    "lastmod": "2026-09-21"
+    "hash": "1b099fe31067f772",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_connection_pooling_concepts": {
     "hash": "de33f8cbebfb8f04",
@@ -587,105 +587,53 @@
     "hash": "fd02a46a898138e2",
     "lastmod": "2026-09-22"
   },
-  "lesson_advanced_java_spring_ioc_container_and_dependency_injection": {
-    "hash": "13691dc4a6f86c0f",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_bean_scopes_autowiring_and_java_configuration": {
-    "hash": "6b246d5726839456",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_aspect_oriented_programming_aop_in_spring": {
-    "hash": "6c82c571dc59bbb2",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_spring_boot_fundamentals_and_auto_configuration": {
-    "hash": "9c4f1409aed6fc0d",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_spring_mvc_and_the_dispatcherservlet": {
-    "hash": "5a148e0c30d64750",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_building_rest_apis_with_spring_boot": {
-    "hash": "1ddfb34123035597",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_spring_data_jpa_repositories": {
-    "hash": "05d026d05fbec418",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_validation_and_exception_handling_in_spring": {
-    "hash": "8b5e6bcdc498020d",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_spring_security_fundamentals": {
-    "hash": "cdbea80cf8874edc",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_securing_rest_apis_with_jwt": {
-    "hash": "febde991848c3147",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_microservices_architecture_fundamentals": {
-    "hash": "2872df330a26a646",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_service_discovery_and_api_gateways_with_spring_cloud": {
-    "hash": "e647b10b54178df7",
-    "lastmod": "2026-09-22"
-  },
-  "lesson_advanced_java_resilience_circuit_breakers_and_distributed_tracing": {
-    "hash": "87ee5e5179c97c31",
-    "lastmod": "2026-09-22"
-  },
   "lesson_advanced_java_networking_basics_socket_serversocket_and_url": {
-    "hash": "da719115a299bb0a",
-    "lastmod": "2026-10-02"
+    "hash": "3b8d8c47806e528e",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_reflection_api": {
-    "hash": "201c9f74b5112084",
-    "lastmod": "2026-10-02"
+    "hash": "4782736fe2140748",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_java_annotations": {
-    "hash": "7e80c7904a1dfa1e",
-    "lastmod": "2026-10-02"
+    "hash": "9035b2a21fb78dcd",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_enums_in_java": {
-    "hash": "b82bcc84e5569a80",
-    "lastmod": "2026-10-02"
+    "hash": "fc29cdc53d919b37",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_java_nio_basics_channels_and_buffers": {
-    "hash": "ece904e7cc69991f",
-    "lastmod": "2026-10-02"
+    "hash": "c48cc079f5159831",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_design_patterns_overview_singleton_factory_builder_observer": {
-    "hash": "d88efab6d9a557ab",
-    "lastmod": "2026-10-02"
+    "hash": "99cfc068abd8a004",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_build_tools_maven_basics": {
-    "hash": "ccdf35a25c311472",
-    "lastmod": "2026-10-02"
+    "hash": "65cf1a52033df1f1",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_build_tools_gradle_basics": {
-    "hash": "d6f0dd0339838da5",
-    "lastmod": "2026-10-02"
+    "hash": "c4731bda76c28e42",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_logging_in_java_applications": {
-    "hash": "848973db71bb19a4",
-    "lastmod": "2026-10-02"
+    "hash": "fc7373bad06abfb1",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_unit_testing_with_junit": {
-    "hash": "5500db1149005ad4",
-    "lastmod": "2026-10-02"
+    "hash": "56a2cd09104f3a72",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_mockito_and_testing_spring_applications": {
-    "hash": "27f742b19f9a259c",
-    "lastmod": "2026-10-02"
+    "hash": "4114cf8a9411f7a0",
+    "lastmod": "2026-10-10"
   },
   "lesson_advanced_java_packaging_and_deployment_jar_and_war": {
-    "hash": "4eb69bb6ad2b4a60",
-    "lastmod": "2026-10-02"
+    "hash": "65d14ce305597a0e",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_framework_spring_framework_overview_and_modules": {
     "hash": "5f947e8a24d4e622",
@@ -740,8 +688,8 @@
     "lastmod": "2026-09-21"
   },
   "lesson_spring_framework_configuration": {
-    "hash": "121429690de3a844",
-    "lastmod": "2026-09-27"
+    "hash": "b6a47b40258bf83b",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_framework_bean_lifecycle": {
     "hash": "0e1fdeb5b10400cd",
@@ -808,28 +756,28 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_starters": {
-    "hash": "cd0d0033b2fae44f",
-    "lastmod": "2026-09-27"
+    "hash": "be5ea81c05834d5f",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_spring_boot_annotations_reference": {
     "hash": "742387f5ba69ffeb",
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_auto_configuration": {
-    "hash": "33fd33c993b2dd6e",
-    "lastmod": "2026-09-27"
+    "hash": "bc8fbbe84e18c3fb",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_configuration_properties": {
-    "hash": "fdcbdee52e59b2da",
-    "lastmod": "2026-09-27"
+    "hash": "0979ac1358451e8f",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_application_properties_and_common_settings": {
     "hash": "2b5f6058212b1723",
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_profiles": {
-    "hash": "2f0bbbb470f3aeea",
-    "lastmod": "2026-09-27"
+    "hash": "bc74b3977ced44b8",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_spring_boot_devtools": {
     "hash": "1c404817e78b28e9",
@@ -860,8 +808,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_rest_apis": {
-    "hash": "e36d40357d3bd0f0",
-    "lastmod": "2026-09-27"
+    "hash": "ccc0c59da8f848f5",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_request_mapping_and_parameters": {
     "hash": "f54e1732f46d12e5",
@@ -876,12 +824,12 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_validation": {
-    "hash": "9c946afda6e5d9c9",
-    "lastmod": "2026-10-02"
+    "hash": "2785149dd7b577a2",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_exception_handling": {
-    "hash": "5d2da420311f7304",
-    "lastmod": "2026-09-27"
+    "hash": "50d4295ded226068",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_file_upload_and_download": {
     "hash": "b6567f7be2f7f475",
@@ -912,8 +860,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_openapi": {
-    "hash": "92cf5aee6e0aae5f",
-    "lastmod": "2026-09-27"
+    "hash": "d48b5ba16f27245b",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_server_side_rendering_with_thymeleaf": {
     "hash": "f6e5436b0828b39e",
@@ -932,8 +880,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_spring_data_jpa": {
-    "hash": "ece6fc80e6232ae2",
-    "lastmod": "2026-09-27"
+    "hash": "bf8136146533cbb6",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_h2_database_and_a_complete_crud_application": {
     "hash": "7d9e0a32c3546117",
@@ -944,8 +892,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_hibernate": {
-    "hash": "a62182e7b921b7d1",
-    "lastmod": "2026-09-27"
+    "hash": "0c0f9adfa039c7c6",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_entity_relationships_in_depth": {
     "hash": "08df038318007d15",
@@ -956,8 +904,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_pagination": {
-    "hash": "db729add85faabc2",
-    "lastmod": "2026-10-02"
+    "hash": "c9d5ed14e7131f1f",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_transactions_in_spring_boot": {
     "hash": "a6d4992705fb5ef1",
@@ -992,8 +940,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_security_concepts": {
-    "hash": "be8fc2d0844e117b",
-    "lastmod": "2026-09-27"
+    "hash": "1c5eb12f45fef80d",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_jwt_concepts": {
     "hash": "d0416ecd34447ee7",
@@ -1148,16 +1096,16 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_actuator": {
-    "hash": "80231d1ecb85bace",
-    "lastmod": "2026-09-27"
+    "hash": "92911218b2ca0fcb",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_health_checks_readiness_and_liveness_probes": {
     "hash": "7cac448015998f1b",
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_logging": {
-    "hash": "7dce16ae2e094af4",
-    "lastmod": "2026-10-02"
+    "hash": "d9572aef03f34c84",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_structured_logging": {
     "hash": "98f82dc0f7439281",
@@ -1180,12 +1128,12 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_production_configuration": {
-    "hash": "134e83efa98f240a",
-    "lastmod": "2026-09-27"
+    "hash": "ea871b72d4ee43f8",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_docker_deployment_concepts": {
-    "hash": "4ce7caadd1a8f61e",
-    "lastmod": "2026-09-27"
+    "hash": "3e1b6af37292214b",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_building_container_images_with_buildpacks": {
     "hash": "c1167d6edd0f1a0e",
@@ -1204,8 +1152,8 @@
     "lastmod": "2026-09-27"
   },
   "lesson_spring_boot_microservices_architecture_with_spring_boot": {
-    "hash": "44dd444b27d7e9d9",
-    "lastmod": "2026-09-27"
+    "hash": "bbb693f94b21ac50",
+    "lastmod": "2026-10-10"
   },
   "lesson_spring_boot_centralized_configuration_with_spring_cloud_config": {
     "hash": "80e77084cd7e1ffe",
@@ -1596,8 +1544,8 @@
     "lastmod": "2026-10-02"
   },
   "lesson_python_multithreading": {
-    "hash": "a3403b39782db710",
-    "lastmod": "2026-10-02"
+    "hash": "abdc3676f7fe0a03",
+    "lastmod": "2026-10-10"
   },
   "lesson_python_multiprocessing": {
     "hash": "6b13a327ad7b9200",
@@ -1968,8 +1916,8 @@
     "lastmod": "2026-10-02"
   },
   "lesson_javascript_debugging": {
-    "hash": "9845cbaf33eda14e",
-    "lastmod": "2026-10-02"
+    "hash": "980fd96ae884c15c",
+    "lastmod": "2026-10-10"
   },
   "lesson_javascript_testing_fundamentals": {
     "hash": "85276e9b8a24f763",

@@ -41,12 +41,16 @@ export function RelatedCaseStudy({ slug, inline = false }) {
   )
 }
 
-export function RelatedLearning({ links, heading = 'Learn the technology behind it' }) {
+export function RelatedLearning({
+  links,
+  heading = 'Learn the technology behind it',
+  text = 'We publish free courses on the stacks we use. They are a good way to see how we think about code.',
+}) {
   if (!links?.length) return null
   return (
     <nav aria-label={heading}>
       <h2 className="font-display text-xl font-semibold text-ink-900 dark:text-white">{heading}</h2>
-      <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">We publish free courses on the stacks we use. They are a good way to see how we think about code.</p>
+      <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">{text}</p>
       <ul className="mt-4 flex flex-wrap gap-3">
         {links.map((link) => (
           <li key={link.to}><Link to={link.to} className="inline-flex rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 hover:border-gold-400 hover:text-gold-600 dark:border-ink-700 dark:text-ink-100 dark:hover:text-gold-400">{link.label}</Link></li>

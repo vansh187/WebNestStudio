@@ -20,8 +20,6 @@ import { content18GapsE } from './content-18-gaps-e.js'
 import { content19GapsF } from './content-19-gaps-f.js'
 import { content20GapsG } from './content-20-gaps-g.js'
 import { content21Hibernate } from './content-21-hibernate.js'
-import { content22SpringCoreBoot } from './content-22-spring-core-boot.js'
-import { content23SecurityCloud } from './content-23-security-cloud.js'
 import { content24Mockito } from './content-24-mockito.js'
 import { practice01Basics } from './practice-01-basics.js'
 import { practice02ControlFlow } from './practice-02-controlflow.js'
@@ -80,8 +78,6 @@ const LESSON_PROSE = {
   ...content19GapsF,
   ...content20GapsG,
   ...content21Hibernate,
-  ...content22SpringCoreBoot,
-  ...content23SecurityCloud,
   ...content24Mockito,
 }
 

@@ -177,6 +177,16 @@ Hello!`,
 A classic example is a Department that has Employees. An Employee can be transferred to another department, or can exist in the system even if a particular Department object is deleted — the Employee was never truly "owned" by that one Department. This independence is exactly what distinguishes aggregation from its stronger sibling, composition.`,
     sections: [
       {
+        heading: 'HAS-A vs IS-A',
+        body: `Java classes relate to each other in two basic ways, and asking which one applies is the first step in any class design:`,
+        list: [
+          '<strong>IS-A</strong> is inheritance. A <code>Manager</code> IS-A <code>Employee</code>, so <code>class Manager extends Employee</code>. The child gets the parent\'s fields and methods and can be used anywhere the parent is expected.',
+          '<strong>HAS-A</strong> is a field. An <code>Employee</code> HAS-A <code>Address</code>, so <code>Employee</code> declares a field of type <code>Address</code>. Nothing is inherited; the employee just keeps a reference and calls the address\'s methods when it needs them.',
+          'A quick test: say the sentence out loud. "An employee is an address" is clearly wrong, so <code>extends</code> would be wrong too, while "an employee has an address" sounds right.',
+          'HAS-A is the more flexible choice. You can swap the referenced object at runtime, share it between several owners, and change the <code>Address</code> class without breaking a class hierarchy. That is why the common advice is "favour composition over inheritance", where composition here means HAS-A in general.',
+        ],
+      },
+      {
         heading: 'Aggregation vs Composition',
         body: `Both aggregation and composition are "has-a" relationships implemented in Java the same syntactic way — one class holds a reference to another as a field. The difference is purely conceptual/lifecycle-based, not something the compiler enforces.`,
         list: [
@@ -199,6 +209,16 @@ This is what keeps the parts safe. Deleting a <code>Department</code> does not d
       {
         heading: 'Why This Distinction Matters',
         body: `Recognizing aggregation versus composition helps you design classes that reflect real-world lifecycle rules. Modeling a relationship as aggregation when it should be composition (or vice versa) can lead to objects that are deleted too aggressively (losing data that should persist independently) or objects that linger unnecessarily (memory leaks, orphaned references) when they should have been cleaned up with their container.`,
+      },
+      {
+        heading: 'When to Use Aggregation in Real Projects',
+        body: `Choose aggregation when the part has a life and an identity of its own, outside the object that currently holds it. Typical signs:`,
+        list: [
+          'The part is stored or managed separately, for example employees in their own database table, so they must survive when a department is closed.',
+          'The part can move between owners: an employee transfers to another department, a player joins another team.',
+          'The same part is shared: one <code>Address</code> used by several employees, one <code>Course</code> listed in several programs.',
+          'The part is supplied from outside, through a constructor or setter. Spring\'s dependency injection works this way: a service receives a repository that the framework created, and many services can share it.',
+        ],
       },
     ],
     examples: [
@@ -280,6 +300,68 @@ class Employee {
 Karan works in Pune
 Address still usable: Pune`,
       },
+      {
+        caption: 'Aggregation next to composition: an employee transfers, rooms belong to one house',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public class HasADemo {
+    public static void main(String[] args) {
+        Employee riya = new Employee("Riya");
+
+        Department sales = new Department("Sales");
+        Department support = new Department("Support");
+
+        sales.hire(riya);
+        System.out.println(riya.name + " is in " + sales.name + ": " + sales.staff.contains(riya));
+
+        // Transfer: the same Employee object moves to another Department
+        sales.leave(riya);
+        support.hire(riya);
+        System.out.println(riya.name + " is in " + support.name + ": " + support.staff.contains(riya));
+
+        sales = null;    // closing a department does not touch its former staff
+        System.out.println(riya.name + " still exists");
+
+        House house = new House(3);
+        System.out.println("House has " + house.roomCount() + " rooms");
+        house = null;    // the rooms had no other reference, so they go with the house
+    }
+}
+
+class Employee {
+    String name;
+    Employee(String name) { this.name = name; }
+}
+
+// Aggregation: Department receives Employees that already exist
+class Department {
+    String name;
+    List<Employee> staff = new ArrayList<>();
+
+    Department(String name) { this.name = name; }
+
+    void hire(Employee e)  { staff.add(e); }
+    void leave(Employee e) { staff.remove(e); }
+}
+
+// Composition: House creates its own Rooms, nobody else can reach them
+class House {
+    private final List<String> rooms = new ArrayList<>();
+
+    House(int roomCount) {
+        for (int i = 1; i <= roomCount; i++) {
+            rooms.add("Room " + i);   // created inside, owned by this House
+        }
+    }
+
+    int roomCount() { return rooms.size(); }
+}`,
+        output: `Riya is in Sales: true
+Riya is in Support: true
+Riya still exists
+House has 3 rooms`,
+      },
     ],
     commonMistakes: [
       'Treating aggregation and composition as if Java has separate keywords or syntax for them — both are plain object references; the difference is design intent and lifecycle management.',
@@ -292,6 +374,8 @@ Address still usable: Pune`,
       'Composition also models "has-a" but with strong ownership — the part\'s lifecycle depends on the whole.',
       'The distinction is about design intent and object lifecycle, not different Java syntax.',
       'Aggregated objects are typically created outside the container and passed in, rather than created internally by the container.',
+      'IS-A means inheritance (extends); HAS-A means a field that refers to another object. Prefer HAS-A unless the IS-A sentence is genuinely true.',
+      'Use aggregation when the part can be shared, transferred or stored on its own, as with employees and departments.',
     ],
   },
 
@@ -312,6 +396,29 @@ Java supports two distinct kinds of polymorphism: compile-time (static) polymorp
       {
         heading: 'Why the Distinction Matters',
         body: `Compile-time polymorphism is about convenience and readability — one intuitive method name covering several related use cases. Runtime polymorphism is far more powerful architecturally: it is the mechanism behind interfaces, abstract classes, and extensible frameworks, because it lets code work with a general supertype while automatically running the correct specific behavior for whatever object is actually supplied at runtime.`,
+      },
+      {
+        heading: 'How the JVM Picks the Method: Dynamic Method Dispatch',
+        body: `A call such as <code>animal.sound()</code> is handled in two steps. At compile time, the compiler looks only at the declared type of the variable (<code>Animal</code>) and checks that this type has a <code>sound()</code> method; if it does not, the code does not compile, whatever the object will be. At runtime, the JVM looks at the class of the actual object and runs the most specific version of <code>sound()</code> it finds, starting at that class and walking up through its parents. This runtime lookup is called dynamic method dispatch. It is why the declared type decides <em>which methods you may call</em>, while the object decides <em>which code actually runs</em>.`,
+      },
+      {
+        heading: 'Upcasting and Downcasting',
+        body: `Storing a <code>Dog</code> in an <code>Animal</code> variable is an <strong>upcast</strong>. It is always safe, so Java does it automatically, and it is what makes polymorphism possible: a list of <code>Animal</code> can hold dogs, cats and any future subclass. Going the other way, from <code>Animal</code> back to <code>Dog</code> to call a dog-only method such as <code>fetch()</code>, is a <strong>downcast</strong>. It needs an explicit cast and can fail: if the object is really a <code>Cat</code>, the JVM throws <code>ClassCastException</code>. Check first with <code>instanceof</code>; since Java 16 you can check and cast in one step with <code>if (a instanceof Dog d) { d.fetch(); }</code>. Frequent downcasting is often a sign that the behaviour belongs in an overridden method instead.`,
+      },
+      {
+        heading: 'What Is Not Polymorphic',
+        body: `Only instance methods that are inherited and overridable take part in runtime dispatch. Everything else is decided by the compiler from the declared type:`,
+        list: [
+          '<code>static</code> methods belong to the class, not the object. A subclass may declare a static method with the same signature, but that <em>hides</em> the parent\'s method rather than overriding it, and <code>@Override</code> on it is a compile error.',
+          '<code>private</code> methods are not inherited, so a subclass method with the same name is simply a new, unrelated method.',
+          '<code>final</code> methods cannot be overridden at all; the compiler reports "overridden method is final".',
+          'Fields are never overridden. A subclass field with the same name hides the parent\'s, and which one you read depends on the variable\'s declared type.',
+          'Overload selection also uses declared types: with <code>print(Animal)</code> and <code>print(Dog)</code>, calling <code>print(a)</code> on an <code>Animal</code> variable picks <code>print(Animal)</code> even when <code>a</code> holds a <code>Dog</code>.',
+        ],
+      },
+      {
+        heading: 'Polymorphism with Interfaces and Abstract Classes',
+        body: `In real projects the parent type is usually an interface or an abstract class rather than a concrete class. An interface such as <code>PaymentMethod</code> states what every payment can do (<code>pay(amount)</code>) without saying how. Card, UPI and wallet payments each implement it differently, and the checkout code works with <code>PaymentMethod</code> only, so adding a new payment type needs no change there. An abstract class sits in between: it can implement the steps that are the same for every subclass and leave one step abstract, as <code>OnlinePayment</code> does below with <code>transfer()</code>. Overriding methods may also narrow the return type, for example a <code>copy()</code> that returns <code>Shape</code> in the parent and <code>Circle</code> in the child. This is called a covariant return type and is covered in the Method Overriding lesson.`,
       },
     ],
     examples: [
@@ -347,18 +454,160 @@ public class PolymorphismOverviewDemo {
 6.0
 Woof!`,
       },
+      {
+        caption: 'A payment system: one loop, three behaviours, through an interface and an abstract class',
+        code: `import java.math.BigDecimal;
+import java.util.List;
+
+public class PaymentDemo {
+    public static void main(String[] args) {
+        List<PaymentMethod> methods = List.of(
+                new CardPayment("4111111111111111"),
+                new UpiPayment("asha@okbank"),
+                new WalletPayment(new BigDecimal("300.00")));
+
+        BigDecimal amount = new BigDecimal("499.00");
+        for (PaymentMethod method : methods) {        // one loop, three behaviours
+            System.out.println(method.name() + ": " + method.pay(amount));
+        }
+    }
+}
+
+interface PaymentMethod {
+    String pay(BigDecimal amount);
+
+    default String name() {                           // shared default, can be overridden
+        return getClass().getSimpleName();
+    }
+}
+
+abstract class OnlinePayment implements PaymentMethod {
+    // Every online payment is formatted the same way; only the transfer differs
+    @Override
+    public final String pay(BigDecimal amount) {
+        return "Rs." + amount + " " + transfer(amount);
+    }
+
+    protected abstract String transfer(BigDecimal amount);
+}
+
+class CardPayment extends OnlinePayment {
+    private final String cardNumber;
+    CardPayment(String cardNumber) { this.cardNumber = cardNumber; }
+
+    @Override
+    protected String transfer(BigDecimal amount) {
+        return "charged to card ending " + cardNumber.substring(cardNumber.length() - 4);
+    }
+}
+
+class UpiPayment extends OnlinePayment {
+    private final String upiId;
+    UpiPayment(String upiId) { this.upiId = upiId; }
+
+    @Override
+    protected String transfer(BigDecimal amount) {
+        return "requested from " + upiId;
+    }
+
+    @Override
+    public String name() { return "UPI"; }
+}
+
+class WalletPayment implements PaymentMethod {
+    private BigDecimal balance;
+    WalletPayment(BigDecimal balance) { this.balance = balance; }
+
+    @Override
+    public String pay(BigDecimal amount) {
+        if (balance.compareTo(amount) < 0) {
+            return "declined, wallet balance is Rs." + balance;
+        }
+        balance = balance.subtract(amount);
+        return "paid from wallet";
+    }
+}`,
+        output: `CardPayment: Rs.499.00 charged to card ending 1111
+UPI: Rs.499.00 requested from asha@okbank
+WalletPayment: declined, wallet balance is Rs.300.00`,
+      },
+      {
+        caption: 'Interview-style output questions: what is dispatched at runtime and what is not',
+        code: `public class TrickyOutput {
+    static void print(Animal a) { System.out.println("print(Animal)"); }
+    static void print(Dog d)    { System.out.println("print(Dog)"); }
+
+    public static void main(String[] args) {
+        Animal a = new Dog();                 // upcast: automatic
+
+        a.sound();                            // Q1
+        print(a);                             // Q2
+        System.out.println(a.legs);           // Q3
+        a.describe();                         // Q4
+
+        if (a instanceof Dog d) {             // Q5: check and downcast in one step (Java 16+)
+            d.fetch();
+        }
+
+        Animal cat = new Cat();
+        try {
+            Dog wrong = (Dog) cat;            // Q6
+            wrong.fetch();
+        } catch (ClassCastException e) {
+            System.out.println("ClassCastException: " + e.getMessage());
+        }
+    }
+}
+
+class Animal {
+    int legs = 4;
+    void sound() { System.out.println("Animal sound"); }
+    static void info() { System.out.println("Animal.info"); }
+    void describe() { info(); }
+}
+
+class Dog extends Animal {
+    int legs = 3;                             // hides Animal.legs (a three-legged dog)
+    @Override void sound() { System.out.println("Woof"); }
+    static void info() { System.out.println("Dog.info"); }   // hides, does not override
+    void fetch() { System.out.println("Dog fetches"); }
+}
+
+class Cat extends Animal {
+    @Override void sound() { System.out.println("Meow"); }
+}`,
+        output: `Woof
+print(Animal)
+4
+Animal.info
+Dog fetches
+ClassCastException: class Cat cannot be cast to class Dog (Cat and Dog are in unnamed module of loader ...)
+
+Q1 Woof: sound() is an overridden instance method, so the Dog object decides.
+Q2 print(Animal): overloads are chosen at compile time from the declared type Animal.
+Q3 4: fields are not overridden; a.legs reads the field declared in Animal.
+Q4 Animal.info: static methods are hidden, not overridden, so describe() calls Animal's.
+Q5 the pattern match succeeds because the object really is a Dog.
+Q6 the object is a Cat, so the cast fails at runtime, not at compile time.`,
+      },
     ],
     commonMistakes: [
       'Using "overloading" and "overriding" interchangeably — they are resolved at different times (compile-time vs runtime) and follow completely different rules.',
       'Believing overload resolution can happen at runtime — the compiler picks the overloaded method based purely on the declared/static types of the arguments.',
       'Forgetting that overriding requires an identical method signature, while overloading requires a different one — an "override" with a slightly different parameter list actually just creates an accidental overload.',
       'Assuming polymorphism only applies to classes — interfaces and abstract classes rely on runtime polymorphism just as heavily, if not more.',
+      'Downcasting without an instanceof check, so a wrong object type crashes with ClassCastException at runtime.',
+      'Expecting a static method or a field in the subclass to override the parent\'s; both are only hidden and are chosen by the declared type.',
+      'Writing if/else chains on instanceof to pick behaviour, instead of putting the behaviour in an overridden method.',
     ],
     keyPoints: [
       'Polymorphism means one name or reference type behaving in multiple forms depending on context.',
       'Compile-time (static) polymorphism = method overloading, resolved by the compiler using argument types.',
       'Runtime (dynamic) polymorphism = method overriding, resolved using the actual object type at runtime.',
       'Runtime polymorphism is the foundation of flexible, extensible designs built on interfaces and abstract classes.',
+      'The declared type decides which methods may be called; the actual object decides which overriding version runs (dynamic method dispatch).',
+      'Upcasting is automatic and safe; downcasting needs a cast and an instanceof check to avoid ClassCastException.',
+      'static, private and final methods and all fields are resolved at compile time and are not polymorphic.',
     ],
   },
 

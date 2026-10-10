@@ -355,6 +355,17 @@ Both approaches ultimately produce the same result — a populated IoC container
         heading: 'Choosing Between Explicit @Bean Methods and Component Scanning',
         body: `Use @Bean methods inside @Configuration classes for objects you don't own or can't annotate directly — third-party library classes, or beans that need conditional/complex construction logic. Use stereotype annotations (@Component, @Service, etc.) with @ComponentScan for your own application classes, since it removes the need for a separate @Bean method per class. Most real Spring applications use a combination of both.`,
       },
+      {
+        heading: 'When Two Beans Match: @Primary and @Qualifier',
+        body: `Java configuration often registers several beans of the same type, such as a card gateway and a UPI gateway that both implement <code>PaymentGateway</code>. When a constructor or <code>@Bean</code> method asks for a <code>PaymentGateway</code>, Spring has to pick one. It decides in this order:`,
+        list: [
+          '<strong>By type.</strong> Spring collects every bean that can be assigned to the requested type. If there is exactly one, it is injected.',
+          '<strong>@Qualifier.</strong> If the injection point carries <code>@Qualifier("upiGateway")</code>, only the bean with that name or qualifier stays in the running.',
+          '<strong>@Primary.</strong> If several candidates are still left, the one marked <code>@Primary</code> wins. It acts as the default.',
+          '<strong>Parameter or field name.</strong> As a last resort, Spring looks for a bean whose name equals the parameter name. Since Spring 6.1 this only works when the code is compiled with <code>-parameters</code>. Spring Boot\'s Maven and Gradle plugins turn that on, but a plain <code>javac</code> build does not.',
+          'If none of these settles it, startup fails with <code>NoUniqueBeanDefinitionException: expected single matching bean but found 2</code>.',
+        ],
+      },
     ],
     examples: [
       {
@@ -399,8 +410,73 @@ public class JavaConfigDemo {
 }`,
         output: 'Connecting to jdbc:h2:mem:webnest',
       },
+      {
+        caption: 'Two PaymentGateway beans: @Primary picks the default, @Qualifier asks for a specific one',
+        code: `import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+public class QualifierDemo {
+    public static void main(String[] args) {
+        var context = new AnnotationConfigApplicationContext(PaymentConfig.class);
+        context.getBean(CheckoutService.class).pay(500);
+        context.getBean(RefundService.class).refund(200);
+        context.close();
+    }
+}
+
+interface PaymentGateway {
+    String name();
+}
+
+class CardGateway implements PaymentGateway {
+    public String name() { return "card"; }
+}
+
+class UpiGateway implements PaymentGateway {
+    public String name() { return "UPI"; }
+}
+
+class CheckoutService {
+    private final PaymentGateway gateway;
+    CheckoutService(PaymentGateway gateway) { this.gateway = gateway; }
+    void pay(int amount) { System.out.println("Paying " + amount + " by " + gateway.name()); }
+}
+
+class RefundService {
+    private final PaymentGateway gateway;
+    RefundService(PaymentGateway gateway) { this.gateway = gateway; }
+    void refund(int amount) { System.out.println("Refunding " + amount + " by " + gateway.name()); }
+}
+
+@Configuration
+class PaymentConfig {
+
+    @Bean
+    @Primary // the default when a PaymentGateway is needed and nothing else decides
+    PaymentGateway cardGateway() { return new CardGateway(); }
+
+    @Bean
+    PaymentGateway upiGateway() { return new UpiGateway(); }
+
+    @Bean
+    CheckoutService checkoutService(PaymentGateway gateway) { // gets the @Primary bean
+        return new CheckoutService(gateway);
+    }
+
+    @Bean
+    RefundService refundService(@Qualifier("upiGateway") PaymentGateway gateway) { // asks for one by name
+        return new RefundService(gateway);
+    }
+}`,
+        output: `Paying 500 by card
+Refunding 200 by UPI`,
+      },
     ],
     commonMistakes: [
+      'Relying on the parameter name to choose between two beans of the same type. It breaks when the parameter is renamed, and since Spring 6.1 it does nothing unless the code is compiled with -parameters. Use @Qualifier or @Primary instead.',
       'Calling a @Bean method with plain Java semantics in mind and assuming it creates a new object each time — inside an @Configuration class it is intercepted to return the existing singleton.',
       'Forgetting the class-name/property typos in XML configuration are only caught at context startup, not at compile time, unlike Java @Bean methods.',
       'Mixing @Component-scanned beans and manually defined @Bean beans of the same type without a qualifier, causing an ambiguous dependency error.',
@@ -411,6 +487,7 @@ public class JavaConfigDemo {
       'XML configuration (<bean> tags loaded via ClassPathXmlApplicationContext) is the legacy approach, still seen in older codebases.',
       '@Configuration classes are proxied so that inter-method @Bean calls still return the same singleton instance.',
       'Use @Bean for third-party or conditionally constructed objects; use stereotype annotations + @ComponentScan for your own classes.',
+      'When several beans match a type, @Qualifier narrows the choice and @Primary sets the default; otherwise startup fails with NoUniqueBeanDefinitionException.',
     ],
   },
 

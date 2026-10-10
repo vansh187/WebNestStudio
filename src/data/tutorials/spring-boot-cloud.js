@@ -21,6 +21,10 @@ Spring Boot is the most widely used framework for Java microservices, and Spring
         body: `<strong>Synchronous</strong> calls (REST with HTTP service clients, gRPC) are simple and give immediate answers, but couple availability: if Payments is down, checkout fails. <strong>Asynchronous</strong> messaging (Kafka, RabbitMQ) decouples services in time: Ordering publishes <code>OrderPlaced</code> and Notifications reacts whenever it can. Mature systems use both: synchronous queries where an immediate answer is required, events for everything else.`,
       },
       {
+        heading: 'Microservices vs SOA',
+        body: `Service-Oriented Architecture (SOA) came first and also splits a system into services. Classic SOA usually routes calls through a central Enterprise Service Bus (ESB), which transforms and orchestrates messages between fairly large services, and those services often share one database. Microservices move that logic out of the middle: services are smaller, each owns its own database, and they talk over plain HTTP or a message broker with no central bus. The short version is "smart endpoints, dumb pipes". In SOA much of the logic lives in the bus, while with microservices it lives in the services.`,
+      },
+      {
         heading: 'The Spring Cloud Toolbox',
         body: `Spring Cloud 2025.1 ("Oakwood", for Spring Boot 4) provides:`,
         list: [

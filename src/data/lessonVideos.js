@@ -215,13 +215,25 @@ export const LESSON_VIDEOS = {
     description: 'A walkthrough of inheritance in core Java: how a child class extends a parent class, what it inherits, and how it reuses the parent\'s code.',
   },
   lesson_java_core_aggregation_in_java: {
-    youtubeId: '5kXvd_rXNMQ',
-    uploadDate: '2026-10-09T12:30:20-07:00', durationSeconds: 74,
-    format: 'short',
-    thumbnail: 'https://i.ytimg.com/vi/5kXvd_rXNMQ/hq2.jpg',
-    afterSection: 1, // just before "How Aggregation Protects the Part Objects"
-    title: 'Java Aggregation Protects Objects',
-    description: 'A quick look at how aggregation keeps a part object alive when the object that holds it is gone, because the container only stores a reference.',
+    youtubeId: 'IMZ5hCrK1j4',
+    uploadDate: '2026-10-10T03:41:04-07:00', durationSeconds: 451,
+    afterSection: 0, // after the introduction, before "HAS-A vs IS-A"
+    title: 'Aggregation in Java Explained | HAS-A Relationship with Real Examples | Java Core Course',
+    description: 'A full walkthrough of aggregation: the HAS-A relationship compared with IS-A, a Department that has Employees, why the parts stay independent, how it differs from composition, when to use it, and common interview questions.',
+  },
+  lesson_java_core_super_keyword: {
+    youtubeId: 'sKy-aXru068',
+    uploadDate: '2026-10-10T04:25:10-07:00', durationSeconds: 397,
+    afterSection: 0, // after the introduction, before "super(...) — Calling the Superclass Constructor"
+    title: 'Demystifying the super Keyword in Java | Constructors, Methods & Variables Explained',
+    description: 'Using an Animal parent and a Dog child, this video shows super() calling the parent constructor as the first line, super.method() running the parent\'s version of an overridden method, super.variable reaching a hidden parent field, and how constructor chaining works, with common mistakes and interview questions.',
+  },
+  lesson_java_core_polymorphism_in_java_an_overview: {
+    youtubeId: 'rjXj9gmSgL4',
+    uploadDate: '2026-10-10T05:08:18-07:00', durationSeconds: 421,
+    afterSection: 0, // after the introduction, before "Compile-Time (Static) Polymorphism"
+    title: 'Java Polymorphism Masterclass: Method Overloading, Overriding and Dynamic Dispatch',
+    description: 'From "one interface, many forms" to how the JVM picks a method at runtime: overloading rules, overriding and dynamic method dispatch, upcasting and downcasting with ClassCastException, why static, private and final methods are not overridden, covariant return types, interfaces and abstract classes, a payment-system example, and tricky interview output questions.',
   },
 }
 

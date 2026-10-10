@@ -669,12 +669,13 @@ console.groupEnd();`,
   return total;
 }
 
-calculateTotal([
+const total = calculateTotal([
   { price: 10, quantity: 2 },
   { price: 5, quantity: 3 },
 ]);
+console.log(total);
 // With DevTools closed, "debugger" is simply ignored and the
-// function runs straight through, returning 35.`,
+// function runs straight through.`,
         output: '35',
       },
     ],
