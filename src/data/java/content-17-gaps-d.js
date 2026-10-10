@@ -177,6 +177,16 @@ Hello!`,
 A classic example is a Department that has Employees. An Employee can be transferred to another department, or can exist in the system even if a particular Department object is deleted — the Employee was never truly "owned" by that one Department. This independence is exactly what distinguishes aggregation from its stronger sibling, composition.`,
     sections: [
       {
+        heading: 'HAS-A vs IS-A',
+        body: `Java classes relate to each other in two basic ways, and asking which one applies is the first step in any class design:`,
+        list: [
+          '<strong>IS-A</strong> is inheritance. A <code>Manager</code> IS-A <code>Employee</code>, so <code>class Manager extends Employee</code>. The child gets the parent\'s fields and methods and can be used anywhere the parent is expected.',
+          '<strong>HAS-A</strong> is a field. An <code>Employee</code> HAS-A <code>Address</code>, so <code>Employee</code> declares a field of type <code>Address</code>. Nothing is inherited; the employee just keeps a reference and calls the address\'s methods when it needs them.',
+          'A quick test: say the sentence out loud. "An employee is an address" is clearly wrong, so <code>extends</code> would be wrong too, while "an employee has an address" sounds right.',
+          'HAS-A is the more flexible choice. You can swap the referenced object at runtime, share it between several owners, and change the <code>Address</code> class without breaking a class hierarchy. That is why the common advice is "favour composition over inheritance", where composition here means HAS-A in general.',
+        ],
+      },
+      {
         heading: 'Aggregation vs Composition',
         body: `Both aggregation and composition are "has-a" relationships implemented in Java the same syntactic way — one class holds a reference to another as a field. The difference is purely conceptual/lifecycle-based, not something the compiler enforces.`,
         list: [
@@ -199,6 +209,16 @@ This is what keeps the parts safe. Deleting a <code>Department</code> does not d
       {
         heading: 'Why This Distinction Matters',
         body: `Recognizing aggregation versus composition helps you design classes that reflect real-world lifecycle rules. Modeling a relationship as aggregation when it should be composition (or vice versa) can lead to objects that are deleted too aggressively (losing data that should persist independently) or objects that linger unnecessarily (memory leaks, orphaned references) when they should have been cleaned up with their container.`,
+      },
+      {
+        heading: 'When to Use Aggregation in Real Projects',
+        body: `Choose aggregation when the part has a life and an identity of its own, outside the object that currently holds it. Typical signs:`,
+        list: [
+          'The part is stored or managed separately, for example employees in their own database table, so they must survive when a department is closed.',
+          'The part can move between owners: an employee transfers to another department, a player joins another team.',
+          'The same part is shared: one <code>Address</code> used by several employees, one <code>Course</code> listed in several programs.',
+          'The part is supplied from outside, through a constructor or setter. Spring\'s dependency injection works this way: a service receives a repository that the framework created, and many services can share it.',
+        ],
       },
     ],
     examples: [
@@ -280,6 +300,68 @@ class Employee {
 Karan works in Pune
 Address still usable: Pune`,
       },
+      {
+        caption: 'Aggregation next to composition: an employee transfers, rooms belong to one house',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public class HasADemo {
+    public static void main(String[] args) {
+        Employee riya = new Employee("Riya");
+
+        Department sales = new Department("Sales");
+        Department support = new Department("Support");
+
+        sales.hire(riya);
+        System.out.println(riya.name + " is in " + sales.name + ": " + sales.staff.contains(riya));
+
+        // Transfer: the same Employee object moves to another Department
+        sales.leave(riya);
+        support.hire(riya);
+        System.out.println(riya.name + " is in " + support.name + ": " + support.staff.contains(riya));
+
+        sales = null;    // closing a department does not touch its former staff
+        System.out.println(riya.name + " still exists");
+
+        House house = new House(3);
+        System.out.println("House has " + house.roomCount() + " rooms");
+        house = null;    // the rooms had no other reference, so they go with the house
+    }
+}
+
+class Employee {
+    String name;
+    Employee(String name) { this.name = name; }
+}
+
+// Aggregation: Department receives Employees that already exist
+class Department {
+    String name;
+    List<Employee> staff = new ArrayList<>();
+
+    Department(String name) { this.name = name; }
+
+    void hire(Employee e)  { staff.add(e); }
+    void leave(Employee e) { staff.remove(e); }
+}
+
+// Composition: House creates its own Rooms, nobody else can reach them
+class House {
+    private final List<String> rooms = new ArrayList<>();
+
+    House(int roomCount) {
+        for (int i = 1; i <= roomCount; i++) {
+            rooms.add("Room " + i);   // created inside, owned by this House
+        }
+    }
+
+    int roomCount() { return rooms.size(); }
+}`,
+        output: `Riya is in Sales: true
+Riya is in Support: true
+Riya still exists
+House has 3 rooms`,
+      },
     ],
     commonMistakes: [
       'Treating aggregation and composition as if Java has separate keywords or syntax for them — both are plain object references; the difference is design intent and lifecycle management.',
@@ -292,6 +374,8 @@ Address still usable: Pune`,
       'Composition also models "has-a" but with strong ownership — the part\'s lifecycle depends on the whole.',
       'The distinction is about design intent and object lifecycle, not different Java syntax.',
       'Aggregated objects are typically created outside the container and passed in, rather than created internally by the container.',
+      'IS-A means inheritance (extends); HAS-A means a field that refers to another object. Prefer HAS-A unless the IS-A sentence is genuinely true.',
+      'Use aggregation when the part can be shared, transferred or stored on its own, as with employees and departments.',
     ],
   },
 

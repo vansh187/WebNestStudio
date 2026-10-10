@@ -1118,6 +1118,22 @@ true`,
           '<code>super.method()</code> is often used inside an override to run the parent behavior and then add subclass-specific logic.',
         ],
       },
+      {
+        heading: 'super.variable and Field Hiding',
+        body: `Methods are overridden, but fields are not. If <code>Dog</code> declares a field <code>type</code> and <code>Animal</code> already has one with the same name, a <code>Dog</code> object holds <em>two</em> separate fields. Inside <code>Dog</code>, plain <code>type</code> and <code>this.type</code> mean the dog's field, and <code>super.type</code> reaches the one declared in <code>Animal</code>. Which field you get depends on the declared type of the reference, not the real object: through an <code>Animal</code> variable you see <code>Animal</code>'s field even when the object is a <code>Dog</code>. That is the opposite of how overridden methods behave, and it is why field hiding is best avoided in real code. Give the field a different name, or make it private and expose it through a method.`,
+      },
+      {
+        heading: 'Constructor Chaining Up the Hierarchy',
+        body: `Every constructor starts by running a constructor of its parent, either the one you name with <code>super(...)</code> or, when you write nothing, the parent's no-argument constructor that the compiler inserts for you. That parent constructor in turn calls its own parent, all the way up to <code>Object</code>. The result is that constructors run from the top of the hierarchy down: for <code>Puppy extends Dog extends Animal</code>, creating a <code>Puppy</code> prints <code>Animal()</code>, then <code>Dog()</code>, then <code>Puppy()</code>. This order guarantees that the parent's fields are set up before the child's constructor body can use them.`,
+      },
+      {
+        heading: 'What super Cannot Do',
+        list: [
+          'It cannot be used in a <code>static</code> method or static block. There is no current object there, so the compiler reports <code>non-static variable super cannot be referenced from a static context</code>.',
+          'It cannot skip a level: <code>super.super.method()</code> is not valid Java. A class can only reach its immediate parent; if the grandparent\'s behaviour is needed, the parent has to expose it.',
+          'It cannot reach <code>private</code> members of the parent. <code>super.secret</code> fails to compile when <code>secret</code> is private, just as it would without <code>super</code>.',
+        ],
+      },
     ],
     examples: [
       {
@@ -1153,17 +1169,151 @@ class Dog extends Animal {
         output: `Rex makes a generic animal sound
 Rex barks`,
       },
+      {
+        caption: 'All three uses together: super(), super.variable and super.method()',
+        code: `public class SuperDemo {
+    public static void main(String[] args) {
+        Dog d = new Dog("Rex");
+        System.out.println("---");
+        d.describe();
+        System.out.println("---");
+        d.makeSound();
+    }
+}
+
+class Animal {
+    String name;
+    String type = "animal";
+
+    Animal(String name) {
+        this.name = name;
+        System.out.println("Animal constructor: " + name);
+    }
+
+    void makeSound() {
+        System.out.println(name + " makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    String type = "dog";          // hides Animal.type
+
+    Dog(String name) {
+        super(name);              // runs Animal(String) first
+        System.out.println("Dog constructor: " + name);
+    }
+
+    void describe() {
+        System.out.println("type       = " + type);
+        System.out.println("this.type  = " + this.type);
+        System.out.println("super.type = " + super.type);
+        Animal asAnimal = this;
+        System.out.println("((Animal) this).type = " + asAnimal.type);
+    }
+
+    @Override
+    void makeSound() {
+        super.makeSound();        // parent's version first
+        System.out.println(name + " barks");
+    }
+}`,
+        output: `Animal constructor: Rex
+Dog constructor: Rex
+---
+type       = dog
+this.type  = dog
+super.type = animal
+((Animal) this).type = animal
+---
+Rex makes a sound
+Rex barks`,
+      },
+      {
+        caption: 'Constructor chaining across three levels',
+        code: `public class Chain {
+    public static void main(String[] args) {
+        new Puppy();
+    }
+}
+
+class Animal {
+    Animal() { System.out.println("1. Animal()"); }
+}
+
+class Dog extends Animal {
+    Dog() { System.out.println("2. Dog()"); }          // compiler inserts super();
+}
+
+class Puppy extends Dog {
+    Puppy() {
+        super();                                        // explicit, same effect
+        System.out.println("3. Puppy()");
+    }
+}`,
+        output: `1. Animal()
+2. Dog()
+3. Puppy()`,
+      },
+      {
+        caption: 'The compile errors you will meet (javac 17)',
+        code: `// 1. Parent has no no-argument constructor, child does not call super(...)
+class Animal {
+    String name;
+    Animal(String name) { this.name = name; }
+}
+class Dog extends Animal {
+    Dog() {
+        System.out.println("creating a dog");
+    }
+}
+
+// 2. A statement before super(...)
+class Cat extends Animal {
+    Cat(String name) {
+        if (name.isBlank()) throw new IllegalArgumentException("name required");
+        super(name);
+    }
+}
+
+// 3. super inside a static method
+class Bird extends Animal {
+    Bird() { super("bird"); }
+    static void test() {
+        super.toString();
+    }
+}`,
+        output: `1. error: constructor Animal in class Animal cannot be applied to given types;
+       Dog() {
+             ^
+     required: String
+     found:    no arguments
+     reason: actual and formal argument lists differ in length
+
+2. error: call to super must be first statement in constructor
+           super(name);
+                ^
+
+3. error: non-static variable super cannot be referenced from a static context
+           super.toString();
+           ^`,
+      },
     ],
     commonMistakes: [
       'Placing statements before super(...) in a subclass constructor, which is a compile-time error.',
       'Forgetting that the compiler inserts an implicit no-argument super() call when none is written, which fails to compile if the superclass has no no-argument constructor.',
       'Trying to write both this(...) and super(...) in the same constructor — only one of them may occupy the required first-statement position.',
       'Using "super" inside a static method, where it has no meaning since there is no current object.',
+      'Expecting fields to behave like overridden methods. A hidden field is chosen by the reference type, so an Animal variable shows Animal\'s value even for a Dog.',
+      'Writing super.super.method() to reach a grandparent; Java only allows access to the immediate parent.',
+      'Forgetting super.method() inside an override that should extend the parent, so the parent\'s work (logging, validation, cleanup) silently stops happening.',
     ],
     keyPoints: [
       'super(...) calls a superclass constructor and must be the first statement in the subclass constructor.',
       'If omitted, Java implicitly calls the superclass\'s no-argument constructor first.',
       'super.field and super.method() access the superclass\'s version of a hidden field or overridden method.',
+      'Constructors run from the top of the hierarchy down: Animal, then Dog, then Puppy.',
+      'Fields are hidden, not overridden: the reference type decides which one you read.',
+      'super is unavailable in static code, cannot skip a level, and cannot reach private members.',
     ],
   },
 
