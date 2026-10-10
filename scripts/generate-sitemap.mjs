@@ -9,6 +9,7 @@ import { SITE_URL, validLastmod, isBlogIndexable, BLOG_REDIRECT_SLUGS } from '..
 import { SERVICE_PAGES } from '../src/data/servicePages.js'
 import { CASE_STUDIES } from '../src/data/caseStudies.js'
 import { COMMERCIAL_PAGES } from '../src/data/commercialPages.js'
+import { PAGE_PATH as LAPTOPS_PATH, SPECS_CHECKED_ON as LAPTOPS_CHECKED_ON } from '../src/data/laptops.js'
 const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
 const OUTPUT_PATH = path.resolve(process.cwd(), 'public', 'sitemap.xml')
 // Lesson content lives in code, so its lastmod is tracked by content hash: a lesson's
@@ -38,6 +39,7 @@ const STATIC_ROUTES = [
   { path: '/codelab/playground', changefreq: 'monthly', priority: '0.6' },
   { path: '/codelab/problems', changefreq: 'weekly', priority: '0.7' },
   { path: '/learn', changefreq: 'weekly', priority: '0.8' },
+  { path: LAPTOPS_PATH, lastmod: LAPTOPS_CHECKED_ON, changefreq: 'monthly', priority: '0.7', local: true },
 ]
 
 function escapeXml(value) {

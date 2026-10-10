@@ -7,6 +7,7 @@ import { COMMERCIAL_PAGES, SERVICE_DIRECTORY } from '../src/data/commercialPages
 import { COURSE_RELATIONS } from '../src/data/contentRelations.js'
 import { getCaseStudy } from '../src/data/caseStudies.js'
 import { LESSON_VIDEOS, videoObjectSchema } from '../src/data/lessonVideos.js'
+import { LAPTOPS, AFFILIATE_BASE, AFFILIATE_REL, affiliateUrl, FAQS, LEARNING_LINKS, PUBLISHED_ON, SPECS_CHECKED_ON } from '../src/data/laptops.js'
 
 test('canonical URLs discard queries, fragments, trailing slashes and foreign hosts', () => {
   assert.equal(canonicalUrl('/learn/java-core/?utm_source=share#intro'), 'https://www.webneststudio.co.in/learn/java-core')
@@ -87,6 +88,37 @@ test('every lesson video belongs to a real lesson and has complete VideoObject d
     }
   }
   assert.equal(videoObjectSchema({ youtubeId: 'x', title: 't', description: 'd', uploadDate: '2026-01-01', durationSeconds: 80 }).duration, 'PT1M20S')
+})
+
+test('laptop guide links straight to ASUS India through the affiliate network with complete specs', () => {
+  assert.equal(AFFILIATE_REL, 'sponsored nofollow noopener')
+  assert.ok(!Number.isNaN(Date.parse(SPECS_CHECKED_ON)))
+  assert.equal(validLastmod(SPECS_CHECKED_ON), SPECS_CHECKED_ON, 'sitemap accepts the re-check date')
+  assert.ok(PUBLISHED_ON <= SPECS_CHECKED_ON, 'a re-check can only move dateModified forward')
+  const ids = new Set()
+  const productUrls = new Set()
+  for (const laptop of LAPTOPS) {
+    assert.ok(!ids.has(laptop.id), laptop.id)
+    ids.add(laptop.id)
+    // Each card must send readers to its own product page, never a shared one.
+    assert.ok(!productUrls.has(laptop.productUrl), `duplicate product URL: ${laptop.productUrl}`)
+    productUrls.add(laptop.productUrl)
+    assert.match(laptop.productUrl, /^https:\/\/www\.asus\.com\/in\//, laptop.id)
+    const link = affiliateUrl(laptop.productUrl)
+    assert.ok(link.startsWith(AFFILIATE_BASE), laptop.id)
+    assert.equal(decodeURIComponent(link.slice(AFFILIATE_BASE.length)), laptop.productUrl)
+    assert.equal(new URL(link).searchParams.get('ulp'), laptop.productUrl, 'ulp survives URL parsing')
+    for (const key of ['processor', 'graphics', 'memory', 'storage', 'display', 'battery', 'weight', 'ports', 'charging']) {
+      assert.ok(laptop.specs[key], `${laptop.id} ${key}`)
+    }
+    assert.match(laptop.specs.memory, /^16GB/, `${laptop.id} memory`)
+    assert.match(laptop.specs.storage, /^512GB/, `${laptop.id} storage`)
+    // A price is only shown with the date it was checked; never an undated figure.
+    if (laptop.priceBand) assert.ok(laptop.priceBand.min <= laptop.priceBand.max && !Number.isNaN(Date.parse(laptop.priceBand.checkedOn)), laptop.id)
+  }
+  const courses = new Set(SAMPLE_COURSES.map((course) => `/learn/${course.slug}`))
+  LEARNING_LINKS.filter((link) => link.to.startsWith('/learn/')).forEach((link) => assert.ok(courses.has(link.to), link.to))
+  assert.ok(FAQS.length >= 4)
 })
 
 test('breadcrumbs use ordered canonical links', () => {

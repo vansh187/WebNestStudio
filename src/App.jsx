@@ -27,6 +27,7 @@ const Contact = lazyWithReload(() => import('./pages/Contact'))
 const PrivacyPolicy = lazyWithReload(() => import('./pages/PrivacyPolicy'))
 const TermsConditions = lazyWithReload(() => import('./pages/TermsConditions'))
 const Disclaimer = lazyWithReload(() => import('./pages/Disclaimer'))
+const BestLaptops = lazyWithReload(() => import('./pages/BestLaptops'))
 const DeleteAccount = lazyWithReload(() => import('./pages/DeleteAccount'))
 const Login = lazyWithReload(() => import('./pages/Login'))
 import NotFound from './pages/NotFound'
@@ -142,6 +143,7 @@ function App() {
                     <Route path="privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="terms-and-conditions" element={<TermsConditions />} />
                     <Route path="disclaimer" element={<Disclaimer />} />
+                    <Route path="best-laptops-for-coding" element={<BestLaptops />} />
                     <Route
                       path="delete-account"
                       element={(
