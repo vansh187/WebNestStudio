@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'October 10, 2026'
+const EFFECTIVE_DATE = 'September 21, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -20,7 +20,7 @@ export default function Disclaimer() {
   useSeo({
     title: 'Disclaimer',
     description:
-      'Important disclaimers for WebNest Studio content, tutorials, affiliate and third-party links, advertising, AI outputs, and professional advice.',
+      'Important disclaimers for WebNest Studio content, tutorials, third-party links, advertising, AI outputs, and professional advice.',
     path: '/disclaimer',
   })
 
@@ -83,20 +83,7 @@ export default function Disclaimer() {
           </p>
         </Section>
 
-        <Section id="affiliate-links" title="5. Affiliate Links">
-          <p>
-            Some pages, such as our guide to laptops for coding, contain affiliate links to retailers including
-            ASUS India. These links are marked as sponsored. If you buy through one, WebNest Studio may earn a
-            commission at no extra cost to you. Commissions do not decide which products we include or what we say
-            about them, and product specifications are taken from the manufacturer&apos;s official pages.
-          </p>
-          <p>
-            Prices, stock and specifications are set by the retailer and can change at any time. Always check the
-            details on the retailer&apos;s page before you buy.
-          </p>
-        </Section>
-
-        <Section id="third-party-links" title="6. Third-Party Links">
+        <Section id="third-party-links" title="5. Third-Party Links">
           <p>
             Our website may link to third-party websites, tools, documentation, social media pages, or client
             websites. We are not responsible for third-party content, availability, security, policies, or
@@ -104,7 +91,7 @@ export default function Disclaimer() {
           </p>
         </Section>
 
-        <Section id="professional-advice" title="7. No Legal, Financial, or Tax Advice">
+        <Section id="professional-advice" title="6. No Legal, Financial, or Tax Advice">
           <p>
             Content on this website is not legal, financial, tax, medical, or regulatory advice. If your
             project involves regulated data, contracts, taxes, privacy compliance, advertising compliance, or
@@ -112,7 +99,7 @@ export default function Disclaimer() {
           </p>
         </Section>
 
-        <Section id="contact" title="8. Contact">
+        <Section id="contact" title="7. Contact">
           <p>
             To report an issue with published content, contact us at{' '}
             <a href={CONTACT.emailHref} className="font-semibold text-gold-500 hover:underline">

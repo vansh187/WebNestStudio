@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'October 10, 2026'
+const EFFECTIVE_DATE = 'October 9, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -84,14 +84,7 @@ export default function PrivacyPolicy() {
             measure, limit, and personalize ads where permitted by law and your settings.
           </p>
           <p>
-            <strong className="text-ink-900 dark:text-white">f) Affiliate link clicks.</strong> Some pages, such
-            as our laptop buying guide, contain affiliate links to retailers such as ASUS India. When you click
-            one, our analytics records that a link was clicked and which product it was for, but not who you
-            are. The link then passes through our affiliate network (Admitad), which may set its own cookies and
-            receive your IP address and browser information so the retailer can attribute a purchase to us.
-          </p>
-          <p>
-            <strong className="text-ink-900 dark:text-white">g) Local storage.</strong> We use your browser&rsquo;s
+            <strong className="text-ink-900 dark:text-white">f) Local storage.</strong> We use your browser&rsquo;s
             local storage to keep you signed in between visits (storing a refresh token) and to remember your
             display theme preference. This data stays on your device and is not a tracking cookie shared with
             third parties.
@@ -129,12 +122,6 @@ export default function PrivacyPolicy() {
               enabled, Google and its partners may process limited device, cookie, and usage information to
               deliver and measure ads. You can learn about and manage Google ad personalization through
               Google&rsquo;s advertising settings and browser controls.
-            </li>
-            <li>
-              <strong className="text-ink-900 dark:text-white">Affiliate networks and retailers.</strong> If you
-              click an affiliate link, the affiliate network (Admitad) and the retailer receive the information
-              described in section 1(f) under their own privacy policies. We do not send them your name, email
-              address or any account details.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Legal requirements.</strong> We may disclose
@@ -224,8 +211,7 @@ export default function PrivacyPolicy() {
           <p>
             Google&rsquo;s use of advertising cookies enables it and its partners to serve ads to you based on your
             visit to this site and/or other sites on the Internet. Third-party vendors and ad networks may also
-            use cookies and similar technologies to serve and measure ads, and affiliate networks use cookies
-            to attribute purchases made after you click an affiliate link. Learn more about{' '}
+            use cookies and similar technologies to serve and measure ads. Learn more about{' '}
             <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
               how Google uses information from sites that use its services
             </a>

@@ -58,7 +58,6 @@ export const FOOTER_SECTIONS = [
     title: 'Resources',
     links: [
       { label: 'Blog', to: '/blog' },
-      { label: 'Best Laptops for Coding', to: '/best-laptops-for-coding' },
       { label: 'FAQs', to: '/faqs' },
       { label: 'Visiting Card', to: '/card' },
       { label: 'Contact Us', to: '/contact' },
