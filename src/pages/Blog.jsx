@@ -9,8 +9,7 @@ import NewsletterForm from '../components/forms/NewsletterForm'
 import BackButton from '../components/coding/BackButton'
 import { getBlogPosts } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
-import { FALLBACK_POSTS } from '../data/blogContent'
-import { isBlogIndexable, BLOG_REDIRECT_SLUGS } from '../lib/seo'
+import { BLOG_REDIRECT_SLUGS } from '../lib/seo'
 import { useSeo } from '../hooks/useSeo'
 import HeroVideo from '../components/HeroVideo'
 import NeuralBackdrop from '../components/NeuralBackdrop'
@@ -45,10 +44,9 @@ export default function Blog() {
     return () => { cancelled = true }
   }, [tag, reloadKey])
 
-  // Live backend posts win once published; curated fallback posts fill in only
-  // once they clear the same word-count bar, so the list can legitimately be empty.
-  const displayPosts = useMemo(() => [...(posts || []), ...FALLBACK_POSTS.filter((fallback) => !posts?.some((post) => post.slug === fallback.slug))]
-    .filter((post) => isBlogIndexable(post) && !BLOG_REDIRECT_SLUGS.has(post.slug)), [posts])
+  // A post is listed exactly when an editor has published it: the same rule the
+  // article page and the sitemap use. Redirected slugs are merged into another post.
+  const displayPosts = useMemo(() => (posts || []).filter((post) => !BLOG_REDIRECT_SLUGS.has(post.slug)), [posts])
   const visiblePosts = useMemo(
     () => (tag ? displayPosts.filter((p) => (p.tags || []).includes(tag)) : displayPosts),
     [displayPosts, tag]

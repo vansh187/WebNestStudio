@@ -8,9 +8,16 @@ import { ErrorState, NotFoundState } from '../components/states/StateViews'
 import BackButton from '../components/coding/BackButton'
 import { getBlogPostBySlug } from '../api/content'
 import { getErrorDetail } from '../lib/apiClient'
-import { FALLBACK_POSTS } from '../data/blogContent'
-import { isBlogIndexable } from '../lib/seo'
-import { useSeo, useStructuredData, SITE_NAME } from '../hooks/useSeo'
+import { AUTHOR_PAGE_PATH, TEAM_AUTHOR } from '../data/authors'
+import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../hooks/useSeo'
+
+const formatDate = (value) => new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+
+// Only a real revision is worth showing: the generator stamps updated_at a few
+// seconds before published_at, so compare calendar days.
+const revisedAfterPublishing = (post) => Boolean(post.updated_at && post.published_at
+  && new Date(post.updated_at).toDateString() !== new Date(post.published_at).toDateString()
+  && new Date(post.updated_at) > new Date(post.published_at))
 
 const MARKDOWN_COMPONENTS = {
   h1: ({ children }) => <h2 className="mt-10 mb-4 font-display text-2xl font-bold text-ink-900 dark:text-white">{children}</h2>,
@@ -21,11 +28,14 @@ const MARKDOWN_COMPONENTS = {
   ol: ({ children }) => <ol className="mb-4 list-decimal space-y-2 pl-6">{children}</ol>,
   li: ({ children }) => <li>{children}</li>,
   strong: ({ children }) => <strong className="font-semibold text-ink-900 dark:text-white">{children}</strong>,
-  a: ({ href, children }) => (
+  // Site-relative links stay in the app; only external sources open a new tab.
+  a: ({ href, children }) => (href?.startsWith('/') ? (
+    <Link to={href} className="font-semibold text-gold-500 hover:underline">{children}</Link>
+  ) : (
     <a href={href} target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
       {children}
     </a>
-  ),
+  )),
   blockquote: ({ children }) => (
     <blockquote className="my-6 border-l-4 border-gold-400/60 pl-4 italic text-ink-500 dark:text-ink-300">{children}</blockquote>
   ),
@@ -56,16 +66,7 @@ export default function BlogDetail() {
       .catch((err) => {
         if (cancelled) return
         if (err.response?.status === 404) {
-          const fallback = FALLBACK_POSTS.find((p) => p.slug === slug)
-          if (fallback) {
-            setPost(fallback)
-            setState('success')
-          } else {
-            setState('not-found')
-          }
-        } else if (FALLBACK_POSTS.some((p) => p.slug === slug)) {
-          setPost(FALLBACK_POSTS.find((p) => p.slug === slug))
-          setState('success')
+          setState('not-found')
         } else {
           setError(getErrorDetail(err, 'Could not load this post.'))
           setState('error')
@@ -83,9 +84,11 @@ export default function BlogDetail() {
     path: `/blog/${slug}`,
     image: livePost?.cover_image_url,
     type: 'article',
-    noindex: state === 'not-found' || state === 'error' || (state === 'success' && !isBlogIndexable(livePost)),
-    // Hold ads until the post has loaded and cleared the quality bar.
-    ads: state === 'success' && isBlogIndexable(livePost),
+    // The API only serves posts an editor has published, so a loaded post is
+    // indexable; that review, not a word count, is the quality bar.
+    noindex: state === 'not-found' || state === 'error',
+    // Hold ads until the post itself has loaded.
+    ads: state === 'success',
     keywords: livePost?.keywords,
   })
   // Injects BlogPosting structured data so search engines can better understand
@@ -97,10 +100,11 @@ export default function BlogDetail() {
     '@type': 'BlogPosting',
     headline: livePost.title,
     description: livePost.excerpt,
+    url: `${SITE_URL}/blog/${livePost.slug}`,
     datePublished: livePost.published_at,
-    dateModified: livePost.updated_at || livePost.published_at,
-    author: { '@type': 'Organization', name: SITE_NAME },
-    publisher: { '@type': 'Organization', name: SITE_NAME },
+    dateModified: revisedAfterPublishing(livePost) ? livePost.updated_at : livePost.published_at,
+    author: { '@type': 'Organization', name: TEAM_AUTHOR.name, url: `${SITE_URL}${AUTHOR_PAGE_PATH}` },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
     keywords: (livePost.tags || []).join(', '),
   }, [livePost])
   useStructuredData(blogSchema)
@@ -161,14 +165,12 @@ export default function BlogDetail() {
         <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink-900 dark:text-white sm:text-4xl">
           {post.title}
         </h1>
-        {(post.published_at || post.word_count != null) && (
-          <p className="mt-3 text-sm text-ink-400">
-            {post.published_at &&
-              new Date(post.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-            {post.published_at && post.word_count != null ? ' · ' : ''}
-            {post.word_count != null && `${Math.max(1, Math.round(post.word_count / 200))} min read`}
-          </p>
-        )}
+        <p className="mt-3 text-sm text-ink-400">
+          By <Link to={AUTHOR_PAGE_PATH} className="underline hover:text-gold-500">{TEAM_AUTHOR.name}</Link>
+          {post.published_at && <> · Published <time dateTime={post.published_at}>{formatDate(post.published_at)}</time></>}
+          {revisedAfterPublishing(post) && <> · Updated <time dateTime={post.updated_at}>{formatDate(post.updated_at)}</time></>}
+          {post.word_count != null && ` · ${Math.max(1, Math.round(post.word_count / 200))} min read`}
+        </p>
 
         {post.cover_image_url && (
           <div className="mt-8 overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">

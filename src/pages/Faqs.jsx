@@ -10,22 +10,17 @@ import { getErrorDetail } from '../lib/apiClient'
 import { FALLBACK_FAQS } from '../data/faqContent'
 import { useSeo, useStructuredData } from '../hooks/useSeo'
 
+// <details> keeps every answer in the prerendered HTML while still collapsing it,
+// so crawlers and the FAQPage schema see the same text visitors can open.
 function FaqItem({ faq }) {
-  const [open, setOpen] = useState(false)
   return (
-    <div className="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
-      >
+    <details className="group rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40">
+      <summary className="flex w-full cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-6 py-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 [&::-webkit-details-marker]:hidden">
         <span className="font-display font-semibold text-ink-900 dark:text-white">{faq.question}</span>
-        <FiChevronDown className={`h-4 w-4 shrink-0 text-gold-500 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <p className="px-6 pb-5 text-sm leading-relaxed text-ink-500 dark:text-ink-300">{faq.answer}</p>
-      )}
-    </div>
+        <FiChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gold-500 transition-transform group-open:rotate-180" />
+      </summary>
+      <p className="px-6 pb-5 text-sm leading-relaxed text-ink-500 dark:text-ink-300">{faq.answer}</p>
+    </details>
   )
 }
 

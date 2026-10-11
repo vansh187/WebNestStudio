@@ -1,11 +1,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import path from 'node:path'
-import { FALLBACK_POSTS } from '../src/data/blogContent.js'
 import { SAMPLE_COURSES, SAMPLE_LESSONS, SAMPLE_PROBLEMS } from '../src/data/codelabDefaults.js'
 import { getLessonVideo } from '../src/data/lessonVideos.js'
 
-import { SITE_URL, validLastmod, isBlogIndexable, BLOG_REDIRECT_SLUGS } from '../src/lib/seo.js'
+import { SITE_URL, validLastmod, BLOG_REDIRECT_SLUGS } from '../src/lib/seo.js'
 import { SERVICE_PAGES } from '../src/data/servicePages.js'
 import { CASE_STUDIES } from '../src/data/caseStudies.js'
 import { COMMERCIAL_PAGES } from '../src/data/commercialPages.js'
@@ -34,9 +33,11 @@ const STATIC_ROUTES = [
   { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
   // Still prerendered so the QR link works, but kept out of the sitemap.
   { path: '/card', noindex: true },
-  { path: '/codelab', changefreq: 'weekly', priority: '0.8' },
-  { path: '/codelab/playground', changefreq: 'monthly', priority: '0.6' },
-  { path: '/codelab/problems', changefreq: 'weekly', priority: '0.7' },
+  // CodeLab tool and problem pages are prerendered with noindex and kept out of the
+  // sitemap: they have too little written content to be useful search results.
+  { path: '/codelab', noindex: true },
+  { path: '/codelab/playground', noindex: true },
+  { path: '/codelab/problems', noindex: true },
   { path: '/learn', changefreq: 'weekly', priority: '0.8' },
 ]
 
@@ -90,7 +91,8 @@ async function getLiveRoutes() {
       && !(prefix === '/codelab/problems' && item.slug === 'sum-two-smoke')).map((item) => ({
       path: `${prefix}/${item.slug}`, lastmod: item.updated_at || item.published_at || item.created_at,
       required: false,
-      noindex: prefix === '/blog' && !isBlogIndexable(item),
+      // /api/blog only returns published posts, and BlogDetail indexes exactly those.
+      noindex: prefix === '/codelab/problems',
     }))
   }))
   return results.flatMap((result, index) => {
@@ -149,13 +151,6 @@ async function getLocalRoutes() {
     ...COMMERCIAL_PAGES.map((page) => ({ path: page.path, priority: '0.9', local: true })),
     ...SERVICE_PAGES.map((service) => ({ path: `/services/${service.slug}`, local: true })),
     ...CASE_STUDIES.map((study) => ({ path: `/case-studies/${study.slug}`, priority: '0.8', local: true })),
-    ...FALLBACK_POSTS.map((post) => ({
-      path: `/blog/${post.slug}`,
-      lastmod: post.updated_at || post.published_at,
-      changefreq: 'monthly',
-      priority: '0.7',
-      noindex: !isBlogIndexable(post),
-    })),
     ...SAMPLE_COURSES.map((course) => ({
       path: `/learn/${course.slug}`,
       changefreq: 'monthly',
@@ -169,8 +164,7 @@ async function getLocalRoutes() {
     })),
     ...SAMPLE_PROBLEMS.filter((problem) => problem.slug !== 'sum-two-smoke').map((problem) => ({
       path: `/codelab/problems/${problem.slug}`,
-      changefreq: 'monthly',
-      priority: '0.6',
+      noindex: true,
     })),
   ]
 }

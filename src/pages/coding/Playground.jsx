@@ -49,6 +49,8 @@ function PlaygroundEditor() {
     description:
       'Write and run HTML, CSS, JavaScript and Python in the browser with Webnest CodeLab.',
     path: '/codelab/playground',
+    // A tool, not an article: kept out of search until it has real written content.
+    noindex: true,
   })
 
   const navigate = useNavigate()

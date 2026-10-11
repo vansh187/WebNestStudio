@@ -47,6 +47,16 @@
       "permanent": true
     },
     {
+      "source": "/blog/apis-connecting-llms-spring-ai",
+      "destination": "/learn/lessons/lesson_spring_boot_introduction_to_spring_ai",
+      "permanent": true
+    },
+    {
+      "source": "/blog/how-ai-is-transforming-business-websites-2026",
+      "destination": "/ai-development-company-india",
+      "permanent": true
+    },
+    {
       "source": "/learn/java",
       "destination": "/learn/java-core",
       "permanent": true

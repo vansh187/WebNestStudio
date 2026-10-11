@@ -1,12 +1,14 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { canonicalUrl, summarize, breadcrumbSchema, validLastmod } from '../src/lib/seo.js'
+import { canonicalUrl, summarize, breadcrumbSchema, validLastmod, BLOG_REDIRECT_SLUGS } from '../src/lib/seo.js'
+import vercelConfig from '../vercel.json' with { type: 'json' }
 import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../src/data/codelabDefaults.js'
 import { lessonTemplate, lessonWorkspace } from '../src/lib/lessonPlayground.js'
 import { COMMERCIAL_PAGES, SERVICE_DIRECTORY } from '../src/data/commercialPages.js'
 import { COURSE_RELATIONS } from '../src/data/contentRelations.js'
 import { getCaseStudy } from '../src/data/caseStudies.js'
 import { LESSON_VIDEOS, videoObjectSchema } from '../src/data/lessonVideos.js'
+import { COURSE_INTROS } from '../src/data/courseIntros.js'
 
 test('canonical URLs discard queries, fragments, trailing slashes and foreign hosts', () => {
   assert.equal(canonicalUrl('/learn/java-core/?utm_source=share#intro'), 'https://www.webneststudio.co.in/learn/java-core')
@@ -87,6 +89,29 @@ test('every lesson video belongs to a real lesson and has complete VideoObject d
     }
   }
   assert.equal(videoObjectSchema({ youtubeId: 'x', title: 't', description: 'd', uploadDate: '2026-01-01', durationSeconds: 80 }).duration, 'PT1M20S')
+})
+
+test('every course hub has a 150-250 word intro saying who it is for, what it covers and how to use it', () => {
+  for (const course of SAMPLE_COURSES) {
+    const intro = COURSE_INTROS[course.slug]
+    assert.ok(intro?.audience && intro.covers && intro.howToUse, `${course.slug}: intro`)
+    const words = [intro.audience, intro.covers, intro.howToUse].join(' ').split(/\s+/).filter(Boolean).length
+    assert.ok(words >= 150 && words <= 250, `${course.slug}: ${words} words`)
+  }
+  assert.deepEqual(Object.keys(COURSE_INTROS).sort(), SAMPLE_COURSES.map((course) => course.slug).sort(), 'no intros for missing courses')
+})
+
+test('retired blog URLs redirect permanently, in one hop, to a page that exists', () => {
+  const blogRedirects = vercelConfig.redirects.filter((redirect) => redirect.source.startsWith('/blog/'))
+  const pages = new Set(COMMERCIAL_PAGES.map((page) => page.path))
+  for (const redirect of blogRedirects) {
+    assert.equal(redirect.permanent, true, redirect.source)
+    assert.ok(BLOG_REDIRECT_SLUGS.has(redirect.source.slice('/blog/'.length)), `${redirect.source} is hidden from the blog list`)
+    assert.ok(!blogRedirects.some((other) => other.source === redirect.destination), `${redirect.source} redirects in one hop`)
+    const lesson = redirect.destination.match(/^\/learn\/lessons\/(\w+)$/)?.[1]
+    if (lesson) assert.equal(SAMPLE_LESSONS[lesson]?.id, lesson, redirect.destination)
+    else if (!redirect.destination.startsWith('/blog/')) assert.ok(pages.has(redirect.destination), redirect.destination)
+  }
 })
 
 test('breadcrumbs use ordered canonical links', () => {

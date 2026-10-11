@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import CourseRoadmap from '../../components/CourseRoadmap'
 import { SAMPLE_COURSES } from '../../data/codelabDefaults'
+import { getCourseIntro } from '../../data/courseIntros'
 import { useAuth } from '../../context/AuthContext'
 import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../../hooks/useSeo'
 import { NotFoundState } from '../../components/states/StateViews'
@@ -15,6 +16,7 @@ export default function CourseDetail() {
   const { courseSlug } = useParams()
   const normalizedSlug = courseSlug === 'java' ? 'java-core' : courseSlug
   const course = SAMPLE_COURSES.find((item) => item.slug === normalizedSlug)
+  const intro = course ? getCourseIntro(course.slug) : null
   const { user, isAuthenticated } = useAuth()
   const userKey = user?.email || null
 
@@ -66,6 +68,24 @@ export default function CourseDetail() {
           </Link>{' '}
           to track your progress through this course.
         </p>
+      )}
+
+      {intro && (
+        <section aria-labelledby="course-intro" className="mt-8 max-w-3xl space-y-5 leading-relaxed text-ink-700 dark:text-ink-200">
+          <h2 id="course-intro" className="font-display text-2xl font-bold text-ink-900 dark:text-white">About this course</h2>
+          <div>
+            <h3 className="font-semibold text-ink-900 dark:text-white">Who it is for</h3>
+            <p className="mt-1">{intro.audience}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-ink-900 dark:text-white">What it covers</h3>
+            <p className="mt-1">{intro.covers}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-ink-900 dark:text-white">How to use it</h3>
+            <p className="mt-1">{intro.howToUse}</p>
+          </div>
+        </section>
       )}
 
       <CourseRoadmap course={course} progress={progress} nextLessonId={nextLessonId} />
