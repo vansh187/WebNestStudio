@@ -6,6 +6,19 @@ export const DEFAULT_DESCRIPTION = 'WebNest Studio is a web & AI software develo
 // 1200x630 social card; favicon.png stays the square Organization logo.
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`
 
+// The one place the AdSense publisher ID lives; vite.config.js writes it into
+// index.html's google-adsense-account meta tag at build time.
+export const ADSENSE_CLIENT = 'ca-pub-4610377406355411'
+export const ADSENSE_SCRIPT_URL = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`
+
+// AdSense policy: ads only on publisher content (courses, lessons and the blog),
+// never on the business, legal, account or tool pages.
+const AD_ROUTE_PREFIXES = ['/learn', '/blog']
+export function isAdRoute(path = '') {
+  const pathname = new URL(path || '/', SITE_URL).pathname.replace(/\/+$/, '')
+  return AD_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+}
+
 export function canonicalUrl(path = '/') {
   const pathname = new URL(path || '/', SITE_URL).pathname.replace(/\/+$/, '')
   return `${SITE_URL}${pathname || '/'}`

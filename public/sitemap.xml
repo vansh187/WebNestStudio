@@ -27,7 +27,19 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/blog/decoding-the-true-price-tag-of-software-development-in-india</loc>
-    <lastmod>2026-10-08</lastmod>
+    <lastmod>2026-10-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses</loc>
+    <lastmod>2026-10-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.webneststudio.co.in/blog/what-dictates-the-ecommerce-website-development-cost-in-india</loc>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -40,131 +52,6 @@
     <loc>https://www.webneststudio.co.in/case-studies/vstitch-by-anjali-nanda</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/playground</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/button-frequency-peak</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/celestial-lens-placement</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/ceramic-tile-boxes</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/clocktower-gear-calibration</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/guild-tapestry-corridor</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/market-crate-pricing</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/monorail-station-balance</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/observatory-window-optimization</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/pet-hotel-welcome-plaque</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/pet-resort-toy-tally</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/puppy-obstacle-course-height-filter</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/python-list-sum</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/recycling-station-batch-queue</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/scriptorium-tape-malleability</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/scroll-archive-stability</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/scroll-sigil-harmony</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/shortest-safe-passage</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/stellar-beacon-relay-grid</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/swap-meet-unique-titles</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/vault-bitwise-disjoint-xor</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/web-profile-card</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.webneststudio.co.in/codelab/problems/ziggurat-spiral-parity</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/contact</loc>
@@ -1110,7 +997,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_instance_initializer_block</loc>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1380,7 +1267,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_method_overriding</loc>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1464,7 +1351,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_runtime_polymorphism_and_dynamic_binding</loc>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

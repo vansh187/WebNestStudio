@@ -2,6 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { SAMPLE_COURSES } from './src/data/codelabDefaults.js'
+import { ADSENSE_CLIENT } from './src/lib/seo.js'
+
+// index.html cannot import modules, so the publisher ID is written in here.
+const adsenseClient = {
+  name: 'adsense-client',
+  transformIndexHtml: (html) => html.replaceAll('%ADSENSE_CLIENT%', ADSENSE_CLIENT),
+}
 
 // Course totals for the landing page, counted the same way as the Learn page
 // (CoursesList.jsx) but at build time, so Home doesn't load the course data.
@@ -12,7 +19,7 @@ const LEARN_STATS = {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), adsenseClient],
   define: { __LEARN_STATS__: JSON.stringify(LEARN_STATS) },
   server: {
     host: '127.0.0.1',

@@ -235,6 +235,27 @@ export const LESSON_VIDEOS = {
     title: 'Java Polymorphism Masterclass: Method Overloading, Overriding and Dynamic Dispatch',
     description: 'From "one interface, many forms" to how the JVM picks a method at runtime: overloading rules, overriding and dynamic method dispatch, upcasting and downcasting with ClassCastException, why static, private and final methods are not overridden, covariant return types, interfaces and abstract classes, a payment-system example, and tricky interview output questions.',
   },
+  lesson_java_core_method_overriding: {
+    youtubeId: 'ShrBPoFN9dU',
+    uploadDate: '2026-10-11T13:05:05-07:00', durationSeconds: 428,
+    afterSection: 0, // after the introduction, before "Why We Need Method Overriding"
+    title: 'Method Overriding in Java – Complete Guide with Examples | Core Java Tutorial',
+    description: 'Why subclasses override methods and every rule an override must follow: matching signatures, covariant return types, access modifiers, checked vs unchecked exceptions, the @Override annotation, why static, final and private methods cannot be overridden, calling the parent with super, dynamic method dispatch, overloading vs overriding, and interview questions.',
+  },
+  lesson_java_core_runtime_polymorphism_and_dynamic_binding: {
+    youtubeId: 'EzTjUIlNWtE',
+    uploadDate: '2026-10-11T13:28:56-07:00', durationSeconds: 386,
+    afterSection: 0, // after the introduction, before "Why We Need Runtime Polymorphism"
+    title: 'Runtime Polymorphism in Java – Complete Guide with Examples | Core Java Tutorial',
+    description: 'How Java picks the method to call at runtime: overriding plus upcasting, dynamic method dispatch, early vs late binding, why fields and static, final and private methods are not polymorphic, downcasting with instanceof, polymorphism through interfaces and abstract classes, payment, shape and vehicle examples, and interview questions.',
+  },
+  lesson_java_core_instance_initializer_block: {
+    youtubeId: 'NzEldpy8tQ4',
+    uploadDate: '2026-10-11T13:46:03-07:00', durationSeconds: 278,
+    afterSection: 0, // after the introduction, before "When Instance Initializer Blocks Run"
+    title: 'Instance Initializer Block in Java – Complete Guide with Examples | Core Java Tutorial',
+    description: 'What an instance initializer block is and exactly when it runs: before the constructor body on every new object, how the compiler copies it into each constructor after super(), multiple blocks and field initializers in textual order, this() chaining, parent-to-child order with static blocks, real uses such as anonymous classes, and tricky output questions.',
+  },
 }
 
 export function getLessonVideo(lessonId) {
