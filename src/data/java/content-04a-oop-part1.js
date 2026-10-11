@@ -1319,8 +1319,20 @@ class Bird extends Animal {
 
   'method-overriding': {
     title: 'Method Overriding',
-    intro: `Method overriding occurs when a subclass provides its own implementation of a method that is already defined, with the exact same signature, in its superclass. Unlike overloading, which the compiler resolves at compile time, overriding is resolved at runtime based on the actual type of the object — this is the basis of runtime polymorphism.`,
+    intro: `Method overriding occurs when a subclass provides its own implementation of a method that is already defined, with the exact same signature, in its superclass. Unlike overloading, which the compiler resolves at compile time, overriding is resolved at runtime based on the actual type of the object — this is the basis of runtime polymorphism.
+
+The subclass keeps the parent's method name and parameters, so any code written against the parent type keeps working, but the body that runs is the subclass's own. That one idea lets a program grow new behaviour by adding classes instead of editing the code that calls them.`,
     sections: [
+      {
+        heading: 'Why We Need Method Overriding',
+        body: `Inheritance gives a subclass the parent's methods, but a general version is often not right for a specific type. A <code>Payment</code> class can define <code>pay(int amount)</code>, yet a card payment adds a fee and a UPI payment does not. Overriding lets each subclass supply the correct behaviour while the rest of the program keeps calling the same <code>pay</code> method on a <code>Payment</code> reference.`,
+        list: [
+          '<strong>Specialised behaviour:</strong> each subclass does the job its own way (<code>CardPayment</code>, <code>UpiPayment</code>, <code>WalletPayment</code>).',
+          '<strong>Code written once:</strong> a loop over <code>Payment</code> objects never needs an <code>if</code> chain checking which kind of payment it holds.',
+          '<strong>Easy extension:</strong> adding a new payment type means adding a class, not editing every place that takes payments.',
+          '<strong>Everyday Java:</strong> you override <code>toString()</code>, <code>equals()</code> and <code>hashCode()</code> from <code>Object</code> all the time, and frameworks call your overridden methods (for example <code>run()</code> in a <code>Thread</code>).',
+        ],
+      },
       {
         heading: 'Rules an Override Must Follow',
         body: `For a subclass method to count as a valid override, several strict rules apply, and the compiler enforces every one of them.`,
@@ -1334,11 +1346,52 @@ class Bird extends Animal {
       },
       {
         heading: 'The @Override Annotation',
-        body: `<code>@Override</code> is an optional but strongly recommended annotation placed above an overriding method. It does not change runtime behavior, but it instructs the compiler to verify that the method actually overrides a superclass method — if you misspell the method name or get the parameter list wrong, the compiler raises an error immediately instead of silently creating an unrelated overloaded method.`,
+        body: `<code>@Override</code> is an optional but strongly recommended annotation placed above an overriding method. It does not change runtime behavior, but it instructs the compiler to verify that the method actually overrides a superclass method — if you misspell the method name or get the parameter list wrong, the compiler raises an error immediately instead of silently creating an unrelated overloaded method.
+
+Without the annotation, a method named <code>tostring()</code> in your class compiles happily, and <code>System.out.println(obj)</code> still prints the default <code>ClassName@1b6d3586</code> text, because <code>Object.toString()</code> was never overridden. With <code>@Override</code> on it, javac stops with <code>method does not override or implement a method from a supertype</code>. Put it on every override; it costs nothing.`,
+      },
+      {
+        heading: 'Covariant Return Types',
+        body: `An override normally returns the same type as the parent method, but Java also accepts a <em>subtype</em> of that return type. If <code>Shape.createCopy()</code> returns <code>Shape</code>, then <code>Circle.createCopy()</code> may return <code>Circle</code>, because every <code>Circle</code> is a <code>Shape</code> and callers using the parent type still get what they expect. The benefit shows up for callers who hold a <code>Circle</code> reference: they get a <code>Circle</code> back with no cast. Covariance works only for reference types. A parent method returning <code>int</code> cannot be overridden with one returning <code>long</code> or <code>Integer</code>.`,
+      },
+      {
+        heading: 'Exception Rules: Checked vs Unchecked',
+        body: `Code that calls a method through the parent type only prepares for the checked exceptions the parent method declares. An override is therefore not allowed to surprise that code with a new or broader checked exception.`,
+        list: [
+          'An override may throw the same checked exception, a narrower one (a subclass, such as <code>FileNotFoundException</code> instead of <code>IOException</code>), or none at all.',
+          'An override may <strong>not</strong> throw a new or broader checked exception. If the parent declares <code>IOException</code>, the child cannot declare <code>Exception</code>; if the parent declares nothing, the child cannot declare any checked exception.',
+          'Unchecked exceptions (<code>RuntimeException</code> and its subclasses such as <code>IllegalStateException</code>) are not restricted. An override may throw them whatever the parent declares.',
+          'The rule is about checked exceptions only, and javac reports a violation as <code>overridden method does not throw ...</code>.',
+        ],
+      },
+      {
+        heading: 'Can static, final and private Methods Be Overridden?',
+        body: `No, and each one fails for a different reason, which is why interviewers like asking about all three together.`,
+        list: [
+          '<strong>final:</strong> the parent has locked the method. Declaring the same method in a subclass is a compile error: <code>overridden method is final</code>.',
+          '<strong>private:</strong> the method is not inherited, so the subclass cannot see it. A subclass method with the same name is a brand-new, unrelated method, and putting <code>@Override</code> on it fails to compile.',
+          '<strong>static:</strong> a static method belongs to the class, not to an object. A subclass can declare a static method with the same signature, but that is <em>method hiding</em>: the version that runs is chosen from the reference type at compile time, not from the object at runtime. <code>@Override</code> on a static method is a compile error.',
+          'Related: constructors are not inherited, so they cannot be overridden either, and the <code>main</code> method, being static, can only be hidden.',
+        ],
+      },
+      {
+        heading: 'Calling the Parent Version with super',
+        body: `An override replaces the parent's method body completely, but sometimes you want to <em>add to</em> the parent's work rather than throw it away. Inside the override, <code>super.methodName(...)</code> runs the parent's version, and you can put your own code before or after it. A <code>TimestampLogger</code> can print a time and then call <code>super.log(message)</code> so the original logging logic still runs without being copied. The super keyword lesson covers the other uses of <code>super</code>.`,
+      },
+      {
+        heading: 'Runtime Polymorphism and Dynamic Method Dispatch',
+        body: `Overriding is what makes runtime polymorphism possible. When you write <code>Payment p = new CardPayment();</code>, the variable's declared type is <code>Payment</code> but the object is a <code>CardPayment</code>. The compiler only checks that <code>Payment</code> has a <code>pay</code> method. At runtime, the JVM looks at the real object and runs <code>CardPayment.pay</code>. This runtime choice is called <strong>dynamic method dispatch</strong>. It applies only to overridden instance methods; fields, static methods and private methods are all resolved from the reference type at compile time. The next lesson, Runtime Polymorphism and Dynamic Binding, goes deeper.`,
       },
       {
         heading: 'Overriding vs Overloading',
         body: `Overriding always involves two classes in an inheritance relationship and an identical signature, resolved at runtime. Overloading always happens within the same class (or via inheritance without changing the return-type-only rule) with a different parameter list, resolved at compile time. Confusing the two is one of the most frequent conceptual errors in Java learning.`,
+        list: [
+          '<strong>Where:</strong> overriding needs a parent and a child class; overloading happens within one class (or a class and its subclass).',
+          '<strong>Parameters:</strong> overriding keeps them identical; overloading must change them.',
+          '<strong>Return type:</strong> overriding needs the same type or a covariant subtype; overloading lets it be anything, but a return type alone cannot tell two overloads apart.',
+          '<strong>Binding:</strong> overriding is resolved at runtime (dynamic dispatch); overloading is resolved at compile time.',
+          '<strong>static, final, private:</strong> cannot be overridden; can all be overloaded.',
+        ],
       },
     ],
     examples: [
@@ -1374,28 +1427,215 @@ class Circle extends Shape {
 }`,
         output: 'Area: 78.54',
       },
+      {
+        caption: 'One call, many behaviours: overriding in a payment system',
+        code: `public class PaymentDemo {
+    public static void main(String[] args) {
+        Payment[] payments = { new Payment(), new CardPayment(), new UpiPayment() };
+        for (Payment p : payments) {
+            p.pay(500);   // one call, three different behaviours
+        }
+    }
+}
+
+class Payment {
+    void pay(int amount) {
+        System.out.println("Paying " + amount + " by a generic method");
+    }
+}
+
+class CardPayment extends Payment {
+    @Override
+    void pay(int amount) {
+        System.out.println("Paying " + amount + " by card (2% fee: " + amount * 2 / 100 + ")");
+    }
+}
+
+class UpiPayment extends Payment {
+    @Override
+    void pay(int amount) {
+        System.out.println("Paying " + amount + " by UPI (no fee)");
+    }
+}`,
+        output: `Paying 500 by a generic method
+Paying 500 by card (2% fee: 10)
+Paying 500 by UPI (no fee)`,
+      },
+      {
+        caption: 'Extending the parent method with super instead of replacing it',
+        code: `public class LoggerDemo {
+    public static void main(String[] args) {
+        Logger log = new TimestampLogger();
+        log.log("Order placed");
+    }
+}
+
+class Logger {
+    void log(String message) {
+        System.out.println("LOG: " + message);
+    }
+}
+
+class TimestampLogger extends Logger {
+    @Override
+    void log(String message) {
+        System.out.print("[10:30] ");
+        super.log(message); // reuse the parent's work instead of copying it
+    }
+}`,
+        output: '[10:30] LOG: Order placed',
+      },
+      {
+        caption: 'Overriding vs hiding: an instance method and a static method with the same signature',
+        code: `public class HidingDemo {
+    public static void main(String[] args) {
+        Parent ref = new Child();
+        ref.show();   // instance method: overridden, runs Child's version
+        ref.info();   // static method: hidden, the reference type decides
+        Child.info(); // call static methods through the class name instead
+    }
+}
+
+class Parent {
+    void show() {
+        System.out.println("Parent.show()");
+    }
+
+    static void info() {
+        System.out.println("Parent.info()");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child.show()");
+    }
+
+    static void info() { // hides Parent.info(); @Override here would not compile
+        System.out.println("Child.info()");
+    }
+}`,
+        output: `Child.show()
+Parent.info()
+Child.info()`,
+      },
+      {
+        caption: 'Exception rules that compile: same, narrower, none, or unchecked',
+        code: `import java.io.FileNotFoundException;
+import java.io.IOException;
+
+class Reader {
+    void read() throws IOException { }
+}
+
+class SafeReader extends Reader {
+    @Override
+    void read() throws FileNotFoundException { } // narrower checked exception: OK
+}
+
+class NoThrowReader extends Reader {
+    @Override
+    void read() { } // throwing nothing: OK
+}
+
+class LoudReader extends Reader {
+    @Override
+    void read() throws IllegalStateException { } // any unchecked exception: OK
+}
+
+public class Ok {
+    public static void main(String[] args) {
+        System.out.println("compiles");
+    }
+}`,
+        output: 'compiles',
+      },
+      {
+        caption: 'The compile errors that break each rule (javac 17)',
+        code: `import java.io.FileNotFoundException;
+import java.io.IOException;
+
+class Reader {
+    public void open() throws FileNotFoundException { }
+    public void read() throws IOException { }
+    final void close() { }
+    static void reset() { }
+}
+
+class BadReader extends Reader {
+    // 1. Broader checked exception than the parent declares
+    @Override
+    public void open() throws IOException { }
+
+    // 2. Narrower access than the parent (public -> protected)
+    @Override
+    protected void read() { }
+
+    // 3. Overriding a final method
+    @Override
+    void close() { }
+
+    // 4. @Override on a static method
+    @Override
+    static void reset() { }
+}`,
+        output: `1. error: open() in BadReader cannot override open() in Reader
+       public void open() throws IOException { }
+                   ^
+     overridden method does not throw IOException
+
+2. error: read() in BadReader cannot override read() in Reader
+       protected void read() { }
+                      ^
+     attempting to assign weaker access privileges; was public
+
+3. error: close() in BadReader cannot override close() in Reader
+       void close() { }
+            ^
+     overridden method is final
+
+4. error: static methods cannot be annotated with @Override
+       @Override
+       ^`,
+      },
     ],
     commonMistakes: [
       'Slightly changing the parameter list of what was meant to be an override, which accidentally creates an unrelated overload instead — @Override would have caught this at compile time.',
       'Trying to override a static, final, or private method, none of which can be overridden.',
       'Reducing the visibility of an overriding method (e.g. from public to protected), which fails to compile.',
       'Trying to change the return type to an unrelated type instead of a covariant (subtype) return type.',
+      'Declaring a new or broader checked exception (for example <code>Exception</code> when the parent declares <code>IOException</code>, or any checked exception when the parent declares none).',
+      'Expecting a static method in the child to run through a parent reference. Static methods are hidden, not overridden, so the reference type decides.',
+      'Forgetting <code>super.method()</code> in an override that was meant to extend the parent, so the parent\'s work silently stops happening.',
     ],
     keyPoints: [
       'Overriding requires an identical method signature between superclass and subclass, resolved at runtime.',
       'The return type must match or be covariant; visibility cannot be reduced; checked exceptions cannot be broadened.',
-      'static, final, and private methods cannot be overridden.',
+      'Unchecked exceptions are unrestricted in an override.',
+      'static, final, and private methods cannot be overridden; a static method with the same signature only hides the parent\'s.',
+      '<code>super.method()</code> runs the parent\'s version from inside an override.',
       '@Override is optional but lets the compiler catch signature mistakes early.',
     ],
   },
 
   'runtime-polymorphism-and-dynamic-binding': {
     title: 'Runtime Polymorphism and Dynamic Binding',
-    intro: `Runtime polymorphism is the ability for a single method call, written once against a superclass or interface type, to execute different implementations depending on the actual (runtime) type of the object it is called on. It is made possible by method overriding combined with dynamic method dispatch — the mechanism the JVM uses to decide, at the moment of the call, exactly which overridden version of a method to run.`,
+    intro: `Runtime polymorphism is the ability for a single method call, written once against a superclass or interface type, to execute different implementations depending on the actual (runtime) type of the object it is called on. It is made possible by method overriding combined with dynamic method dispatch — the mechanism the JVM uses to decide, at the moment of the call, exactly which overridden version of a method to run.
+
+Polymorphism means "many forms", and Java has two kinds. <strong>Compile-time polymorphism</strong> is method overloading: the compiler picks a method from the arguments. <strong>Runtime polymorphism</strong> is method overriding: the JVM picks a method from the real object while the program runs. This lesson is about the second kind.`,
     sections: [
       {
+        heading: 'Why We Need Runtime Polymorphism',
+        body: `Imagine a checkout that accepts card, UPI and wallet payments. Without polymorphism, the checkout needs an <code>if</code>/<code>else</code> chain that tests which kind of payment it has, and every new payment type means editing that chain. With runtime polymorphism, the checkout calls <code>payment.pay(amount)</code> on a <code>Payment</code> reference and each subclass does its own thing. New payment types are new classes; the checkout code never changes. The same pattern drives drawing a list of <code>Shape</code>s, starting any <code>Vehicle</code>, or a framework calling the <code>run()</code> method of whatever task you give it.`,
+      },
+      {
+        heading: 'The Three Ingredients: Inheritance, Overriding and Upcasting',
+        body: `Runtime polymorphism needs three things working together. There must be an <strong>inheritance</strong> (or interface) relationship, the child must <strong>override</strong> the method, and the call must go through a <strong>parent-type reference</strong> that holds a child object. That last step is called <strong>upcasting</strong>: <code>Animal a = new Dog();</code>. Upcasting is implicit and always safe, because every <code>Dog</code> is an <code>Animal</code>. The trade-off is that the compiler now only lets you call methods that <code>Animal</code> declares; a <code>Dog</code>-only method such as <code>fetch()</code> is out of reach through <code>a</code>.`,
+      },
+      {
         heading: 'Static Binding vs Dynamic Binding',
-        body: `Java resolves method calls in one of two ways. <strong>Static binding</strong> happens at compile time and applies to <code>private</code>, <code>static</code>, and <code>final</code> methods, along with all fields — the compiler already knows exactly which method or field will be used, based purely on the declared (reference) type. <strong>Dynamic binding</strong> happens at runtime and applies to overridden instance methods — the JVM looks at the actual object on the heap, not the reference type used to call it, and dispatches to that object's overridden version.`,
+        body: `Java resolves method calls in one of two ways. <strong>Static binding</strong> (also called early binding) happens at compile time and applies to <code>private</code>, <code>static</code>, and <code>final</code> methods, along with all fields — the compiler already knows exactly which method or field will be used, based purely on the declared (reference) type. <strong>Dynamic binding</strong> (late binding) happens at runtime and applies to overridden instance methods — the JVM looks at the actual object on the heap, not the reference type used to call it, and dispatches to that object's overridden version.`,
       },
       {
         heading: 'Virtual Method Invocation',
@@ -1408,6 +1648,33 @@ class Circle extends Shape {
           'Overridden instance methods: resolved by the object\'s actual runtime type (dynamic binding).',
           'Fields, static methods, and private/final methods: resolved by the reference\'s declared compile-time type (static binding).',
           'This asymmetry is why polymorphism is described as applying to "methods, not fields."',
+        ],
+      },
+      {
+        heading: 'Why static, final and private Methods Are Not Polymorphic',
+        body: `Dynamic dispatch only has something to choose between when a method can be overridden. None of these three can, so the compiler binds them early.`,
+        list: [
+          '<strong>static</strong> methods belong to the class. A child\'s static method with the same signature hides the parent\'s, and a call through a parent reference runs the parent\'s version.',
+          '<strong>final</strong> methods cannot be overridden, so there is only ever one version to call.',
+          '<strong>private</strong> methods are not inherited; a same-named method in the child is a separate method that a parent reference cannot even see.',
+        ],
+      },
+      {
+        heading: 'Downcasting and the instanceof Operator',
+        body: `To call a child-only method on an upcast reference, you cast back down: <code>Dog d = (Dog) a;</code>. Downcasting is explicit because it can fail. The compiler accepts any cast between related types, but if the object is not really a <code>Dog</code>, the JVM throws <code>ClassCastException</code> at runtime. Guard the cast with <code>instanceof</code>, which returns <code>true</code> only when the object is that type (or a subtype). Since Java 16 the check and the cast can be written together as <code>if (a instanceof Dog d) { d.fetch(); }</code>. If you find yourself downcasting often, it usually means the method belongs in the parent type as an overridable method.`,
+      },
+      {
+        heading: 'Runtime Polymorphism with Interfaces and Abstract Classes',
+        body: `Runtime polymorphism does not need a concrete parent class. An <strong>abstract class</strong> can declare <code>abstract double area();</code> with no body, which forces every concrete subclass (<code>Circle</code>, <code>Rectangle</code>) to override it. An <strong>interface</strong> such as <code>Vehicle</code> declares <code>void start();</code>, and each implementing class (<code>Car</code>, <code>Bike</code>) provides the body. In both cases you program against the general type — <code>Shape s</code>, <code>Vehicle v</code> — and the JVM dispatches to the real object's implementation. This is the style most real Java code and frameworks use.`,
+      },
+      {
+        heading: 'Compile-Time vs Runtime Polymorphism',
+        list: [
+          '<strong>Achieved by:</strong> compile-time uses method overloading; runtime uses method overriding.',
+          '<strong>Decided by:</strong> compile-time uses the declared types of the arguments; runtime uses the actual class of the object.',
+          '<strong>Binding:</strong> compile-time is static (early) binding; runtime is dynamic (late) binding.',
+          '<strong>Inheritance needed:</strong> not for overloading; yes (a class or an interface) for overriding.',
+          '<strong>Flexibility:</strong> overloading offers convenient variants of one operation; overriding lets new types plug in without changing calling code.',
         ],
       },
     ],
@@ -1442,23 +1709,134 @@ public class PolymorphismDemo {
         output: `A square
 Shape`,
       },
+      {
+        caption: 'An abstract class: every shape overrides area()',
+        code: `public class ShapeDemo {
+    public static void main(String[] args) {
+        Shape[] shapes = { new Circle(1), new Rectangle(2, 3) };
+        for (Shape s : shapes) {
+            System.out.printf("%s area = %.2f%n", s.name(), s.area());
+        }
+    }
+}
+
+abstract class Shape {
+    abstract double area();      // no body: every subclass must override it
+
+    String name() {
+        return getClass().getSimpleName();
+    }
+}
+
+class Circle extends Shape {
+    private final double r;
+    Circle(double r) { this.r = r; }
+
+    @Override
+    double area() { return Math.PI * r * r; }
+}
+
+class Rectangle extends Shape {
+    private final double w, h;
+    Rectangle(double w, double h) { this.w = w; this.h = h; }
+
+    @Override
+    double area() { return w * h; }
+}`,
+        output: `Circle area = 3.14
+Rectangle area = 6.00`,
+      },
+      {
+        caption: 'An interface: one method works for every Vehicle',
+        code: `public class VehicleDemo {
+    static void startTrip(Vehicle v) { // works for every Vehicle, now and later
+        v.start();
+    }
+
+    public static void main(String[] args) {
+        startTrip(new Car());
+        startTrip(new Bike());
+    }
+}
+
+interface Vehicle {
+    void start();
+}
+
+class Car implements Vehicle {
+    @Override
+    public void start() { System.out.println("Car: turn key, engine starts"); }
+}
+
+class Bike implements Vehicle {
+    @Override
+    public void start() { System.out.println("Bike: kick start"); }
+}`,
+        output: `Car: turn key, engine starts
+Bike: kick start`,
+      },
+      {
+        caption: 'Upcasting, safe downcasting with instanceof, and a ClassCastException',
+        code: `public class CastDemo {
+    public static void main(String[] args) {
+        Animal a = new Dog();          // upcasting: implicit and always safe
+        a.sound();                     // Dog's override runs
+        // a.fetch();                  // compile error: Animal has no fetch()
+
+        if (a instanceof Dog d) {      // check, then downcast (Java 16+ pattern)
+            d.fetch();
+        }
+
+        Animal c = new Cat();
+        Dog wrong = (Dog) c;           // compiles, but fails at runtime
+    }
+}
+
+class Animal {
+    void sound() { System.out.println("Some sound"); }
+}
+
+class Dog extends Animal {
+    @Override
+    void sound() { System.out.println("Woof"); }
+
+    void fetch() { System.out.println("Dog fetches the ball"); }
+}
+
+class Cat extends Animal {
+    @Override
+    void sound() { System.out.println("Meow"); }
+}`,
+        output: `Woof
+Dog fetches the ball
+Exception in thread "main" java.lang.ClassCastException: class Cat cannot be cast to class Dog (Cat and Dog are in unnamed module of loader 'app')
+    at CastDemo.main(CastDemo.java:12)`,
+      },
     ],
     commonMistakes: [
       'Expecting ref.label to print the subclass value when ref is declared as the superclass type — fields are resolved by the reference type, not the object type.',
       'Assuming static methods participate in runtime polymorphism when called through an object reference — static methods are resolved by the reference\'s declared type at compile time.',
       'Believing polymorphism requires an explicit interface — it works equally well through plain class inheritance with overriding.',
       'Forgetting that private and final methods use static binding and therefore cannot be polymorphic, since they cannot be overridden.',
+      'Calling a child-only method through a parent reference. The compiler checks the reference type, so <code>a.fetch()</code> fails to compile even when <code>a</code> holds a <code>Dog</code>.',
+      'Downcasting without an <code>instanceof</code> check, which compiles but throws <code>ClassCastException</code> when the object is a different subtype.',
     ],
     keyPoints: [
       'Runtime polymorphism works through overriding plus dynamic method dispatch, based on the object\'s actual runtime type.',
+      'It needs inheritance (or an interface), an overridden method, and a parent-type reference to a child object (upcasting).',
+      'The reference type decides which methods you may call; the object type decides which body runs.',
       'Static binding (fields, static/private/final methods) is resolved at compile time using the reference\'s declared type.',
       'Only overridden instance methods are polymorphic — fields are always resolved statically, even when hidden by a subclass.',
+      'Upcasting is implicit and safe; downcasting is explicit and should be guarded with <code>instanceof</code>.',
+      'Abstract classes and interfaces are the usual way to write polymorphic code in real projects.',
     ],
   },
 
   'instance-initializer-block': {
     title: 'Instance Initializer Block',
-    intro: `An instance initializer block (IIB) is a block of code enclosed in plain braces <code>{ ... }</code> directly inside a class body, without any keyword like <code>static</code> in front of it. Unlike a static block, which runs once when the class is loaded, an instance initializer block runs every single time an object of the class is created — specifically, every time before the constructor body executes.`,
+    intro: `An instance initializer block (IIB) is a block of code enclosed in plain braces <code>{ ... }</code> directly inside a class body, without any keyword like <code>static</code> in front of it. Unlike a static block, which runs once when the class is loaded, an instance initializer block runs every single time an object of the class is created — specifically, every time before the constructor body executes.
+
+The syntax is just a pair of braces at class level: <code>{ System.out.println("object created"); }</code>. It has no name, no return type and no parameters, and you never call it yourself. Java runs it as part of <code>new</code>.`,
     sections: [
       {
         heading: 'When Instance Initializer Blocks Run',
@@ -1470,12 +1848,51 @@ Shape`,
         ],
       },
       {
+        heading: 'How the Compiler Copies the Block into Every Constructor',
+        body: `An instance block is not a separate method that the JVM calls. When javac compiles the class, it copies the code of every field initializer and instance block into each constructor, placing it immediately after the <code>super(...)</code> call and before the constructor's own statements. That is why the block always runs after the parent is built but before your constructor body, and why it runs no matter which constructor was used. If a class has no constructor, the block goes into the default constructor the compiler generates.`,
+      },
+      {
+        heading: 'Multiple Blocks and Field Initializers: Textual Order Matters',
+        body: `A class may contain any number of instance blocks. They run from top to bottom, interleaved with field initializers (<code>int x = 10;</code>) in exactly the order they are written. So a block can see a field assigned above it, and a field initializer below a block sees whatever the block set. The reverse is restricted: a block that reads a field declared further down, by its simple name, fails to compile with <code>illegal forward reference</code>. Keep fields at the top and blocks after them, and the order stays easy to follow.`,
+      },
+      {
+        heading: 'Instance Blocks and this() Constructor Chaining',
+        body: `The copied block code goes only into constructors that call <code>super(...)</code>, either explicitly or implicitly. A constructor that starts with <code>this(...)</code> does not get a copy, because it hands off to another constructor of the same class, and that one will run the block. The result is that the block runs exactly once per object, even when constructors chain into each other.`,
+      },
+      {
+        heading: 'Execution Order with Inheritance',
+        body: `With a parent and a child class, Java first initialises the classes and then builds the object from the top of the hierarchy down.`,
+        list: [
+          'Parent static blocks, then child static blocks — once, the first time the class is used.',
+          'For every object: the parent\'s field initializers and instance blocks, then the parent\'s constructor body.',
+          'Then the child\'s field initializers and instance blocks, then the child\'s constructor body.',
+          'Creating a second object repeats only the per-object steps; static blocks do not run again.',
+        ],
+      },
+      {
         heading: 'Why Use an Instance Initializer Block',
         body: `Instance initializer blocks are most useful when a class has multiple overloaded constructors that all need to share some common initialization logic that is too involved for a simple field initializer expression — placing that shared logic in an IIB guarantees it runs no matter which constructor is used, without duplicating code in every constructor. In modern Java, this pattern is relatively uncommon since constructor chaining with <code>this(...)</code> usually achieves the same goal more explicitly, but it still appears in anonymous class initialization and in legacy codebases.`,
       },
       {
         heading: 'Instance Block vs Static Block',
         body: `A static block runs exactly once per class, at class-loading time, before any object exists. An instance initializer block runs once per object creation, every time <code>new</code> is used, right before the constructor body — meaning if you create five objects, the instance block runs five times, but a static block in the same class would have already run only once, earlier, at class load.`,
+        list: [
+          '<strong>Syntax:</strong> <code>static { ... }</code> vs plain <code>{ ... }</code>.',
+          '<strong>Runs:</strong> once per class vs once per object.',
+          '<strong>When:</strong> during class initialisation vs during <code>new</code>, after <code>super(...)</code> and before the constructor body.',
+          '<strong>Can use:</strong> only static members vs both static and instance members, including <code>this</code>.',
+          '<strong>Typical job:</strong> set up static data such as a lookup table vs common setup for every object.',
+          '<strong>Full order for one new object of a class used for the first time:</strong> static block, then instance block, then constructor.',
+        ],
+      },
+      {
+        heading: 'Rules and Limits',
+        list: [
+          'An instance block may throw a checked exception only if every constructor of the class declares it in its <code>throws</code> clause. A block that can never finish normally (it always throws) is rejected with <code>initializer must be able to complete normally</code>.',
+          'It cannot contain a <code>return</code> statement; javac reports <code>return outside method</code>.',
+          'It can use <code>this</code>, instance fields and instance methods, because the object already exists when it runs.',
+          'Code in it cannot take arguments, so anything that depends on constructor parameters must stay in the constructor.',
+        ],
       },
     ],
     examples: [
@@ -1509,17 +1926,131 @@ Creating second object:
 Instance initializer block (runs before each constructor)
 Constructor body`,
       },
+      {
+        caption: 'Multiple blocks and field initializers run in the order they are written',
+        code: `public class OrderDemo {
+    int x = 10;                 // 1. field initializer
+
+    {
+        System.out.println("Block 1: x = " + x);
+        x = 20;                 // 2. first instance block
+    }
+
+    int y = x + 1;              // 3. sees x = 20
+
+    {
+        System.out.println("Block 2: y = " + y);  // 4. second instance block
+    }
+
+    OrderDemo() {
+        System.out.println("Constructor: x = " + x + ", y = " + y);
+    }
+
+    public static void main(String[] args) {
+        new OrderDemo();
+    }
+}`,
+        output: `Block 1: x = 10
+Block 2: y = 21
+Constructor: x = 20, y = 21`,
+      },
+      {
+        caption: 'With this() chaining the block still runs once per object',
+        code: `public class ChainDemo {
+    {
+        System.out.println("instance block");
+    }
+
+    ChainDemo() {
+        this("guest");          // delegates: the block is NOT copied here
+        System.out.println("no-arg constructor");
+    }
+
+    ChainDemo(String user) {    // calls super() implicitly: the block runs here
+        System.out.println("constructor for " + user);
+    }
+
+    public static void main(String[] args) {
+        new ChainDemo();
+        System.out.println("---");
+        new ChainDemo("admin");
+    }
+}`,
+        output: `instance block
+constructor for guest
+no-arg constructor
+---
+instance block
+constructor for admin`,
+      },
+      {
+        caption: 'Full execution order with inheritance (a favourite interview question)',
+        code: `public class InheritDemo {
+    public static void main(String[] args) {
+        new Child();
+        System.out.println("---");
+        new Child();
+    }
+}
+
+class Parent {
+    static { System.out.println("1. Parent static block"); }
+    { System.out.println("3. Parent instance block"); }
+    Parent() { System.out.println("4. Parent constructor"); }
+}
+
+class Child extends Parent {
+    static { System.out.println("2. Child static block"); }
+    { System.out.println("5. Child instance block"); }
+    Child() { System.out.println("6. Child constructor"); }
+}`,
+        output: `1. Parent static block
+2. Child static block
+3. Parent instance block
+4. Parent constructor
+5. Child instance block
+6. Child constructor
+---
+3. Parent instance block
+4. Parent constructor
+5. Child instance block
+6. Child constructor`,
+      },
+      {
+        caption: 'Real use: setting up an anonymous class, which cannot have a constructor',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public class AnonDemo {
+    public static void main(String[] args) {
+        // An anonymous class cannot declare a constructor, so setup goes in an instance block
+        List<String> langs = new ArrayList<>() {
+            {
+                add("Java");
+                add("Python");
+            }
+        };
+        System.out.println(langs);
+    }
+}`,
+        output: '[Java, Python]',
+      },
     ],
     commonMistakes: [
       'Confusing an instance initializer block with a static block just because both use braces — omitting "static" changes it to run per-object instead of once per class.',
       'Assuming the instance initializer block runs after the constructor body — it always runs before the remaining constructor code, right after the superclass constructor completes.',
       'Not realizing multiple instance initializer blocks and field initializers all run in strict top-to-bottom source order, which matters if one depends on a value set by another.',
       'Overusing instance initializer blocks instead of a private helper method or this(...) chaining, making initialization logic harder to follow than necessary.',
+      'Expecting the block to run twice when one constructor calls another with this(...). The block is copied only into the constructor that calls super(...), so it runs once.',
+      'Reading a field in a block placed above that field\'s declaration, which fails with "illegal forward reference".',
     ],
     keyPoints: [
       'An instance initializer block is a brace-only block (no "static") that runs once per object, before the constructor body.',
+      'The compiler copies it into every constructor right after super(...); constructors that start with this(...) do not get a copy.',
       'Execution order is: superclass constructor, then instance variable initializers and instance initializer blocks in source order, then the current constructor\'s remaining body.',
+      'With inheritance: parent static, child static (once), then parent instance blocks and constructor, then child instance blocks and constructor (per object).',
       'A static block runs once per class load; an instance initializer block runs once per object creation.',
+      'Its main real-world use is initialising anonymous classes, which cannot declare constructors.',
     ],
   },
 }

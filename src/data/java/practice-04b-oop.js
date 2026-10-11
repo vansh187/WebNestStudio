@@ -174,6 +174,24 @@ public class WheelsDemo {
         question: 'Can static, final or private methods be overridden?',
         answer: `No to all three. A <code>final</code> method is explicitly closed to overriding, and trying is a compile error. A <code>private</code> method is not inherited, so a same-named method in the subclass is unrelated. A <code>static</code> method belongs to the class; a subclass can declare one with the same signature, but that hides the parent's method and is resolved at compile time.`,
       },
+      {
+        question: 'Can an overriding method throw exceptions the parent method does not declare?',
+        answer: `Unchecked exceptions, yes: any <code>RuntimeException</code> subclass is allowed. Checked exceptions, only if they are the same as or narrower than what the parent declares. If the parent declares <code>IOException</code>, the override may declare <code>FileNotFoundException</code> or nothing, but not <code>Exception</code>. Callers using the parent type must never meet a checked exception they were not told about.`,
+      },
+      {
+        question: 'Can a constructor be overridden?',
+        answer: `No. Constructors are not inherited, and each class's constructor has that class's name, so a subclass can never declare a constructor with the parent's signature. A subclass constructor can call a parent constructor with <code>super(...)</code>, and constructors can be overloaded, but not overridden.`,
+      },
+      {
+        question: 'What is the difference between method overloading and method overriding?',
+        answer: `Overloading is several methods with the same name and different parameter lists, usually in one class, chosen by the compiler from the arguments (compile-time polymorphism). Overriding is a subclass redefining an inherited method with the same signature, chosen by the JVM from the actual object at runtime (runtime polymorphism). static, final and private methods can be overloaded but not overridden.`,
+      },
+    ],
+    seeAlso: [
+      { lessonId: 'lesson_java_core_super_keyword', label: 'super Keyword' },
+      { lessonId: 'lesson_java_core_runtime_polymorphism_and_dynamic_binding', label: 'Runtime Polymorphism and Dynamic Binding' },
+      { lessonId: 'lesson_java_core_exception_handling_rules_with_method_overriding', label: 'Exception Handling Rules with Method Overriding' },
+      { lessonId: 'lesson_java_core_method_overloading_vs_method_overriding_a_comparison', label: 'Method Overloading vs Method Overriding: A Comparison' },
     ],
   },
 
@@ -295,6 +313,23 @@ public class BindingDemo {
         question: 'What is upcasting and why is it useful?',
         answer: `Upcasting is treating an object as one of its supertypes, for example storing a <code>Square</code> in a <code>Shape</code> variable. It is always safe and needs no cast. It is useful because code written against the general type works with every subtype: one method that accepts a <code>Shape</code> handles squares, circles and any shape added later.`,
       },
+      {
+        question: 'What is dynamic method dispatch?',
+        answer: `It is the mechanism Java uses to implement runtime polymorphism. When an overridden method is called through a parent-type reference, the compiler only checks that the method exists in the parent type. At runtime the JVM looks at the actual class of the object and runs that class's version, walking up the hierarchy only if the class does not override it.`,
+      },
+      {
+        question: 'Animal a = new Dog(); can you call a Dog-only method on a?',
+        answer: `Not directly. The compiler checks method calls against the declared type <code>Animal</code>, so <code>a.fetch()</code> does not compile. You must downcast first, ideally with a check: <code>if (a instanceof Dog d) d.fetch();</code>. A cast without the check compiles but throws <code>ClassCastException</code> if <code>a</code> actually holds some other animal.`,
+      },
+      {
+        question: 'Can runtime polymorphism be achieved with data members?',
+        answer: `No. Fields are not overridden, only hidden, and a field access is bound at compile time from the reference type. <code>Parent p = new Child(); p.name</code> always reads <code>Parent</code>'s field. To get polymorphic behaviour for data, expose it through an overridable getter method.`,
+      },
+    ],
+    seeAlso: [
+      { lessonId: 'lesson_java_core_method_overriding', label: 'Method Overriding' },
+      { lessonId: 'lesson_java_core_instanceof_and_downcasting', label: 'instanceof and Downcasting' },
+      { lessonId: 'lesson_java_core_method_overloading_vs_method_overriding_a_comparison', label: 'Method Overloading vs Method Overriding: A Comparison' },
     ],
   },
 
@@ -370,6 +405,19 @@ public class SessionDemo {
         question: 'Why would you use an instance initializer block instead of a constructor?',
         answer: `To share initialisation code between several constructors without repeating it or chaining them, and to initialise anonymous classes, which cannot declare a constructor. In ordinary classes, constructor chaining with <code>this(...)</code> or a private helper method is usually clearer, which is why instance blocks are uncommon.`,
       },
+      {
+        question: 'Where does the instance block code actually end up after compilation?',
+        answer: `javac copies field initializers and instance blocks, in source order, into every constructor that calls <code>super(...)</code>, right after that call and before the constructor's own statements. A constructor that begins with <code>this(...)</code> gets no copy, because the constructor it delegates to already contains the code. That is why the block runs exactly once per object.`,
+      },
+      {
+        question: 'Can an instance initializer block throw an exception?',
+        answer: `It can throw unchecked exceptions freely. It can throw a checked exception only if every constructor of the class declares that exception in its <code>throws</code> clause. It also must be able to complete normally, and it cannot contain a <code>return</code> statement.`,
+      },
+    ],
+    seeAlso: [
+      { lessonId: 'lesson_java_core_static_keyword', label: 'Static Keyword (static blocks)' },
+      { lessonId: 'lesson_java_core_constructors_and_constructor_overloading', label: 'Constructors and Constructor Overloading' },
+      { lessonId: 'lesson_java_core_super_keyword', label: 'super Keyword (constructor chaining)' },
     ],
   },
 

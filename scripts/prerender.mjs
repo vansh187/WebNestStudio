@@ -9,15 +9,15 @@ const dist = path.resolve('dist')
 const manifest = JSON.parse(await readFile('.seo-build/routes.json', 'utf8'))
 const shell = await readFile(path.join(dist, 'app.html'), 'utf8').catch(() => readFile(path.join(dist, 'index.html'), 'utf8'))
 await writeFile(path.join(dist, 'app.html'), shell)
-// AdSense policy: no ads on screens without publisher content. vercel.json rewrites
-// login/admin/portal/account routes to this ad-free copy; app.html stays the
-// pristine template so re-running prerender is safe.
+// The shell carries no AdSense script; useSeo adds it in the browser only on
+// eligible pages. useSeo skips it under __PRERENDER__, and every snapshot is
+// stripped as well, so static HTML can never load ads before those gates run.
 const ADSENSE_SCRIPT = /\s*<script\b[^>]*pagead2\.googlesyndication\.com[^>]*><\/script>/g
 const withoutAds = (html) => html.replace(ADSENSE_SCRIPT, '')
 // Every private route is noindex, so say so in the raw HTML too, not only in the
 // X-Robots-Tag header and the tag useSeo adds after the app boots.
 const noindexed = (html) => html.replace(/<head>/, '<head>\n    <meta name="robots" content="noindex, follow" />')
-await writeFile(path.join(dist, 'app-private.html'), noindexed(withoutAds(shell)))
+await writeFile(path.join(dist, 'app-private.html'), noindexed(shell))
 const server = await preview({ preview: { port: 4174, strictPort: true } })
 const origin = server.resolvedUrls.local[0].replace(/\/$/, '')
 let browser
@@ -73,9 +73,7 @@ try {
         await mkdir(path.dirname(output), { recursive: true })
         // Vite adds <link rel="modulepreload"> tags with absolute URLs of this local
         // preview server; left as-is, every visitor's browser would try localhost.
-        const rendered = (await page.content()).replaceAll(`${origin}/`, '/')
-        // 404.html keeps ads: Vercel also serves it for content published after this build.
-        const html = entry.noindex && entry.path !== '/404' ? withoutAds(rendered) : rendered
+        const html = withoutAds((await page.content()).replaceAll(`${origin}/`, '/'))
         await writeFile(output, html, 'utf8')
         completed.push(entry.path)
         if (completed.length % 25 === 0) console.log(`[prerender] ${completed.length}/${manifest.length + 1} rendered`)

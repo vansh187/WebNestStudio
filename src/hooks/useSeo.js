@@ -1,7 +1,13 @@
 import { useEffect } from 'react'
 
-import { SITE_NAME, DEFAULT_DESCRIPTION, DEFAULT_IMAGE, canonicalUrl as getCanonicalUrl } from '../lib/seo'
+import { SITE_NAME, DEFAULT_DESCRIPTION, DEFAULT_IMAGE, ADSENSE_SCRIPT_URL, isAdRoute, canonicalUrl as getCanonicalUrl } from '../lib/seo'
 export { SITE_NAME, SITE_URL } from '../lib/seo'
+
+// Auto ads already on the page are not removed by pausing requests, so they would
+// stay visible after client-side navigation to an ad-free page.
+function removePlacedAds() {
+  document.querySelectorAll('ins.adsbygoogle, .google-auto-placed').forEach((el) => el.remove())
+}
 
 function upsertTag(selector, create, content) {
   if (!content) return null
@@ -30,15 +36,35 @@ function upsertTag(selector, create, content) {
  *
  * `path` should be the route path (e.g. '/about') so the canonical URL is
  * stable regardless of which host/preview deployment served the page.
+ *
+ * Ads load only on an ad route (see isAdRoute) that is indexable. `ads` is a
+ * readiness gate for pages whose content arrives asynchronously: pass false until
+ * it has loaded so no ads are requested on a loading, empty or error state.
  */
-export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', image = DEFAULT_IMAGE, type = 'website', noindex = false, keywords, ads = !noindex }) {
-  // AdSense policy: no ads on pages we tell search engines are below the bar.
-  // index.html starts ad requests paused; only an ads-eligible page resumes them.
+export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', image = DEFAULT_IMAGE, type = 'website', noindex = false, keywords, ads = true }) {
+  const shouldLoadAds = ads && !noindex && isAdRoute(path)
   useEffect(() => {
     const adsbygoogle = (window.adsbygoogle = window.adsbygoogle || [])
-    adsbygoogle.pauseAdRequests = ads ? 0 : 1
+    adsbygoogle.pauseAdRequests = 1
+
+    // Prerendered snapshots must not carry the script: it would run before React
+    // mounts and bypass these gates.
+    if (shouldLoadAds && !window.__PRERENDER__) {
+      if (!document.getElementById('adsbygoogle-js')) {
+        const script = document.createElement('script')
+        script.id = 'adsbygoogle-js'
+        script.async = true
+        script.crossOrigin = 'anonymous'
+        script.src = ADSENSE_SCRIPT_URL
+        document.head.appendChild(script)
+      }
+      adsbygoogle.pauseAdRequests = 0
+    } else {
+      removePlacedAds()
+    }
+
     return () => { adsbygoogle.pauseAdRequests = 1 }
-  }, [ads])
+  }, [shouldLoadAds])
 
   useEffect(() => {
     const resolvedImage = image || DEFAULT_IMAGE

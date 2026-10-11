@@ -19,20 +19,10 @@ const HERO_VIDEO = '/media/blog-hero'
 
 export default function Blog() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const tag = searchParams.get('tag') || ''
-
-  useSeo({
-    title: tag ? `${tag} Articles` : 'Blog',
-    description:
-      'Notes on web development, AI, and engineering from the WebNest Studio team — practical guides for building and improving digital products.',
-    // Always canonicalize tag-filtered views back to the plain list - the tag
-    // filter is a client-side view, not a distinct indexable page, so this
-    // avoids Google treating every ?tag= combination as duplicate content.
-    path: '/blog',
-  })
   const [posts, setPosts] = useState(null)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const tag = searchParams.get('tag') || ''
 
   useEffect(() => {
     let cancelled = false
@@ -52,6 +42,18 @@ export default function Blog() {
     [displayPosts, tag]
   )
   const allTags = [...new Set(displayPosts.flatMap((p) => p.tags || []))]
+
+  useSeo({
+    title: tag ? `${tag} Articles` : 'Blog',
+    description:
+      'Notes on web development, AI, and engineering from the WebNest Studio team — practical guides for building and improving digital products.',
+    // Always canonicalize tag-filtered views back to the plain list - the tag
+    // filter is a client-side view, not a distinct indexable page, so this
+    // avoids Google treating every ?tag= combination as duplicate content.
+    path: '/blog',
+    // Gate on the posts actually shown, so an empty, filtered-out or error state requests no ads.
+    ads: visiblePosts.length > 0 && !error,
+  })
 
   return (
     <div>
