@@ -6,6 +6,17 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "webneststudio.co.in"
+        }
+      ],
+      "destination": "https://www.webneststudio.co.in/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {

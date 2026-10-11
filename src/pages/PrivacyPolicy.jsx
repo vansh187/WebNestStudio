@@ -78,13 +78,14 @@ export default function PrivacyPolicy() {
             does not use cookies to track you across other sites.
           </p>
           <p>
-            <strong className="text-ink-900 dark:text-white">e) Advertising and cookie data.</strong> We do not
-            currently display advertisements on our website. We have connected the site to Google AdSense for
-            site review, but this does not mean ads are being shown. If we enable advertising in the future,
-            Google and its advertising partners may process information such as cookies, device identifiers, IP
-            address, browser information, pages visited, and ad interactions to provide and measure ads, subject
-            to applicable law and your choices. We will update this policy and provide any required consent
-            options before advertising begins.
+            <strong className="text-ink-900 dark:text-white">e) Advertising and cookie data.</strong> We are applying
+            to Google AdSense and have installed Google&rsquo;s AdSense publisher code for site verification and
+            review. We do not manually place ad units at this time. Because the AdSense code is present, your
+            browser may send Google standard request information, including the page URL and IP address, when
+            loading or using the code. If ad serving or automated placements are enabled, Google and participating
+            advertising providers may also process browser or device information, cookies or similar identifiers,
+            and ad interactions to select or deliver ads, limit repeated ads, measure performance, and prevent
+            fraud. Personalization depends on your settings and applicable consent choices.
           </p>
           <p>
             <strong className="text-ink-900 dark:text-white">f) Local storage.</strong> We use your browser&rsquo;s
@@ -105,7 +106,11 @@ export default function PrivacyPolicy() {
             <li>Detect, prevent, and address fraud, abuse, or security issues; and</li>
             <li>Comply with applicable legal obligations.</li>
           </ul>
-          <p>We do not sell your personal information.</p>
+          <p>
+            We do not sell or rent information you submit through forms, account details, or project content.
+            Google and its advertising partners may process limited browsing and device information for
+            advertising as described in Sections 3 and 9.
+          </p>
         </Section>
 
         <Section id="sharing" title="3. How We Share Your Information">
@@ -121,11 +126,14 @@ export default function PrivacyPolicy() {
               protect your data.
             </li>
             <li>
-              <strong className="text-ink-900 dark:text-white">Advertising partners.</strong> We do not currently
-              display ads. If we enable advertising in the future, Google and its partners may process limited
-              device, cookie, and usage information to deliver and measure ads. We will provide any required
-              consent options before ads are served. You can learn about and manage Google ad personalization
-              through Google&rsquo;s advertising settings and browser controls.
+              <strong className="text-ink-900 dark:text-white">Google AdSense.</strong> We are applying to Google
+              AdSense and have installed its publisher code for site verification and review. We do not manually
+              place ad units at this time. Loading or using the code may send Google standard request information,
+              including the page URL and IP address. If ad serving or automated placements are enabled, Google
+              and participating providers may process device, cookie, and ad interaction information to deliver
+              and measure ads, personalize them where permitted, limit repeated ads, and prevent fraud. You can
+              manage Google ad personalization through Google Ads Settings and manage cookies through your
+              browser.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Legal requirements.</strong> We may disclose
@@ -207,28 +215,39 @@ export default function PrivacyPolicy() {
 
         <Section id="cookies-and-ads" title="9. Cookies, Advertising, and Google Services">
           <p>
-            We may use cookies, similar technologies, and local storage to operate the site, remember
-            preferences, and keep users signed in. We currently do not display advertisements. The site is
-            connected to Google AdSense for review, but advertising has not been enabled for visitors.
+            We are applying to Google AdSense and have installed Google&rsquo;s publisher code for site verification
+            and review. We do not manually place ad units at this time. The code is loaded on the website, so
+            Google may receive standard request information such as the page URL and IP address when a browser
+            loads or uses it. If ad serving or automated placements are enabled, Google may use or set cookies or
+            similar identifiers and process browser or device information and ad interactions, even if an ad is
+            not visibly displayed on a particular visit.
           </p>
           <p>
-            If we enable advertising in the future, Google and its partners may use cookies and similar
-            technologies to provide and measure ads, including ads based on visits to this site or other sites.
-            Before ads begin, we will update this policy and provide any consent message required for the
-            visitor&rsquo;s location, including a Google-certified consent management platform where required.
-            Learn more about{' '}
+            Google and participating advertising technology providers may use this information to select and
+            deliver ads, limit repeated ads, measure ad performance, and detect fraud or abuse. Depending on
+            your Google settings and consent choices, ads may be personalized using activity on this or other
+            sites. When personalization is turned off, Google may still process information for contextual ads,
+            measurement, security, and fraud prevention. Ad cookies may be associated with Google or
+            doubleclick.net domains. Learn more about{' '}
             <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
               how Google uses information from sites that use its services
             </a>
             .
           </p>
           <p>
-            If advertising is enabled, you will be able to manage Google ad personalization through{' '}
+            You can manage Google ad personalization through{' '}
             <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
               Google Ads Settings
             </a>
-            {' '}and manage cookies in your browser settings. We will explain any additional choices in the
-            consent message before advertising begins.
+            {' '}and manage or block cookies through your browser settings. Depending on your location, a consent
+            message may be displayed so you can make choices about the processing covered by that message.
+            Where consent is required, we will honor your choice before serving personalized ads. Google requires
+            publishers serving personalized ads in the EEA, UK, and Switzerland to use a Google-certified
+            consent management platform integrated with the IAB Transparency and Consent Framework. See{' '}
+            <a href="https://support.google.com/adsense/answer/13554116" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
+              Google&rsquo;s publisher consent requirements
+            </a>
+            .
           </p>
         </Section>
 

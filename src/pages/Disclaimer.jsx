@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'September 21, 2026'
+const EFFECTIVE_DATE = 'October 11, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -76,10 +76,11 @@ export default function Disclaimer() {
 
         <Section id="advertising" title="4. Advertising and Sponsored Content">
           <p>
-            This website may display advertisements from Google AdSense or other advertising partners.
-            Advertising content is selected by those networks and may be based on context, cookies, device
-            information, or user preferences. An advertisement appearing on this website does not mean
-            WebNest Studio endorses the advertised product, service, or claim.
+            We are applying to Google AdSense and have installed Google&rsquo;s publisher code for site verification
+            and review. We do not manually place ad units at this time. If Google approves the site and ad serving
+            or automated placements are enabled, advertisements may appear and may be selected using context,
+            cookies, device information, or user preferences. An advertisement appearing on this website does not
+            mean WebNest Studio endorses the advertised product, service, or claim.
           </p>
         </Section>
 
