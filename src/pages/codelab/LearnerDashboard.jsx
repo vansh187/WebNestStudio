@@ -17,7 +17,7 @@ const fallback = {
 }
 
 export default function LearnerDashboard() {
-  useSeo({ title: 'CodeLab Dashboard', description: 'Track your Webnest CodeLab progress.', path: '/codelab/dashboard' })
+  useSeo({ title: 'CodeLab Dashboard', description: 'Track your Webnest CodeLab progress.', path: '/codelab/dashboard', noindex: true })
   const { user, isAuthenticated } = useAuth()
   const userKey = user?.email || null
   const [dashboard, setDashboard] = useState(fallback)

@@ -44,7 +44,7 @@ function StatusLabel({ status }) {
 }
 
 export default function ProblemsList() {
-  useSeo({ title: 'CodeLab Problems', description: 'Practice coding problems in Webnest CodeLab.', path: '/codelab/problems' })
+  useSeo({ title: 'CodeLab Problems', description: 'Practice coding problems in Webnest CodeLab.', path: '/codelab/problems', noindex: true })
   const [params, setParams] = useSearchParams()
   const [items, setItems] = useState(SAMPLE_PROBLEMS)
   const [error, setError] = useState('')

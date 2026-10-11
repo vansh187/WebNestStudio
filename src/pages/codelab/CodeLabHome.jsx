@@ -31,7 +31,8 @@ const MODEL_CODE = [
 const MODEL_OUTPUT = ['loading data ...', 'training model ...', 'accuracy: 0.94']
 
 export default function CodeLabHome() {
-  useSeo({ title: 'Webnest CodeLab', description: 'Code, practice, and learn in Webnest CodeLab.', path: '/codelab' })
+  // CodeLab pages are tools with little text, so they stay out of search (links still followed).
+  useSeo({ title: 'Webnest CodeLab', description: 'Code, practice, and learn in Webnest CodeLab.', path: '/codelab', noindex: true })
 
   return (
     <main>

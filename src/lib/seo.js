@@ -23,31 +23,12 @@ export function summarize(value, limit = 160) {
   return `${text.slice(0, limit - 1).replace(/\s+\S*$/, '')}…`
 }
 
-// Use a conservative editorial threshold for public blog pages. Word count is
-// only a screening rule; publishers still need to review usefulness and originality.
-export const BLOG_INDEXABLE_WORD_COUNT = 800
-// vercel.json is the single source of truth for redirected blog slugs.
+// vercel.json is the single source of truth for redirected blog slugs. Blog
+// visibility is otherwise editorial: a post the API serves has been published by
+// a person, so it is listed, indexable and in the sitemap; anything else is a 404.
 export const BLOG_REDIRECT_SLUGS = new Set(vercelConfig.redirects
   .map((redirect) => redirect.source.match(/^\/blog\/([a-zA-Z0-9_-]+)$/)?.[1])
   .filter(Boolean))
-
-// Counts the actual content when present, since the stored word_count may not be
-// recalculated after an edit. Falls back to word_count for summary-only payloads,
-// and returns null when neither exists so callers don't mistake "unknown" for "thin".
-export function blogWordCount(post) {
-  if (post?.content) return plainText(post.content).split(/\s+/).filter(Boolean).length
-  if (Number.isFinite(Number(post?.word_count)) && Number(post.word_count) > 0) {
-    return Number(post.word_count)
-  }
-  return null
-}
-
-// Unknown length counts as indexable: the detail page re-checks against the full
-// post, and prerender drops any sitemap entry whose page turns out noindex.
-export function isBlogIndexable(post) {
-  const words = blogWordCount(post)
-  return words === null || words >= BLOG_INDEXABLE_WORD_COUNT
-}
 
 export function breadcrumbSchema(items) {
   return {

@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'October 9, 2026'
+const EFFECTIVE_DATE = 'October 11, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -78,10 +78,13 @@ export default function PrivacyPolicy() {
             does not use cookies to track you across other sites.
           </p>
           <p>
-            <strong className="text-ink-900 dark:text-white">e) Advertising and cookie data.</strong> If ads are
-            served on our website, Google AdSense and related Google services may use cookies, device
-            identifiers, IP address, browser information, page visits, and ad interaction data to provide,
-            measure, limit, and personalize ads where permitted by law and your settings.
+            <strong className="text-ink-900 dark:text-white">e) Advertising and cookie data.</strong> We do not
+            currently display advertisements on our website. We have connected the site to Google AdSense for
+            site review, but this does not mean ads are being shown. If we enable advertising in the future,
+            Google and its advertising partners may process information such as cookies, device identifiers, IP
+            address, browser information, pages visited, and ad interactions to provide and measure ads, subject
+            to applicable law and your choices. We will update this policy and provide any required consent
+            options before advertising begins.
           </p>
           <p>
             <strong className="text-ink-900 dark:text-white">f) Local storage.</strong> We use your browser&rsquo;s
@@ -118,10 +121,11 @@ export default function PrivacyPolicy() {
               protect your data.
             </li>
             <li>
-              <strong className="text-ink-900 dark:text-white">Advertising partners.</strong> When advertising is
-              enabled, Google and its partners may process limited device, cookie, and usage information to
-              deliver and measure ads. You can learn about and manage Google ad personalization through
-              Google&rsquo;s advertising settings and browser controls.
+              <strong className="text-ink-900 dark:text-white">Advertising partners.</strong> We do not currently
+              display ads. If we enable advertising in the future, Google and its partners may process limited
+              device, cookie, and usage information to deliver and measure ads. We will provide any required
+              consent options before ads are served. You can learn about and manage Google ad personalization
+              through Google&rsquo;s advertising settings and browser controls.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Legal requirements.</strong> We may disclose
@@ -204,41 +208,27 @@ export default function PrivacyPolicy() {
         <Section id="cookies-and-ads" title="9. Cookies, Advertising, and Google Services">
           <p>
             We may use cookies, similar technologies, and local storage to operate the site, remember
-            preferences, keep users signed in, understand site performance, and support advertising. Google,
-            as a third-party vendor, may use cookies to serve ads based on a visitor&rsquo;s prior visits to this
-            website or other websites.
+            preferences, and keep users signed in. We currently do not display advertisements. The site is
+            connected to Google AdSense for review, but advertising has not been enabled for visitors.
           </p>
           <p>
-            Google&rsquo;s use of advertising cookies enables it and its partners to serve ads to you based on your
-            visit to this site and/or other sites on the Internet. Third-party vendors and ad networks may also
-            use cookies and similar technologies to serve and measure ads. Learn more about{' '}
+            If we enable advertising in the future, Google and its partners may use cookies and similar
+            technologies to provide and measure ads, including ads based on visits to this site or other sites.
+            Before ads begin, we will update this policy and provide any consent message required for the
+            visitor&rsquo;s location, including a Google-certified consent management platform where required.
+            Learn more about{' '}
             <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
               how Google uses information from sites that use its services
             </a>
             .
           </p>
-          <p>Your choices:</p>
-          <ul className="list-disc space-y-2 pl-5">
-            <li>
-              Opt out of personalized advertising from Google in{' '}
-              <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
-                Google Ads Settings
-              </a>
-              . You will still see ads, but they will be less relevant to you.
-            </li>
-            <li>
-              Opt out of personalized advertising from many third-party vendors at{' '}
-              <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
-                www.aboutads.info
-              </a>
-              .
-            </li>
-            <li>Block or delete cookies in your browser settings. Some parts of the site may not work as intended without them.</li>
-          </ul>
           <p>
-            If required in your region (for example in the EEA, the UK or Switzerland), we will ask for your
-            consent before using non-essential advertising cookies, through a consent message that meets
-            Google&rsquo;s requirements.
+            If advertising is enabled, you will be able to manage Google ad personalization through{' '}
+            <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
+              Google Ads Settings
+            </a>
+            {' '}and manage cookies in your browser settings. We will explain any additional choices in the
+            consent message before advertising begins.
           </p>
         </Section>
 
