@@ -255,6 +255,12 @@ export const LESSON_VIDEOS = {
     title: 'Abstraction in Java - Complete Deep Dive | Abstract Class, Interface & Real Examples',
     description: 'A deep dive into abstraction in core Java, including how abstract classes and interfaces hide implementation details behind clear contracts, with practical examples.',
   },
+  lesson_java_core_interfaces_in_java: {
+    youtubeId: 'kY3wBkCVMbo',
+    afterSection: 0, // after the introduction, before "Interface Members"
+    title: 'Interfaces in Java | Core Java',
+    description: 'A walkthrough of Java interfaces: defining contracts, implementing interfaces, and using default and static methods.',
+  },
   lesson_java_core_instance_initializer_block: {
     youtubeId: 'NzEldpy8tQ4',
     uploadDate: '2026-10-11T13:46:03-07:00', durationSeconds: 278,
