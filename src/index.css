@@ -66,6 +66,18 @@ body {
   background-color: var(--color-ink-950);
 }
 
+/* Grid items default to min-width:auto, which can keep a card or text column at
+   its intrinsic width and let an overflow-hidden hero cut off the last words. */
+main .grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 390px) {
+  main h1:is(.text-4xl, .text-5xl, .text-6xl) {
+    font-size: clamp(1.75rem, 8.5vw, 2rem);
+  }
+}
+
 /* Lesson bodies are generated from many courses and include long Java package
    names, API identifiers, and inline code. Let inline content wrap on narrow
    screens while keeping preformatted examples horizontally scrollable. */

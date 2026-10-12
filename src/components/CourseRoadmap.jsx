@@ -178,9 +178,9 @@ export default function CourseRoadmap({ course, progress, nextLessonId }) {
                               to={`/learn/lessons/${lesson.id}`}
                               className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${isNext ? 'bg-gold-400/15 font-semibold text-white ring-1 ring-gold-400/60' : 'text-ink-200 hover:bg-white/5 hover:text-gold-300'}`}
                             >
-                              <span className="flex min-w-0 items-center gap-2.5">
+                              <span className="flex min-w-0 flex-1 items-start gap-2.5">
                                 <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${status.done ? 'bg-emerald-400' : status.started ? 'bg-gold-400' : 'border-2 border-ink-500'}`} />
-                                <span>{lesson.title}</span>
+                                <span className="min-w-0 flex-1 break-words">{lesson.title}</span>
                               </span>
                               <span className="flex shrink-0 items-center gap-2 text-xs">
                                 {status.bookmarked && <FiBookmark className="h-3.5 w-3.5 text-gold-400" aria-label="Bookmarked" />}

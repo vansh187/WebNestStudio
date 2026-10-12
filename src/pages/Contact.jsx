@@ -286,7 +286,7 @@ export default function Contact() {
                   <p className="text-xs font-semibold uppercase tracking-widest text-ink-400 dark:text-ink-500">
                     Email Us
                   </p>
-                  <p className="mt-1 truncate font-display font-semibold text-ink-900 dark:text-white">
+                  <p className="mt-1 break-all font-display font-semibold text-ink-900 dark:text-white">
                     {CONTACT.email}
                   </p>
                 </div>
