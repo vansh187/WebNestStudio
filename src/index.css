@@ -66,6 +66,23 @@ body {
   background-color: var(--color-ink-950);
 }
 
+/* Lesson bodies are generated from many courses and include long Java package
+   names, API identifiers, and inline code. Let inline content wrap on narrow
+   screens while keeping preformatted examples horizontally scrollable. */
+.lesson-article {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lesson-article pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.lesson-article pre code {
+  overflow-wrap: normal;
+}
+
 :root {
   /* Height of the sticky global navbar — coding-workspace sticky bars offset by this. */
   --nav-h: 72px;
