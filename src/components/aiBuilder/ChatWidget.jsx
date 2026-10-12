@@ -28,7 +28,10 @@ export default function ChatWidget() {
     let timer
     const arm = () => {
       events.forEach((e) => window.removeEventListener(e, arm))
-      timer = setTimeout(() => setShowBubble(true), 2000)
+      // Keep the greeting from covering page copy on phone and tablet layouts.
+      timer = setTimeout(() => {
+        if (window.matchMedia('(min-width: 1024px) and (hover: hover)').matches) setShowBubble(true)
+      }, 2000)
     }
     events.forEach((e) => window.addEventListener(e, arm, { passive: true }))
     return () => {
@@ -66,7 +69,7 @@ export default function ChatWidget() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="relative max-w-[220px] rounded-2xl rounded-br-sm border border-ink-200 dark:border-ink-700 bg-white dark:bg-ink-900 px-4 py-3 text-sm text-ink-700 dark:text-ink-200 shadow-xl"
+                className="relative max-w-[min(220px,calc(100vw-5.5rem))] rounded-2xl rounded-br-sm border border-ink-200 dark:border-ink-700 bg-white dark:bg-ink-900 px-4 py-3 text-sm text-ink-700 dark:text-ink-200 shadow-xl"
               >
                 <button
                   type="button"
