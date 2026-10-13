@@ -251,15 +251,31 @@ export const LESSON_VIDEOS = {
   },
   lesson_java_core_abstraction_and_abstract_classes: {
     youtubeId: 'NZAPlKlULQo',
+    uploadDate: '2026-10-12T13:15:00-07:00', durationSeconds: 400,
     afterSection: 0, // after the introduction, before "Declaring an Abstract Class"
     title: 'Abstraction in Java - Complete Deep Dive | Abstract Class, Interface & Real Examples',
     description: 'A deep dive into abstraction in core Java, including how abstract classes and interfaces hide implementation details behind clear contracts, with practical examples.',
   },
   lesson_java_core_interfaces_in_java: {
     youtubeId: 'kY3wBkCVMbo',
+    uploadDate: '2026-10-12T13:43:22-07:00', durationSeconds: 363,
     afterSection: 0, // after the introduction, before "Interface Members"
-    title: 'Interfaces in Java | Core Java',
+    title: 'Java Interfaces Explained in Depth | Default, Static, Private & Functional Interfaces',
     description: 'A walkthrough of Java interfaces: defining contracts, implementing interfaces, and using default and static methods.',
+  },
+  lesson_java_core_abstract_class_vs_interface: {
+    youtubeId: '9_PvTLPKOHI',
+    uploadDate: '2026-10-13T10:39:46-07:00', durationSeconds: 445,
+    afterSection: 0, // after the introduction, before "What Is an Abstract Class?"
+    title: 'Interface vs Abstract Class in Java: Full Difference Explained with Examples',
+    description: 'Builds an abstract class and an interface side by side, then compares them on methods, variables, constructors and access modifiers, shows multiple inheritance through interfaces and the Java 8 default/static and Java 9 private interface methods, explains when to pick each in real projects, and finishes with the most-asked interview questions.',
+  },
+  lesson_java_core_encapsulation: {
+    youtubeId: '7Z9Td8m8o_s',
+    uploadDate: '2026-10-13T11:36:30-07:00', durationSeconds: 472,
+    afterSection: 0, // after the introduction, before "Access Modifiers Recap"
+    title: 'Encapsulation in Java: Complete Guide with Real Examples | Java OOP',
+    description: 'Starts from data hiding with private fields and an access modifier recap, then covers getters and setters (and when not to write them), validation inside setters, read-only and write-only classes, immutable classes and how String works, encapsulation vs abstraction, a bank account example, and common interview questions.',
   },
   lesson_java_core_instance_initializer_block: {
     youtubeId: 'NzEldpy8tQ4',

@@ -158,29 +158,214 @@ Basic vehicle starting`,
 
   'abstract-class-vs-interface': {
     title: 'Abstract Class vs Interface',
-    intro: `Abstract classes and interfaces both support abstraction, and modern Java has narrowed the gap between them, but they still serve different design purposes. Choosing the right one is a common real-world design decision, not just a syntax choice.`,
+    intro: `Abstract classes and interfaces both support abstraction, and modern Java has narrowed the gap between them, but they still serve different design purposes. Choosing the right one is a common real-world design decision, not just a syntax choice.
+
+The short version: an <strong>abstract class</strong> is a partly built parent class that related subclasses finish, and it can carry fields, constructors and shared code. An <strong>interface</strong> is a contract of abilities that any class can sign up to, and a class can sign up to many of them. This lesson looks at each one on its own, compares them point by point, covers the Java 8 and Java 9 changes to interfaces, and ends with the interview questions that come up most.`,
     sections: [
       {
+        heading: 'What Is an Abstract Class?',
+        body: `An abstract class is declared with the <code>abstract</code> keyword and cannot be instantiated with <code>new</code>. It can contain <strong>abstract methods</strong> (a signature with no body, which every concrete subclass must override) alongside normal methods with full bodies, instance fields, constructors, <code>static</code> members and <code>final</code> methods. Think of it as a template: an <code>Employee</code> base class stores the name and rate and builds the payslip, while <code>FullTime</code> and <code>Contractor</code> each decide only how monthly pay is calculated. The constructor still matters even though you never call <code>new Employee(...)</code> yourself: each subclass constructor runs it through <code>super(...)</code> to set up the shared fields.`,
+      },
+      {
+        heading: 'What Is an Interface?',
+        body: `An interface is declared with the <code>interface</code> keyword and describes what a class can do, not how it stores data. Every method declared without a body is implicitly <code>public abstract</code>, and every field is implicitly <code>public static final</code>, so it must be given a value and acts as a constant. A class signs the contract with <code>implements</code> and must provide a <code>public</code> body for each abstract method (or be declared abstract itself). Because an interface has no instance fields and no constructor, unrelated classes can share it: a <code>CardGateway</code>, a <code>UpiGateway</code> and a test stub can all be a <code>PaymentGateway</code> without sharing a parent class.`,
+      },
+      {
         heading: 'Side-by-Side Comparison',
-        body: `The table below highlights the practical differences that matter most when deciding between them.`,
+        body: `These are the practical differences that matter most when deciding between them.`,
         list: [
+          '<strong>Keyword:</strong> <code>abstract class</code> is used with <code>extends</code>; <code>interface</code> is used with <code>implements</code> (and an interface extends other interfaces with <code>extends</code>).',
           '<strong>Inheritance:</strong> a class can extend only one abstract class, but can implement many interfaces.',
-          '<strong>State:</strong> an abstract class can hold instance fields with any access modifier; an interface can only hold implicit <code>public static final</code> constants.',
+          '<strong>Methods:</strong> an abstract class can mix abstract and concrete methods freely; an interface has abstract methods plus, since Java 8, <code>default</code> and <code>static</code> methods, and since Java 9, <code>private</code> methods.',
+          '<strong>Variables:</strong> an abstract class can hold instance and static fields of any kind, final or not; an interface can only hold implicit <code>public static final</code> constants.',
           '<strong>Constructors:</strong> abstract classes can have constructors (called via <code>super()</code>); interfaces cannot have constructors at all.',
-          '<strong>Method access:</strong> abstract classes can mix public, protected, and private methods; interface methods are public by default (default/static methods can be private since Java 9, but never protected).',
+          '<strong>Access modifiers:</strong> abstract class members can be public, protected, package-private or private; interface methods are public unless they are Java 9 <code>private</code> helpers, and nothing in an interface can be protected.',
+          '<strong>Initializer blocks:</strong> an abstract class can have instance and static initializer blocks; an interface can have neither.',
           '<strong>Purpose:</strong> abstract classes model an "is-a" relationship with shared implementation; interfaces model a "can-do" capability contract.',
+        ],
+      },
+      {
+        heading: 'Multiple Inheritance Through Interfaces',
+        body: `Java does not let a class extend two classes, because two parents with fields and constructors would make object state ambiguous. Interfaces carry no instance state, so a class may implement as many as it needs: a <code>Smartphone</code> can be both a <code>Camera</code> and a <code>MusicPlayer</code>, and it can be passed to any method that expects either type. The one conflict that can arise is two interfaces supplying a <code>default</code> method with the same signature. Java will not guess which one you meant: the class fails to compile until it overrides the method, and inside the override it can call a specific parent with <code>Camera.super.describe()</code>. If a superclass and an interface both provide the method, the class's version wins ("class wins" rule).`,
+      },
+      {
+        heading: 'Java 8 and Java 9 Changes to Interfaces',
+        body: `Before Java 8 an interface could only declare abstract methods and constants, which made the choice easy. Three additions blurred the line.`,
+        list: [
+          '<strong>default methods (Java 8):</strong> a method with a body that implementing classes inherit and may override. They exist so an interface can grow without breaking every class that already implements it; this is how <code>Iterable.forEach()</code> and <code>Collection.stream()</code> were added to existing collections.',
+          '<strong>static methods (Java 8):</strong> utility methods that belong to the interface itself and are called as <code>PaymentGateway.isValid(99)</code>. They are not inherited by implementing classes.',
+          '<strong>private methods (Java 9):</strong> instance or <code>static</code> helpers that remove duplicated code between default and static methods without exposing it to implementers.',
+          'Even with these, an interface still cannot hold instance state or a constructor. That is the line that remains between the two.',
         ],
       },
       {
         heading: 'When to Choose Which',
         body: `Prefer an abstract class when related classes share meaningful common state or code and naturally belong to one hierarchy — for example, <code>Animal</code> as a base for <code>Dog</code> and <code>Cat</code>. Prefer an interface when unrelated classes need to promise the same capability regardless of their place in the hierarchy — for example, both a <code>Car</code> and a <code>Duck</code> can be <code>Movable</code>, even though they share no common ancestor otherwise.`,
+        list: [
+          '<strong>Choose an abstract class</strong> for a family of closely related types that share fields and setup: an <code>Employee</code> base with <code>FullTime</code> and <code>Contractor</code>, or a <code>BankAccount</code> base with savings and current accounts.',
+          '<strong>Choose an interface</strong> for a capability or a pluggable service: <code>Comparable</code>, <code>Runnable</code>, a <code>PaymentGateway</code> with card and UPI implementations, or a repository that a test can replace with a fake.',
+          '<strong>Choose an interface when in doubt.</strong> It keeps the single <code>extends</code> free, and you can add an abstract base class later that implements it.',
+        ],
       },
       {
         heading: 'They Can Work Together',
-        body: `These two tools are not mutually exclusive. An abstract class can implement one or more interfaces and leave some or all of those interface methods unimplemented for its own subclasses to finish, combining shared base behavior with a flexible capability contract.`,
+        body: `These two tools are not mutually exclusive. An abstract class can implement one or more interfaces and leave some or all of those interface methods unimplemented for its own subclasses to finish, combining shared base behavior with a flexible capability contract. The JDK does exactly this: <code>List</code> is an interface, <code>AbstractList</code> is an abstract class that implements most of it, and <code>ArrayList</code> extends <code>AbstractList</code>.`,
+      },
+      {
+        heading: 'Common Interview Questions',
+        list: [
+          '<strong>Can an abstract class have a constructor?</strong> Yes. It runs through <code>super(...)</code> when a subclass object is created, even though the abstract class itself cannot be instantiated.',
+          '<strong>Can an interface have a constructor?</strong> No. It has no instance state to initialize.',
+          '<strong>Can an abstract class have no abstract methods?</strong> Yes. Marking it abstract simply prevents direct instantiation.',
+          '<strong>Can an abstract method be private, static or final?</strong> No. Each of those stops a subclass from overriding it, which defeats the purpose of an abstract method.',
+          '<strong>Can an interface extend a class?</strong> No. An interface can only extend other interfaces, and it can extend several at once.',
+          '<strong>Must an abstract class implement every method of an interface it implements?</strong> No. The first concrete subclass must supply whatever is still missing.',
+          '<strong>Why were default methods added?</strong> To add methods to existing interfaces, such as <code>forEach()</code> on <code>Iterable</code>, without breaking code that already implemented them.',
+          '<strong>If interfaces can have method bodies now, why keep abstract classes?</strong> Only abstract classes can hold instance state, constructors and protected members.',
+        ],
       },
     ],
     examples: [
+      {
+        caption: 'An abstract class: shared fields, a constructor and one method each subclass must supply',
+        code: `public class PayrollDemo {
+    public static void main(String[] args) {
+        Employee[] staff = { new FullTime("Asha", 600000), new Contractor("Ravi", 120, 450) };
+        for (Employee e : staff) {
+            System.out.println(e.payslip());
+        }
+        // Employee e = new Employee("X", 0); // compile error: Employee is abstract
+    }
+}
+
+abstract class Employee {
+    private final String name;                 // state: instance fields are allowed
+    protected final double rate;
+
+    Employee(String name, double rate) {       // constructor runs through super(...)
+        this.name = name;
+        this.rate = rate;
+    }
+
+    abstract double monthlyPay();              // no body: each subclass decides
+
+    final String payslip() {                   // shared code every subclass inherits
+        return String.format("%-5s %,10.2f", name, monthlyPay());
+    }
+}
+
+class FullTime extends Employee {
+    FullTime(String name, double yearlySalary) {
+        super(name, yearlySalary);
+    }
+
+    @Override
+    double monthlyPay() { return rate / 12; }
+}
+
+class Contractor extends Employee {
+    private final int hours;
+
+    Contractor(String name, int hours, double hourlyRate) {
+        super(name, hourlyRate);
+        this.hours = hours;
+    }
+
+    @Override
+    double monthlyPay() { return hours * rate; }
+}`,
+        output: `Asha   50,000.00
+Ravi   54,000.00`,
+      },
+      {
+        caption: 'An interface with a constant, an abstract method, and Java 8/9 default, static and private methods',
+        code: `public class GatewayDemo {
+    public static void main(String[] args) {
+        PaymentGateway card = new CardGateway();
+        card.pay(500);                           // abstract method, implemented by the class
+        card.payWithFee(500);                    // default method, inherited for free
+        card.payWithFee(-20);
+        System.out.println(PaymentGateway.isValid(99));  // static: called on the interface
+        System.out.println("Fee: " + PaymentGateway.FEE_PERCENT + "%");
+    }
+}
+
+interface PaymentGateway {
+    double FEE_PERCENT = 2.0;                    // implicitly public static final
+
+    void pay(double amount);                     // implicitly public abstract
+
+    default void payWithFee(double amount) {     // Java 8: method with a body
+        if (!isValid(amount)) {
+            System.out.println("Rejected: " + amount);
+            return;
+        }
+        pay(amount + fee(amount));
+    }
+
+    static boolean isValid(double amount) {      // Java 8: utility on the interface
+        return amount > 0;
+    }
+
+    private double fee(double amount) {          // Java 9: helper hidden from implementers
+        return amount * FEE_PERCENT / 100;
+    }
+}
+
+class CardGateway implements PaymentGateway {
+    @Override
+    public void pay(double amount) {             // must be public
+        System.out.println("Card charged " + amount);
+    }
+}`,
+        output: `Card charged 500.0
+Card charged 510.0
+Rejected: -20.0
+true
+Fee: 2.0%`,
+      },
+      {
+        caption: 'Multiple inheritance of type, and resolving two conflicting default methods',
+        code: `public class PhoneDemo {
+    public static void main(String[] args) {
+        Smartphone phone = new Smartphone();
+        System.out.println(phone.describe());
+
+        Camera cam = phone;                      // one object, several types
+        MusicPlayer player = phone;
+        cam.click();
+        player.play();
+    }
+}
+
+interface Camera {
+    void click();
+
+    default String describe() { return "Takes photos"; }
+}
+
+interface MusicPlayer {
+    void play();
+
+    default String describe() { return "Plays music"; }
+}
+
+class Smartphone implements Camera, MusicPlayer {
+    @Override
+    public void click() { System.out.println("Photo saved"); }
+
+    @Override
+    public void play() { System.out.println("Playing playlist"); }
+
+    @Override
+    public String describe() {                   // required: both parents have a default describe()
+        return Camera.super.describe() + " and " + MusicPlayer.super.describe();
+    }
+}`,
+        output: `Takes photos and Plays music
+Photo saved
+Playing playlist`,
+      },
       {
         caption: 'An abstract class providing shared state, implementing an interface for a capability',
         code: `interface Movable {
@@ -229,11 +414,17 @@ Rex says Woof`,
       'Assuming interfaces cannot have any method bodies at all — default and static methods have proven this wrong since Java 8.',
       'Trying to give an interface a constructor or instance field, which is not allowed under any circumstance.',
       'Forgetting that a class extends only one abstract class but can implement several interfaces at once.',
+      'Implementing an interface method without <code>public</code>. Interface methods are public, so a package-private implementation fails with "attempting to assign weaker access privileges".',
+      'Implementing two interfaces that share a default method and not overriding it, which is a compile error until the class picks a version with <code>Interface.super.method()</code>.',
+      'Calling an interface static method through an implementing class or object, such as <code>CardGateway.isValid(5)</code>. Static interface methods are not inherited; call <code>PaymentGateway.isValid(5)</code>.',
     ],
     keyPoints: [
       'Abstract classes support shared state, constructors, and mixed access levels; interfaces do not.',
       'A class extends one abstract class but can implement many interfaces.',
       'Abstract classes model "is-a" relationships; interfaces model "can-do" capabilities.',
+      'Interface fields are always <code>public static final</code>; abstract class fields can be anything.',
+      'Java 8 added default and static interface methods, and Java 9 added private ones, but interfaces still have no instance state or constructors.',
+      'Two conflicting default methods must be resolved by overriding, using <code>Interface.super.method()</code> to reuse one.',
       'An abstract class can implement interfaces, combining both tools in one hierarchy.',
     ],
   },
@@ -242,8 +433,24 @@ Rex says Woof`,
     title: 'Encapsulation',
     intro: `Encapsulation is the practice of bundling data (fields) and the code that operates on that data (methods) into a single unit — a class — while restricting direct outside access to that data. In Java, encapsulation is achieved by declaring fields <code>private</code> and exposing controlled access through <code>public</code> getter and setter methods.
 
-This is sometimes described as "data hiding," but its real value is control: encapsulation lets a class validate, transform, or log every read or write to its data, and lets the internal representation change later without breaking code that depends on the class.`,
+This is sometimes described as "data hiding," but its real value is control: encapsulation lets a class validate, transform, or log every read or write to its data, and lets the internal representation change later without breaking code that depends on the class.
+
+It is one of the four pillars of OOP, alongside inheritance, polymorphism and abstraction. A good one-line summary: <strong>hide the data, expose the behavior.</strong>`,
     sections: [
+      {
+        heading: 'Access Modifiers Recap',
+        body: `Encapsulation is built on Java's four access levels, from most to least restrictive. Fields are almost always <code>private</code>; the methods that make up the class's public API are <code>public</code>.`,
+        list: [
+          '<strong>private:</strong> visible only inside the same class. This is what hides the data.',
+          '<strong>default (no keyword):</strong> visible to classes in the same package.',
+          '<strong>protected:</strong> visible in the same package and to subclasses in other packages.',
+          '<strong>public:</strong> visible everywhere. Use it for the operations other code is meant to call.',
+        ],
+      },
+      {
+        heading: 'Data Hiding with private',
+        body: `Marking a field <code>private</code> means the compiler rejects any outside access: <code>e.salary = -100;</code> from another class fails with "salary has private access in Employee". Outside code can then only reach the data through the methods the class chooses to offer, so the class decides what is visible, what is changeable and what values are allowed. A class whose fields are all private is sometimes called <strong>tightly encapsulated</strong>.`,
+      },
       {
         heading: 'The Standard Pattern',
         body: `A well-encapsulated class declares its fields <code>private</code> so no outside code can read or modify them directly, then provides public methods — conventionally named <code>getFieldName()</code> and <code>setFieldName(value)</code> — as the only way in or out. Setters can validate input before accepting it, and a class can even omit a setter entirely to make a field effectively read-only after construction.`,
@@ -255,11 +462,194 @@ This is sometimes described as "data hiding," but its real value is control: enc
         ],
       },
       {
+        heading: 'Validation in Setters',
+        body: `A setter that only does <code>this.salary = salary;</code> protects nothing. The point of routing writes through a method is that the method can refuse bad values: reject a negative salary or an empty name by throwing <code>IllegalArgumentException</code>, so the object can never hold invalid state. Apply the same rule in the constructor (for example by calling the setter or a shared check), otherwise a bad value can still slip in when the object is created.`,
+      },
+      {
+        heading: 'When NOT to Write Getters and Setters',
+        body: `Generating a getter and setter for every field is a habit, not a design. A public setter on every field is barely better than a public field. Instead, expose the operations the object actually supports: a <code>BankAccount</code> should have <code>deposit()</code> and <code>withdraw()</code> that enforce the rules, not <code>setBalance()</code>, which lets any caller write any balance. Leave out setters for values that should not change after creation, such as an ID, and leave out getters for data outside code has no reason to see.`,
+      },
+      {
+        heading: 'Read-Only and Write-Only Classes',
+        list: [
+          '<strong>Read-only class:</strong> private fields with getters but no setters. Values are supplied once through the constructor, as with an application config or a user ID.',
+          '<strong>Write-only class:</strong> private fields with setters but no getters. Useful for secrets such as a password, which can be set and checked but should never be read back.',
+        ],
+      },
+      {
+        heading: 'Immutable Classes',
+        body: `An immutable object can never change after it is constructed, which is encapsulation taken all the way. <code>String</code> is the best-known example: <code>name.toUpperCase()</code> returns a new string and leaves <code>name</code> untouched. Immutable objects are safe to share between threads, safe to use as <code>HashMap</code> keys, and can never be left half-updated. Java 16+ <code>record</code> types follow most of these rules automatically.`,
+        list: [
+          'Declare the class <code>final</code> so no subclass can add mutable behavior.',
+          'Make every field <code>private final</code> and set it only in the constructor.',
+          'Provide no setters. To "change" a value, return a new object (for example <code>withCourse()</code>).',
+          'Make defensive copies of mutable inputs and outputs, such as lists and arrays, so outside code cannot change them behind your back. <code>List.copyOf()</code> returns an unmodifiable copy.',
+        ],
+      },
+      {
+        heading: 'Encapsulation vs Abstraction',
+        body: `The two are often confused because both "hide" something. <strong>Abstraction</strong> hides complexity: it decides <em>what</em> an object offers, and is expressed with abstract classes and interfaces (a <code>PaymentGateway</code> with a <code>pay()</code> method). <strong>Encapsulation</strong> hides data: it decides <em>how</em> an object protects its state, and is expressed with <code>private</code> fields and controlled methods. Abstraction works at the design level; encapsulation works at the implementation level. Most well-written classes use both.`,
+      },
+      {
         heading: 'Why It Matters',
         body: `Without encapsulation, any code anywhere in a program could set a field to an invalid value, such as a negative age or an empty required name, with no chance for the class to object. With encapsulation, invalid data can be rejected at a single, well-defined entry point, and the internal storage format (a single field, a computed value, a different type) can be reworked later without changing the public API that other code relies on.`,
       },
+      {
+        heading: 'Common Interview Questions',
+        list: [
+          '<strong>What is encapsulation?</strong> Bundling data and the methods that work on it into one class, and restricting direct access to the data with <code>private</code>.',
+          '<strong>Is encapsulation the same as data hiding?</strong> Data hiding (making fields private) is the mechanism; encapsulation is the wider idea of controlling all access through methods.',
+          '<strong>How do you achieve encapsulation in Java?</strong> Private fields, plus public methods (getters, setters or domain operations) that validate access.',
+          '<strong>Can a class be encapsulated without setters?</strong> Yes. A read-only or immutable class is fully encapsulated.',
+          '<strong>How do you make a class immutable?</strong> Make the class final, fields private final, provide no setters, and defensively copy mutable fields.',
+          '<strong>How can a getter break encapsulation?</strong> By returning a mutable internal object, such as a <code>List</code> or array, that the caller can then modify directly.',
+          '<strong>What is the difference between encapsulation and abstraction?</strong> Abstraction hides complexity and shows only what an object does; encapsulation hides internal data and controls how it is accessed.',
+        ],
+      },
     ],
     examples: [
+      {
+        caption: 'Private fields, a getter, and a setter that validates',
+        code: `public class EmployeeDemo {
+    public static void main(String[] args) {
+        Employee e = new Employee("Asha", 50000);
+        e.setSalary(65000);
+        System.out.println(e.getName() + " earns " + e.getSalary());
+
+        try {
+            e.setSalary(-100);                   // the setter guards the field
+        } catch (IllegalArgumentException ex) {
+            System.out.println("Rejected: " + ex.getMessage());
+        }
+        // e.salary = -100;                      // compile error: salary has private access
+        System.out.println(e.getName() + " still earns " + e.getSalary());
+    }
+}
+
+final class Employee {
+    private final String name;                   // no setter: fixed after construction
+    private double salary;
+
+    Employee(String name, double salary) {
+        this.name = name;
+        setSalary(salary);                       // same validation for new objects
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        if (salary < 0) {
+            throw new IllegalArgumentException("salary cannot be negative: " + salary);
+        }
+        this.salary = salary;
+    }
+}`,
+        output: `Asha earns 65000.0
+Rejected: salary cannot be negative: -100.0
+Asha still earns 65000.0`,
+      },
+      {
+        caption: 'A read-only class and a write-only class',
+        code: `public class AccessDemo {
+    public static void main(String[] args) {
+        AppConfig config = new AppConfig("WebNest", 8080);
+        System.out.println(config.getAppName() + " on port " + config.getPort());
+
+        PasswordBox box = new PasswordBox();
+        box.setPassword("s3cret!");
+        System.out.println("Correct password? " + box.matches("s3cret!"));
+        System.out.println("Wrong password? " + box.matches("guess"));
+    }
+}
+
+// Read-only: values come in through the constructor, getters only
+class AppConfig {
+    private final String appName;
+    private final int port;
+
+    AppConfig(String appName, int port) {
+        this.appName = appName;
+        this.port = port;
+    }
+
+    public String getAppName() { return appName; }
+    public int getPort() { return port; }
+}
+
+// Write-only: the password can be set but never read back
+class PasswordBox {
+    private int passwordHash;
+
+    public void setPassword(String password) {
+        passwordHash = password.hashCode();      // real code would use a proper password hash
+    }
+
+    public boolean matches(String attempt) {
+        return attempt.hashCode() == passwordHash;
+    }
+}`,
+        output: `WebNest on port 8080
+Correct password? true
+Wrong password? false`,
+      },
+      {
+        caption: 'An immutable class with defensive copies',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+public class ImmutableDemo {
+    public static void main(String[] args) {
+        List<String> courses = new ArrayList<>(List.of("Java"));
+        Student s = new Student("Ravi", courses);
+
+        courses.add("Python");                   // changing the caller's list...
+        System.out.println(s.getCourses());      // ...does not reach the Student
+
+        try {
+            s.getCourses().add("SQL");           // the returned list cannot be changed either
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Cannot modify courses");
+        }
+
+        Student updated = s.withCourse("SQL");   // "changes" produce a new object
+        System.out.println(s.getCourses() + " -> " + updated.getCourses());
+
+        String name = "java";
+        name.toUpperCase();                      // String is immutable too
+        System.out.println(name);
+    }
+}
+
+final class Student {                            // final: no subclass can add mutable state
+    private final String name;
+    private final List<String> courses;
+
+    Student(String name, List<String> courses) {
+        this.name = name;
+        this.courses = List.copyOf(courses);     // defensive, unmodifiable copy
+    }
+
+    public String getName() { return name; }
+
+    public List<String> getCourses() { return courses; }
+
+    public Student withCourse(String course) {
+        List<String> next = new ArrayList<>(courses);
+        next.add(course);
+        return new Student(name, next);
+    }
+}`,
+        output: `[Java]
+Cannot modify courses
+[Java] -> [Java, SQL]
+java`,
+      },
       {
         caption: 'A BankAccount class enforcing rules through encapsulation',
         code: `public class BankAccount {
@@ -304,11 +694,16 @@ Balance: 150.0`,
       'Writing getters and setters for every field automatically without asking whether a field should be writable, or even readable, from outside the class.',
       'Putting no logic in setters at all, which reduces encapsulation to a naming convention rather than real protection.',
       'Returning a direct reference to a mutable private field (like an array or List) from a getter, which lets outside code modify it without going through any setter.',
+      'Validating in the setter but not in the constructor, so an invalid value can still enter when the object is created.',
+      'Adding a <code>setBalance()</code>-style setter where a domain operation such as <code>deposit()</code> or <code>withdraw()</code> should enforce the rules.',
+      'Thinking a class is immutable just because its fields are <code>final</code>. A final reference to a mutable <code>List</code> still lets the list change.',
     ],
     keyPoints: [
       'Encapsulation combines private fields with public getters/setters to control access.',
       'It allows validation of data on write and protects internal representation from outside code.',
-      'A field can be made read-only by simply not providing a setter.',
+      'A field can be made read-only by simply not providing a setter; a write-only field has a setter but no getter.',
+      'Immutable classes are final, have private final fields, no setters, and defensive copies of mutable data.',
+      'Abstraction hides complexity (what an object does); encapsulation hides data (how its state is protected).',
       'Returning mutable internals directly from a getter can silently break encapsulation.',
     ],
   },
