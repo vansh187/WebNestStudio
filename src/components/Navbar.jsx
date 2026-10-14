@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { lazyWithReload } from '../lib/chunkReload'
 import { NavLink, Link } from 'react-router-dom'
-import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown } from 'react-icons/fi'
+import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiSmartphone } from 'react-icons/fi'
 import Logo from './Logo'
 import { NAV_LINKS } from '../data/site'
 import { useAuth } from '../context/AuthContext'
@@ -13,6 +13,10 @@ const VisitingCardModal = lazyWithReload(() => import('./VisitingCardModal'))
 // visitors can grab our details without leaving the page. The /card route still
 // works for QR scans and shared links.
 const CARD_PATH = '/card'
+
+// Always goes to the install page rather than the APK itself, so desktop and iPhone
+// visitors get instructions instead of a file they can't install.
+const APP_PATH = '/download-app'
 
 // Desktop links: a gold underline grows from the centre on hover and stays on the active page.
 const DESKTOP_LINK = 'relative whitespace-nowrap py-2 text-sm font-medium tracking-wide transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-center after:bg-gold-400 after:transition-transform after:duration-300'
@@ -106,7 +110,13 @@ export default function Navbar() {
           </NavLink>
         </div>
 
-        <div className="hidden items-center gap-6 xl:flex 2xl:gap-8">
+        <div className="hidden items-center gap-3 xl:flex">
+          <Link
+            to={APP_PATH}
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-gold-400 px-4 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-gold-300"
+          >
+            <FiSmartphone className="h-4 w-4" /> Get App
+          </Link>
           {account ? (
             <div className="relative" ref={menuRef}>
               <button
@@ -152,6 +162,15 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 xl:hidden">
+          <Link
+            to={APP_PATH}
+            aria-label="Get the Android app"
+            title="Get the Android app"
+            onClick={() => setOpen(false)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-400 text-ink-950 transition-colors hover:bg-gold-300"
+          >
+            <FiSmartphone className="h-5 w-5" />
+          </Link>
           <button
             type="button"
             aria-label="Toggle menu"
@@ -200,6 +219,15 @@ export default function Navbar() {
               }
             >
               Contact
+            </NavLink>
+            <NavLink
+              to={APP_PATH}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 text-base font-medium ${isActive ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'}`
+              }
+            >
+              <FiSmartphone className="h-4 w-4 text-gold-400" /> Get App
             </NavLink>
             {account ? (
               <>
