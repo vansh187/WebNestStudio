@@ -270,6 +270,27 @@ export const LESSON_VIDEOS = {
     title: 'Interface vs Abstract Class in Java: Full Difference Explained with Examples',
     description: 'Builds an abstract class and an interface side by side, then compares them on methods, variables, constructors and access modifiers, shows multiple inheritance through interfaces and the Java 8 default/static and Java 9 private interface methods, explains when to pick each in real projects, and finishes with the most-asked interview questions.',
   },
+  lesson_java_core_packages_and_access_modifiers: {
+    youtubeId: 'rEug2CTFbN0',
+    uploadDate: '2026-10-14T11:13:14-07:00', durationSeconds: 399,
+    afterSection: 0, // after the introduction, before the package and access-level sections
+    title: 'Java Access Modifiers Explained 🔐 public vs private vs protected vs default | Java Core',
+    description: 'Learn how Java’s public, private, protected, and package-private access levels control visibility across classes and packages, with practical examples.',
+  },
+  lesson_java_core_java_final_keyword: {
+    youtubeId: 'bi6pFoiIq1Y',
+    uploadDate: '2026-10-14T12:39:52-07:00', durationSeconds: 378,
+    afterSection: 0, // after the introduction, before the final variable, method, and class sections
+    title: 'Java final Keyword Explained 🔒 final Variable, Method & Class with Examples | Java Core',
+    description: 'A detailed walkthrough of Java’s final keyword on variables, methods, and classes, with examples of how it restricts reassignment and inheritance.',
+  },
+  lesson_java_core_object_class_and_its_methods: {
+    youtubeId: 'me3OQ4xoVEw',
+    uploadDate: '2026-10-14T13:18:42-07:00', durationSeconds: 396,
+    afterSection: 0, // after the introduction, before the Object class methods
+    title: 'Java Object Class Explained 🧬 toString, equals, hashCode, clone & More | Java Core Tutorial',
+    description: 'A detailed guide to java.lang.Object and its methods, including toString(), equals(), hashCode(), clone(), getClass(), and the wait/notify methods.',
+  },
   lesson_java_core_encapsulation: {
     youtubeId: '7Z9Td8m8o_s',
     uploadDate: '2026-10-13T11:36:30-07:00', durationSeconds: 472,
