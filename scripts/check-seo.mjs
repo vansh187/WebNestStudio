@@ -39,7 +39,7 @@ for (const url of process.argv.includes('--browser-only') ? [] : urls) {
     const href = match[1]
     if (!href.startsWith('/') || href.startsWith('//')) continue
     const target = new URL(href, canonicalUrl()).pathname.replace(/\/$/, '') || '/'
-    // Links to static files (e.g. the APK in public/downloads) are valid when the file shipped.
+    // Links to static files (e.g. /favicon.png) are valid when the file shipped.
     if (path.extname(target) && !canonicalPaths.has(target)) {
       assert.ok(existsSync(path.join(dist, target)), `${pathname}: broken file link ${target}`)
       continue
