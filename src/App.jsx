@@ -28,6 +28,7 @@ const PrivacyPolicy = lazyWithReload(() => import('./pages/PrivacyPolicy'))
 const TermsConditions = lazyWithReload(() => import('./pages/TermsConditions'))
 const Disclaimer = lazyWithReload(() => import('./pages/Disclaimer'))
 const DeleteAccount = lazyWithReload(() => import('./pages/DeleteAccount'))
+const AccountDeletion = lazyWithReload(() => import('./pages/AccountDeletion'))
 const DownloadApp = lazyWithReload(() => import('./pages/DownloadApp'))
 const Login = lazyWithReload(() => import('./pages/Login'))
 import NotFound from './pages/NotFound'
@@ -143,6 +144,7 @@ function App() {
                     <Route path="privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="terms-and-conditions" element={<TermsConditions />} />
                     <Route path="disclaimer" element={<Disclaimer />} />
+                    <Route path="account-deletion" element={<AccountDeletion />} />
                     <Route path="download-app" element={<DownloadApp />} />
                     <Route
                       path="delete-account"

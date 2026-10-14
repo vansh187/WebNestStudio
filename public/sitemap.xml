@@ -11,6 +11,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/account-deletion</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/ai-development-company-india</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>

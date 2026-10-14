@@ -177,11 +177,13 @@ export default function PrivacyPolicy() {
             <li>
               Request deletion of your account and personal information. If you have an account, you can delete
               it yourself at any time from{' '}
-              <a href="/delete-account" className="font-semibold text-gold-500 hover:underline">
-                webneststudio.co.in/delete-account
+              <a href="/account-deletion" className="font-semibold text-gold-500 hover:underline">
+                webneststudio.co.in/account-deletion
               </a>{' '}
-              (sign in first if prompted), which permanently removes your profile, saved projects, CodeLab
-              progress, and chat history. If you prefer, email us and we will delete it within 30 days;
+              for instructions and a sign-in-free email request option. Signed-in users can also delete their
+              account from the{' '}
+              <a href="/delete-account" className="font-semibold text-gold-500 hover:underline">Delete Account</a>{' '}
+              page, which permanently removes their profile, saved projects, CodeLab progress, and chat history;
             </li>
             <li>Withdraw consent to marketing communications at any time (e.g. unsubscribing from the newsletter);</li>
             <li>Request a copy of your data in a portable format; and</li>
