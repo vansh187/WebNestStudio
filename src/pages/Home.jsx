@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiStar,
-  FiExternalLink, FiBookOpen, FiPlay, FiCode,
+  FiExternalLink, FiBookOpen, FiPlay, FiCode, FiSmartphone,
 } from 'react-icons/fi'
 import HeroVideo from '../components/HeroVideo'
 import NeuralBackdrop from '../components/NeuralBackdrop'
@@ -19,6 +19,8 @@ import { useHomeData } from '../hooks/useHomeData'
 import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
+import { ANDROID_APP, isAndroidDevice } from '../data/androidApp'
+import AndroidDownloadButton from '../components/AndroidDownloadButton'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
 import { useSeo } from '../hooks/useSeo'
@@ -44,6 +46,9 @@ const webLink = (value) => (typeof value === 'string' && /^https?:\/\//i.test(va
 
 export default function Home() {
   const { state, reload } = useHomeData()
+  // Only Android visitors get the direct APK link; everyone else goes to the install
+  // page, which explains how to get it onto a phone.
+  const [isAndroid] = useState(isAndroidDevice)
   // Our own client feedback always shows; admin-managed testimonials follow once loaded.
   const apiTestimonials = state.testimonials.status === 'success' ? state.testimonials.data : []
   const testimonials = [
@@ -139,6 +144,12 @@ export default function Home() {
                   className="inline-flex items-center gap-2 rounded-full border border-ink-200 dark:border-ink-700 px-7 py-3.5 text-sm font-semibold text-ink-700 dark:text-ink-100 transition-colors hover:border-gold-400 hover:text-gold-500"
                 >
                   View Our Work
+                </Link>
+                <Link
+                  to="/download-app"
+                  className="inline-flex items-center gap-2 px-2 py-3.5 text-sm font-semibold text-ink-700 dark:text-ink-100 transition-colors hover:text-gold-500"
+                >
+                  <FiSmartphone className="h-4 w-4 text-gold-500" /> Get the Android app
                 </Link>
               </motion.div>
 
@@ -395,6 +406,42 @@ export default function Home() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ANDROID APP */}
+      <section className="mx-auto max-w-7xl px-6 pt-20 lg:px-8">
+        <Reveal>
+          <div className="flex flex-col items-start gap-8 rounded-3xl border border-gold-400/40 bg-gold-400/5 p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-5">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gold-400/15 text-gold-500">
+                <FiSmartphone className="h-7 w-7" />
+              </span>
+              <div>
+                <h2 className="font-display text-2xl font-bold text-ink-900 dark:text-white sm:text-3xl">
+                  Get WebNest Studio on Android
+                </h2>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+                  Install our free app on your phone. Version {ANDROID_APP.version} · {ANDROID_APP.size} · {ANDROID_APP.minAndroid} or later.
+                </p>
+              </div>
+            </div>
+            {isAndroid ? (
+              <div className="flex flex-wrap items-center gap-4">
+                <AndroidDownloadButton />
+                <Link to="/download-app" className="text-sm font-semibold text-ink-600 hover:text-gold-500 dark:text-ink-200 dark:hover:text-gold-400">
+                  Install guide
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/download-app"
+                className="group inline-flex items-center gap-2 rounded-full bg-ink-900 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-gold-500/10 transition-transform hover:scale-105 dark:bg-gold-400 dark:text-ink-950"
+              >
+                Get the Android app <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            )}
+          </div>
+        </Reveal>
       </section>
 
       {/* TESTIMONIALS */}

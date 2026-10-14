@@ -31,6 +31,7 @@ const STATIC_ROUTES = [
   { path: '/privacy-policy', changefreq: 'yearly', priority: '0.3' },
   { path: '/terms-and-conditions', changefreq: 'yearly', priority: '0.3' },
   { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
+  { path: '/download-app', changefreq: 'monthly', priority: '0.6' },
   // Still prerendered so the QR link works, but kept out of the sitemap.
   { path: '/card', noindex: true },
   // CodeLab tool and problem pages are prerendered with noindex and kept out of the
