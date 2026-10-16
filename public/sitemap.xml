@@ -37,6 +37,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://www.webneststudio.co.in/blog/how-to-write-a-software-requirements-brief-before-hiring-developers</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://www.webneststudio.co.in/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses</loc>
     <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -791,13 +797,13 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_abstract_class_vs_interface</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_abstraction_and_abstract_classes</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -917,7 +923,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_encapsulation</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1025,7 +1031,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_interfaces_in_java</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1085,7 +1091,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_java_final_keyword</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1127,7 +1133,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_java_math_class_and_utility_methods</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1319,13 +1325,13 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_object_class_and_its_methods</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_object_cloning</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1343,7 +1349,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_packages_and_access_modifiers</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1421,7 +1427,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_strictfp_keyword_in_java</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1523,7 +1529,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_java_core_wrapper_classes</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

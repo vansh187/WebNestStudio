@@ -291,6 +291,34 @@ export const LESSON_VIDEOS = {
     title: 'Java Object Class Explained 🧬 toString, equals, hashCode, clone & More | Java Core Tutorial',
     description: 'A detailed guide to java.lang.Object and its methods, including toString(), equals(), hashCode(), clone(), getClass(), and the wait/notify methods.',
   },
+  lesson_java_core_object_cloning: {
+    youtubeId: 'Zogt8XzzCLM',
+    uploadDate: '2026-10-15T12:25:00-07:00', durationSeconds: 439,
+    afterSection: 0, // after the introduction, before "What Is Object Cloning?"
+    title: 'Object Cloning in Java | Shallow Copy vs Deep Copy | Core Java Tutorial',
+    description: 'Explains what object cloning is, how the clone() method and the Cloneable marker interface work together, and the difference between a shallow copy and a deep copy, with worked examples and common interview questions.',
+  },
+  lesson_java_core_wrapper_classes: {
+    youtubeId: 'mCG6oeNdGPg',
+    uploadDate: '2026-10-15T13:09:28-07:00', durationSeconds: 401,
+    afterSection: 0, // after the introduction, before "Why Java Needs Wrapper Classes"
+    title: 'Wrapper Classes in Java Explained | Autoboxing & Unboxing | Core Java Tutorial',
+    description: 'Covers why Java has wrapper classes, primitives vs wrappers, all eight wrapper classes, autoboxing and unboxing, the Integer, Double, Boolean and Character classes, using wrappers in collections, and common interview questions.',
+  },
+  lesson_java_core_java_math_class_and_utility_methods: {
+    youtubeId: 'aob2E8ll2DE',
+    uploadDate: '2026-10-16T12:55:48-07:00', durationSeconds: 353,
+    afterSection: 0, // after the introduction, before "What Is the Math Class and Why Is It final?"
+    title: 'Java Math Class Explained for Beginners | max, min, pow, sqrt, random & more',
+    description: 'Walks through the java.lang.Math class: why it is final and static, Math.PI and Math.E, max/min/abs, pow/sqrt/cbrt, round vs ceil vs floor vs rint, random numbers in a range, trig and log methods, signum and hypot, and the overflow-safe exact methods, ending with interview questions.',
+  },
+  lesson_java_core_strictfp_keyword_in_java: {
+    youtubeId: 'IlU7x-BKy88',
+    uploadDate: '2026-10-16T13:44:24-07:00', durationSeconds: 475,
+    afterSection: 0, // after the introduction, before "What strictfp Means"
+    title: 'Java strictfp Keyword Full Tutorial | Floating-Point Precision Made Simple',
+    description: 'Explains what strictfp means, the cross-CPU floating-point problem it solved, IEEE 754 basics, where it is and is not allowed (and why abstract plus strictfp is illegal), how it affects inner classes and subclasses, the Java 17 JEP 306 change, and interview questions.',
+  },
   lesson_java_core_encapsulation: {
     youtubeId: '7Z9Td8m8o_s',
     uploadDate: '2026-10-13T11:36:30-07:00', durationSeconds: 472,
