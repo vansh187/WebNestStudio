@@ -921,16 +921,56 @@ Point`,
     intro: `Object cloning creates a new object that is a copy of an existing one, rather than a new reference to the same object. Java supports this through the <code>clone()</code> method inherited from Object, combined with the <code>Cloneable</code> marker interface, though this mechanism is widely considered one of the more awkward corners of the language.`,
     sections: [
       {
+        heading: 'What Is Object Cloning?',
+        body: `Writing <code>Student b = a;</code> does not copy anything. It copies the <em>reference</em>, so <code>a</code> and <code>b</code> are two names for the same object and a change made through one is seen through the other. Cloning creates a second, separate object on the heap whose fields start with the same values as the original. After cloning, <code>original == copy</code> is <code>false</code> because they are different objects. Whether they still share anything inside depends on whether the copy is shallow or deep.`,
+      },
+      {
+        heading: 'Understanding the clone() Method',
+        body: `<code>clone()</code> is declared in <code>java.lang.Object</code> as <code>protected native Object clone() throws CloneNotSupportedException</code>. Because it is <code>protected</code>, outside code cannot call it on your objects until you override it. A typical override does three things.`,
+        list: [
+          'Make it <code>public</code> so other classes can call it.',
+          'Call <code>super.clone()</code>, which allocates the new object and copies every field. No constructor runs during this copy.',
+          'Use a covariant return type (<code>public Student clone()</code> instead of <code>Object</code>) so callers do not need a cast. The cast from <code>super.clone()</code> happens once, inside the method.',
+        ],
+      },
+      {
+        heading: 'The Cloneable Interface',
+        body: `<code>Cloneable</code> is a marker interface: it declares no methods at all. Its only job is to tell <code>Object.clone()</code> that cloning is permitted for this class. If a class calls <code>super.clone()</code> without implementing <code>Cloneable</code>, the call throws <code>CloneNotSupportedException</code> at runtime. Arrays are the exception: every array is cloneable, and <code>array.clone()</code> is public and throws no checked exception, which makes it the easiest way to copy an array field.`,
+      },
+      {
         heading: 'Shallow Cloning',
-        body: `The default <code>Object.clone()</code> performs a shallow copy: it copies each field's value directly. For primitive fields, this copies the actual value. For reference fields (like an array or another object), it copies only the reference itself — so the clone and the original end up pointing at the same underlying object. Modifying that shared object through one reference is visible through the other.`,
+        body: `The default <code>Object.clone()</code> performs a shallow copy: it copies each field's value directly. For primitive fields, this copies the actual value. For reference fields (like an array or another object), it copies only the reference itself — so the clone and the original end up pointing at the same underlying object. Modifying that shared object through one reference is visible through the other. Immutable fields such as <code>String</code> are safe to share, because nobody can change them.`,
       },
       {
         heading: 'Deep Cloning',
-        body: `A deep copy duplicates not just the top-level object but every mutable object it references, recursively, so the clone shares no mutable state with the original. Java does not do this automatically; you must implement it yourself, typically by manually cloning each mutable field inside an overridden <code>clone()</code> method.`,
+        body: `A deep copy duplicates not just the top-level object but every mutable object it references, recursively, so the clone shares no mutable state with the original. Java does not do this automatically; you must implement it yourself, typically by calling <code>super.clone()</code> for the shallow copy and then replacing each mutable field with its own copy (<code>marks.clone()</code>, <code>address.clone()</code>, <code>new ArrayList&lt;&gt;(list)</code>). Every class in the chain that needs copying must support it as well.`,
       },
       {
-        heading: 'The Cloneable Interface and Its Pitfalls',
-        body: `<code>Cloneable</code> is a marker interface — it declares no methods at all. Its only job is to tell <code>Object.clone()</code> that cloning is permitted for this class; calling <code>clone()</code> on a class that does not implement Cloneable throws <code>CloneNotSupportedException</code> at runtime. This design (a marker interface silently changing another method's behavior, plus a checked exception) is widely seen as a design mistake, which is why many modern Java codebases avoid <code>clone()</code> entirely and use copy constructors or factory methods instead.`,
+        heading: 'Shallow Copy vs Deep Copy',
+        list: [
+          '<strong>Top-level object:</strong> both create a new object, so <code>original == copy</code> is <code>false</code> in both cases.',
+          '<strong>Primitive and immutable fields:</strong> copied by value in both; no difference.',
+          '<strong>Mutable reference fields:</strong> a shallow copy shares them with the original; a deep copy gets its own copies.',
+          '<strong>Effort:</strong> a shallow copy is one call to <code>super.clone()</code>; a deep copy needs extra code for every mutable field.',
+          '<strong>Speed and memory:</strong> a shallow copy is cheaper; a deep copy allocates more objects.',
+          '<strong>When to use:</strong> shallow is fine when the fields are immutable or meant to be shared; use deep when the copy must be changed without affecting the original.',
+        ],
+      },
+      {
+        heading: 'Pitfalls and Alternatives to clone()',
+        body: `The clone mechanism has well-known design problems: a marker interface that silently changes how another method behaves, a checked exception that callers must handle, a cast, no constructor call, and <code>final</code> fields that cannot be reassigned inside <code>clone()</code>, which makes deep copies of them impossible. That is why many modern Java codebases avoid <code>clone()</code> entirely and use a <strong>copy constructor</strong> (<code>new Cart(otherCart)</code>) or a static factory method (<code>Cart.copyOf(otherCart)</code>) instead. Both are ordinary Java code, work with <code>final</code> fields, and make it obvious which fields are copied deeply.`,
+      },
+      {
+        heading: 'Common Interview Questions',
+        list: [
+          '<strong>What is object cloning in Java?</strong> Creating a new object that is a field-by-field copy of an existing one, usually through <code>clone()</code>.',
+          '<strong>Where is clone() defined and why is it protected?</strong> In <code>java.lang.Object</code>. It is protected so a class has to opt in by overriding it as public.',
+          '<strong>What is a marker interface? Give an example.</strong> An interface with no methods that tags a class with a capability, such as <code>Cloneable</code> or <code>Serializable</code>.',
+          '<strong>What happens if you call super.clone() without implementing Cloneable?</strong> It throws <code>CloneNotSupportedException</code> at runtime.',
+          '<strong>Does clone() call the constructor?</strong> No. The new object is created by copying memory, so constructor code is skipped.',
+          '<strong>Shallow copy vs deep copy?</strong> A shallow copy shares the objects that fields refer to; a deep copy also copies those objects.',
+          '<strong>How do you make a deep copy?</strong> Call <code>super.clone()</code>, then replace each mutable field with its own copy, or use a copy constructor that does the same.',
+        ],
       },
     ],
     examples: [
@@ -968,14 +1008,112 @@ public class CloningDemo {
         output: `Alpha [999, 20, 30]
 Beta [999, 20, 30]`,
       },
+      {
+        caption: 'Deep clone: super.clone() first, then copy the array and the nested Address',
+        code: `class Address implements Cloneable {
+    String city;
+
+    Address(String city) {
+        this.city = city;
+    }
+
+    @Override
+    public Address clone() throws CloneNotSupportedException {
+        return (Address) super.clone();
+    }
+}
+
+class Student implements Cloneable {
+    String name;
+    int[] marks;
+    Address address;
+
+    Student(String name, int[] marks, Address address) {
+        this.name = name;
+        this.marks = marks;
+        this.address = address;
+    }
+
+    @Override
+    public Student clone() throws CloneNotSupportedException {
+        Student copy = (Student) super.clone(); // shallow copy first
+        copy.marks = marks.clone();             // then copy each mutable field
+        copy.address = address.clone();
+        return copy;
+    }
+}
+
+public class DeepCloneDemo {
+    public static void main(String[] args) throws CloneNotSupportedException {
+        Student original = new Student("Riya", new int[] {80, 90}, new Address("Delhi"));
+        Student copy = original.clone();
+
+        copy.marks[0] = 50;
+        copy.address.city = "Mumbai";
+
+        System.out.println(original == copy);
+        System.out.println(original.marks[0] + " " + original.address.city);
+        System.out.println(copy.marks[0] + " " + copy.address.city);
+    }
+}`,
+        output: `false
+80 Delhi
+50 Mumbai`,
+      },
+      {
+        caption: 'A copy constructor as the alternative to clone(), compared with a plain reference copy',
+        code: `import java.util.ArrayList;
+import java.util.List;
+
+class Cart {
+    private final List<String> items;
+
+    Cart(List<String> items) {
+        this.items = new ArrayList<>(items);
+    }
+
+    Cart(Cart other) {                       // copy constructor
+        this(other.items);
+    }
+
+    void add(String item) {
+        items.add(item);
+    }
+
+    List<String> items() {
+        return items;
+    }
+}
+
+public class CopyConstructorDemo {
+    public static void main(String[] args) {
+        Cart original = new Cart(List.of("Pen", "Book"));
+        Cart copy = new Cart(original);
+        copy.add("Bag");
+
+        System.out.println(original.items());
+        System.out.println(copy.items());
+
+        Cart sameCart = original;                // reference copy, not a clone
+        sameCart.add("Ink");
+        System.out.println(original.items());
+    }
+}`,
+        output: `[Pen, Book]
+[Pen, Book, Bag]
+[Pen, Book, Ink]`,
+      },
     ],
     commonMistakes: [
+      'Thinking <code>Student b = a;</code> makes a copy — it only copies the reference, so both names point to the same object.',
       'Calling clone() on a class that does not implement Cloneable and being surprised by a CloneNotSupportedException at runtime.',
       'Assuming clone() always produces a fully independent copy — the default is shallow, so shared mutable fields still alias each other.',
       'Forgetting to manually deep-copy mutable reference fields (arrays, lists, custom objects) inside an overridden clone() when independence is required.',
       'Reaching for clone() at all in new code instead of a copy constructor or a static factory method, which most modern style guides prefer.',
     ],
     keyPoints: [
+      'Assigning one variable to another copies the reference; cloning creates a separate object.',
+      'Override clone() as public, call super.clone(), and use a covariant return type to avoid casts at the call site.',
       'Shallow cloning copies field values, but reference fields still point to the same shared objects.',
       'Deep cloning requires manually copying every mutable referenced object as well.',
       'Cloneable is a marker interface with no methods; without it, clone() throws CloneNotSupportedException.',
@@ -988,16 +1126,70 @@ Beta [999, 20, 30]`,
     intro: `Every Java primitive type has a corresponding wrapper class that represents that value as a full object: <code>byte</code>→<code>Byte</code>, <code>short</code>→<code>Short</code>, <code>int</code>→<code>Integer</code>, <code>long</code>→<code>Long</code>, <code>float</code>→<code>Float</code>, <code>double</code>→<code>Double</code>, <code>char</code>→<code>Character</code>, and <code>boolean</code>→<code>Boolean</code>. Wrapper classes let primitive values participate in APIs that require objects, such as collections like <code>ArrayList&lt;Integer&gt;</code>, which cannot hold raw primitives.`,
     sections: [
       {
+        heading: 'Why Java Needs Wrapper Classes',
+        body: `Java keeps primitives such as <code>int</code> and <code>double</code> as plain values for speed, but large parts of the language work only with objects. Generics, and therefore every collection, accept object types only: <code>List&lt;int&gt;</code> does not compile, while <code>List&lt;Integer&gt;</code> does. Wrapper classes bridge that gap by putting a primitive value inside an object. They also let a value be <code>null</code> to mean "no value yet", which a primitive cannot express, and they give each type a home for parsing methods and constants.`,
+      },
+      {
+        heading: 'Primitive Data Types vs Wrapper Classes',
+        list: [
+          '<strong>Nature:</strong> a primitive holds the raw value; a wrapper is an object on the heap that holds the value.',
+          '<strong>null:</strong> a primitive can never be null; a wrapper reference can.',
+          '<strong>Default value of a field:</strong> <code>0</code>, <code>0.0</code> or <code>false</code> for primitives; <code>null</code> for wrappers.',
+          '<strong>Collections and generics:</strong> primitives cannot be used as type arguments; wrappers can.',
+          '<strong>Comparison:</strong> <code>==</code> compares values for primitives; for wrappers it compares references, so use <code>equals()</code>.',
+          '<strong>Memory and speed:</strong> primitives are smaller and faster; each wrapper is a full object with header overhead.',
+          '<strong>Mutability:</strong> wrapper objects are immutable. <code>count++</code> on an <code>Integer</code> creates a new object rather than changing the old one.',
+        ],
+      },
+      {
+        heading: 'All 8 Wrapper Classes in Java',
+        body: `All wrapper classes live in <code>java.lang</code>, so no import is needed. The six numeric wrappers extend the abstract class <code>Number</code>, which provides <code>intValue()</code>, <code>doubleValue()</code> and the other conversion methods. <code>Character</code> and <code>Boolean</code> extend <code>Object</code> directly. Note the two names that differ from their primitive: <code>Integer</code> and <code>Character</code>.`,
+        list: [
+          '<code>byte</code> → <code>Byte</code>',
+          '<code>short</code> → <code>Short</code>',
+          '<code>int</code> → <code>Integer</code>',
+          '<code>long</code> → <code>Long</code>',
+          '<code>float</code> → <code>Float</code>',
+          '<code>double</code> → <code>Double</code>',
+          '<code>char</code> → <code>Character</code>',
+          '<code>boolean</code> → <code>Boolean</code>',
+        ],
+      },
+      {
         heading: 'Autoboxing and Unboxing',
-        body: `Autoboxing is the compiler's automatic conversion of a primitive into its wrapper object (<code>int</code> → <code>Integer</code>), and unboxing is the reverse (<code>Integer</code> → <code>int</code>). Both happen implicitly wherever needed, such as adding an <code>int</code> to a <code>List&lt;Integer&gt;</code> or using an <code>Integer</code> in an arithmetic expression — the compiler inserts the conversion calls for you behind the scenes.`,
+        body: `Autoboxing is the compiler's automatic conversion of a primitive into its wrapper object (<code>int</code> → <code>Integer</code>), and unboxing is the reverse (<code>Integer</code> → <code>int</code>). Both happen implicitly wherever needed, such as adding an <code>int</code> to a <code>List&lt;Integer&gt;</code> or using an <code>Integer</code> in an arithmetic expression — the compiler inserts the conversion calls for you behind the scenes. <code>Integer boxed = 5;</code> compiles to <code>Integer.valueOf(5)</code>, and <code>int n = boxed;</code> compiles to <code>boxed.intValue()</code>. Before Java 5 you had to write those calls yourself. The old <code>new Integer(5)</code> constructors are deprecated for removal; use <code>valueOf()</code> or plain autoboxing instead.`,
       },
       {
         heading: 'The Integer Caching Gotcha',
         body: `Java caches <code>Integer</code> objects for values from -128 to 127 (and similarly caches small values for other integer wrapper types). When autoboxing a value in that range, Java may return the same cached object rather than creating a new one, so comparing two boxed values with <code>==</code> in that range can appear to work by coincidence. Outside that range, autoboxing creates new distinct objects, so <code>==</code> comparisons stop matching even for equal values — which is exactly why <code>.equals()</code>, not <code>==</code>, should always be used to compare wrapper objects.`,
       },
       {
-        heading: 'Useful Wrapper Class Methods',
-        body: `Wrapper classes also carry parsing and conversion utilities, such as <code>Integer.parseInt(String)</code>, <code>Double.parseDouble(String)</code>, <code>Integer.MAX_VALUE</code>/<code>MIN_VALUE</code> constants, and <code>Integer.toBinaryString(int)</code>, making them the natural home for type-specific helper logic that a raw primitive cannot carry.`,
+        heading: 'Integer, Double, Boolean and Character Methods',
+        body: `Wrapper classes also carry parsing and conversion utilities, making them the natural home for type-specific helper logic that a raw primitive cannot carry. The ones you will use most often:`,
+        list: [
+          '<code>Integer.parseInt("25")</code> returns a primitive <code>int</code>; <code>Integer.valueOf("25")</code> returns an <code>Integer</code> object. Both throw <code>NumberFormatException</code> for text such as <code>"25a"</code>.',
+          '<code>Double.parseDouble("99.5")</code> and <code>Long.parseLong(...)</code> work the same way for their types.',
+          '<code>Boolean.parseBoolean(s)</code> returns <code>true</code> only for "true" in any letter case; every other string, including null, gives <code>false</code>.',
+          '<code>Character.isLetter</code>, <code>isDigit</code>, <code>isWhitespace</code>, <code>toUpperCase</code> and <code>toLowerCase</code> classify and convert single characters.',
+          '<code>Integer.MAX_VALUE</code>, <code>Integer.MIN_VALUE</code>, <code>Long.MAX_VALUE</code> and similar constants give the range of each type.',
+          '<code>Integer.compare(a, b)</code>, <code>Integer.toBinaryString(n)</code> and <code>String.valueOf(n)</code> / <code>Integer.toString(n)</code> compare and convert values back to text.',
+        ],
+      },
+      {
+        heading: 'Wrapper Classes in Java Collections',
+        body: `Every number you put in an <code>ArrayList&lt;Integer&gt;</code> or a <code>HashMap&lt;String, Integer&gt;</code> is boxed on the way in and unboxed on the way out. Two details catch people out. First, <code>List&lt;Integer&gt;</code> has both <code>remove(int index)</code> and <code>remove(Object value)</code>, so <code>list.remove(1)</code> removes the element at index 1, not the value 1; write <code>list.remove(Integer.valueOf(1))</code> to remove by value. Second, <code>map.get(key)</code> returns <code>null</code> for a missing key, and assigning that to an <code>int</code> throws <code>NullPointerException</code>; use <code>getOrDefault(key, 0)</code> or keep the result in an <code>Integer</code>.`,
+      },
+      {
+        heading: 'Common Interview Questions',
+        list: [
+          '<strong>What is a wrapper class?</strong> A class in <code>java.lang</code> that wraps one primitive value in an object, such as <code>Integer</code> for <code>int</code>.',
+          '<strong>Why do we need wrapper classes?</strong> Collections and generics accept only objects, wrappers can be null, and they provide parsing methods and constants.',
+          '<strong>What are autoboxing and unboxing?</strong> Automatic conversion from primitive to wrapper (via <code>valueOf()</code>) and back (via <code>intValue()</code> and similar), added in Java 5.',
+          '<strong>Difference between parseInt() and valueOf()?</strong> <code>parseInt</code> returns a primitive <code>int</code>; <code>valueOf</code> returns an <code>Integer</code> and may reuse a cached object.',
+          '<strong>Why is Integer a == b true for 127 but false for 128?</strong> <code>Integer.valueOf</code> caches -128 to 127, so small values share one object; larger ones are new objects.',
+          '<strong>Are wrapper classes immutable?</strong> Yes. All eight are immutable and final.',
+          '<strong>What happens when you unbox null?</strong> A <code>NullPointerException</code> is thrown.',
+        ],
       },
     ],
     examples: [
@@ -1025,12 +1217,90 @@ true
 false
 true`,
       },
+      {
+        caption: 'Parsing and helper methods on Integer, Double, Boolean and Character',
+        code: `public class WrapperMethodsDemo {
+    public static void main(String[] args) {
+        int age = Integer.parseInt("25");        // String -> int
+        Integer boxedAge = Integer.valueOf("25"); // String -> Integer
+        double price = Double.parseDouble("99.5");
+        boolean active = Boolean.parseBoolean("TRUE");
+
+        System.out.println(age + 1);
+        System.out.println(boxedAge.equals(age));
+        System.out.println(price * 2);
+        System.out.println(active);
+
+        System.out.println(Integer.MAX_VALUE);
+        System.out.println(Integer.toBinaryString(10));
+        System.out.println(Integer.compare(5, 9));
+
+        char ch = 'x';
+        System.out.println(Character.isLetter(ch) + " " + Character.isDigit('7'));
+        System.out.println(Character.toUpperCase(ch));
+
+        String text = String.valueOf(42) + Double.toString(1.5);
+        System.out.println(text);
+    }
+}`,
+        output: `26
+true
+199.0
+true
+2147483647
+1010
+-1
+true true
+X
+421.5`,
+      },
+      {
+        caption: 'Wrappers in collections: boxing in a List, remove(index) vs remove(value), and null from a Map',
+        code: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class WrapperCollectionsDemo {
+    public static void main(String[] args) {
+        List<Integer> numbers = new ArrayList<>();
+        numbers.add(10);                 // autoboxed to Integer.valueOf(10)
+        numbers.add(20);
+        numbers.add(30);
+
+        int total = 0;
+        for (int n : numbers) {          // each element is unboxed
+            total += n;
+        }
+        System.out.println("Total: " + total);
+
+        numbers.remove(1);                     // removes the element at index 1
+        System.out.println(numbers);
+        numbers.remove(Integer.valueOf(10));   // removes the value 10
+        System.out.println(numbers);
+
+        Map<Character, Integer> counts = new HashMap<>();
+        for (char ch : "java".toCharArray()) {
+            counts.merge(ch, 1, Integer::sum);
+        }
+        System.out.println(counts.get('a'));
+        System.out.println(counts.get('z'));   // null, not 0
+    }
+}`,
+        output: `Total: 60
+[10, 30]
+[30]
+2
+null`,
+      },
     ],
     commonMistakes: [
       'Comparing wrapper objects with == expecting value comparison — it compares references, and only appears to "work" inside the cached -128 to 127 range.',
       'Unboxing a null wrapper reference (e.g. a null Integer used in arithmetic), which throws a NullPointerException at runtime.',
       'Repeatedly autoboxing/unboxing inside performance-critical loops without realizing each operation allocates a wrapper object, adding overhead.',
       'Forgetting that primitive char autoboxes to Character, not to a numeric wrapper, since char behaves differently from the numeric primitives.',
+      'Calling <code>list.remove(1)</code> on a <code>List&lt;Integer&gt;</code> to remove the value 1 — it removes the element at index 1 instead.',
+      'Using the deprecated <code>new Integer(5)</code> constructor instead of <code>Integer.valueOf(5)</code> or autoboxing.',
     ],
     keyPoints: [
       'Each of the 8 primitives has a matching wrapper class needed for use in generic collections and APIs.',

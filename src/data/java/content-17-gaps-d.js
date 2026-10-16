@@ -616,25 +616,65 @@ Q6 the object is a Cat, so the cast fails at runtime, not at compile time.`,
     intro: `The <code>java.lang.Math</code> class is a utility class that bundles common mathematical operations as static methods and constants. Because it lives in <code>java.lang</code>, it never needs an explicit import. Math is a final class with only a private constructor, which means it cannot be instantiated — every method and field on it is accessed directly through the class name, such as <code>Math.sqrt(25)</code>.`,
     sections: [
       {
-        heading: 'Common Static Methods',
-        body: `Math provides ready-made implementations for operations that would otherwise require manual, error-prone logic.`,
+        heading: 'What Is the Math Class and Why Is It final?',
+        body: `Math is declared <code>public final class Math</code>, and its only constructor is <code>private</code>. <code>final</code> stops anyone from subclassing it and changing how the methods behave, and the private constructor stops anyone from writing <code>new Math()</code>. There is nothing to store per object anyway: every method takes its inputs as arguments and returns a result, so they are all <code>static</code> and you call them as <code>Math.methodName(...)</code>. Most methods are overloaded for <code>int</code>, <code>long</code>, <code>float</code> and <code>double</code>, and the return type usually follows the argument type.`,
+      },
+      {
+        heading: 'Math Constants: Math.PI and Math.E',
+        body: `<code>Math.PI</code> (approximately 3.14159265358979) and <code>Math.E</code> (approximately 2.71828182845905, the base of the natural logarithm) are declared as <code>public static final double</code> fields, ready to use in geometric or exponential calculations without hardcoding approximations. For example, the area of a circle is <code>Math.PI * r * r</code>.`,
+      },
+      {
+        heading: 'max(), min() and abs()',
+        body: `<code>Math.max(a, b)</code> and <code>Math.min(a, b)</code> return the larger or smaller of two values; to find the largest of three, nest them: <code>Math.max(a, Math.max(b, c))</code>. <code>Math.abs(x)</code> returns the absolute (non-negative) value. One edge case: <code>Math.abs(Integer.MIN_VALUE)</code> is still <code>-2147483648</code>, because the positive value does not fit in an <code>int</code>. Use <code>Math.absExact()</code> (Java 15+) if you want an exception instead.`,
+      },
+      {
+        heading: 'pow(), sqrt() and cbrt(): Powers and Roots',
         list: [
-          '<code>Math.max(a, b)</code> / <code>Math.min(a, b)</code> — the larger or smaller of two values, overloaded for int, long, float, and double.',
-          '<code>Math.abs(x)</code> — the absolute (non-negative) value of a number.',
-          '<code>Math.pow(base, exponent)</code> — raises base to the given exponent, always returning a double.',
-          '<code>Math.sqrt(x)</code> — the square root of x as a double; a negative input returns NaN.',
-          '<code>Math.round(x)</code> — rounds a float/double to the nearest whole number, rounding half-up; returns an int for float input and a long for double input.',
-          '<code>Math.floor(x)</code> / <code>Math.ceil(x)</code> — round down or up to the nearest whole number, returned as a double.',
-          '<code>Math.random()</code> — returns a double greater than or equal to 0.0 and strictly less than 1.0.',
+          '<code>Math.pow(base, exponent)</code> raises base to the given exponent and always returns a <code>double</code>, so <code>int x = (int) Math.pow(2, 3);</code> needs a cast.',
+          '<code>Math.sqrt(x)</code> returns the square root as a <code>double</code>; a negative input returns <code>NaN</code> rather than throwing.',
+          '<code>Math.cbrt(x)</code> returns the cube root and, unlike <code>sqrt</code>, works for negative numbers: <code>Math.cbrt(-27)</code> is <code>-3.0</code>.',
         ],
       },
       {
-        heading: 'Useful Constants',
-        body: `<code>Math.PI</code> (approximately 3.14159265358979) and <code>Math.E</code> (approximately 2.71828182845905, the base of the natural logarithm) are declared as <code>public static final double</code> fields, ready to use in geometric or exponential calculations without hardcoding approximations.`,
+        heading: 'round() vs ceil() vs floor() vs rint()',
+        body: `All four turn a decimal into a whole number, but they disagree on direction, on ties, and on the return type. Negative numbers are where most mistakes happen.`,
+        list: [
+          '<code>Math.ceil(x)</code> rounds <strong>up</strong> toward positive infinity: <code>ceil(4.1)</code> is <code>5.0</code>, <code>ceil(-4.6)</code> is <code>-4.0</code>. Returns a <code>double</code>.',
+          '<code>Math.floor(x)</code> rounds <strong>down</strong> toward negative infinity: <code>floor(4.9)</code> is <code>4.0</code>, <code>floor(-4.5)</code> is <code>-5.0</code>. Returns a <code>double</code>.',
+          '<code>Math.round(x)</code> rounds to the nearest whole number, and a .5 tie goes <strong>up</strong> toward positive infinity: <code>round(4.5)</code> is <code>5</code> but <code>round(-4.5)</code> is <code>-4</code>. Returns a <code>long</code> for a double and an <code>int</code> for a float.',
+          '<code>Math.rint(x)</code> rounds to the nearest whole number, but a .5 tie goes to the nearest <strong>even</strong> number: <code>rint(4.5)</code> is <code>4.0</code>, <code>rint(5.5)</code> is <code>6.0</code>. Returns a <code>double</code>.',
+        ],
       },
       {
         heading: 'Generating a Random Number in a Range',
-        body: `<code>Math.random()</code> alone only produces a value in [0.0, 1.0). To generate a random integer within a specific range [min, max], the standard formula is <code>(int) (Math.random() * (max - min + 1)) + min</code>. For more advanced random number needs (seeding, different distributions), the dedicated <code>java.util.Random</code> class is generally preferred over Math.random().`,
+        body: `<code>Math.random()</code> alone only produces a <code>double</code> in [0.0, 1.0): 0.0 is possible, 1.0 never is. To generate a random integer within a specific range [min, max], the standard formula is <code>(int) (Math.random() * (max - min + 1)) + min</code>, so a dice roll is <code>(int) (Math.random() * 6) + 1</code>. The <code>+ 1</code> inside the brackets is what makes <code>max</code> reachable. For more advanced random number needs (seeding, other types, different distributions), the dedicated <code>java.util.Random</code> class, or <code>ThreadLocalRandom.current().nextInt(min, max + 1)</code>, is generally preferred over Math.random().`,
+      },
+      {
+        heading: 'Trigonometry and Logarithm Methods',
+        list: [
+          '<code>Math.sin</code>, <code>Math.cos</code> and <code>Math.tan</code> expect the angle in <strong>radians</strong>, not degrees. Convert with <code>Math.toRadians(30)</code>, and back with <code>Math.toDegrees</code>.',
+          'Results are floating-point approximations: <code>Math.sin(Math.toRadians(30))</code> prints <code>0.49999999999999994</code>, not exactly 0.5.',
+          '<code>Math.log(x)</code> is the natural logarithm (base e), <code>Math.log10(x)</code> is base 10, and <code>Math.exp(x)</code> is e raised to x.',
+          '<code>Math.signum(x)</code> returns <code>-1.0</code>, <code>0.0</code> or <code>1.0</code> depending on the sign of x.',
+          '<code>Math.hypot(x, y)</code> returns <code>sqrt(x*x + y*y)</code>, the distance formula, without overflowing on large intermediate values.',
+        ],
+      },
+      {
+        heading: 'Exact Methods for Overflow Handling',
+        body: `Ordinary <code>int</code> and <code>long</code> arithmetic overflows silently: <code>Integer.MAX_VALUE + 1</code> becomes <code>-2147483648</code> with no warning. The exact methods added in Java 8, such as <code>Math.addExact</code>, <code>subtractExact</code>, <code>multiplyExact</code>, <code>incrementExact</code>, <code>negateExact</code> and <code>toIntExact</code>, do the same calculation but throw <code>ArithmeticException</code> ("integer overflow") when the result does not fit. Use them for money, counters and IDs where a wrong number is worse than a crash. Related helpers <code>Math.floorDiv</code> and <code>Math.floorMod</code> round toward negative infinity, so <code>floorMod(-7, 3)</code> is <code>2</code> while <code>-7 % 3</code> is <code>-1</code>.`,
+      },
+      {
+        heading: 'Common Interview Questions',
+        list: [
+          '<strong>Why can you not create a Math object?</strong> Its constructor is private and the class is final; all members are static.',
+          '<strong>Do you need to import Math?</strong> No. It is in <code>java.lang</code>, which is imported automatically.',
+          '<strong>What does Math.round(-4.5) return?</strong> <code>-4</code>, because ties round toward positive infinity.',
+          '<strong>What is the return type of Math.round(double)?</strong> <code>long</code>. For a <code>float</code> argument it returns <code>int</code>.',
+          '<strong>Difference between ceil(), floor() and round()?</strong> ceil rounds up, floor rounds down, round goes to the nearest whole number; ceil and floor return double, round returns long or int.',
+          '<strong>How do you get a random int between 1 and 10?</strong> <code>(int) (Math.random() * 10) + 1</code>.',
+          '<strong>What is Math.sqrt(-1)?</strong> <code>NaN</code>; no exception is thrown.',
+          '<strong>How do you detect integer overflow?</strong> Use <code>Math.addExact</code>, <code>multiplyExact</code> and the other exact methods, which throw <code>ArithmeticException</code>.',
+        ],
       },
     ],
     examples: [
@@ -663,18 +703,108 @@ Q6 the object is a Cat, so the cast fails at runtime, not at compile time.`,
 5.0
 3.141592653589793`,
       },
+      {
+        caption: 'round() vs ceil() vs floor() vs rint() on positive, negative and .5 values',
+        code: `public class RoundingDemo {
+    public static void main(String[] args) {
+        double[] values = {4.5, 4.4, -4.5, -4.6, 5.5};
+
+        for (double v : values) {
+            System.out.println(v + " -> round " + Math.round(v)
+                    + ", ceil " + Math.ceil(v)
+                    + ", floor " + Math.floor(v)
+                    + ", rint " + Math.rint(v));
+        }
+
+        System.out.println(Math.cbrt(27));
+        System.out.println(Math.abs(Integer.MIN_VALUE));
+    }
+}`,
+        output: `4.5 -> round 5, ceil 5.0, floor 4.0, rint 4.0
+4.4 -> round 4, ceil 5.0, floor 4.0, rint 4.0
+-4.5 -> round -4, ceil -4.0, floor -5.0, rint -4.0
+-4.6 -> round -5, ceil -4.0, floor -5.0, rint -5.0
+5.5 -> round 6, ceil 6.0, floor 5.0, rint 6.0
+3.0
+-2147483648`,
+      },
+      {
+        caption: 'Trigonometry with toRadians(), logarithms, signum() and hypot()',
+        code: `public class MathAdvancedDemo {
+    public static void main(String[] args) {
+        double angle = Math.toRadians(30);         // trig methods expect radians
+        System.out.println(Math.sin(angle));
+        System.out.println(Math.cos(Math.toRadians(60)));
+        System.out.println(Math.toDegrees(Math.PI));
+
+        System.out.println(Math.log(Math.E));      // natural log
+        System.out.println(Math.log10(1000));
+        System.out.println(Math.exp(0));
+
+        System.out.println(Math.signum(-8.5));
+        System.out.println(Math.hypot(3, 4));      // sqrt(3*3 + 4*4)
+    }
+}`,
+        output: `0.49999999999999994
+0.5000000000000001
+180.0
+1.0
+3.0
+1.0
+-1.0
+5.0`,
+      },
+      {
+        caption: 'Silent int overflow vs Math.addExact() and multiplyExact(), plus floorDiv() and floorMod()',
+        code: `public class ExactDemo {
+    public static void main(String[] args) {
+        int big = Integer.MAX_VALUE;
+
+        System.out.println(big + 1);               // silently wraps around
+
+        try {
+            System.out.println(Math.addExact(big, 1));
+        } catch (ArithmeticException e) {
+            System.out.println("Caught: " + e.getMessage());
+        }
+
+        try {
+            System.out.println(Math.multiplyExact(100_000, 100_000));
+        } catch (ArithmeticException e) {
+            System.out.println("Caught: " + e.getMessage());
+        }
+
+        System.out.println(Math.multiplyExact(100_000L, 100_000L));
+        System.out.println(Math.floorDiv(-7, 2) + " " + (-7 / 2));
+        System.out.println(Math.floorMod(-7, 3) + " " + (-7 % 3));
+    }
+}`,
+        output: `-2147483648
+Caught: integer overflow
+Caught: integer overflow
+10000000000
+-4 -3
+2 -1`,
+      },
     ],
     commonMistakes: [
       'Trying to instantiate Math with "new Math()" — its constructor is private specifically to prevent this; all members are static.',
       'Expecting Math.round(x) to always return an int — it returns a long when given a double argument, which can cause an unexpected type mismatch.',
+      'Assuming Math.round(-4.5) is -5 — ties round toward positive infinity, so the result is -4.',
       'Assuming Math.random() can produce exactly 1.0 — the range is inclusive of 0.0 but strictly exclusive of 1.0.',
+      'Leaving out the + 1 in (int) (Math.random() * (max - min + 1)) + min, so max can never be generated.',
       'Forgetting that Math.pow always returns a double, then being surprised that "int result = Math.pow(2, 3);" fails to compile without an explicit cast.',
+      'Passing degrees to Math.sin/cos/tan — they expect radians, so convert with Math.toRadians first.',
+      'Relying on plain int arithmetic for large values and getting a silently wrapped negative number instead of using Math.addExact or multiplyExact.',
     ],
     keyPoints: [
       'Math is a final utility class in java.lang with only static members and a private constructor — it is never instantiated.',
-      'Key methods: max, min, abs, pow, sqrt, round, floor, ceil, and random.',
+      'Key methods: max, min, abs, pow, sqrt, cbrt, round, floor, ceil, rint, and random.',
       'Math.PI and Math.E are predefined double constants for common mathematical values.',
+      'ceil rounds up, floor rounds down, round breaks ties toward positive infinity, and rint breaks ties toward the even number.',
       'Math.random() returns a double in [0.0, 1.0); scale and shift it to get a random value in a custom range.',
+      'Trig methods work in radians; log is base e, log10 is base 10.',
+      'The *Exact methods throw ArithmeticException on overflow instead of silently wrapping.',
     ],
   },
 
@@ -683,17 +813,52 @@ Q6 the object is a Cat, so the cast fails at runtime, not at compile time.`,
     intro: `<code>strictfp</code> (short for "strict floating point") is a Java keyword that forces floating-point calculations to follow the IEEE 754 standard precisely and consistently, regardless of the underlying hardware or JVM implementation. Without it, historically, some JVMs were allowed extended intermediate precision for float and double calculations, which meant the exact same Java program could theoretically produce very slightly different floating-point results on different platforms.`,
     sections: [
       {
+        heading: 'What strictfp Means',
+        body: `The name is short for "strict floating-point". It was added in Java 1.2 as a modifier you put on a class, interface or method to say: every <code>float</code> and <code>double</code> calculation in here must give exactly the result the IEEE 754 standard defines, bit for bit, on every machine. It never affects <code>int</code>, <code>long</code> or any other integer arithmetic.`,
+      },
+      {
+        heading: 'The Problem It Solved: Different Results on Different CPUs',
+        body: `Java promises "write once, run anywhere", and that should include the same numbers. The x87 floating-point unit in older Intel processors, however, worked internally with 80-bit registers, wider than a 64-bit <code>double</code>. Forcing every intermediate result back to exact 64-bit <code>double</code> rules on that hardware was slow, so from Java 1.2 the JVM was allowed to keep intermediate results with a wider exponent range. A long calculation, especially one that briefly went past <code>Double.MAX_VALUE</code> or very close to zero, could then produce a slightly different answer on an x87 machine than on other hardware. <code>strictfp</code> was the opt-out: inside a strictfp method, the JVM had to use exact IEEE 754 single and double precision everywhere, so the result was identical on every platform.`,
+      },
+      {
+        heading: 'IEEE 754 Floating-Point, Explained Simply',
+        body: `IEEE 754 is the international standard for storing and calculating with decimal-point numbers in binary. A <code>double</code> is 64 bits: 1 sign bit, 11 exponent bits and 52 bits of fraction, which gives roughly 15–17 significant decimal digits. A <code>float</code> is 32 bits with about 7 digits. Many decimals, such as 0.1, have no exact binary form, so <code>0.1 + 0.2</code> prints <code>0.30000000000000004</code> — on every JVM. strictfp never removed that rounding; it only guaranteed that the rounding happened in exactly the same way everywhere. For exact decimal arithmetic such as money, use <code>BigDecimal</code>.`,
+      },
+      {
         heading: 'Where strictfp Can Be Applied',
-        body: `<code>strictfp</code> can be applied to a class, an interface, or a method. Applying it to a class or interface makes every method (and any nested types) within it strictfp automatically. It cannot be applied to individual variables, constructors alone in isolation from a class, or abstract methods without a body (since there is no floating-point computation to constrain).`,
+        body: `<code>strictfp</code> can be applied to a class, an interface, or a method. Applying it to a class or interface makes every method body inside it strict, and that includes its nested and inner classes. It does <strong>not</strong> pass on to subclasses or to classes that implement a strictfp interface: their own methods follow their own declarations.`,
         list: [
-          '<code>strictfp class Calculator { ... }</code> — every method in Calculator uses strict floating-point rules.',
+          '<code>strictfp class Calculator { ... }</code> — every method in Calculator, and in classes nested inside it, uses strict floating-point rules.',
+          '<code>strictfp abstract class Shape { ... }</code> — allowed; the concrete methods in Shape are strict.',
+          '<code>strictfp interface Scaler { ... }</code> — the interface\'s own default and static method bodies are strict; implementing classes are not affected.',
           '<code>public strictfp double computeArea() { ... }</code> — only this method is constrained.',
-          '<code>strictfp interface Shape { ... }</code> — any implementing class\'s methods inherit the strict behavior where applicable.',
         ],
       },
       {
-        heading: 'Why It Rarely Comes Up in Modern Java',
-        body: `As of Java 17, all floating-point operations are strictfp by default — the JVM specification was updated so that strict IEEE 754 semantics apply everywhere, and the strictfp keyword became redundant (though still legal to write, for backward compatibility). In practice, this means you are unlikely to ever need to type strictfp in code targeting modern Java versions. It remains worth knowing, however, because it still appears in interview questions, certification exams, and in older Java 8/11-era codebases where it was meaningful.`,
+        heading: 'Where strictfp Is Not Allowed',
+        body: `strictfp describes how a method <em>body</em> computes, so it is only legal where there is a body or a type that contains bodies. The compiler rejects every other placement.`,
+        list: [
+          '<strong>Variables and fields:</strong> <code>strictfp double x;</code> gives "modifier strictfp not allowed here".',
+          '<strong>Constructors:</strong> <code>strictfp Point() {}</code> gives the same error. Making the whole class strictfp covers its constructors.',
+          '<strong>Abstract methods:</strong> <code>strictfp abstract double area();</code> gives "illegal combination of modifiers: abstract and strictfp", because an abstract method has no body for the rule to apply to. The same goes for an abstract method declared in an interface.',
+        ],
+      },
+      {
+        heading: 'Java 17 Change (JEP 306): Always Strict',
+        body: `By Java 17, every processor the JVM supports does floating-point through SSE2 or equivalent instructions, where exact IEEE 754 arithmetic is just as fast as the relaxed mode. JEP 306, "Restore Always-Strict Floating-Point Semantics", therefore made all floating-point operations strict by default — the JVM specification was updated so that strict IEEE 754 semantics apply everywhere, and the strictfp keyword became redundant. It is still legal to write, for backward compatibility, but <code>javac</code> 17 prints <code>warning: [strictfp] as of release 17, all floating-point expressions are evaluated strictly and 'strictfp' is not required</code>. In practice, this means you are unlikely to ever need to type strictfp in code targeting modern Java versions. It remains worth knowing, however, because it still appears in interview questions, certification exams, and in older Java 8/11-era codebases where it was meaningful.`,
+      },
+      {
+        heading: 'Common Interview Questions',
+        list: [
+          '<strong>What is strictfp?</strong> A modifier that forces float and double calculations to follow IEEE 754 exactly, so results are the same on every platform.',
+          '<strong>When was it introduced?</strong> In Java 1.2.',
+          '<strong>Where can strictfp be used?</strong> On classes (including abstract classes), interfaces and concrete methods.',
+          '<strong>Can we use strictfp with abstract methods?</strong> No. abstract and strictfp is an illegal combination.',
+          '<strong>Can an abstract class be strictfp?</strong> Yes.',
+          '<strong>Can a variable or constructor be strictfp?</strong> No. Both are compile errors.',
+          '<strong>Is strictfp inherited by subclasses?</strong> No. It applies to the declaring type and its nested types only.',
+          '<strong>Is strictfp needed in Java 17+?</strong> No. All floating-point is strict by default since JEP 306, and the compiler warns that the keyword is redundant.',
+        ],
       },
     ],
     examples: [
@@ -714,17 +879,46 @@ Q6 the object is a Cat, so the cast fails at runtime, not at compile time.`,
 }`,
         output: '2.4200000000000004',
       },
+      {
+        caption: 'A strictfp class: binary rounding still happens, and an intermediate overflow gives Infinity on every JVM',
+        code: `public strictfp class StrictfpDemo {
+
+    static double average(double... values) {
+        double sum = 0;
+        for (double v : values) {
+            sum += v;
+        }
+        return sum / values.length;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(0.1 + 0.2);
+        System.out.println(average(1.1, 2.2, 3.3));
+        System.out.println(Double.MAX_VALUE * 2 / 2);   // overflows to Infinity under strict rules
+        System.out.println(Math.ulp(1.0));
+    }
+}`,
+        output: `0.30000000000000004
+2.1999999999999997
+Infinity
+2.220446049250313E-16`,
+      },
     ],
     commonMistakes: [
       'Assuming strictfp changes the numeric result of a calculation in modern Java — since Java 17, strict behavior is already the default everywhere, so adding the keyword changes nothing.',
+      'Expecting strictfp to fix 0.1 + 0.2 printing 0.30000000000000004 — it only makes rounding consistent, not exact; use BigDecimal for exact decimals.',
+      'Combining strictfp with abstract on a method, which is a compile error because there is no body to make strict.',
+      'Assuming a subclass or an implementing class inherits strictfp from its parent or interface — it does not.',
       'Trying to apply strictfp to a single local variable or field — it can only be applied at the class, interface, or method level.',
       'Believing strictfp is needed for basic int/long arithmetic — it only affects floating-point (float/double) computations.',
       'Confusing strictfp with performance tuning — it is about correctness/consistency of results, not speed.',
     ],
     keyPoints: [
       'strictfp forces IEEE 754-compliant floating-point results consistently across all JVM implementations.',
-      'It can be applied to classes, interfaces, and methods (applying it to a class/interface applies it to all its methods).',
-      'Since Java 17, strictfp behavior is the default everywhere, making the keyword mostly a legacy/interview topic today.',
+      'It was added in Java 1.2 because x87 hardware could keep wider intermediate results, giving slightly different answers across platforms.',
+      'It can be applied to classes, interfaces, and methods (applying it to a class/interface applies it to all its methods and nested types, but not to subclasses).',
+      'It is not allowed on variables, constructors, or abstract methods.',
+      'Since Java 17 (JEP 306), strictfp behavior is the default everywhere and javac warns that the keyword is redundant, making it mostly a legacy/interview topic today.',
       'It never affects integer arithmetic — only float and double computations.',
     ],
   },
