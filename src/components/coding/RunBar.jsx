@@ -31,19 +31,21 @@ export default function RunBar({
           disabled={running}
           className="w-full sm:w-auto"
         />
-        <button
-          type="button"
-          onClick={onToggleStdin}
-          aria-pressed={stdinOpen}
-          className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
-            stdinOpen
-              ? 'border-gold-400 text-gold-500'
-              : 'border-ink-200 text-ink-600 hover:border-gold-400 hover:text-gold-500 dark:border-ink-700 dark:text-ink-200'
-          }`}
-        >
-          <FiTerminal className="h-4 w-4" />
-          <span className="hidden sm:inline">Input</span>
-        </button>
+        {onToggleStdin && (
+          <button
+            type="button"
+            onClick={onToggleStdin}
+            aria-pressed={stdinOpen}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+              stdinOpen
+                ? 'border-gold-400 text-gold-500'
+                : 'border-ink-200 text-ink-600 hover:border-gold-400 hover:text-gold-500 dark:border-ink-700 dark:text-ink-200'
+            }`}
+          >
+            <FiTerminal className="h-4 w-4" />
+            <span className="hidden sm:inline">Input</span>
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2">

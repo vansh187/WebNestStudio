@@ -96,8 +96,15 @@ main .grid > * {
 }
 
 :root {
-  /* Height of the sticky global navbar — coding-workspace sticky bars offset by this. */
-  --nav-h: 72px;
+  /* Height of the sticky global navbar (Navbar.jsx header, h-22) — coding-workspace sticky
+     bars offset by this. */
+  --nav-h: 5.5rem;
+}
+
+/* While the backend IDE is on screen, the floating theme button and chat bubble would
+   sit on top of the editor and panels; the IDE has its own theme button. */
+html[data-ide-focus] [data-floating-widget] {
+  display: none !important;
 }
 
 ::selection {

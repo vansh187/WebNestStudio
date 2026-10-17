@@ -26,7 +26,21 @@ export const LANGUAGES = [
     defaultSnippet: 'print("Hello, World!")\n',
   },
   JAVA_LANGUAGE,
+  {
+    // A multi-file FastAPI project with a SQLite database, run by apiRuntime.worker.js.
+    id: 'backend',
+    label: 'Python Backend (FastAPI + SQLite)',
+    monacoId: 'python',
+    fileExtension: 'py',
+    mainFile: 'app/main.py',
+    runner: 'pyodide-asgi',
+    defaultSnippet: null,
+  },
 ]
+
+// Saved projects and shares go through the backend API, which does not store backend
+// workspaces yet; those are kept in the browser only.
+export const PROJECT_LANGUAGES = LANGUAGES.filter((l) => l.id !== 'backend')
 
 const BY_ID = Object.fromEntries(LANGUAGES.map((l) => [l.id, l]))
 

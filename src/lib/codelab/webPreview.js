@@ -1,3 +1,5 @@
+import { API_BRIDGE_SCRIPT } from './apiBridge.js'
+
 const OUTPUT_LIMIT = 64000
 
 function cap(text) {
@@ -5,12 +7,15 @@ function cap(text) {
   return { text: text.slice(0, OUTPUT_LIMIT), truncated: true }
 }
 
-function fileContent(files, name) {
-  const file = Array.isArray(files) ? files.find((item) => item?.name === name) : null
+function fileContent(files, name, folder = '') {
+  const file = Array.isArray(files) ? files.find((item) => item?.name === `${folder}${name}`) : null
   return file?.content ?? ''
 }
 
-export function createPreviewHtml(input) {
+// `folder` reads index.html, style.css and script.js from a subfolder (the backend
+// workspace keeps them in frontend/). `apiBridge` routes fetch('/api/...') to the
+// in-browser API (see apiBridge.js).
+export function createPreviewHtml(input, { folder = '', apiBridge = false } = {}) {
   // The bridge goes in the head so that scripts written inside index.html are captured too.
   const bridge = `
     <script>
@@ -44,9 +49,9 @@ export function createPreviewHtml(input) {
   `
 
   const files = Array.isArray(input) ? input : null
-  const html = files ? fileContent(files, 'index.html') : String(input || '')
-  const css = files ? fileContent(files, 'style.css') : ''
-  const js = files ? fileContent(files, 'script.js') : ''
+  const html = files ? fileContent(files, 'index.html', folder) : String(input || '')
+  const css = files ? fileContent(files, 'style.css', folder) : ''
+  const js = files ? fileContent(files, 'script.js', folder) : ''
   return `<!doctype html>
 <html>
   <head>
@@ -54,6 +59,7 @@ export function createPreviewHtml(input) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>${css}</style>
     ${bridge}
+    ${apiBridge ? `<script>${API_BRIDGE_SCRIPT}</script>` : ''}
   </head>
   <body>
     ${html}

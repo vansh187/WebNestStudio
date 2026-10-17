@@ -4,13 +4,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FiX, FiLoader } from 'react-icons/fi'
 import { newProjectSchema } from '../../schemas/codingSchemas'
-import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
+import { PROJECT_LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
 import { createProject, toCodePayload } from '../../api/coding'
 import { getErrorDetail, applyFieldErrors } from '../../lib/apiClient'
 import { useToast } from '../../context/ToastContext'
 
 // Full-screen sheet on phones, centred dialog from `sm` up (§8).
-export default function NewProjectModal({ onClose, onCreated, languages = LANGUAGES }) {
+export default function NewProjectModal({ onClose, onCreated, languages = PROJECT_LANGUAGES }) {
   const toast = useToast()
   const {
     register,

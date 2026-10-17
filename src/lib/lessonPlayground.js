@@ -41,6 +41,46 @@ for statement in SQL.split(";"):
 `
 }
 
+// Modules the backend playground can import: the standard library pieces lessons use, plus
+// the packages apiRuntime.worker.js loads. Anything else (pytest, pandas, pwdlib...) needs a
+// real project.
+const BACKEND_MODULES = new Set([
+  'fastapi', 'pydantic', 'starlette', 'sqlalchemy', 'jwt', 'bcrypt', 'httpx', 'anyio', 'typing_extensions', 'annotated_types', 'jinja2',
+  '__future__', 'asyncio', 'base64', 'collections', 'contextlib', 'dataclasses', 'datetime', 'decimal', 'enum', 'functools', 'hashlib',
+  'hmac', 'itertools', 'json', 'logging', 'math', 'os', 'pathlib', 'random', 're', 'secrets', 'sqlite3', 'string', 'time', 'typing',
+  'uuid', 'zoneinfo',
+  // uvicorn.run() is stubbed by the runtime; webnest_db is its own helper module.
+  'uvicorn', 'webnest_db',
+])
+
+// Every top-level module a program imports: `from a.b import c` gives a, and
+// `import a, b.c as d` gives a and b. Relative imports (`from . import x`) are local files.
+export function importedModules(code) {
+  const modules = []
+  for (const match of String(code ?? '').matchAll(/^[ \t]*(?:from[ \t]+([\w.]+)[ \t]+import\b|import[ \t]+([^\n#;]+))/gm)) {
+    if (match[1]) {
+      if (!match[1].startsWith('.')) modules.push(match[1].split('.')[0])
+      continue
+    }
+    for (const part of match[2].split(',')) {
+      const name = part.trim().split(/\s+/)[0]
+      if (name) modules.push(name.split('.')[0])
+    }
+  }
+  return modules
+}
+
+// A FastAPI program that runs as it is in the backend playground.
+export function isBackendRunnable(code) {
+  if (!code || !/\bFastAPI\s*\(/.test(code)) return false
+  return importedModules(code).every((name) => BACKEND_MODULES.has(name))
+}
+
+// The lesson's code becomes app/main.py; Playground adds the rest of the blank starter.
+function backendWorkspace(lesson, code) {
+  return { language: 'backend', files: [{ name: 'app/main.py', language: 'python', content: code }], selectedFile: 'app/main.py', source: code, stdin: '', lessonId: lesson.id, starter: 'blank' }
+}
+
 function pythonWorkspace(lesson, code) {
   return { language: 'python', files: [{ name: 'main.py', language: 'python', content: code }], selectedFile: 'main.py', source: code, stdin: '', lessonId: lesson.id }
 }
@@ -68,7 +108,7 @@ function workspaceForCode(lesson, code, language, javaCourses = ['java-core']) {
   // Setup lessons also contain terminal commands. They are useful to copy, but
   // are not Python/JavaScript programs and must not be sent to those runners.
   if (/^\s*(?:\$\s+|(?:python3?|pip3?|npm|npx|node|cd|mkdir|source|sudo|brew|apt|git)\s+|>>>\s)/m.test(code)) return null
-  if (language === 'python') return pythonWorkspace(lesson, code)
+  if (language === 'python') return isBackendRunnable(code) ? backendWorkspace(lesson, code) : pythonWorkspace(lesson, code)
   // Only complete Java Core programs run as they are; Spring, JDBC and servlet examples
   // need libraries the playground does not have.
   if (language === 'java') {
@@ -80,16 +120,19 @@ function workspaceForCode(lesson, code, language, javaCourses = ['java-core']) {
 
 export function lessonTemplate(lesson, exampleIndex = 0) {
   const example = lesson?.examples?.[exampleIndex] || (exampleIndex === 0 ? lesson?.resources?.[0] : null)
-  // Framework/database examples (FastAPI, Streamlit, MySQL...) need a local project.
-  if (example?.runnable === false) return null
-  return workspaceForCode(lesson, example?.code || example?.content, lesson?.language || example?.language)
+  const code = example?.code || example?.content
+  // Framework/database examples (Streamlit, MySQL...) need a local project. FastAPI ones
+  // run in the backend playground when they only use what it has.
+  if (example?.runnable === false && !isBackendRunnable(code)) return null
+  return workspaceForCode(lesson, code, lesson?.language || example?.language)
 }
 
 // The exercise starter code, when the lesson has one that the playground can run.
 export function lessonExerciseTemplate(lesson) {
   const examples = lesson?.examples || []
-  // A lesson whose examples all need a local project has an exercise that does too.
-  if (examples.length && examples.every((example) => example.runnable === false)) return null
+  // A lesson whose examples all need a local project has an exercise that does too,
+  // unless the exercise itself is a FastAPI program the backend playground can run.
+  if (examples.length && examples.every((example) => example.runnable === false) && !isBackendRunnable(lesson?.exercise_starter)) return null
   // SQL exercises are written for SQLite, so they run through the SQL runner.
   if (lesson?.language === 'sql') {
     return lesson.exercise_starter ? pythonWorkspace(lesson, sqlRunnerSource(lesson.exercise_starter)) : null
@@ -105,6 +148,7 @@ const SCRATCH_NOTES = {
   web: 'Shows a live preview of your HTML, CSS and JavaScript.',
   react: 'Shows a live preview of plain HTML, CSS and JavaScript. JSX needs a React project on your computer.',
   sql: 'Runs your SQL on SQLite in your browser. Standard SQL works; a few features that exist only in PostgreSQL or MySQL do not.',
+  backend: 'A layered FastAPI project with a SQLite database, running in your browser.',
 }
 
 // A blank workspace for the learner's own code on this topic. Every lesson has one, in
@@ -112,6 +156,10 @@ const SCRATCH_NOTES = {
 export function lessonScratch(lesson) {
   if (!lesson?.id) return null
   const language = lesson.language
+  // FastAPI lessons practise in the backend workspace; Playground fills in the blank starter.
+  if (language === 'python' && (lesson.examples ?? []).some((example) => isBackendRunnable(example.code))) {
+    return { language: 'backend', files: [], selectedFile: 'app/main.py', source: '', stdin: '', lessonId: lesson.id, starter: 'blank', note: SCRATCH_NOTES.backend }
+  }
   if (language === 'python') return { ...pythonWorkspace(lesson, PYTHON_SCRATCH), note: SCRATCH_NOTES.python }
   if (language === 'java') return { ...javaWorkspace(lesson, JAVA_SCRATCH), note: SCRATCH_NOTES.java }
   if (language === 'sql') return { ...pythonWorkspace(lesson, sqlRunnerSource(SQL_SAMPLE)), note: SCRATCH_NOTES.sql }

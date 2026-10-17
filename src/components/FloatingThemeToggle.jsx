@@ -11,6 +11,7 @@ export default function FloatingThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
+      data-floating-widget
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       className="fixed bottom-5 left-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-ink-200 bg-white/90 text-ink-700 shadow-lg backdrop-blur transition-colors hover:border-gold-400 hover:text-gold-500 dark:border-ink-700 dark:bg-ink-900/90 dark:text-ink-100"
     >

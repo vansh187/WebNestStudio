@@ -13,6 +13,9 @@ import {
   renameJavaFile, validateJavaClassName,
 } from '../../lib/codelab/javaProject'
 import { parseJavacDiagnostics } from '../../lib/codelab/javaIntel/diagnostics'
+import { createPreviewHtml } from '../../lib/codelab/webPreview'
+import { useApiRuntime } from '../../hooks/useApiRuntime'
+import BackendWorkspace from './BackendWorkspace'
 import ErrorBoundary from '../ErrorBoundary'
 
 const EDITOR_HEIGHT =
@@ -43,7 +46,13 @@ export default function CodingWorkspace({
   saveLabel,
   onShare,
   sharing,
+  workspaceKey = 'default',
 }) {
+  const backend = language === 'backend'
+  // The backend runtime only starts a worker on the first Run, so other languages pay nothing.
+  const api = useApiRuntime(workspaceKey)
+  const [backendPreview, setBackendPreview] = useState('')
+  const activeRunner = backend ? api.runner : runner
   const [stdinOpen, setStdinOpen] = useState(false)
   const [consoleText, setConsoleText] = useState('')
   const [javaClassName, setJavaClassName] = useState('Main')
@@ -119,16 +128,22 @@ export default function CodingWorkspace({
   }
 
   useEffect(() => {
-    if (runner.running && !wasRunning.current) {
+    if (activeRunner.running && !wasRunning.current) {
       if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
         outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }
-    wasRunning.current = runner.running
-  }, [runner.running])
+    wasRunning.current = activeRunner.running
+  }, [activeRunner.running])
 
   const handleRun = () => {
     setConsoleText('')
+    if (backend) {
+      api.run(files)
+        .then(() => setBackendPreview(createPreviewHtml(files, { folder: 'frontend/', apiBridge: true })))
+        .catch((err) => console.error('Could not build the frontend preview:', err))
+      return
+    }
     const sourceText = activeFile?.content ?? source ?? ''
     runner.run({
       language,
@@ -166,6 +181,8 @@ export default function CodingWorkspace({
         {headerRight && <div className="shrink-0">{headerRight}</div>}
       </div>
 
+      {/* The backend IDE has its own toolbar with the language picker and Run. */}
+      {!backend && (
       <div className="mt-4">
         <ErrorBoundary>
           <RunBar
@@ -173,19 +190,44 @@ export default function CodingWorkspace({
             language={language}
             onLanguageChange={onLanguageChange}
             onRun={handleRun}
-            onCancel={runner.cancel}
-            running={runner.running}
+            onCancel={activeRunner.cancel}
+            running={activeRunner.running}
             stdinOpen={stdinOpen}
-            onToggleStdin={() => setStdinOpen((v) => !v)}
-            onSave={onSave}
+            onToggleStdin={backend ? null : () => setStdinOpen((v) => !v)}
+            onSave={backend ? null : onSave}
             saving={saving}
             saveLabel={saveLabel}
-            onShare={onShare}
+            onShare={backend ? null : onShare}
             sharing={sharing}
           />
         </ErrorBoundary>
       </div>
+      )}
 
+      {backend ? (
+        <>
+          <p className="mt-2 text-xs text-ink-500 dark:text-ink-300">
+            Python, FastAPI and SQLite run inside your browser. Your files and database are saved in this browser only. Shortcuts: Ctrl+Enter runs, Ctrl+B shows files, Ctrl+J shows the panel.
+          </p>
+          <BackendWorkspace
+            api={api}
+            files={files ?? []}
+            selectedFile={selectedFile}
+            onSelectFile={onSelectFile}
+            onFileChange={onFileChange}
+            onFilesChange={onFilesChange}
+            previewHtml={backendPreview}
+            workspaceKey={workspaceKey}
+            outputRef={outputRef}
+            onRun={handleRun}
+            onCancel={activeRunner.cancel}
+            running={activeRunner.running}
+            languages={languages}
+            language={language}
+            onLanguageChange={onLanguageChange}
+          />
+        </>
+      ) : (
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
         <div>
           {language === 'java' && (
@@ -278,6 +320,7 @@ export default function CodingWorkspace({
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

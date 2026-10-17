@@ -58,6 +58,9 @@ function useJavaIntel({ editorState, language, readOnly, javaProject, markers })
 
 export default function CodeEditor({
   value, onChange, language, readOnly = false, className = '', roundedTop = true, javaProject, markers,
+  // `path` keeps a separate Monaco model (and undo history) per file; `frameless` drops the
+  // border so the editor can sit edge to edge inside an IDE layout.
+  path, frameless = false,
 }) {
   const { theme } = useTheme()
   const isLarge = useIsLargeScreen()
@@ -91,10 +94,11 @@ export default function CodeEditor({
 
   return (
     <div
-      className={`overflow-hidden border border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-900/40 ${roundedTop ? 'rounded-xl' : 'rounded-b-xl'} ${className}`}
+      className={`overflow-hidden bg-white dark:bg-ink-900/40 ${frameless ? '' : `border border-ink-200 dark:border-ink-800 ${roundedTop ? 'rounded-xl' : 'rounded-b-xl'}`} ${className}`}
     >
       <Editor
         value={value}
+        path={path}
         language={language}
         theme={theme === 'dark' ? 'vs-dark' : 'vs'}
         onChange={(v) => onChange?.(v ?? '')}

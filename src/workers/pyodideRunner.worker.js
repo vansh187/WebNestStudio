@@ -1,42 +1,11 @@
 import { loadPyodide } from 'pyodide'
+import { PYODIDE_INDEX_URL, cap, createSink, flushStreams } from './pyodideShared'
 
 let pyodidePromise
-const OUTPUT_LIMIT = 64000
-const PYODIDE_INDEX_URL = '/pyodide/'
 
 function getPyodide() {
   if (!pyodidePromise) pyodidePromise = loadPyodide({ indexURL: PYODIDE_INDEX_URL })
   return pyodidePromise
-}
-
-// Collects raw bytes written to a stream. The line-based `batched` handler drops a final line
-// that has no newline (an input() prompt before a crash, print(..., end="")), so use `write`.
-function createSink() {
-  const decoder = new TextDecoder()
-  const chunks = []
-  return {
-    write(buffer) {
-      chunks.push(decoder.decode(buffer, { stream: true }))
-      return buffer.length
-    },
-    text() {
-      return (chunks.join('') + decoder.decode()).replace(/\n$/, '')
-    },
-  }
-}
-
-// Python buffers sys.stdout; flush after each run so nothing is left behind for the next one.
-function flushStreams(pyodide) {
-  try {
-    pyodide?.runPython('import sys\nsys.stdout.flush()\nsys.stderr.flush()')
-  } catch {
-    // Nothing useful to report if flushing itself fails.
-  }
-}
-
-function cap(text) {
-  if (text.length <= OUTPUT_LIMIT) return { text, truncated: false }
-  return { text: text.slice(0, OUTPUT_LIMIT), truncated: true }
 }
 
 self.onmessage = async (event) => {

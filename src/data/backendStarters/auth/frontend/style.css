@@ -1,0 +1,19 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7fb; color: #111827; }
+.app { max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+h1 { font-size: 1.4rem; }
+form { display: grid; gap: 0.5rem; }
+#new-task { grid-template-columns: 1fr auto; }
+input, button { font: inherit; padding: 0.6rem 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; }
+button { background: #111827; color: white; border-color: #111827; cursor: pointer; }
+button.ghost { background: transparent; color: #111827; }
+.tabs { display: flex; gap: 0.25rem; margin-bottom: 0.75rem; }
+.tabs button { flex: 1; background: white; color: #374151; }
+.tabs button.active { background: #111827; color: white; }
+header { display: flex; align-items: center; justify-content: space-between; }
+ul { list-style: none; padding: 0; display: grid; gap: 0.5rem; }
+li { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem; background: white; border: 1px solid #e5e7eb; border-radius: 10px; }
+li span { flex: 1; }
+li.done span { text-decoration: line-through; color: #6b7280; }
+li button { background: transparent; color: #6b7280; border: 0; }
+#message { min-height: 1.25rem; color: #b91c1c; font-size: 0.9rem; }
