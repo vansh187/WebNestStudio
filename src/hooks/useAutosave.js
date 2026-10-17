@@ -44,20 +44,23 @@ export function useAutosave(value, saveFn, { delay = 1500, enabled = true } = {}
     }
   }, [])
 
+  // Resolves true when everything is saved (or nothing was pending), false when the save failed.
   const flush = useCallback(async () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
     const snapshot = JSON.stringify(valueRef.current)
-    if (snapshot === lastSavedRef.current) return
+    if (snapshot === lastSavedRef.current) return true
     if (mountedRef.current) setStatus('saving')
     try {
       await saveFnRef.current(valueRef.current)
       lastSavedRef.current = snapshot
       if (mountedRef.current) setStatus('saved')
+      return true
     } catch {
       if (mountedRef.current) setStatus('error')
+      return false
     }
   }, [])
 

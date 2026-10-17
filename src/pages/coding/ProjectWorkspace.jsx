@@ -123,7 +123,7 @@ export default function ProjectWorkspace() {
     setLanguage(next)
   }, [language, files, source])
 
-  const { status: saveStatus } = useAutosave(autosaveValue, (val) => updateProject(id, val), {
+  const { status: saveStatus, flush: saveNow } = useAutosave(autosaveValue, (val) => updateProject(id, val), {
     enabled: Boolean(project),
   })
 
@@ -199,6 +199,7 @@ export default function ProjectWorkspace() {
         />
       }
       headerRight={<SaveStatus status={saveStatus} />}
+      beforeDebugReload={saveNow}
       languages={languages}
       language={language}
       onLanguageChange={handleLanguageChange}
