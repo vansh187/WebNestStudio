@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMaximize2, FiMinimize2, FiMonitor,
-  FiMoon, FiPlay, FiSend, FiSidebar, FiSquare, FiSun, FiTerminal, FiX,
+  FiMoon, FiPlay, FiRotateCw, FiSend, FiSidebar, FiSquare, FiSun, FiTerminal, FiX,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import BackendConsole from './BackendConsole'
@@ -17,7 +17,8 @@ import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFil
 import { PANEL_LIMITS, useIdeLayout } from '../../hooks/useIdeLayout'
 import { useTheme } from '../../context/ThemeContext'
 import { statusTone } from '../../lib/codelab/httpStyles'
-import { isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
+import { canIsolate, isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
+import DebugReloadDialog from './DebugReloadDialog'
 
 const REQUEST_LOG_LIMIT = 200
 
@@ -47,6 +48,8 @@ const MOD = isMac ? '⌘' : 'Ctrl+'
 export default function BackendWorkspace({
   api, files, selectedFile, onSelectFile, onFileChange, onFilesChange, previewHtml, workspaceKey,
   outputRef, onRun, onCancel, running, languages = [], language, onLanguageChange, toolbarExtra,
+  // Optional async save before the debugging reload; resolves false when saving failed.
+  beforeDebugReload,
 }) {
   const layout = useIdeLayout()
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
@@ -63,6 +66,8 @@ export default function BackendWorkspace({
   const [consoleText, setConsoleText] = useState('')
   const [openFiles, setOpenFiles] = useState(() => (selectedFile ? [selectedFile] : []))
   const [debugLocation, setDebugLocation] = useState(null)
+  const [reloadPrompt, setReloadPrompt] = useState(false)
+  const closeReloadPrompt = useCallback(() => setReloadPrompt(false), [])
   const sectionRef = useRef(null)
   const { theme, toggleTheme } = useTheme()
 
@@ -172,11 +177,26 @@ export default function BackendWorkspace({
     setPanelOpen(true)
     // Pausing needs an isolated page, which takes one reload (see lib/codelab/isolation.js).
     // When the browser refused isolation after that reload, the Debug tab explains why.
-    if (!debugging && !isIsolated() && !isolationUnsupported()) {
-      if (window.confirm('Debugging reloads the editor once so it can pause your API at breakpoints. Your files are saved. Reload now?')) reloadIsolated()
+    if (!debugging && !isIsolated() && !isolationUnsupported() && canIsolate()) {
+      setReloadPrompt(true)
       return
     }
     setDebugging((value) => !value)
+  }
+
+  // Saves everything, then reloads into the isolated page. Returns a message when it could
+  // not reload; otherwise it never resolves, so the dialog keeps showing "reloading".
+  const confirmDebugReload = async () => {
+    try {
+      if (api.ready || running) await api.runner.stop() // writes pending database changes
+      if (beforeDebugReload && !(await beforeDebugReload())) {
+        return 'Your project could not be saved, so the page was not reloaded. Check your connection and try again.'
+      }
+      reloadIsolated()
+      return new Promise(() => {})
+    } catch {
+      return 'Something went wrong before the reload. Try again.'
+    }
   }
 
   const openTraceLocation = (file, line) => {
@@ -303,18 +323,30 @@ export default function BackendWorkspace({
             screens, so the page header above it is out of view. */}
         {toolbarExtra && <div className="ml-1 flex min-w-0 items-center gap-2 overflow-x-auto">{toolbarExtra}</div>}
         <div className="ml-auto flex shrink-0 items-center gap-1">
-          {(running ? (
+          {/* Starting: Stop cancels. API up: Restart reloads your code, Stop shuts it down
+              (like a dev server). Otherwise: Run. */}
+          {running ? (
             <button type="button" onClick={onCancel} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-500 px-3 text-xs font-semibold text-white hover:bg-red-600">
               <FiSquare className="h-3.5 w-3.5" /> Stop
             </button>
+          ) : api.ready ? (
+            <>
+              <button type="button" onClick={onRun} title={`Restart with your latest code (${MOD}Enter)`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-ink-900 px-3 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-400 dark:text-ink-950">
+                <FiRotateCw className="h-3.5 w-3.5" /> Restart
+              </button>
+              <button type="button" onClick={api.runner.stop} title="Stop the API" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-500 px-3 text-xs font-semibold text-white hover:bg-red-600">
+                <FiSquare className="h-3.5 w-3.5" /> Stop
+              </button>
+            </>
           ) : (
             <button type="button" onClick={onRun} title={`Run (${MOD}Enter)`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-ink-900 px-3 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-400 dark:text-ink-950">
               <FiPlay className="h-3.5 w-3.5" /> Run
             </button>
-          ))}
+          )}
           <button type="button" onClick={openDebug} aria-pressed={debugging} title={debugging ? 'Turn off debugging' : 'Arm debugger for the next API request'} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold ${debugging ? 'border-red-400 bg-red-500/10 text-red-600 dark:text-red-300' : 'border-ink-300 text-ink-700 hover:border-gold-400 hover:text-ink-950 dark:border-ink-700 dark:text-ink-200 dark:hover:text-white'}`}>
             <FiCode className="h-3.5 w-3.5" /> {debugging ? 'Debugging' : 'Debug'}
           </button>
+          {reloadPrompt && <DebugReloadDialog onConfirm={confirmDebugReload} onClose={closeReloadPrompt} />}
           <span className="mx-1 h-5 w-px bg-ink-200 dark:bg-ink-700" aria-hidden="true" />
           {large && (
             <button type="button" onClick={layout.togglePanelPosition} className={TOOL_BTN} title={panelPosition === 'right' ? 'Move panel to the bottom' : 'Move panel to the right'} aria-label={panelPosition === 'right' ? 'Move panel to the bottom' : 'Move panel to the right'}>
@@ -506,7 +538,7 @@ export default function BackendWorkspace({
                     breakpoints={liveBreakpoints}
                     isolationUnsupported={isolationUnsupported()}
                     onResume={api.resumeDebug}
-                    onStop={api.runner.cancel}
+                    onStop={api.runner.stop}
                     onOpenLocation={openTraceLocation}
                   />
                 )}
@@ -531,8 +563,8 @@ export default function BackendWorkspace({
       {/* Status bar: the state of the API at a glance, even with the panel hidden */}
       <footer className="flex h-7 shrink-0 items-center gap-3 overflow-x-auto bg-ink-900 px-3 text-[11px] text-ink-200 dark:border-t dark:border-ink-800 dark:bg-ink-950">
         <button type="button" onClick={() => showPanel('output')} className="flex shrink-0 items-center gap-1.5 hover:text-white">
-          <span className={`h-2 w-2 rounded-full ${running ? 'animate-pulse bg-gold-400' : api.ready ? 'bg-emerald-400' : api.runner.result ? 'bg-red-400' : 'bg-ink-500'}`} aria-hidden="true" />
-          {running ? 'Starting…' : api.ready ? 'API running' : api.runner.result ? 'API not loaded' : 'Not started'}
+          <span className={`h-2 w-2 rounded-full ${running ? 'animate-pulse bg-gold-400' : api.ready ? 'bg-emerald-400' : api.runner.stopped ? 'bg-ink-500' : api.runner.result ? 'bg-red-400' : 'bg-ink-500'}`} aria-hidden="true" />
+          {running ? 'Starting…' : api.ready ? 'API running' : api.runner.stopped ? 'Stopped' : api.runner.result ? 'API not loaded' : 'Not started'}
         </button>
         {api.ready && (
           <button type="button" onClick={() => showPanel('api')} className="shrink-0 hover:text-white">{routeCount} route{routeCount === 1 ? '' : 's'}</button>

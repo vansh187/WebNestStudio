@@ -28,6 +28,8 @@ export default function CodingWorkspace({
   titleField,
   subtitle,
   headerRight,
+  // Backend only: saves the project before the debugger's one-time reload (see BackendWorkspace).
+  beforeDebugReload,
   languages,
   language,
   onLanguageChange,
@@ -227,6 +229,7 @@ export default function CodingWorkspace({
             language={language}
             onLanguageChange={onLanguageChange}
             toolbarExtra={headerRight}
+            beforeDebugReload={beforeDebugReload}
           />
         </>
       ) : (

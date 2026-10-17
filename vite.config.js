@@ -11,14 +11,16 @@ const adsenseClient = {
 }
 
 // SharedArrayBuffer lets the Python worker pause at a breakpoint while the editor remains
-// interactive. Only the playground opened with ?isolate=1 (the Debug button reloads into
-// it) is isolated, the same rule as vercel.json: an isolated page blocks cross-origin
-// iframes such as lesson videos and embeds in the web preview. Worker scripts need COEP
-// too: an isolated page refuses to start a worker served without it.
+// interactive. Only the editors opened with ?isolate=1 (the Debug button reloads into
+// them) are isolated, the same rule as vercel.json and src/lib/codelab/isolation.js: an
+// isolated page blocks cross-origin iframes such as lesson videos and embeds in the web
+// preview. Worker scripts need COEP too: an isolated page refuses to start a worker
+// served without it.
+const ISOLATION_PATH = /^\/(?:codelab\/playground|projects\/[^/]+)\/?$/
 const isolationHeaders = (req, res, next) => {
   const dest = req.headers['sec-fetch-dest']
   const url = new URL(req.url || '/', 'http://localhost')
-  if (url.pathname === '/codelab/playground' && url.searchParams.get('isolate') === '1') {
+  if (ISOLATION_PATH.test(url.pathname) && url.searchParams.get('isolate') === '1') {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
     res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
   } else if (dest === 'worker' || dest === 'sharedworker') {
