@@ -111,7 +111,9 @@ export function useApiRuntime(workspaceKey) {
 
   const spawn = useCallback(() => {
     const worker = new Worker(new URL('../workers/apiRuntime.worker.js', import.meta.url), { type: 'module' })
+    let started = false
     worker.onmessage = (event) => {
+      started = true
       const message = event.data ?? {}
       if (message.type === 'debugPaused') {
         const entry = pendingRef.current.get(message.id)
@@ -132,6 +134,13 @@ export function useApiRuntime(workspaceKey) {
     }
     worker.onerror = (event) => {
       event.preventDefault?.()
+      // A worker script that never loaded fires a plain error with no message. That happens
+      // when this tab was opened before a deploy: the worker file was renamed and the old
+      // name now returns 404 (in dev: after Vite re-optimised its dependencies).
+      if (!started && !event.message) {
+        terminate('CodeLab was updated after this page was opened. Reload the page to run your API.')
+        return
+      }
       terminate(event.message || 'The backend runtime crashed.')
     }
     worker.onmessageerror = () => terminate('The backend runtime sent a message that could not be read.')

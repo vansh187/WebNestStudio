@@ -109,7 +109,9 @@ export function useCodeRunner() {
     worker.onerror = (event) => {
       if (runIdRef.current !== runId) return
       terminateWorker()
-      finish(null, event.message || 'The Python runner crashed.')
+      // No message means the worker script never loaded: this tab was opened before a deploy
+      // renamed it (the old name returns 404). Only a reload picks up the new name.
+      finish(null, event.message || 'CodeLab was updated after this page was opened. Reload the page to run your code.')
     }
 
     worker.postMessage({
