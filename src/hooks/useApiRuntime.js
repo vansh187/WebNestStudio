@@ -337,11 +337,21 @@ export function useApiRuntime(workspaceKey) {
 
   const cancel = useCallback(() => {
     terminate('Stopped.')
+    // The worker that held the API is gone, so nothing is loaded any more.
+    setOpenapi(null)
     setRunning(false)
     setRunningSince(null)
     setRunningHint(null)
     setStopped(true)
   }, [terminate])
+
+  // Stops a running API, like stopping a dev server. Database writes still waiting for the
+  // batched snapshot are saved first, unless a request is paused at a breakpoint (the
+  // worker cannot answer then).
+  const stop = useCallback(async () => {
+    if (snapshotTimerRef.current && !pausedRef.current) await snapshotNow()
+    cancel()
+  }, [cancel, snapshotNow])
 
   const request = useCallback(async (spec, source = 'tester', debuggerConfig = null) => {
     const startedAt = Date.now()
@@ -426,8 +436,9 @@ export function useApiRuntime(workspaceKey) {
   const runner = useMemo(() => ({
     running, runningSince, runningHint, stopped, result, error,
     cancel,
+    stop,
     reset: () => { setResult(null); setError(null); setStopped(false) },
-  }), [running, runningSince, runningHint, stopped, result, error, cancel])
+  }), [running, runningSince, runningHint, stopped, result, error, cancel, stop])
 
   // Memoized so consumers can depend on the object and its functions without
   // re-subscribing on every render.
