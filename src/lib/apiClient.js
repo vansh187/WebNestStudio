@@ -34,6 +34,11 @@ const COMPILER_TIMEOUT = 60000
 const JAVA_PATHS = ['/api/java']
 const JAVA_TIMEOUT = 90000
 
+// GitHub sync: the backend reads or writes a whole repository through GitHub's API
+// (up to 300 files), possibly after a Render cold start.
+const GITHUB_PATHS = ['/api/github']
+const GITHUB_TIMEOUT = 60000
+
 let hasCompletedFirstRequest = false
 const slowListeners = new Set()
 let pendingSlowCount = 0
@@ -77,6 +82,8 @@ api.interceptors.request.use((config) => {
     config.timeout = COMPILER_TIMEOUT
   } else if (JAVA_PATHS.some((p) => url.includes(p))) {
     config.timeout = JAVA_TIMEOUT
+  } else if (GITHUB_PATHS.some((p) => url.includes(p))) {
+    config.timeout = GITHUB_TIMEOUT
   } else {
     config.timeout = hasCompletedFirstRequest ? WARM_TIMEOUT : COLD_START_TIMEOUT
   }
@@ -118,7 +125,10 @@ api.interceptors.response.use(
     // unconfigured (per BACKEND_API_CODING_PLATFORM.md), which a 2s retry won't fix -
     // fail fast so the user sees the message immediately. Same for the Java runner.
     const isCompilerCall = [...COMPILER_PATHS, ...JAVA_PATHS].some((p) => path.includes(p))
-    if (status === 503 && !config._retried503 && !isCompilerCall) {
+    // GitHub writes (create repo, commit, OAuth exchange) may have gone through before the
+    // 503, so replaying them could create a repo twice or burn a single-use OAuth code.
+    const isGitHubWrite = GITHUB_PATHS.some((p) => path.includes(p)) && (config.method ?? 'get').toLowerCase() !== 'get'
+    if (status === 503 && !config._retried503 && !isCompilerCall && !isGitHubWrite) {
       config._retried503 = true
       await new Promise((r) => setTimeout(r, 2000))
       return api(config)

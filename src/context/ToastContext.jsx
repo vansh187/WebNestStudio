@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import { FiCheckCircle, FiAlertTriangle, FiInfo, FiX } from 'react-icons/fi'
 
 const ToastContext = createContext(null)
@@ -30,11 +30,13 @@ export function ToastProvider({ children }) {
     return id
   }, [dismiss])
 
-  const toast = {
+  // Stable across renders, so callbacks that depend on `toast` don't change every time a
+  // toast appears or disappears.
+  const toast = useMemo(() => ({
     success: (message, opts) => push('success', message, opts),
     error: (message, opts) => push('error', message, opts),
     info: (message, opts) => push('info', message, opts),
-  }
+  }), [push])
 
   return (
     <ToastContext.Provider value={toast}>

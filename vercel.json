@@ -257,6 +257,10 @@
     {
       "source": "/codelab/dashboard",
       "destination": "/app-private"
+    },
+    {
+      "source": "/codelab/github/callback",
+      "destination": "/app-private"
     }
   ]
 }
