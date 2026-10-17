@@ -46,7 +46,7 @@ const MOD = isMac ? '⌘' : 'Ctrl+'
 // tester, the database, the architecture view and the frontend preview.
 export default function BackendWorkspace({
   api, files, selectedFile, onSelectFile, onFileChange, onFilesChange, previewHtml, workspaceKey,
-  outputRef, onRun, onCancel, running, languages = [], language, onLanguageChange,
+  outputRef, onRun, onCancel, running, languages = [], language, onLanguageChange, toolbarExtra,
 }) {
   const layout = useIdeLayout()
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
@@ -299,7 +299,10 @@ export default function BackendWorkspace({
         ) : (
           <span className="ml-1 hidden truncate text-xs font-semibold text-ink-600 dark:text-ink-300 sm:inline">Python Backend · FastAPI + SQLite</span>
         )}
-        <div className="ml-auto flex items-center gap-1">
+        {/* Page-level controls (GitHub, starter picker). The IDE fills the window on large
+            screens, so the page header above it is out of view. */}
+        {toolbarExtra && <div className="ml-1 flex min-w-0 items-center gap-2 overflow-x-auto">{toolbarExtra}</div>}
+        <div className="ml-auto flex shrink-0 items-center gap-1">
           {(running ? (
             <button type="button" onClick={onCancel} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-500 px-3 text-xs font-semibold text-white hover:bg-red-600">
               <FiSquare className="h-3.5 w-3.5" /> Stop

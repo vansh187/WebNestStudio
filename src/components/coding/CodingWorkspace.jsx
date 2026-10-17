@@ -178,7 +178,8 @@ export default function CodingWorkspace({
             )}
           {subtitle && <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">{subtitle}</p>}
         </div>
-        {headerRight && <div className="shrink-0">{headerRight}</div>}
+        {/* The backend IDE shows these in its own toolbar instead. */}
+        {headerRight && !backend && <div className="shrink-0">{headerRight}</div>}
       </div>
 
       {/* The backend IDE has its own toolbar with the language picker and Run. */}
@@ -225,6 +226,7 @@ export default function CodingWorkspace({
             languages={languages}
             language={language}
             onLanguageChange={onLanguageChange}
+            toolbarExtra={headerRight}
           />
         </>
       ) : (
