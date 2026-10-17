@@ -10,6 +10,33 @@ const adsenseClient = {
   transformIndexHtml: (html) => html.replaceAll('%ADSENSE_CLIENT%', ADSENSE_CLIENT),
 }
 
+// SharedArrayBuffer lets the Python worker pause at a breakpoint while the editor remains
+// interactive. Only the playground opened with ?isolate=1 (the Debug button reloads into
+// it) is isolated, the same rule as vercel.json: an isolated page blocks cross-origin
+// iframes such as lesson videos and embeds in the web preview. Worker scripts need COEP
+// too: an isolated page refuses to start a worker served without it.
+const isolationHeaders = (req, res, next) => {
+  const dest = req.headers['sec-fetch-dest']
+  const url = new URL(req.url || '/', 'http://localhost')
+  if (url.pathname === '/codelab/playground' && url.searchParams.get('isolate') === '1') {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+  } else if (dest === 'worker' || dest === 'sharedworker') {
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+  }
+  next()
+}
+
+const codeLabIsolation = {
+  name: 'codelab-isolation-headers',
+  configureServer(server) {
+    server.middlewares.use(isolationHeaders)
+  },
+  configurePreviewServer(server) {
+    server.middlewares.use(isolationHeaders)
+  },
+}
+
 // Course totals for the landing page, counted the same way as the Learn page
 // (CoursesList.jsx) but at build time, so Home doesn't load the course data.
 const LEARN_STATS = {
@@ -19,7 +46,7 @@ const LEARN_STATS = {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), adsenseClient],
+  plugins: [react(), tailwindcss(), adsenseClient, codeLabIsolation],
   define: { __LEARN_STATS__: JSON.stringify(LEARN_STATS) },
   server: {
     host: '127.0.0.1',

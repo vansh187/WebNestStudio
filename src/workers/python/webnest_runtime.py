@@ -28,6 +28,9 @@ AVAILABLE = "the Python standard library, FastAPI, Pydantic, SQLAlchemy, bcrypt 
 
 _app = None
 _trace = None
+_debug_breakpoints = set()
+_debug_pause_bridge = None
+_debug_step = None
 _original_connect = sqlite3.connect
 
 
@@ -333,6 +336,48 @@ def _on_start(code, offset):
     return None
 
 
+def _on_line(code, line_number):
+    """Pause the worker at a requested user breakpoint or next step location."""
+    global _debug_step
+    if not _is_user_code(code):
+        return sys.monitoring.DISABLE
+    bridge = _debug_pause_bridge
+    if bridge is None:
+        return None
+    frame = sys._getframe(1)
+    filename = _short_path(code.co_filename)
+    frame_id = id(frame)
+    depth = 0
+    parent = frame.f_back
+    while parent is not None and parent.f_code.co_filename.startswith(PACKAGE_DIR):
+        depth += 1
+        parent = parent.f_back
+    mode, target_id, target_depth = _debug_step or (None, None, None)
+    should_step = (
+        mode == "into"
+        or (mode == "over" and (frame_id == target_id or depth < target_depth))
+        or (mode == "out" and depth < target_depth)
+    )
+    if (filename, int(line_number)) not in _debug_breakpoints and not should_step:
+        return None
+    _debug_step = None
+    local_values = {}
+    for name, value in list(frame.f_locals.items())[:30]:
+        try:
+            rendered = repr(value)
+        except Exception:
+            rendered = "<unavailable>"
+        local_values[name] = rendered[:300]
+    command = bridge(filename, int(line_number), json.dumps(local_values), depth)
+    if command == 1:
+        _debug_step = ("into", frame_id, depth)
+    elif command == 2:
+        _debug_step = ("over", frame_id, depth)
+    elif command == 3:
+        _debug_step = ("out", frame_id, depth)
+    return None
+
+
 def _finish(frame, error=None):
     trace = _trace
     if trace is None:
@@ -382,10 +427,25 @@ def _install_monitoring():
     mon = sys.monitoring
     mon.use_tool_id(_TOOL, "webnest-trace")
     mon.register_callback(_TOOL, mon.events.PY_START, _on_start)
+    mon.register_callback(_TOOL, mon.events.LINE, _on_line)
     mon.register_callback(_TOOL, mon.events.PY_RETURN, _on_return)
     mon.register_callback(_TOOL, mon.events.PY_UNWIND, _on_unwind)
     mon.register_callback(_TOOL, mon.events.PY_YIELD, _on_yield)
+    # LINE is added per request, only while debugging (see request()): a callback on every
+    # line of user code would slow down every normal request.
     _events = mon.events.PY_START | mon.events.PY_RETURN | mon.events.PY_UNWIND | mon.events.PY_YIELD
+
+
+def configure_debugger(breakpoints_json, pause_bridge=None):
+    """Install breakpoints for one request. pause_bridge blocks the worker at a stop."""
+    global _debug_breakpoints, _debug_pause_bridge, _debug_step
+    try:
+        pairs = json.loads(breakpoints_json or "[]")
+        _debug_breakpoints = {(str(item["file"]), int(item["line"])) for item in pairs}
+    except (TypeError, ValueError, KeyError, json.JSONDecodeError):
+        _debug_breakpoints = set()
+    _debug_pause_bridge = pause_bridge
+    _debug_step = None
 
 
 def _record_sql(statement):
@@ -490,7 +550,8 @@ async def request(spec_json):
     content = body.encode("utf-8") if isinstance(body, str) and body != "" else None
     _trace = Trace()
     if _events is not None:
-        sys.monitoring.set_events(_TOOL, _events)
+        events = _events | sys.monitoring.events.LINE if _debug_pause_bridge is not None else _events
+        sys.monitoring.set_events(_TOOL, events)
     started = time.perf_counter()
     result = {}
     try:
@@ -524,6 +585,7 @@ async def request(spec_json):
         if _events is not None:
             sys.monitoring.set_events(_TOOL, 0)
         trace, _trace = _trace, None
+        configure_debugger("[]", None)
     result["ms"] = round((time.perf_counter() - started) * 1000, 2)
     result["trace"] = {"calls": trace.calls, "sql": trace.sql}
     return json.dumps(result, default=str)

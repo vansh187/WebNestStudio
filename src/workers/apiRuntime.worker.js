@@ -73,7 +73,22 @@ const handlers = {
   async applySchema(pyodide, { sql, rebuild }) {
     return parse(runtime.apply_schema(sql, Boolean(rebuild)))
   },
-  async request(pyodide, { spec }) {
+  async request(pyodide, { spec, breakpoints = [], control, id }) {
+    let bridge = null
+    if (typeof SharedArrayBuffer !== 'undefined' && control instanceof SharedArrayBuffer && breakpoints.length) {
+      const gates = new Int32Array(control)
+      bridge = (file, line, locals, depth) => {
+        Atomics.store(gates, 0, 0)
+        // `control` is shared, not copied: the page resumes this request through it.
+        self.postMessage({ id, type: 'debugPaused', control, file, line, locals, depth, method: spec?.method, path: spec?.path })
+        const result = Atomics.wait(gates, 0, 0, 600000)
+        if (result === 'timed-out') return 0
+        const command = Atomics.load(gates, 1)
+        Atomics.store(gates, 1, 0)
+        return command
+      }
+    }
+    runtime.configure_debugger(JSON.stringify(breakpoints), bridge)
     return parse(await runtime.request(JSON.stringify(spec)))
   },
   async sql(pyodide, { script }) {
@@ -107,7 +122,7 @@ async function handle({ id, type, ...payload }) {
     pyodide.setStderr(stderr)
     const handler = handlers[type]
     if (!handler) throw new Error(`Unknown runtime message: ${type}`)
-    const data = await handler(pyodide, payload)
+    const data = await handler(pyodide, { ...payload, id })
     flushStreams(pyodide)
     const out = cap(stdout.text())
     const err = cap(stderr.text())

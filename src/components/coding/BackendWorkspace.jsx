@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  FiChevronRight, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMaximize2, FiMinimize2, FiMonitor,
+  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMaximize2, FiMinimize2, FiMonitor,
   FiMoon, FiPlay, FiSend, FiSidebar, FiSquare, FiSun, FiTerminal, FiX,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
@@ -10,18 +10,21 @@ import PreviewPanel from './PreviewPanel'
 import ApiClientPanel from './ApiClientPanel'
 import DatabasePanel from './DatabasePanel'
 import ArchitecturePanel from './ArchitecturePanel'
+import DebugPanel from './DebugPanel'
 import ResizeHandle from './ResizeHandle'
 import ErrorBoundary from '../ErrorBoundary'
 import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFiles'
 import { PANEL_LIMITS, useIdeLayout } from '../../hooks/useIdeLayout'
 import { useTheme } from '../../context/ThemeContext'
 import { statusTone } from '../../lib/codelab/httpStyles'
+import { isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
 
 const REQUEST_LOG_LIMIT = 200
 
 const TABS = [
   { id: 'output', label: 'Output', icon: FiTerminal },
   { id: 'api', label: 'API', icon: FiSend },
+  { id: 'debug', label: 'Debug', icon: FiCode },
   { id: 'database', label: 'Database', icon: FiDatabase },
   { id: 'architecture', label: 'Architecture', icon: FiLayers },
   { id: 'preview', label: 'Preview', icon: FiMonitor },
@@ -49,10 +52,27 @@ export default function BackendWorkspace({
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
   const mainRef = useRef(null)
   const [tab, setTab] = useState('output')
+  // Arriving on the isolated URL means the learner pressed Debug, which reloaded the page.
+  const [debugging, setDebugging] = useState(() => isIsolated() && isIsolationUrl(window.location))
+  const [breakpoints, setBreakpoints] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`wns-codelab-breakpoints:${workspaceKey}`) || '[]')
+      return Array.isArray(saved) ? saved.filter((item) => typeof item?.file === 'string' && Number.isInteger(item?.line) && item.line > 0) : []
+    } catch { return [] }
+  })
   const [consoleText, setConsoleText] = useState('')
   const [openFiles, setOpenFiles] = useState(() => (selectedFile ? [selectedFile] : []))
+  const [debugLocation, setDebugLocation] = useState(null)
   const sectionRef = useRef(null)
   const { theme, toggleTheme } = useTheme()
+
+  // Breakpoints of files that were deleted or renamed are dropped.
+  const fileNames = useMemo(() => new Set(files.map((file) => file.name)), [files])
+  const liveBreakpoints = useMemo(() => breakpoints.filter((item) => fileNames.has(item.file)), [breakpoints, fileNames])
+
+  useEffect(() => {
+    try { localStorage.setItem(`wns-codelab-breakpoints:${workspaceKey}`, JSON.stringify(liveBreakpoints)) } catch { /* Breakpoints still work for this session. */ }
+  }, [liveBreakpoints, workspaceKey])
 
   // Every answered request goes into the terminal log, whichever caller sent it.
   const [requests, setRequests] = useState([])
@@ -85,7 +105,7 @@ export default function BackendWorkspace({
   }
 
   // Keep the selected file open as a tab, and drop tabs whose file was renamed or deleted.
-  const names = useMemo(() => new Set(files.map((file) => file.name)), [files])
+  const names = fileNames
   if (selectedFile && names.has(selectedFile) && !openFiles.includes(selectedFile)) {
     setOpenFiles([...openFiles.filter((name) => names.has(name)), selectedFile])
   }
@@ -104,8 +124,18 @@ export default function BackendWorkspace({
   }, [])
   // api.request is stable, so the preview's message listener is not re-added on every render.
   const { request, watchSchema } = api
-  const previewRequest = useCallback((spec) => request(spec, 'preview'), [request])
-  const testerRequest = useCallback((spec) => request(spec, 'tester'), [request])
+  const debuggerConfig = useMemo(() => (debugging ? { breakpoints: liveBreakpoints } : null), [debugging, liveBreakpoints])
+  const previewRequest = useCallback((spec) => request(spec, 'preview', debuggerConfig), [request, debuggerConfig])
+  const testerRequest = useCallback((spec) => request(spec, 'tester', debuggerConfig), [request, debuggerConfig])
+  const toggleBreakpoint = useCallback((file, line) => {
+    setBreakpoints((current) => current.some((item) => item.file === file && item.line === line)
+      ? current.filter((item) => item.file !== file || item.line !== line)
+      : [...current, { file, line }])
+  }, [])
+  // The editor moved this file's breakpoints because lines were added or removed above them.
+  const moveBreakpoints = useCallback((file, lines) => {
+    setBreakpoints((current) => [...current.filter((item) => item.file !== file), ...lines.map((line) => ({ file, line }))])
+  }, [])
 
   // Row counts and columns are only re-read while a panel that shows them is visible.
   useEffect(() => {
@@ -137,6 +167,24 @@ export default function BackendWorkspace({
     }
   }
 
+  const openDebug = () => {
+    setTab('debug')
+    setPanelOpen(true)
+    // Pausing needs an isolated page, which takes one reload (see lib/codelab/isolation.js).
+    // When the browser refused isolation after that reload, the Debug tab explains why.
+    if (!debugging && !isIsolated() && !isolationUnsupported()) {
+      if (window.confirm('Debugging reloads the editor once so it can pause your API at breakpoints. Your files are saved. Reload now?')) reloadIsolated()
+      return
+    }
+    setDebugging((value) => !value)
+  }
+
+  const openTraceLocation = (file, line) => {
+    if (!names.has(file)) return
+    setDebugLocation({ file, line })
+    openFile(file)
+  }
+
   // VS Code shortcuts: Ctrl/Cmd+Enter runs, Ctrl/Cmd+B explorer, Ctrl/Cmd+J panel, Esc
   // leaves full screen. Capture phase, so the editor does not turn Ctrl+Enter into a new line.
   const { toggleExplorer } = layout
@@ -160,6 +208,27 @@ export default function BackendWorkspace({
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
   }, [toggleExplorer, setPanelOpen, panelOpen, maximized, setMaximized, running, onRun])
+
+  // VS Code debugger keys, only while a request is paused so the browser keeps F5 (reload)
+  // and F11 (full screen) the rest of the time: F5 continue, F10 over, F11 into, Shift+F11 out.
+  const { debugPause, resumeDebug } = api
+  useEffect(() => {
+    if (!debugPause) return undefined
+    const onKey = (event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      const mode = event.key === 'F5' && !event.shiftKey ? 0
+        : event.key === 'F11' && !event.shiftKey ? 1
+          : event.key === 'F10' && !event.shiftKey ? 2
+            : event.key === 'F11' && event.shiftKey ? 3
+              : null
+      if (mode === null) return
+      event.preventDefault()
+      event.stopPropagation()
+      resumeDebug(mode)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [debugPause, resumeDebug])
 
   // While the IDE is on screen, hide the site's floating chat and theme buttons (see
   // index.css), and on large screens bring the whole workspace into view under the navbar.
@@ -240,6 +309,9 @@ export default function BackendWorkspace({
               <FiPlay className="h-3.5 w-3.5" /> Run
             </button>
           ))}
+          <button type="button" onClick={openDebug} aria-pressed={debugging} title={debugging ? 'Turn off debugging' : 'Arm debugger for the next API request'} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold ${debugging ? 'border-red-400 bg-red-500/10 text-red-600 dark:text-red-300' : 'border-ink-300 text-ink-700 hover:border-gold-400 hover:text-ink-950 dark:border-ink-700 dark:text-ink-200 dark:hover:text-white'}`}>
+            <FiCode className="h-3.5 w-3.5" /> {debugging ? 'Debugging' : 'Debug'}
+          </button>
           <span className="mx-1 h-5 w-px bg-ink-200 dark:bg-ink-700" aria-hidden="true" />
           {large && (
             <button type="button" onClick={layout.togglePanelPosition} className={TOOL_BTN} title={panelPosition === 'right' ? 'Move panel to the bottom' : 'Move panel to the right'} aria-label={panelPosition === 'right' ? 'Move panel to the bottom' : 'Move panel to the right'}>
@@ -328,6 +400,11 @@ export default function BackendWorkspace({
                 <ErrorBoundary>
                   <CodeEditor
                     path={`${workspaceKey}/${activeFile.name}`}
+                    revealLine={debugLocation?.file === activeFile.name ? debugLocation.line : undefined}
+                    breakpoints={liveBreakpoints.filter((item) => item.file === activeFile.name).map((item) => item.line)}
+                    onToggleBreakpoint={(line) => toggleBreakpoint(activeFile.name, line)}
+                    onBreakpointsChange={(lines) => moveBreakpoints(activeFile.name, lines)}
+                    pausedLine={api.debugPause?.file === activeFile.name ? api.debugPause.line : undefined}
                     value={activeFile.content ?? ''}
                     onChange={(value) => onFileChange(activeFile.name, value)}
                     language={activeFile.language ?? 'plaintext'}
@@ -363,7 +440,8 @@ export default function BackendWorkspace({
             }`}
           >
             <div className="flex h-9 shrink-0 items-center border-b border-ink-200 dark:border-ink-800">
-              <div role="tablist" aria-label="Backend panels" className="flex min-w-0 flex-1 overflow-x-auto">
+              {/* Tabs shrink to fit the panel instead of scrolling, so none is hidden off the edge. */}
+              <div role="tablist" aria-label="Backend panels" className="flex min-w-0 flex-1">
                 {TABS.map(({ id, label }) => (
                   <button
                     key={id}
@@ -371,12 +449,13 @@ export default function BackendWorkspace({
                     role="tab"
                     aria-selected={tab === id}
                     onClick={() => setTab(id)}
-                    className={`inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[11px] font-semibold uppercase tracking-wide ${
+                    title={label}
+                    className={`inline-flex h-9 min-w-0 flex-auto items-center justify-center gap-1 border-b-2 px-2 text-[11px] font-semibold uppercase ${
                       tab === id ? 'border-gold-500 text-ink-900 dark:text-white' : 'border-transparent text-ink-500 hover:text-ink-800 dark:text-ink-400 dark:hover:text-ink-100'
                     }`}
                   >
-                    {label}
-                    {badge[id] ? <span className={`rounded-full px-1.5 text-[10px] normal-case ${id === 'architecture' ? 'bg-amber-500/15 text-amber-600' : 'bg-ink-200/70 text-ink-600 dark:bg-ink-800 dark:text-ink-300'}`}>{badge[id]}</span> : null}
+                    <span className="truncate">{label}</span>
+                    {badge[id] ? <span className={`shrink-0 rounded-full px-1.5 text-[10px] normal-case ${id === 'architecture' ? 'bg-amber-500/15 text-amber-600' : 'bg-ink-200/70 text-ink-600 dark:bg-ink-800 dark:text-ink-300'}`}>{badge[id]}</span> : null}
                   </button>
                 ))}
               </div>
@@ -415,6 +494,18 @@ export default function BackendWorkspace({
                 )}
                 {tab === 'architecture' && (
                   <ArchitecturePanel files={files} schema={api.schema} lastExchange={api.lastExchange} embedded />
+                )}
+                {tab === 'debug' && (
+                  <DebugPanel
+                    exchange={api.lastExchange}
+                    paused={api.debugPause}
+                    armed={debugging}
+                    breakpoints={liveBreakpoints}
+                    isolationUnsupported={isolationUnsupported()}
+                    onResume={api.resumeDebug}
+                    onStop={api.runner.cancel}
+                    onOpenLocation={openTraceLocation}
+                  />
                 )}
                 <div hidden={tab !== 'preview'} className="flex min-h-[420px] flex-1 flex-col gap-3">
                   <PreviewPanel

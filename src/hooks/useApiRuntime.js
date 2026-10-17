@@ -7,6 +7,9 @@ import { loadDatabase, saveDatabase } from '../lib/codelab/dbStore'
 const BOOT_TIMEOUT_MS = 120000
 const LOAD_TIMEOUT_MS = 20000
 const CALL_TIMEOUT_MS = 10000
+// Running time allowed for a debugged request, between pauses. Time spent paused at a
+// breakpoint never counts (see armTimer), so stepping slowly cannot hit it.
+const DEBUG_CALL_TIMEOUT_MS = 30000
 const SNAPSHOT_DELAY_MS = 800
 const SCHEMA_DELAY_MS = 400
 const BOOT_HINT = 'Starting Python and FastAPI in your browser… the first run downloads about 5 MB.'
@@ -44,6 +47,10 @@ export function useApiRuntime(workspaceKey) {
   const snapshotTimerRef = useRef(null)
   const schemaTimerRef = useRef(null)
   const schemaWatchRef = useRef(false)
+  // How many debugged requests are in flight, and the pause the page is showing (it holds
+  // the paused request's own control buffer, so Continue always reaches that request).
+  const debugActiveRef = useRef(0)
+  const pausedRef = useRef(null)
   const dbKey = databaseKey(workspaceKey)
 
   const [running, setRunning] = useState(false)
@@ -56,6 +63,7 @@ export function useApiRuntime(workspaceKey) {
   const [schema, setSchema] = useState(null)
   const [lastExchange, setLastExchange] = useState(null)
   const [booted, setBooted] = useState(false)
+  const [debugPause, setDebugPause] = useState(null)
 
   const rejectAll = useCallback((reason) => {
     for (const { reject, timer } of pendingRef.current.values()) {
@@ -80,15 +88,41 @@ export function useApiRuntime(workspaceKey) {
       /* The worker is already gone. */
     }
     workerRef.current = null
+    debugActiveRef.current = 0
+    pausedRef.current = null
     bootRef.current = null
     rejectAll(reason)
-    if (mountedRef.current) setBooted(false)
+    if (mountedRef.current) {
+      setBooted(false)
+      setDebugPause(null)
+    }
   }, [clearTimers, rejectAll])
+
+  // (Re)starts the timeout of a pending call; stopped while its request sits at a breakpoint.
+  const armTimer = useCallback((id) => {
+    const entry = pendingRef.current.get(id)
+    if (!entry) return
+    clearTimeout(entry.timer)
+    entry.timer = setTimeout(() => {
+      pendingRef.current.delete(id)
+      entry.reject(Object.assign(new Error(`Stopped after ${Math.round(entry.timeoutMs / 1000)} seconds. Look for an infinite loop or a call that never returns.`), { timeout: true, type: entry.type }))
+    }, entry.timeoutMs)
+  }, [])
 
   const spawn = useCallback(() => {
     const worker = new Worker(new URL('../workers/apiRuntime.worker.js', import.meta.url), { type: 'module' })
     worker.onmessage = (event) => {
       const message = event.data ?? {}
+      if (message.type === 'debugPaused') {
+        const entry = pendingRef.current.get(message.id)
+        if (entry) {
+          clearTimeout(entry.timer)
+          entry.timer = null
+        }
+        pausedRef.current = message
+        if (mountedRef.current) setDebugPause(message)
+        return
+      }
       const entry = pendingRef.current.get(message.id)
       if (!entry) return
       pendingRef.current.delete(message.id)
@@ -110,21 +144,19 @@ export function useApiRuntime(workspaceKey) {
     if (!worker) return Promise.reject(new Error('The backend runtime is not running. Press Run.'))
     const id = ++seqRef.current
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        pendingRef.current.delete(id)
-        reject(Object.assign(new Error(`Stopped after ${Math.round(timeoutMs / 1000)} seconds. Look for an infinite loop or a call that never returns.`), { timeout: true, type }))
-      }, timeoutMs)
-      pendingRef.current.set(id, { resolve, reject, timer })
+      const entry = { resolve, reject, timer: null, timeoutMs, type }
+      pendingRef.current.set(id, entry)
+      armTimer(id)
       try {
         worker.postMessage({ id, type, ...payload })
       } catch (err) {
         // DataCloneError: the payload could not be copied to the worker.
-        clearTimeout(timer)
+        clearTimeout(entry.timer)
         pendingRef.current.delete(id)
         reject(new Error(messageOf(err, 'Could not send this request to the backend runtime.')))
       }
     })
-  }, [])
+  }, [armTimer])
 
   // Starts the worker once and restores the saved database into it. A failed start
   // terminates the worker, so retries never pile up idle Python runtimes.
@@ -200,11 +232,16 @@ export function useApiRuntime(workspaceKey) {
     }
   }, [ensureBooted, post, terminate])
 
-  const call = useCallback(async (type, payload, timeoutMs) => {
+  const call = useCallback(async (type, payload, timeoutMs = CALL_TIMEOUT_MS) => {
     await ensureBooted()
     try {
       return await post(type, payload, timeoutMs)
     } catch (err) {
+      // While a request sits at a breakpoint the worker is meant to be blocked: calls queued
+      // behind it time out, but restarting would kill the debug session.
+      if (err?.timeout && debugActiveRef.current > 0) {
+        throw new Error('The API is paused at a breakpoint. Continue in the Debug tab, then try again.')
+      }
       if (err?.timeout) recover(type)
       throw err
     }
@@ -297,14 +334,33 @@ export function useApiRuntime(workspaceKey) {
     setStopped(true)
   }, [terminate])
 
-  const request = useCallback(async (spec, source = 'tester') => {
+  const request = useCallback(async (spec, source = 'tester', debuggerConfig = null) => {
     const startedAt = Date.now()
     let response
+    // This request's own pause controls: a concurrent request (e.g. from Preview) finishing
+    // must not clear the pause of one that is stopped at a breakpoint.
+    let control = null
     try {
-      const reply = await call('request', { spec })
+      let breakpoints = []
+      // Without an isolated page (Safari, or before the Debug reload) the request runs
+      // normally: no pausing, but the execution trace still shows what happened.
+      if (debuggerConfig && typeof SharedArrayBuffer !== 'undefined' && globalThis.crossOriginIsolated) {
+        control = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 2)
+        debugActiveRef.current += 1
+        breakpoints = debuggerConfig.breakpoints ?? []
+      }
+      const reply = await call('request', { spec, breakpoints, control: control ?? undefined }, control ? DEBUG_CALL_TIMEOUT_MS : CALL_TIMEOUT_MS)
       response = { ...reply.data, logs: [reply.stdout, reply.stderr].filter(Boolean).join('\n') }
     } catch (err) {
       response = { status: 0, error: messageOf(err, 'The request failed.'), body: '', headers: [], trace: null, ms: Date.now() - startedAt }
+    } finally {
+      if (control) {
+        debugActiveRef.current = Math.max(0, debugActiveRef.current - 1)
+        if (pausedRef.current?.control === control) {
+          pausedRef.current = null
+          if (mountedRef.current) setDebugPause(null)
+        }
+      }
     }
     if (mountedRef.current) setLastExchange({ spec, response, source, at: startedAt })
     if (WRITE_METHODS.has(String(spec?.method).toUpperCase()) && response.status) {
@@ -313,6 +369,19 @@ export function useApiRuntime(workspaceKey) {
     }
     return response
   }, [call, scheduleSchema, scheduleSnapshot])
+
+  // mode: 0 continue, 1 step into, 2 step over, 3 step out (see _on_line in webnest_runtime.py).
+  const resumeDebug = useCallback((mode = 0) => {
+    const paused = pausedRef.current
+    if (!(paused?.control instanceof SharedArrayBuffer)) return
+    const gates = new Int32Array(paused.control)
+    Atomics.store(gates, 1, mode)
+    Atomics.store(gates, 0, 1)
+    Atomics.notify(gates, 0)
+    pausedRef.current = null
+    setDebugPause(null)
+    armTimer(paused.id)
+  }, [armTimer])
 
   const sql = useCallback(async (script) => {
     const reply = await call('sql', { script })
@@ -366,6 +435,8 @@ export function useApiRuntime(workspaceKey) {
     openapi,
     schema,
     lastExchange,
+    debugPause,
+    resumeDebug,
     ready: Boolean(openapi),
-  }), [runner, run, request, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange])
+  }), [runner, run, request, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, resumeDebug])
 }

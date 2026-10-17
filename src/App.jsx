@@ -7,6 +7,7 @@ import { ToastProvider } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
+import IsolationGuard from './components/IsolationGuard'
 import ProtectedRoute from './components/ProtectedRoute'
 import SlowRequestBanner from './components/SlowRequestBanner'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -119,6 +120,7 @@ function App() {
             <BrowserRouter>
               <ClearPrerenderScrollLock />
               <ScrollToTop />
+              <IsolationGuard />
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   <Route element={<Layout />}>
