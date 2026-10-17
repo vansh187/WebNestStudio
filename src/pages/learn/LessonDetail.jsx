@@ -321,7 +321,7 @@ export default function LessonDetail() {
               }}>Copy {example.caption || `example ${index + 1}`}</button>
             ))}
           </div>
-          {!lessonTemplate(lesson) && <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">These examples need {lesson.language === 'java' ? 'a JDK project with their libraries' : 'a project environment'} on your computer, so they can be copied but not run here. Codelab runs Python, plain Java 17 and HTML/CSS/JavaScript.</p>}
+          {!lessonTemplate(lesson) && <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">These examples need {lesson.language === 'java' ? 'a JDK project with their libraries' : 'a project environment'} on your computer, so they can be copied but not run here. Codelab runs Python, FastAPI backends with SQLite, plain Java 17 and HTML/CSS/JavaScript.</p>}
         </section>
         {relatedLessons.length > 0 && <nav aria-label="Related concepts" className="mt-6"><h2 className="text-lg font-semibold">Related concepts</h2><ul className="mt-2 space-y-2">{relatedLessons.map((item) => <li key={item.id}><Link className="text-gold-600 underline dark:text-gold-400" to={`/learn/lessons/${item.id}`}>{item.title}</Link></li>)}</ul></nav>}
         <AuthorBox className="mt-6" />

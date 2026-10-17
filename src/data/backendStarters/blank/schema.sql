@@ -1,0 +1,18 @@
+-- schema.sql: design your database here.
+-- Run creates the database from this file the first time. After you change it,
+-- open the Database tab and press "Rebuild from schema.sql" (this deletes the data).
+--
+-- Tips:
+--   * Every table needs a PRIMARY KEY.
+--   * Use NOT NULL, UNIQUE and CHECK so bad data cannot get in.
+--   * A FOREIGN KEY links a row to a row in another table.
+--   * Add an INDEX on columns you filter or join on often.
+--
+-- Example (remove the -- to use it):
+--
+-- CREATE TABLE notes (
+--     id         INTEGER PRIMARY KEY AUTOINCREMENT,
+--     title      TEXT NOT NULL,
+--     body       TEXT,
+--     created_at TEXT NOT NULL DEFAULT (datetime('now'))
+-- );

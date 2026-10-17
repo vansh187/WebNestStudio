@@ -54,7 +54,7 @@ export default function ChatWidget() {
       {/* Full-viewport drag boundary - itself non-interactive so it never blocks
           clicks on the page underneath; the draggable widget opts back into
           pointer events. */}
-      <div ref={constraintsRef} className="fixed inset-0 z-[90] pointer-events-none">
+      <div ref={constraintsRef} data-floating-widget className="fixed inset-0 z-[90] pointer-events-none">
         <motion.div
           drag
           dragConstraints={constraintsRef}

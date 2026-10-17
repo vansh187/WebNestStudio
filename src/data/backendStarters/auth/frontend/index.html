@@ -1,0 +1,31 @@
+<!-- The Preview tab shows this page. style.css and script.js in this folder are
+     added automatically, so there is no need for <link> or <script src> tags. -->
+<main class="app">
+  <section id="auth">
+    <h1>Welcome</h1>
+    <div class="tabs" role="tablist">
+      <button type="button" data-mode="login" class="active">Log in</button>
+      <button type="button" data-mode="register">Create account</button>
+    </div>
+    <form id="auth-form">
+      <input name="full_name" placeholder="Full name" autocomplete="name" hidden>
+      <input name="email" type="email" placeholder="Email" autocomplete="email" required>
+      <input name="password" type="password" placeholder="Password (8+ characters)" autocomplete="current-password" required minlength="8">
+      <button type="submit">Log in</button>
+    </form>
+  </section>
+
+  <section id="dashboard" hidden>
+    <header>
+      <h1>Hi, <span id="name"></span></h1>
+      <button type="button" id="logout" class="ghost">Log out</button>
+    </header>
+    <form id="new-task">
+      <input name="title" placeholder="Add a task" required maxlength="200">
+      <button type="submit">Add</button>
+    </form>
+    <ul id="tasks"></ul>
+  </section>
+
+  <p id="message" role="status"></p>
+</main>

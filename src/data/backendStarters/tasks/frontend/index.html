@@ -1,0 +1,16 @@
+<!-- The Preview tab shows this page. style.css and script.js in this folder are
+     added automatically, so there is no need for <link> or <script src> tags. -->
+<main class="app">
+  <h1>My tasks</h1>
+  <form id="new-task">
+    <input name="title" placeholder="What needs doing?" required maxlength="200">
+    <select name="priority" aria-label="Priority">
+      <option value="low">Low</option>
+      <option value="medium" selected>Medium</option>
+      <option value="high">High</option>
+    </select>
+    <button type="submit">Add</button>
+  </form>
+  <p id="message" role="status"></p>
+  <ul id="tasks"></ul>
+</main>

@@ -7,6 +7,7 @@ import { ToastProvider } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
+import IsolationGuard from './components/IsolationGuard'
 import ProtectedRoute from './components/ProtectedRoute'
 import SlowRequestBanner from './components/SlowRequestBanner'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -43,6 +44,7 @@ const DigitalCard = lazyWithReload(() => import('./pages/DigitalCard'))
 // open the playground / a project should pay for that chunk. Lazy for the same reason
 // as /card and admin below.
 const Playground = lazyWithReload(() => import('./pages/coding/Playground'))
+const GitHubCallback = lazyWithReload(() => import('./pages/codelab/GitHubCallback'))
 const ProjectsList = lazyWithReload(() => import('./pages/coding/ProjectsList'))
 const ProjectWorkspace = lazyWithReload(() => import('./pages/coding/ProjectWorkspace'))
 const SharedSnippet = lazyWithReload(() => import('./pages/coding/SharedSnippet'))
@@ -118,6 +120,7 @@ function App() {
             <BrowserRouter>
               <ClearPrerenderScrollLock />
               <ScrollToTop />
+              <IsolationGuard />
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   <Route element={<Layout />}>
@@ -169,6 +172,14 @@ function App() {
                       element={(
                         <ErrorBoundary>
                           <Playground />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
+                      path="codelab/github/callback"
+                      element={(
+                        <ErrorBoundary>
+                          <GitHubCallback />
                         </ErrorBoundary>
                       )}
                     />

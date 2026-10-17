@@ -9,7 +9,7 @@ import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
-import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
+import { PROJECT_LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
 import { getProject, updateProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 import { isJavaFile } from '../../lib/codelab/javaProject'
@@ -44,7 +44,7 @@ export default function ProjectWorkspace() {
   const toast = useToast()
   const runner = useCodeRunner()
 
-  const [languages] = useState(LANGUAGES)
+  const [languages] = useState(PROJECT_LANGUAGES)
   const [project, setProject] = useState(undefined) // undefined = loading, null = not found
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)

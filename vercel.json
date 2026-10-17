@@ -160,6 +160,20 @@
   ],
   "headers": [
     {
+      "source": "/codelab/playground",
+      "has": [{ "type": "query", "key": "isolate", "value": "1" }],
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
+      ]
+    },
+    {
+      "source": "/assets/:file(.*\\.worker-.*\\.js)",
+      "headers": [
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
+      ]
+    },
+    {
       "source": "/codelab/problems/sum-two-smoke",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, follow" }
@@ -256,6 +270,10 @@
     },
     {
       "source": "/codelab/dashboard",
+      "destination": "/app-private"
+    },
+    {
+      "source": "/codelab/github/callback",
       "destination": "/app-private"
     }
   ]

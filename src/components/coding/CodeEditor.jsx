@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Editor from '@monaco-editor/react'
 import { FiLoader } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
@@ -58,11 +58,93 @@ function useJavaIntel({ editorState, language, readOnly, javaProject, markers })
 
 export default function CodeEditor({
   value, onChange, language, readOnly = false, className = '', roundedTop = true, javaProject, markers,
+  // `path` keeps a separate Monaco model (and undo history) per file; `frameless` drops the
+  // border so the editor can sit edge to edge inside an IDE layout.
+  path, frameless = false, revealLine, breakpoints = [], onToggleBreakpoint, onBreakpointsChange, pausedLine,
 }) {
   const { theme } = useTheme()
   const isLarge = useIsLargeScreen()
   const [editorState, setEditorState] = useState(null)
+  const breakpointDecorationsRef = useRef([])
+  const pausedDecorationsRef = useRef([])
   useJavaIntel({ editorState, language, readOnly, javaProject, markers })
+
+  useEffect(() => {
+    if (!editorState || !Number.isInteger(revealLine) || revealLine < 1) return
+    const editor = editorState.editor
+    const line = Math.min(revealLine, editor.getModel()?.getLineCount() ?? revealLine)
+    editor.setPosition({ lineNumber: line, column: 1 })
+    editor.revealLineInCenter(line)
+    editor.focus()
+  }, [editorState, revealLine])
+
+  useEffect(() => {
+    if (!editorState) return
+    const { editor, monaco } = editorState
+    breakpointDecorationsRef.current = editor.deltaDecorations(breakpointDecorationsRef.current, breakpoints.map((line) => ({
+      range: new monaco.Range(line, 1, line, 1),
+      options: {
+        glyphMarginClassName: 'wn-breakpoint-glyph',
+        glyphMarginHoverMessage: { value: 'Breakpoint — click to remove' },
+        // Moves with its line when lines are added or removed above it.
+        stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+      },
+    })))
+  }, [editorState, breakpoints])
+
+  useEffect(() => {
+    if (!editorState) return
+    const { editor, monaco } = editorState
+    pausedDecorationsRef.current = editor.deltaDecorations(pausedDecorationsRef.current, Number.isInteger(pausedLine) ? [{
+      range: new monaco.Range(pausedLine, 1, pausedLine, 1),
+      options: { isWholeLine: true, className: 'wn-debug-current-line', linesDecorationsClassName: 'wn-debug-current-marker' },
+    }] : [])
+  }, [editorState, pausedLine])
+
+  // After an edit, report where the breakpoint markers ended up (two that land on the same
+  // line, when a line is deleted, become one), so the saved breakpoints follow the code.
+  const breakpointsRef = useRef(breakpoints)
+  breakpointsRef.current = breakpoints
+  const moveRef = useRef(null)
+  moveRef.current = onBreakpointsChange
+
+  useEffect(() => {
+    if (!editorState) return undefined
+    const { editor } = editorState
+    const subscription = editor.onDidChangeModelContent(() => {
+      const model = editor.getModel()
+      if (!model || !moveRef.current || !breakpointDecorationsRef.current.length) return
+      const lines = [...new Set(breakpointDecorationsRef.current
+        .map((id) => model.getDecorationRange(id)?.startLineNumber)
+        .filter((line) => Number.isInteger(line) && line >= 1 && line <= model.getLineCount()))].sort((a, b) => a - b)
+      const before = [...breakpointsRef.current].sort((a, b) => a - b)
+      if (lines.length !== before.length || lines.some((line, index) => line !== before[index])) moveRef.current(lines)
+    })
+    return () => subscription.dispose()
+  }, [editorState])
+
+  // @monaco-editor/react has no onMouseDown prop, so listen on the editor instance. The ref
+  // keeps the listener current without re-subscribing on every render.
+  const toggleRef = useRef(null)
+  toggleRef.current = language === 'python' ? onToggleBreakpoint : null
+
+  useEffect(() => {
+    if (!editorState) return undefined
+    const { editor, monaco } = editorState
+    const { GUTTER_GLYPH_MARGIN, GUTTER_LINE_NUMBERS, GUTTER_LINE_DECORATIONS } = monaco.editor.MouseTargetType
+    const subscription = editor.onMouseDown((event) => {
+      const toggle = toggleRef.current
+      const { type, position } = event.target
+      if (!toggle || !position?.lineNumber) return
+      // One click on the breakpoint gutter, or a double-click on a line number.
+      const onGlyph = type === GUTTER_GLYPH_MARGIN
+      const onNumber = (type === GUTTER_LINE_NUMBERS || type === GUTTER_LINE_DECORATIONS) && event.event.detail === 2
+      if (!onGlyph && !onNumber) return
+      event.event.preventDefault()
+      toggle(position.lineNumber)
+    })
+    return () => subscription.dispose()
+  }, [editorState])
 
   const options = {
     automaticLayout: true,
@@ -72,6 +154,7 @@ export default function CodeEditor({
     fontSize: isLarge ? 14 : 13,
     wordWrap: isLarge ? 'off' : 'on',
     folding: isLarge,
+    glyphMargin: language === 'python',
     lineNumbersMinChars: 3,
     scrollBeyondLastLine: false,
     tabSize: 2,
@@ -91,10 +174,11 @@ export default function CodeEditor({
 
   return (
     <div
-      className={`overflow-hidden border border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-900/40 ${roundedTop ? 'rounded-xl' : 'rounded-b-xl'} ${className}`}
+      className={`overflow-hidden bg-white dark:bg-ink-900/40 ${frameless ? '' : `border border-ink-200 dark:border-ink-800 ${roundedTop ? 'rounded-xl' : 'rounded-b-xl'}`} ${className}`}
     >
       <Editor
         value={value}
+        path={path}
         language={language}
         theme={theme === 'dark' ? 'vs-dark' : 'vs'}
         onChange={(v) => onChange?.(v ?? '')}
