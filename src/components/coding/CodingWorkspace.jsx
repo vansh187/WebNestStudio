@@ -16,11 +16,13 @@ import { parseJavacDiagnostics } from '../../lib/codelab/javaIntel/diagnostics'
 import { createPreviewHtml } from '../../lib/codelab/webPreview'
 import { useApiRuntime } from '../../hooks/useApiRuntime'
 import BackendWorkspace from './BackendWorkspace'
+import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
 import ErrorBoundary from '../ErrorBoundary'
 
-const EDITOR_HEIGHT =
-  'h-[45dvh] min-h-[240px] md:h-[55dvh] lg:h-[calc(100dvh-var(--nav-h)-190px)] lg:min-h-[420px] lg:max-h-[720px]'
-const PANEL_HEIGHT = 'lg:h-[calc(100dvh-var(--nav-h)-190px)] lg:min-h-[420px] lg:overflow-auto'
+// On large screens the workspace fills the window under the navbar (like the backend IDE),
+// so the editor and panels stretch to fit it instead of setting their own heights.
+const EDITOR_HEIGHT = 'h-[45dvh] min-h-[240px] md:h-[55dvh] lg:h-auto lg:min-h-0 lg:flex-1'
+const PANEL_HEIGHT = 'lg:min-h-0 lg:flex-1 lg:overflow-auto'
 
 export default function CodingWorkspace({
   eyebrow,
@@ -49,6 +51,9 @@ export default function CodingWorkspace({
   onShare,
   sharing,
   workspaceKey = 'default',
+  // Scroll the workspace up under the navbar on open (large screens). Pages with content
+  // above the editor that must stay readable, like a problem statement, turn this off.
+  scrollIntoViewOnOpen = true,
 }) {
   const backend = language === 'backend'
   // The backend runtime only starts a worker on the first Run, so other languages pay nothing.
@@ -62,6 +67,15 @@ export default function CodingWorkspace({
   const activeFile = files?.find((file) => file.name === selectedFile)
   const outputRef = useRef(null)
   const wasRunning = useRef(false)
+  const ideRef = useRef(null)
+  const [maximized, setMaximized] = useState(false)
+  // The backend IDE keeps its own full-screen state, so leaving this layout for it must not
+  // leave this one maximized (its scroll lock would outlive the hidden section).
+  if (backend && maximized) setMaximized(false)
+
+  // The backend IDE does the same for itself (see BackendWorkspace).
+  useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend })
+  useFullscreen(maximized, setMaximized)
 
   // Java projects can hold several class files; the runner bundles them (see javaProject.js).
   const manageJavaFiles = language === 'java' && Boolean(files && onFilesChange)
@@ -180,33 +194,9 @@ export default function CodingWorkspace({
             )}
           {subtitle && <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">{subtitle}</p>}
         </div>
-        {/* The backend IDE shows these in its own toolbar instead. */}
-        {headerRight && !backend && <div className="shrink-0">{headerRight}</div>}
       </div>
 
       {/* The backend IDE has its own toolbar with the language picker and Run. */}
-      {!backend && (
-      <div className="mt-4">
-        <ErrorBoundary>
-          <RunBar
-            languages={languages}
-            language={language}
-            onLanguageChange={onLanguageChange}
-            onRun={handleRun}
-            onCancel={activeRunner.cancel}
-            running={activeRunner.running}
-            stdinOpen={stdinOpen}
-            onToggleStdin={backend ? null : () => setStdinOpen((v) => !v)}
-            onSave={backend ? null : onSave}
-            saving={saving}
-            saveLabel={saveLabel}
-            onShare={backend ? null : onShare}
-            sharing={sharing}
-          />
-        </ErrorBoundary>
-      </div>
-      )}
-
       {backend ? (
         <>
           <p className="mt-2 text-xs text-ink-500 dark:text-ink-300">
@@ -233,8 +223,37 @@ export default function CodingWorkspace({
           />
         </>
       ) : (
-      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
-        <div>
+      <section
+        ref={ideRef}
+        aria-label="Code workspace"
+        className={`flex flex-col ${
+          maximized
+            ? 'fixed inset-0 z-[70] h-dvh overflow-auto bg-white p-2 dark:bg-ink-950'
+            : 'mt-4 scroll-mt-[calc(var(--nav-h)+0.5rem)] lg:h-[calc(100dvh-var(--nav-h)-1rem)] lg:min-h-[480px]'
+        }`}
+      >
+        <ErrorBoundary>
+          <RunBar
+            languages={languages}
+            language={language}
+            onLanguageChange={onLanguageChange}
+            onRun={handleRun}
+            onCancel={activeRunner.cancel}
+            running={activeRunner.running}
+            stdinOpen={stdinOpen}
+            onToggleStdin={() => setStdinOpen((v) => !v)}
+            onSave={onSave}
+            saving={saving}
+            saveLabel={saveLabel}
+            onShare={onShare}
+            sharing={sharing}
+            maximized={maximized}
+            onToggleMaximize={() => setMaximized((v) => !v)}
+            extra={headerRight}
+          />
+        </ErrorBoundary>
+      <div className="mt-3 grid gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
+        <div className="flex min-w-0 flex-col lg:min-h-0">
           {language === 'java' && (
             <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-ink-500 dark:text-ink-300">
               <label htmlFor="java-main-class">Main class</label>
@@ -293,7 +312,7 @@ export default function CodingWorkspace({
         </div>
         <div
           ref={outputRef}
-          className={`grid scroll-mt-[calc(var(--nav-h)+8px)] gap-3 lg:grid-cols-1 ${stdinOpen ? 'md:grid-cols-2' : ''}`}
+          className={`grid scroll-mt-[calc(var(--nav-h)+8px)] gap-3 ${stdinOpen ? 'md:grid-cols-2' : ''} lg:flex lg:min-h-0 lg:flex-col`}
         >
           <ErrorBoundary>
             <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
@@ -314,17 +333,18 @@ export default function CodingWorkspace({
               <PreviewPanel
                 previewHtml={runner.result?.previewHtml}
                 onConsole={handleConsole}
-                className={PANEL_HEIGHT}
+                className="lg:min-h-0 lg:flex-[1.5]"
               />
             </ErrorBoundary>
           )}
           {consoleText && (
-            <pre className="max-h-48 overflow-auto rounded-xl border border-ink-200 bg-ink-950 p-3 font-mono text-xs text-ink-100 dark:border-ink-800">
+            <pre className="max-h-48 shrink-0 overflow-auto lg:max-h-32 rounded-xl border border-ink-200 bg-ink-950 p-3 font-mono text-xs text-ink-100 dark:border-ink-800">
               {consoleText}
             </pre>
           )}
         </div>
       </div>
+      </section>
       )}
     </div>
   )

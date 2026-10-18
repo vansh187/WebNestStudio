@@ -69,10 +69,10 @@ export default function PreviewPanel({ previewHtml = '', onConsole, onApiRequest
           title="Webnest CodeLab preview"
           sandbox="allow-scripts allow-forms"
           srcDoc={previewHtml}
-          className="min-h-[320px] flex-1 bg-white"
+          className="min-h-[320px] flex-1 bg-white lg:min-h-0"
         />
       ) : (
-        <div className="grid min-h-[320px] flex-1 place-items-center p-6 text-center text-sm text-ink-400">
+        <div className="grid min-h-[320px] flex-1 place-items-center lg:min-h-0 p-6 text-center text-sm text-ink-400">
           {emptyText}
         </div>
       )}

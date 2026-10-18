@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMaximize2, FiMinimize2, FiMonitor,
-  FiMoon, FiPlay, FiRotateCw, FiSend, FiSidebar, FiSquare, FiSun, FiTerminal, FiX,
+  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMonitor,
+  FiPlay, FiRotateCw, FiSend, FiSidebar, FiSquare, FiTerminal, FiX,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import BackendConsole from './BackendConsole'
@@ -15,7 +15,8 @@ import ResizeHandle from './ResizeHandle'
 import ErrorBoundary from '../ErrorBoundary'
 import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFiles'
 import { PANEL_LIMITS, useIdeLayout } from '../../hooks/useIdeLayout'
-import { useTheme } from '../../context/ThemeContext'
+import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
+import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 import { statusTone } from '../../lib/codelab/httpStyles'
 import { canIsolate, isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
 import DebugReloadDialog from './DebugReloadDialog'
@@ -69,7 +70,6 @@ export default function BackendWorkspace({
   const [reloadPrompt, setReloadPrompt] = useState(false)
   const closeReloadPrompt = useCallback(() => setReloadPrompt(false), [])
   const sectionRef = useRef(null)
-  const { theme, toggleTheme } = useTheme()
 
   // Breakpoints of files that were deleted or renamed are dropped.
   const fileNames = useMemo(() => new Set(files.map((file) => file.name)), [files])
@@ -205,8 +205,9 @@ export default function BackendWorkspace({
     openFile(file)
   }
 
-  // VS Code shortcuts: Ctrl/Cmd+Enter runs, Ctrl/Cmd+B explorer, Ctrl/Cmd+J panel, Esc
-  // leaves full screen. Capture phase, so the editor does not turn Ctrl+Enter into a new line.
+  // VS Code shortcuts: Ctrl/Cmd+Enter runs, Ctrl/Cmd+B explorer, Ctrl/Cmd+J panel (Esc for
+  // full screen is in useFullscreen). Capture phase, so the editor does not turn Ctrl+Enter
+  // into a new line.
   const { toggleExplorer } = layout
   useEffect(() => {
     const onKey = (event) => {
@@ -221,13 +222,11 @@ export default function BackendWorkspace({
       } else if (mod && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'j') {
         event.preventDefault()
         setPanelOpen(!panelOpen)
-      } else if (event.key === 'Escape' && maximized) {
-        setMaximized(false)
       }
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [toggleExplorer, setPanelOpen, panelOpen, maximized, setMaximized, running, onRun])
+  }, [toggleExplorer, setPanelOpen, panelOpen, running, onRun])
 
   // VS Code debugger keys, only while a request is paused so the browser keeps F5 (reload)
   // and F11 (full screen) the rest of the time: F5 continue, F10 over, F11 into, Shift+F11 out.
@@ -250,28 +249,8 @@ export default function BackendWorkspace({
     return () => window.removeEventListener('keydown', onKey, true)
   }, [debugPause, resumeDebug])
 
-  // While the IDE is on screen, hide the site's floating chat and theme buttons (see
-  // index.css), and on large screens bring the whole workspace into view under the navbar.
-  useEffect(() => {
-    const root = document.documentElement
-    root.dataset.ideFocus = ''
-    if (window.matchMedia('(min-width: 1024px)').matches) {
-      try {
-        sectionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      } catch {
-        /* Older browsers without smooth scrolling options: leave the page where it is. */
-      }
-    }
-    return () => { delete root.dataset.ideFocus }
-  }, [])
-
-  // Full screen covers the page, so the page behind it must not scroll.
-  useEffect(() => {
-    if (!maximized) return undefined
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = previous }
-  }, [maximized])
+  useIdeFocus(sectionRef)
+  useFullscreen(maximized, setMaximized)
 
   const panelStyle = large && panelOpen
     ? (panelPosition === 'right' ? { width: layout.panelSize } : { height: layout.panelSize })
@@ -356,12 +335,8 @@ export default function BackendWorkspace({
           <button type="button" onClick={() => setPanelOpen(!panelOpen)} aria-pressed={panelOpen} className={TOOL_BTN} title={`${panelOpen ? 'Hide' : 'Show'} panel (${MOD}J)`} aria-label="Toggle panel">
             <FiTerminal className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => setMaximized(!maximized)} aria-pressed={maximized} className={TOOL_BTN} title={maximized ? 'Exit full screen (Esc)' : 'Full screen'} aria-label={maximized ? 'Exit full screen' : 'Full screen'}>
-            {maximized ? <FiMinimize2 className="h-4 w-4" /> : <FiMaximize2 className="h-4 w-4" />}
-          </button>
-          <button type="button" onClick={toggleTheme} className={TOOL_BTN} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
-            {theme === 'dark' ? <FiMoon className="h-4 w-4" /> : <FiSun className="h-4 w-4" />}
-          </button>
+          <FullscreenButton maximized={maximized} onToggle={() => setMaximized(!maximized)} className={TOOL_BTN} />
+          <ThemeToggleButton className={TOOL_BTN} />
         </div>
       </div>
 
