@@ -58,14 +58,25 @@ export function normalizeExecuteResult(raw) {
 export const executeCode = (payload, config) =>
   api.post('/api/compiler/execute', payload, config).then((r) => normalizeExecuteResult(r.data))
 
-export const listProjects = (params) => api.get('/api/projects', { params }).then((r) => r.data)
-export const getProject = (id) => api.get(`/api/projects/${id}`).then((r) => r.data)
-export const createProject = (body) => api.post('/api/projects', body).then((r) => r.data)
-export const updateProject = (id, patch) => api.put(`/api/projects/${id}`, patch).then((r) => r.data)
+// The playground calls its HTML/CSS/JS mode 'web', but the project and share endpoints only
+// know it by its older id 'javascript' (see GET /api/compiler/languages) and reject 'web'
+// with "Unknown language". Translate both ways here so pages only ever see 'web'.
+// The CodeLab problem endpoints (api/codelab.js) are different: their track id is 'web',
+// so submissions keep sending 'web' unchanged.
+const toApiLanguage = (body) => (body?.language === 'web' ? { ...body, language: 'javascript' } : body)
+const fromApiLanguage = (data) => (data?.language === 'javascript' ? { ...data, language: 'web' } : data)
+
+// The list comes back as a plain array or as { items }; keep that shape.
+export const listProjects = (params) => api.get('/api/projects', { params }).then((r) => (Array.isArray(r.data)
+  ? r.data.map(fromApiLanguage)
+  : { ...r.data, items: r.data?.items?.map(fromApiLanguage) }))
+export const getProject = (id) => api.get(`/api/projects/${id}`).then((r) => fromApiLanguage(r.data))
+export const createProject = (body) => api.post('/api/projects', toApiLanguage(body)).then((r) => fromApiLanguage(r.data))
+export const updateProject = (id, patch) => api.put(`/api/projects/${id}`, toApiLanguage(patch)).then((r) => fromApiLanguage(r.data))
 export const deleteProject = (id) => api.delete(`/api/projects/${id}`).then((r) => r.data)
 
-export const createShare = (body) => api.post('/api/shares', body).then((r) => r.data)
-export const getShare = (shareId) => api.get(`/api/shares/${shareId}`).then((r) => r.data)
+export const createShare = (body) => api.post('/api/shares', toApiLanguage(body)).then((r) => r.data)
+export const getShare = (shareId) => api.get(`/api/shares/${shareId}`).then((r) => fromApiLanguage(r.data))
 
 export const getCodingStats = () => api.get('/api/me/coding-stats').then((r) => r.data)
 

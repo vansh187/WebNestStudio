@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMaximize2, FiMinimize2, FiMonitor,
-  FiMoon, FiPlay, FiSend, FiSidebar, FiSquare, FiSun, FiTerminal, FiX,
+  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMonitor,
+  FiPlay, FiRotateCw, FiSend, FiSidebar, FiSquare, FiTerminal, FiX,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import BackendConsole from './BackendConsole'
@@ -15,9 +15,11 @@ import ResizeHandle from './ResizeHandle'
 import ErrorBoundary from '../ErrorBoundary'
 import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFiles'
 import { PANEL_LIMITS, useIdeLayout } from '../../hooks/useIdeLayout'
-import { useTheme } from '../../context/ThemeContext'
+import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
+import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 import { statusTone } from '../../lib/codelab/httpStyles'
-import { isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
+import { canIsolate, isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
+import DebugReloadDialog from './DebugReloadDialog'
 
 const REQUEST_LOG_LIMIT = 200
 
@@ -47,6 +49,8 @@ const MOD = isMac ? '⌘' : 'Ctrl+'
 export default function BackendWorkspace({
   api, files, selectedFile, onSelectFile, onFileChange, onFilesChange, previewHtml, workspaceKey,
   outputRef, onRun, onCancel, running, languages = [], language, onLanguageChange, toolbarExtra,
+  // Optional async save before the debugging reload; resolves false when saving failed.
+  beforeDebugReload,
 }) {
   const layout = useIdeLayout()
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
@@ -63,8 +67,9 @@ export default function BackendWorkspace({
   const [consoleText, setConsoleText] = useState('')
   const [openFiles, setOpenFiles] = useState(() => (selectedFile ? [selectedFile] : []))
   const [debugLocation, setDebugLocation] = useState(null)
+  const [reloadPrompt, setReloadPrompt] = useState(false)
+  const closeReloadPrompt = useCallback(() => setReloadPrompt(false), [])
   const sectionRef = useRef(null)
-  const { theme, toggleTheme } = useTheme()
 
   // Breakpoints of files that were deleted or renamed are dropped.
   const fileNames = useMemo(() => new Set(files.map((file) => file.name)), [files])
@@ -172,11 +177,26 @@ export default function BackendWorkspace({
     setPanelOpen(true)
     // Pausing needs an isolated page, which takes one reload (see lib/codelab/isolation.js).
     // When the browser refused isolation after that reload, the Debug tab explains why.
-    if (!debugging && !isIsolated() && !isolationUnsupported()) {
-      if (window.confirm('Debugging reloads the editor once so it can pause your API at breakpoints. Your files are saved. Reload now?')) reloadIsolated()
+    if (!debugging && !isIsolated() && !isolationUnsupported() && canIsolate()) {
+      setReloadPrompt(true)
       return
     }
     setDebugging((value) => !value)
+  }
+
+  // Saves everything, then reloads into the isolated page. Returns a message when it could
+  // not reload; otherwise it never resolves, so the dialog keeps showing "reloading".
+  const confirmDebugReload = async () => {
+    try {
+      if (api.ready || running) await api.runner.stop() // writes pending database changes
+      if (beforeDebugReload && !(await beforeDebugReload())) {
+        return 'Your project could not be saved, so the page was not reloaded. Check your connection and try again.'
+      }
+      reloadIsolated()
+      return new Promise(() => {})
+    } catch {
+      return 'Something went wrong before the reload. Try again.'
+    }
   }
 
   const openTraceLocation = (file, line) => {
@@ -185,8 +205,9 @@ export default function BackendWorkspace({
     openFile(file)
   }
 
-  // VS Code shortcuts: Ctrl/Cmd+Enter runs, Ctrl/Cmd+B explorer, Ctrl/Cmd+J panel, Esc
-  // leaves full screen. Capture phase, so the editor does not turn Ctrl+Enter into a new line.
+  // VS Code shortcuts: Ctrl/Cmd+Enter runs, Ctrl/Cmd+B explorer, Ctrl/Cmd+J panel (Esc for
+  // full screen is in useFullscreen). Capture phase, so the editor does not turn Ctrl+Enter
+  // into a new line.
   const { toggleExplorer } = layout
   useEffect(() => {
     const onKey = (event) => {
@@ -201,13 +222,11 @@ export default function BackendWorkspace({
       } else if (mod && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'j') {
         event.preventDefault()
         setPanelOpen(!panelOpen)
-      } else if (event.key === 'Escape' && maximized) {
-        setMaximized(false)
       }
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [toggleExplorer, setPanelOpen, panelOpen, maximized, setMaximized, running, onRun])
+  }, [toggleExplorer, setPanelOpen, panelOpen, running, onRun])
 
   // VS Code debugger keys, only while a request is paused so the browser keeps F5 (reload)
   // and F11 (full screen) the rest of the time: F5 continue, F10 over, F11 into, Shift+F11 out.
@@ -230,28 +249,8 @@ export default function BackendWorkspace({
     return () => window.removeEventListener('keydown', onKey, true)
   }, [debugPause, resumeDebug])
 
-  // While the IDE is on screen, hide the site's floating chat and theme buttons (see
-  // index.css), and on large screens bring the whole workspace into view under the navbar.
-  useEffect(() => {
-    const root = document.documentElement
-    root.dataset.ideFocus = ''
-    if (window.matchMedia('(min-width: 1024px)').matches) {
-      try {
-        sectionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      } catch {
-        /* Older browsers without smooth scrolling options: leave the page where it is. */
-      }
-    }
-    return () => { delete root.dataset.ideFocus }
-  }, [])
-
-  // Full screen covers the page, so the page behind it must not scroll.
-  useEffect(() => {
-    if (!maximized) return undefined
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = previous }
-  }, [maximized])
+  useIdeFocus(sectionRef)
+  useFullscreen(maximized, setMaximized)
 
   const panelStyle = large && panelOpen
     ? (panelPosition === 'right' ? { width: layout.panelSize } : { height: layout.panelSize })
@@ -303,18 +302,30 @@ export default function BackendWorkspace({
             screens, so the page header above it is out of view. */}
         {toolbarExtra && <div className="ml-1 flex min-w-0 items-center gap-2 overflow-x-auto">{toolbarExtra}</div>}
         <div className="ml-auto flex shrink-0 items-center gap-1">
-          {(running ? (
+          {/* Starting: Stop cancels. API up: Restart reloads your code, Stop shuts it down
+              (like a dev server). Otherwise: Run. */}
+          {running ? (
             <button type="button" onClick={onCancel} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-500 px-3 text-xs font-semibold text-white hover:bg-red-600">
               <FiSquare className="h-3.5 w-3.5" /> Stop
             </button>
+          ) : api.ready ? (
+            <>
+              <button type="button" onClick={onRun} title={`Restart with your latest code (${MOD}Enter)`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-ink-900 px-3 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-400 dark:text-ink-950">
+                <FiRotateCw className="h-3.5 w-3.5" /> Restart
+              </button>
+              <button type="button" onClick={api.runner.stop} title="Stop the API" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-500 px-3 text-xs font-semibold text-white hover:bg-red-600">
+                <FiSquare className="h-3.5 w-3.5" /> Stop
+              </button>
+            </>
           ) : (
             <button type="button" onClick={onRun} title={`Run (${MOD}Enter)`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-ink-900 px-3 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-400 dark:text-ink-950">
               <FiPlay className="h-3.5 w-3.5" /> Run
             </button>
-          ))}
+          )}
           <button type="button" onClick={openDebug} aria-pressed={debugging} title={debugging ? 'Turn off debugging' : 'Arm debugger for the next API request'} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-semibold ${debugging ? 'border-red-400 bg-red-500/10 text-red-600 dark:text-red-300' : 'border-ink-300 text-ink-700 hover:border-gold-400 hover:text-ink-950 dark:border-ink-700 dark:text-ink-200 dark:hover:text-white'}`}>
             <FiCode className="h-3.5 w-3.5" /> {debugging ? 'Debugging' : 'Debug'}
           </button>
+          {reloadPrompt && <DebugReloadDialog onConfirm={confirmDebugReload} onClose={closeReloadPrompt} />}
           <span className="mx-1 h-5 w-px bg-ink-200 dark:bg-ink-700" aria-hidden="true" />
           {large && (
             <button type="button" onClick={layout.togglePanelPosition} className={TOOL_BTN} title={panelPosition === 'right' ? 'Move panel to the bottom' : 'Move panel to the right'} aria-label={panelPosition === 'right' ? 'Move panel to the bottom' : 'Move panel to the right'}>
@@ -324,12 +335,8 @@ export default function BackendWorkspace({
           <button type="button" onClick={() => setPanelOpen(!panelOpen)} aria-pressed={panelOpen} className={TOOL_BTN} title={`${panelOpen ? 'Hide' : 'Show'} panel (${MOD}J)`} aria-label="Toggle panel">
             <FiTerminal className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => setMaximized(!maximized)} aria-pressed={maximized} className={TOOL_BTN} title={maximized ? 'Exit full screen (Esc)' : 'Full screen'} aria-label={maximized ? 'Exit full screen' : 'Full screen'}>
-            {maximized ? <FiMinimize2 className="h-4 w-4" /> : <FiMaximize2 className="h-4 w-4" />}
-          </button>
-          <button type="button" onClick={toggleTheme} className={TOOL_BTN} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
-            {theme === 'dark' ? <FiMoon className="h-4 w-4" /> : <FiSun className="h-4 w-4" />}
-          </button>
+          <FullscreenButton maximized={maximized} onToggle={() => setMaximized(!maximized)} className={TOOL_BTN} />
+          <ThemeToggleButton className={TOOL_BTN} />
         </div>
       </div>
 
@@ -506,7 +513,7 @@ export default function BackendWorkspace({
                     breakpoints={liveBreakpoints}
                     isolationUnsupported={isolationUnsupported()}
                     onResume={api.resumeDebug}
-                    onStop={api.runner.cancel}
+                    onStop={api.runner.stop}
                     onOpenLocation={openTraceLocation}
                   />
                 )}
@@ -531,8 +538,8 @@ export default function BackendWorkspace({
       {/* Status bar: the state of the API at a glance, even with the panel hidden */}
       <footer className="flex h-7 shrink-0 items-center gap-3 overflow-x-auto bg-ink-900 px-3 text-[11px] text-ink-200 dark:border-t dark:border-ink-800 dark:bg-ink-950">
         <button type="button" onClick={() => showPanel('output')} className="flex shrink-0 items-center gap-1.5 hover:text-white">
-          <span className={`h-2 w-2 rounded-full ${running ? 'animate-pulse bg-gold-400' : api.ready ? 'bg-emerald-400' : api.runner.result ? 'bg-red-400' : 'bg-ink-500'}`} aria-hidden="true" />
-          {running ? 'Starting…' : api.ready ? 'API running' : api.runner.result ? 'API not loaded' : 'Not started'}
+          <span className={`h-2 w-2 rounded-full ${running ? 'animate-pulse bg-gold-400' : api.ready ? 'bg-emerald-400' : api.runner.stopped ? 'bg-ink-500' : api.runner.result ? 'bg-red-400' : 'bg-ink-500'}`} aria-hidden="true" />
+          {running ? 'Starting…' : api.ready ? 'API running' : api.runner.stopped ? 'Stopped' : api.runner.result ? 'API not loaded' : 'Not started'}
         </button>
         {api.ready && (
           <button type="button" onClick={() => showPanel('api')} className="shrink-0 hover:text-white">{routeCount} route{routeCount === 1 ? '' : 's'}</button>
