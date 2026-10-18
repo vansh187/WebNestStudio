@@ -77,8 +77,7 @@ export default function SharedSnippet() {
     )
   }
 
-  const normalizedLanguage = snapshot.language === 'javascript' ? 'web' : snapshot.language
-  const lang = getLanguage(normalizedLanguage)
+  const lang = getLanguage(snapshot.language)
   const files = Array.isArray(snapshot.files) ? snapshot.files.filter((file) => file?.name) : []
   const activeFile = files.find((file) => file.name === selectedFile) ?? files[0]
   const source = files[0]?.content ?? snapshot.source ?? ''
@@ -88,7 +87,7 @@ export default function SharedSnippet() {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
-          language: normalizedLanguage,
+          language: snapshot.language,
           source,
           ...(files.length ? { files, selectedFile: activeFile?.name } : {}),
           stdin: snapshot.stdin ?? '',
@@ -110,7 +109,7 @@ export default function SharedSnippet() {
             {snapshot.title || 'Untitled snippet'}
           </h1>
           <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">
-            {lang?.label ?? normalizedLanguage}
+            {lang?.label ?? snapshot.language}
             {snapshot.created_at && <> shared {new Date(snapshot.created_at).toLocaleDateString()}</>}
           </p>
         </div>

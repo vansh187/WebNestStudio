@@ -13,6 +13,26 @@ import { PROJECT_LANGUAGES, getLanguage, mainFileName } from '../../data/codingL
 import { getProject, updateProject, createShare, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 import { isJavaFile } from '../../lib/codelab/javaProject'
+import { languageForFile } from '../../lib/codelab/backendFiles'
+
+// Java and Web projects keep every file; Python stays single-file.
+const isMultiFile = (language) => language === 'java' || language === 'web'
+
+// A one-file list for a multi-file language (null for single-file ones), so the file list
+// always exists while such a language is selected.
+function seedFiles(language, content) {
+  if (!isMultiFile(language)) return null
+  const lang = getLanguage(language)
+  return [{ name: mainFileName(lang), language: lang.monacoId, content }]
+}
+
+function savedFiles(data) {
+  const saved = data.files ?? []
+  const kept = data.language === 'java' ? saved.filter(isJavaFile) : data.language === 'web' ? saved : []
+  return kept.length
+    ? kept.map((file) => ({ name: file.name, language: data.language === 'java' ? 'java' : languageForFile(file.name), content: file.content ?? '' }))
+    : seedFiles(data.language, data.source ?? '')
+}
 
 function SaveStatus({ status }) {
   if (status === 'saving') {
@@ -54,8 +74,9 @@ export default function ProjectWorkspace() {
   const [source, setSource] = useState('')
   const [stdin, setStdin] = useState('')
   const [fileName, setFileName] = useState('')
-  // Java projects keep every class file; other languages stay single-file.
-  const [javaFiles, setJavaFiles] = useState(null)
+  // Java projects keep every class file and Web projects every HTML/CSS/JS file; Python
+  // stays single-file.
+  const [projectFiles, setProjectFiles] = useState(null)
   const [selectedFile, setSelectedFile] = useState('')
   const [sharing, setSharing] = useState(false)
 
@@ -74,11 +95,9 @@ export default function ProjectWorkspace() {
         setSource(data.files?.[0]?.content ?? data.source ?? '')
         setStdin(data.stdin ?? '')
         setFileName(data.files?.[0]?.name ?? '')
-        const savedJava = (data.files ?? []).filter(isJavaFile)
-        setJavaFiles(data.language === 'java' && savedJava.length
-          ? savedJava.map((file) => ({ name: file.name, language: 'java', content: file.content ?? '' }))
-          : null)
-        setSelectedFile(savedJava[0]?.name ?? '')
+        const kept = savedFiles(data)
+        setProjectFiles(kept)
+        setSelectedFile(kept?.[0]?.name ?? '')
       })
       .catch((err) => {
         if (cancelled) return
@@ -98,9 +117,7 @@ export default function ProjectWorkspace() {
   const currentFileName =
     fileName && ext && fileName.toLowerCase().endsWith(ext) ? fileName : mainFileName(lang)
 
-  const files = useMemo(() => (language === 'java'
-    ? javaFiles ?? [{ name: currentFileName, language: 'java', content: source }]
-    : undefined), [language, javaFiles, currentFileName, source])
+  const files = isMultiFile(language) ? projectFiles ?? [] : undefined
   const activeSource = files ? files[0]?.content ?? '' : source
 
   const autosaveValue = useMemo(
@@ -109,17 +126,24 @@ export default function ProjectWorkspace() {
   )
 
   const handleFileChange = useCallback((name, value) => {
-    setJavaFiles((items) => (items ?? [{ name, language: 'java', content: '' }])
-      .map((file) => (file.name === name ? { ...file, content: value } : file)))
+    setProjectFiles((items) => (items ?? []).map((file) => (file.name === name ? { ...file, content: value } : file)))
   }, [])
 
-  // Leaving Java keeps the main file's latest code as the project's single source (like the
-  // single-file languages do) and drops the class list, so neither side restores stale code.
+  // Changing language keeps only the main file's latest code, so neither side restores stale
+  // code. Autosave would then write that loss to the server, so ask first when other files
+  // (a Web project's CSS and JS, extra Java classes) would be removed.
   const handleLanguageChange = useCallback((next) => {
-    if (language === 'java' && next !== 'java') {
-      setSource(files?.[0]?.content ?? source)
-      setJavaFiles(null)
+    if (next === language) return
+    const main = files ? files[0] : null
+    if (files && files.length > 1) {
+      const others = files.slice(1).map((file) => file.name).join(', ')
+      const label = getLanguage(next).label
+      if (!window.confirm(`Switching to ${label} keeps only ${main.name} and removes ${others} from this project. Continue?`)) return
     }
+    const content = main ? main.content : source
+    setSource(content)
+    setProjectFiles(seedFiles(next, content))
+    setSelectedFile('')
     setLanguage(next)
   }, [language, files, source])
 
@@ -209,7 +233,7 @@ export default function ProjectWorkspace() {
       selectedFile={files?.some((file) => file.name === selectedFile) ? selectedFile : files?.[0]?.name}
       onSelectFile={setSelectedFile}
       onFileChange={handleFileChange}
-      onFilesChange={setJavaFiles}
+      onFilesChange={setProjectFiles}
       stdin={stdin}
       onStdinChange={setStdin}
       runner={runner}
