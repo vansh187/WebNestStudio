@@ -55,6 +55,8 @@ const LearnerDashboard = lazyWithReload(() => import('./pages/codelab/LearnerDas
 const CoursesList = lazyWithReload(() => import('./pages/learn/CoursesList'))
 const CourseDetail = lazyWithReload(() => import('./pages/learn/CourseDetail'))
 const LessonDetail = lazyWithReload(() => import('./pages/learn/LessonDetail'))
+const CourseExam = lazyWithReload(() => import('./pages/learn/CourseExam'))
+const CertificateView = lazyWithReload(() => import('./pages/learn/CertificateView'))
 
 // Auth-gated, never needed by anonymous visitors or crawlers - split out of the
 // main bundle so public/marketing pages don't pay for admin+portal code weight.
@@ -63,6 +65,8 @@ const AdminLayout = lazyWithReload(() => import('./pages/admin/AdminLayout'))
 const AdminLeads = lazyWithReload(() => import('./pages/admin/AdminLeads'))
 const AdminResourceCrud = lazyWithReload(() => import('./pages/admin/AdminResourceCrud'))
 const AdminProjectStatus = lazyWithReload(() => import('./pages/admin/AdminProjectStatus'))
+const AdminExamBank = lazyWithReload(() => import('./pages/admin/AdminExamBank'))
+const AdminCertificates = lazyWithReload(() => import('./pages/admin/AdminCertificates'))
 
 function RouteLoadingFallback() {
   return (
@@ -226,6 +230,24 @@ function App() {
                       )}
                     />
                     <Route
+                      path="learn/:courseSlug/exam"
+                      element={(
+                        <ProtectedRoute>
+                          <ErrorBoundary>
+                            <CourseExam />
+                          </ErrorBoundary>
+                        </ProtectedRoute>
+                      )}
+                    />
+                    <Route
+                      path="certificates/:certificateId"
+                      element={(
+                        <ErrorBoundary>
+                          <CertificateView />
+                        </ErrorBoundary>
+                      )}
+                    />
+                    <Route
                       path="learn/lessons/:lessonId"
                       element={(
                         <ErrorBoundary>
@@ -301,6 +323,8 @@ function App() {
                     <Route index element={<ErrorBoundary><AdminLeads /></ErrorBoundary>} />
                     <Route path="leads" element={<ErrorBoundary><AdminLeads /></ErrorBoundary>} />
                     <Route path="project-status" element={<ErrorBoundary><AdminProjectStatus /></ErrorBoundary>} />
+                    <Route path="exam-bank" element={<ErrorBoundary><AdminExamBank /></ErrorBoundary>} />
+                    <Route path="certificates" element={<ErrorBoundary><AdminCertificates /></ErrorBoundary>} />
                     <Route path=":resource" element={<ErrorBoundary><AdminResourceCrud /></ErrorBoundary>} />
                   </Route>
                 </Routes>

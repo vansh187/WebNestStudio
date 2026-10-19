@@ -1,4 +1,4 @@
-import { SAMPLE_COURSES } from '../data/codelabDefaults'
+import { SAMPLE_COURSES, canonicalLessonId } from '../data/codelabDefaults'
 import { readUserNotes, writeUserNotes } from './lessonNotes'
 
 const STORAGE_PREFIX = 'wns-learning-progress'
@@ -70,10 +70,36 @@ export function readLearningProgress(userKey) {
   migrateLegacyData(userKey)
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey(userKey)) || '{}')
-    return isPlainObject(parsed) ? parsed : {}
+    return isPlainObject(parsed) ? canonicalizeProgress(parsed) : {}
   } catch {
     return {}
   }
+}
+
+// Old URLs (e.g. Advanced Java's merged Spring lessons) are aliases of a lesson in another
+// course. Progress saved under an alias key is folded into the real lesson id, so it counts
+// on the roadmap and is sent to the server under an id the course outline knows. The next
+// write stores only canonical keys.
+function canonicalizeProgress(progress) {
+  const result = {}
+  for (const [id, entry] of Object.entries(progress)) {
+    if (!isPlainObject(entry)) continue
+    const key = canonicalLessonId(id)
+    const existing = result[key]
+    if (!existing) {
+      result[key] = entry
+      continue
+    }
+    const completed = existing.status === 'completed' || entry.status === 'completed'
+    result[key] = {
+      ...existing,
+      ...entry,
+      status: completed ? 'completed' : (existing.status === 'in_progress' || entry.status === 'in_progress' ? 'in_progress' : (entry.status || existing.status)),
+      completed_percent: Math.max(Number(existing.completed_percent) || 0, Number(entry.completed_percent) || 0),
+      bookmarked: Boolean(existing.bookmarked || entry.bookmarked),
+    }
+  }
+  return result
 }
 
 // Returns false when the write couldn't be persisted (storage full, disabled,
@@ -124,4 +150,73 @@ export function getLearningTotals(progress) {
       coursesInProgress: totals.coursesInProgress + (isInProgress ? 1 : 0),
     }
   }, { lessonsTotal: 0, lessonsCompleted: 0, coursesCompleted: 0, coursesInProgress: 0 })
+}
+
+// --- Server sync -------------------------------------------------------------------------
+// The final exam needs every lesson of the course completed on the server, but progress is
+// recorded in this browser first. Lessons the server has accepted are remembered per user
+// so each one is sent once (see COURSE_EXAMS_CERTIFICATES.md).
+const SYNCED_PREFIX = 'wns-learning-synced'
+
+function readSynced(userKey) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(`${SYNCED_PREFIX}:${userKey}`) || '[]')
+    return new Set(Array.isArray(parsed) ? parsed : [])
+  } catch {
+    return new Set()
+  }
+}
+
+export function markLessonsSynced(userKey, lessonIds) {
+  if (!userKey || !lessonIds.length) return
+  const synced = readSynced(userKey)
+  lessonIds.forEach((id) => synced.add(id))
+  try {
+    localStorage.setItem(`${SYNCED_PREFIX}:${userKey}`, JSON.stringify([...synced]))
+  } catch {
+    /* Storage full: the lessons are sent again next time, which the server accepts. */
+  }
+}
+
+// Completed lessons the server has not accepted yet, as bulk-progress entries.
+export function unsyncedCompletions(userKey) {
+  if (!userKey) return []
+  const synced = readSynced(userKey)
+  return Object.entries(readLearningProgress(userKey))
+    .filter(([id, entry]) => entry?.status === 'completed' && !synced.has(id))
+    .map(([id]) => ({ lesson_id: id, status: 'completed', completed_percent: 100 }))
+}
+
+// One in-flight sync per user: pages that mount together (or effects that run twice) share it
+// instead of sending the same lessons again.
+const inFlight = new Map()
+
+// The server accepts at most this many lessons per bulk request.
+const SYNC_BATCH = 500
+
+// Sends unsynced completions in batches of SYNC_BATCH. `send` is the API call
+// (bulkUpdateProgress), passed in so this module stays free of network code. Resolves true
+// when the server accepted everything; each accepted batch is remembered even if a later one
+// fails. Lessons the server reports as `unknown` (for example before the course catalog has
+// been uploaded) are not remembered, so they are sent again on a later visit.
+export function syncLocalProgress(userKey, send) {
+  if (!userKey) return Promise.resolve(true)
+  if (inFlight.has(userKey)) return inFlight.get(userKey)
+  const pending = unsyncedCompletions(userKey)
+  if (!pending.length) return Promise.resolve(true)
+  const request = (async () => {
+    let allAccepted = true
+    for (let start = 0; start < pending.length; start += SYNC_BATCH) {
+      const batch = pending.slice(start, start + SYNC_BATCH)
+      const response = await send(batch)
+      const unknown = new Set(Array.isArray(response?.unknown) ? response.unknown.map(String) : [])
+      if (unknown.size) allAccepted = false
+      markLessonsSynced(userKey, batch.map((item) => item.lesson_id).filter((id) => !unknown.has(id)))
+    }
+    return allAccepted
+  })()
+    .catch(() => false)
+    .finally(() => inFlight.delete(userKey))
+  inFlight.set(userKey, request)
+  return request
 }

@@ -7,7 +7,7 @@ import { COMPANY, CONTACT, FOOTER_SECTIONS, TECH_STACK } from '../data/site'
 
 export default function Footer() {
   return (
-    <footer className="dark border-t border-gold-400/25 bg-night">
+    <footer className="dark border-t border-gold-400/25 bg-night print:hidden">
       <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.2fr]">
           <div className="md:col-span-2 lg:col-span-1">

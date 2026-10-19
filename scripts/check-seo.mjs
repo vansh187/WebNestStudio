@@ -70,10 +70,40 @@ try {
   await page.waitForURL('**/codelab/playground?*')
   await page.waitForFunction(() => document.querySelector('link[rel="canonical"]')?.href.endsWith('/codelab/playground'))
   assert.equal(await page.locator('script[data-schema-type="TechArticle"]').count(), 0, 'Lesson schema removed on navigation')
-  const saved = await page.evaluate(() => Object.keys(localStorage).filter((key) => key.includes(':lesson:')).map((key) => JSON.parse(localStorage.getItem(key))))
-  assert.ok(saved.some((session) => session.files[0].content === pythonLesson.examples[0].code), 'Exact Python example transferred')
+  // Playground sessions live in IndexedDB (src/lib/codelab/projectStore.js), with localStorage
+  // as the fallback. The save is debounced, so poll until a lesson session appears (up to 15s)
+  // instead of guessing a fixed delay that a slow CI runner can exceed.
+  const readSaved = () => page.evaluate(async () => {
+    const local = Object.keys(localStorage).filter((key) => key.includes(':lesson:')).map((key) => JSON.parse(localStorage.getItem(key)))
+    const stored = await new Promise((resolve) => {
+      const request = indexedDB.open('wns-codelab-projects', 1)
+      request.onupgradeneeded = () => request.result.createObjectStore('sessions')
+      request.onerror = () => resolve([])
+      request.onsuccess = () => {
+        const db = request.result
+        const tx = db.transaction('sessions', 'readonly')
+        const keys = tx.objectStore('sessions').getAllKeys()
+        const values = tx.objectStore('sessions').getAll()
+        tx.oncomplete = () => {
+          db.close()
+          resolve(values.result.filter((_, i) => String(keys.result[i]).includes(':lesson:')))
+        }
+        tx.onerror = () => resolve([])
+      }
+    })
+    return [...local, ...stored]
+  })
+  let saved = []
+  for (const deadline = Date.now() + 15000; Date.now() < deadline;) {
+    saved = await readSaved()
+    if (saved.some((session) => session?.files?.[0]?.content === pythonLesson.examples[0].code)) break
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+  assert.ok(saved.some((session) => session?.files?.[0]?.content === pythonLesson.examples[0].code), 'Exact Python example transferred')
   await page.getByRole('link', { name: `Back to ${pythonLesson.title}`, exact: true }).click()
   await page.waitForURL(`**${lessonPath}`)
+  // The lesson page loads lazily after the URL changes; wait for its schema as on first visit.
+  await page.waitForFunction(() => document.querySelectorAll('script[data-schema-type="TechArticle"]').length === 1, null, { timeout: 15000 })
   assert.equal(await page.locator('h1').count(), 1)
   assert.equal(await page.locator('script[data-schema-type="TechArticle"]').count(), 1)
   await page.setViewportSize({ width: 390, height: 844 })

@@ -39,6 +39,12 @@ const JAVA_TIMEOUT = 90000
 const GITHUB_PATHS = ['/api/github']
 const GITHUB_TIMEOUT = 60000
 
+// Admin course uploads (non-GET requests only): a whole course outline or up to ~150 KB of
+// lesson context, which the server checks against existing exam questions, possibly after a
+// Render cold start.
+const ADMIN_LEARNING_PATHS = ['/api/admin/learning']
+const ADMIN_LEARNING_TIMEOUT = 60000
+
 let hasCompletedFirstRequest = false
 const slowListeners = new Set()
 let pendingSlowCount = 0
@@ -84,6 +90,10 @@ api.interceptors.request.use((config) => {
     config.timeout = JAVA_TIMEOUT
   } else if (GITHUB_PATHS.some((p) => url.includes(p))) {
     config.timeout = GITHUB_TIMEOUT
+  } else if (ADMIN_LEARNING_PATHS.some((p) => url.includes(p)) && !['get', 'head'].includes(String(config.method || 'get').toLowerCase())) {
+    // Only uploads and changes (PUT/POST) get the long timeout; reads such as the summary,
+    // question list and job polling keep the normal timeout so a hung backend fails fast.
+    config.timeout = ADMIN_LEARNING_TIMEOUT
   } else {
     config.timeout = hasCompletedFirstRequest ? WARM_TIMEOUT : COLD_START_TIMEOUT
   }
@@ -167,10 +177,9 @@ api.interceptors.response.use(
 export function getErrorDetail(error, fallback = 'Something went wrong. Please try again.') {
   const data = error?.response?.data
   if (!data) return fallback
-  if (Array.isArray(data.errors) && data.errors.length) {
-    return data.errors.map((e) => e.msg).join(' ')
-  }
-  return data.detail || fallback
+  const messages = Array.isArray(data.errors) ? data.errors.map((e) => e?.msg).filter((msg) => typeof msg === 'string' && msg) : []
+  if (messages.length) return messages.join(' ')
+  return typeof data.detail === 'string' && data.detail ? data.detail : fallback
 }
 
 // Maps backend 422 `errors[].loc` entries onto react-hook-form field names via setError.

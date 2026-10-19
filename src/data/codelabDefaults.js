@@ -261,6 +261,12 @@ function slugify(value) {
   return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
+// The structured tutorial entry behind a lesson (intro, keyPoints, quiz…), or null for lessons
+// that use the generic template. Used to give the final-exam generator each module's content.
+export function tutorialEntry(courseSlug, topic) {
+  return TUTORIAL_CONTENT[courseSlug]?.[slugify(topic)] ?? null
+}
+
 function lessonId(courseSlug, topic) {
   return `lesson_${courseSlug.replaceAll('-', '_')}_${slugify(topic).replaceAll('-', '_')}`
 }
@@ -419,6 +425,13 @@ LESSON_MAP.lesson_advanced_java_service_discovery_and_api_gateways_with_spring_c
 LESSON_MAP.lesson_advanced_java_resilience_circuit_breakers_and_distributed_tracing = LESSON_MAP.lesson_spring_boot_resilience_retries_rate_limits_and_circuit_breakers
 
 export const SAMPLE_LESSONS = LESSON_MAP
+
+// The id a lesson is listed under in its course outline (and on the server). Alias URLs above
+// resolve to the lesson they point to; unknown ids are returned unchanged.
+export function canonicalLessonId(id) {
+  const lesson = Object.prototype.hasOwnProperty.call(LESSON_MAP, id) ? LESSON_MAP[id] : null
+  return lesson?.id || id
+}
 
 export function cloneFiles(files, fallback = PYTHON_FILES) {
   const source = Array.isArray(files) && files.length ? files : fallback
