@@ -4,6 +4,7 @@ import { trackEvent } from '../../lib/analytics'
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import CourseRoadmap from '../../components/CourseRoadmap'
+import CourseExamCard from '../../components/CourseExamCard'
 import { SAMPLE_COURSES } from '../../data/codelabDefaults'
 import { getCourseIntro } from '../../data/courseIntros'
 import { useAuth } from '../../context/AuthContext'
@@ -89,6 +90,8 @@ export default function CourseDetail() {
       )}
 
       <CourseRoadmap course={course} progress={progress} nextLessonId={nextLessonId} />
+      {/* The last step of every course. Renders nothing until the server enables the exam. */}
+      <CourseExamCard course={course} userKey={userKey} isAuthenticated={isAuthenticated} />
       <RelatedService courseSlug={course.slug} className="mt-8" />
     </div>
   )

@@ -16,7 +16,8 @@ import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../../hooks/useS
 import ErrorBoundary from '../../components/ErrorBoundary'
 import { NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
-import { readLearningProgress, writeLearningProgress, getLessonProgress } from '../../lib/learningProgress'
+import { readLearningProgress, writeLearningProgress, getLessonProgress, markLessonsSynced } from '../../lib/learningProgress'
+import { updateLessonProgress } from '../../api/learning'
 import { readUserNotes, readLessonNotes, writeUserNotes, createNoteId, noteDateLabel } from '../../lib/lessonNotes'
 
 function normalize(id) {
@@ -96,12 +97,15 @@ export default function LessonDetail() {
   const { user, isAuthenticated } = useAuth()
   const userKey = user?.email || null
   const lesson = useMemo(() => normalize(lessonId), [lessonId])
+  // Alias URLs (old ids of merged lessons) open the real lesson; progress is always stored and
+  // sent under the id the course outline uses, so it counts on the roadmap and the server.
+  const progressId = lesson?.id || lessonId
   const [courseProgress, setCourseProgress] = useState({})
   const [notes, setNotes] = useState([])
   const [draftNote, setDraftNote] = useState('')
   const [saving, setSaving] = useState(false)
 
-  const progress = useMemo(() => getLessonProgress(courseProgress, lessonId), [courseProgress, lessonId])
+  const progress = useMemo(() => getLessonProgress(courseProgress, progressId), [courseProgress, progressId])
 
   // Split the lesson HTML so a video can sit between two sections. Falls back
   // to showing the video below the lesson when the split marker isn't found.
@@ -195,27 +199,34 @@ export default function LessonDetail() {
     if (!userKey) return
     const all = readLearningProgress(userKey)
     const nextProgress = { ...progress, status: 'completed', completed_percent: 100 }
-    all[lessonId] = nextProgress
+    all[progressId] = nextProgress
     if (!writeLearningProgress(userKey, all)) {
       toast.error('Could not save your progress. Your browser storage may be full or unavailable.')
       return
     }
     setCourseProgress(all)
-    trackEvent('lesson_completed', { lesson_id: lessonId, course_slug: lesson?.course_slug })
+    trackEvent('lesson_completed', { lesson_id: progressId, course_slug: lesson?.course_slug })
     toast.success('Lesson marked complete.')
-  }, [userKey, lessonId, progress, toast, lesson])
+    // The final exam checks completion on the server. If this fails (offline, server asleep,
+    // or a 404 because the course outline is not uploaded yet), the lesson stays unsynced and
+    // the course page sends it later with the others.
+    if (!isAuthenticated) return
+    updateLessonProgress(progressId, { status: 'completed', completed_percent: 100, time_spent_seconds: 0 })
+      .then(() => markLessonsSynced(userKey, [progressId]))
+      .catch(() => {})
+  }, [userKey, progressId, progress, toast, lesson, isAuthenticated])
 
   const toggleBookmark = useCallback(() => {
     if (!userKey) return
     const all = readLearningProgress(userKey)
     const nextProgress = { ...progress, bookmarked: !progress.bookmarked }
-    all[lessonId] = nextProgress
+    all[progressId] = nextProgress
     if (!writeLearningProgress(userKey, all)) {
       toast.error('Could not save your bookmark. Your browser storage may be full or unavailable.')
       return
     }
     setCourseProgress(all)
-  }, [userKey, lessonId, progress, toast])
+  }, [userKey, progressId, progress, toast])
 
   const saveNote = useCallback(() => {
     const trimmed = draftNote.trim()
@@ -271,11 +282,11 @@ export default function LessonDetail() {
               <FiMenu className="h-4 w-4" /> Course topics
             </summary>
             <div className="mt-3">
-              <TopicNav course={lessonNavigation.course} activeLessonId={lessonId} progress={courseProgress} />
+              <TopicNav course={lessonNavigation.course} activeLessonId={progressId} progress={courseProgress} />
             </div>
           </details>
           <div className="hidden rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40 lg:sticky lg:top-24 lg:block lg:self-start">
-            <TopicNav course={lessonNavigation.course} activeLessonId={lessonId} progress={courseProgress} />
+            <TopicNav course={lessonNavigation.course} activeLessonId={progressId} progress={courseProgress} />
           </div>
         </>
       )}

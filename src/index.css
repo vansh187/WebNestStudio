@@ -107,6 +107,17 @@ html[data-ide-focus] [data-floating-widget] {
   display: none !important;
 }
 
+/* Printing a page (a certificate, a lesson) prints its content, not the site chrome
+   (the navbar and footer carry print:hidden). */
+@media print {
+  [data-floating-widget] {
+    display: none !important;
+  }
+  .certificate {
+    break-inside: avoid;
+  }
+}
+
 ::selection {
   background-color: var(--color-gold-400);
   color: var(--color-ink-950);

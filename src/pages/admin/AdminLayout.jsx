@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link } from 'react-router-dom'
-import { FiUsers, FiLayers, FiImage, FiMessageSquare, FiHelpCircle, FiEdit3, FiActivity, FiLogOut, FiArrowLeft } from 'react-icons/fi'
+import { FiUsers, FiLayers, FiImage, FiMessageSquare, FiHelpCircle, FiEdit3, FiActivity, FiLogOut, FiArrowLeft, FiCheckSquare, FiAward } from 'react-icons/fi'
 import Logo from '../../components/Logo'
 import { useAuth } from '../../context/AuthContext'
 
@@ -11,6 +11,8 @@ const NAV = [
   { to: '/admin/faqs', label: 'FAQs', icon: FiHelpCircle },
   { to: '/admin/blog', label: 'Blog', icon: FiEdit3 },
   { to: '/admin/project-status', label: 'Project Status', icon: FiActivity },
+  { to: '/admin/exam-bank', label: 'Exam Questions', icon: FiCheckSquare },
+  { to: '/admin/certificates', label: 'Certificates', icon: FiAward },
 ]
 
 export default function AdminLayout() {

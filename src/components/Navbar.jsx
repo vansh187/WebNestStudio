@@ -68,7 +68,7 @@ export default function Navbar() {
   return (
     // A floating capsule. The header keeps a fixed height (h-22) so a page can pull its
     // hero up underneath with -mt-22; the open mobile menu overlays the page instead.
-    <header className="sticky top-0 z-50 h-22 px-3 pt-3 sm:px-5">
+    <header className="sticky top-0 z-50 h-22 px-3 pt-3 sm:px-5 print:hidden">
       {/* The "dark" class keeps the capsule black with light text in both themes. */}
       <div
         className={`dark mx-auto max-w-7xl rounded-2xl border border-gold-400/40 bg-gradient-to-b from-[#3a362f]/90 to-[#1f1d1a]/90 backdrop-blur-xl transition-shadow duration-300 ${

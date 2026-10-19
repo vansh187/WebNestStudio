@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiAlertTriangle, FiAward, FiBookmark, FiBookOpen, FiBox, FiCheck, FiChevronDown, FiCompass, FiCpu, FiDatabase,
-  FiFileText, FiFlag, FiGitBranch, FiGlobe, FiHardDrive, FiLayers, FiLayout, FiSearch, FiServer,
+  FiFileText, FiFlag, FiGitBranch, FiGlobe, FiHardDrive, FiLayers, FiLayout, FiLock, FiSearch, FiServer,
   FiShield, FiTrendingUp, FiType, FiX, FiZap,
 } from 'react-icons/fi'
 import { getLessonProgress } from '../lib/learningProgress'
@@ -57,7 +57,9 @@ export default function CourseRoadmap({ course, progress, nextLessonId }) {
 
   const totalLessons = modules.reduce((sum, module) => sum + module.lessons.length, 0)
   const completedLessons = modules.reduce((sum, module) => sum + module.lessons.filter((lesson) => lessonStatus(progress, lesson.id).done).length, 0)
-  const percent = totalLessons ? Math.round((completedLessons / totalLessons) * 100) : 0
+  // Exact count, not a rounded percentage: with 200+ lessons, one left would round up to 100%.
+  const allDone = totalLessons > 0 && completedLessons >= totalLessons
+  const percent = allDone ? 100 : (totalLessons ? Math.floor((completedLessons / totalLessons) * 100) : 0)
 
   const term = query.trim().toLowerCase()
   const visible = term
@@ -197,10 +199,24 @@ export default function CourseRoadmap({ course, progress, nextLessonId }) {
             })}
           </ol>
 
+          {/* Finish line: the final exam, unlocked once every lesson is complete. */}
           {!term && (
             <div className="relative flex items-center gap-3 md:justify-center">
-              <span className={`flex h-12 w-12 items-center justify-center rounded-full border-2 ${percent === 100 ? 'border-gold-300 bg-gold-400 text-ink-950 shadow-[0_0_26px_rgba(230,172,62,0.7)]' : 'border-gold-400/40 bg-ink-950 text-gold-300'}`}><FiAward className="h-5 w-5" /></span>
-              <span className="rounded-full border border-gold-400/40 bg-ink-950/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-gold-300 md:absolute md:left-1/2 md:ml-10">{percent === 100 ? 'Course complete' : 'Finish line'}</span>
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 ${allDone ? 'border-gold-300 bg-gold-400 text-ink-950 shadow-[0_0_26px_rgba(230,172,62,0.7)]' : 'border-gold-400/40 bg-ink-950 text-gold-300'}`}>
+                {allDone ? <FiAward className="h-5 w-5" /> : <FiLock className="h-5 w-5" />}
+              </span>
+              {allDone ? (
+                <Link
+                  to={`/learn/${course.slug}/exam`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gold-400 px-5 py-2.5 text-sm font-bold text-ink-950 shadow-[0_0_24px_rgba(230,172,62,0.5)] hover:bg-gold-300 md:absolute md:left-1/2 md:ml-10"
+                >
+                  <FiAward className="h-4 w-4" /> Course complete · Take the final exam
+                </Link>
+              ) : (
+                <span className="rounded-full border border-gold-400/40 bg-ink-950/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-gold-300 md:absolute md:left-1/2 md:ml-10">
+                  Final exam · unlocks at 100%
+                </span>
+              )}
             </div>
           )}
         </div>

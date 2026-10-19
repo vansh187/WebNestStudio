@@ -8,6 +8,8 @@ import { useSeo } from '../../hooks/useSeo'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, getStartedCoursesProgress, getLearningTotals } from '../../lib/learningProgress'
+import { listMyCertificates } from '../../api/learning'
+import { formatDate } from '../../lib/examTime'
 
 const fallback = {
   summary: { problems_total: 0, attempted: 0, solved: 0, completion_percent: 0, xp: 0, current_streak: 0, best_streak: 0 },
@@ -122,6 +124,44 @@ export default function LearnerDashboard() {
           </div>
         </>
       )}
+      {isAuthenticated && <MyCertificates />}
     </main>
+  )
+}
+
+// Certificates earned by passing course final exams. Hidden while there are none, and if the
+// endpoint is not available yet.
+function MyCertificates() {
+  const [items, setItems] = useState([])
+
+  useEffect(() => {
+    let alive = true
+    listMyCertificates()
+      .then((data) => { if (alive) setItems(Array.isArray(data) ? data : (data?.items ?? [])) })
+      .catch(() => { if (alive) setItems([]) })
+    return () => { alive = false }
+  }, [])
+
+  if (!items.length) return null
+  return (
+    <>
+      <h2 className="mt-10 font-display text-2xl font-bold text-ink-900 dark:text-white">My certificates</h2>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {items.map((cert) => (
+          <Link
+            key={cert.certificate_id}
+            to={`/certificates/${cert.certificate_id}`}
+            className="flex items-start gap-3 rounded-lg border border-ink-200 bg-white p-4 hover:border-gold-400 dark:border-ink-800 dark:bg-ink-900/40"
+          >
+            <FiAward className="mt-0.5 h-5 w-5 shrink-0 text-gold-500" />
+            <span>
+              <span className="block font-semibold text-ink-900 dark:text-white">{cert.course_title}</span>
+              <span className="block text-sm text-ink-500 dark:text-ink-300">Issued {formatDate(cert.issued_at)} · {cert.certificate_id}</span>
+              {cert.status === 'revoked' && <span className="text-xs font-semibold text-red-600">Revoked</span>}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </>
   )
 }
