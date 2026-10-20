@@ -208,3 +208,8 @@ html[data-ide-focus] [data-floating-widget] {
 /* The line a paused request is stopped on: a strong green band, readable in both themes. */
 .monaco-editor .wn-debug-current-line { background: rgba(34, 197, 94, 0.32); outline: 1px solid rgba(22, 163, 74, 0.7); }
 .monaco-editor .wn-debug-current-marker { border-left: 4px solid #16a34a; }
+/* Inline variable values while paused (VS Code's "inline values"). */
+.monaco-editor .wn-debug-inline-value { color: #6b7280; font-style: italic; opacity: 0.9; }
+.monaco-editor .wn-debug-inline-changed { color: #d97706; }
+.monaco-editor.vs-dark .wn-debug-inline-value { color: #9ca3af; }
+.monaco-editor.vs-dark .wn-debug-inline-changed { color: #fbbf24; }

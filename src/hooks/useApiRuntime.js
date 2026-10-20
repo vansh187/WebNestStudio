@@ -51,6 +51,7 @@ export function useApiRuntime(workspaceKey) {
   // the paused request's own control buffer, so Continue always reaches that request).
   const debugActiveRef = useRef(0)
   const pausedRef = useRef(null)
+  const lastPauseRef = useRef(null)
   const dbKey = databaseKey(workspaceKey)
 
   const [running, setRunning] = useState(false)
@@ -90,6 +91,7 @@ export function useApiRuntime(workspaceKey) {
     workerRef.current = null
     debugActiveRef.current = 0
     pausedRef.current = null
+    lastPauseRef.current = null
     bootRef.current = null
     rejectAll(reason)
     if (mountedRef.current) {
@@ -121,8 +123,14 @@ export function useApiRuntime(workspaceKey) {
           clearTimeout(entry.timer)
           entry.timer = null
         }
-        pausedRef.current = message
-        if (mountedRef.current) setDebugPause(message)
+        let frames = []
+        try { frames = JSON.parse(message.frames || '[]') } catch { frames = [] }
+        // The previous stop of the same request, so the page can mark what a step changed.
+        const previous = lastPauseRef.current?.id === message.id ? lastPauseRef.current.frames : null
+        const pause = { ...message, frames, previous }
+        lastPauseRef.current = pause
+        pausedRef.current = pause
+        if (mountedRef.current) setDebugPause(pause)
         return
       }
       const entry = pendingRef.current.get(message.id)

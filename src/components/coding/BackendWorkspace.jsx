@@ -10,7 +10,7 @@ import PreviewPanel from './PreviewPanel'
 import ApiClientPanel from './ApiClientPanel'
 import DatabasePanel from './DatabasePanel'
 import ArchitecturePanel from './ArchitecturePanel'
-import DebugPanel from './DebugPanel'
+import DebugPanel, { DebugControls } from './DebugPanel'
 import ResizeHandle from './ResizeHandle'
 import ErrorBoundary from '../ErrorBoundary'
 import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFiles'
@@ -20,6 +20,7 @@ import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 import { statusTone } from '../../lib/codelab/httpStyles'
 import { canIsolate, isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
 import DebugReloadDialog from './DebugReloadDialog'
+import { changedPaths, expressionAt, hoverMarkdown, inlineValues, pathKey, resolveExpression } from '../../lib/codelab/debugValues'
 
 const REQUEST_LOG_LIMIT = 200
 
@@ -228,9 +229,60 @@ export default function BackendWorkspace({
     return () => window.removeEventListener('keydown', onKey, true)
   }, [toggleExplorer, setPanelOpen, panelOpen, running, onRun])
 
+  const { debugPause, resumeDebug } = api
+
+  // The frame picked in the Call Stack (0 = where execution stopped); a new stop resets it.
+  const [frameChoice, setFrameChoice] = useState({ pause: null, index: 0 })
+  const selectedFrame = frameChoice.pause === debugPause ? frameChoice.index : 0
+  const selectFrame = useCallback((index) => setFrameChoice({ pause: debugPause, index }), [debugPause])
+  const changed = useMemo(() => changedPaths(debugPause?.frames, debugPause?.previous), [debugPause])
+
+  // Hover and inline values use the chosen frame when it is in this file, otherwise the
+  // innermost frame running this file.
+  const activeName = activeFile?.name
+  const activeContent = activeFile?.content
+  const editorFrameIndex = useMemo(() => {
+    const frames = debugPause?.frames ?? []
+    if (frames[selectedFrame]?.file === activeName) return selectedFrame
+    return frames.findIndex((frame) => frame.file === activeName)
+  }, [debugPause, selectedFrame, activeName])
+  const editorFrame = editorFrameIndex >= 0 ? debugPause?.frames?.[editorFrameIndex] : null
+  const debugHover = useMemo(() => {
+    if (!editorFrame) return undefined
+    return (lineText, column) => {
+      const found = expressionAt(lineText, column)
+      const value = found && resolveExpression(editorFrame, found.expression)
+      if (!value) return null
+      const markdown = hoverMarkdown(found.expression, value, changed[editorFrameIndex]?.has(pathKey(value.path)))
+      return { markdown, startColumn: found.startColumn, endColumn: found.endColumn }
+    }
+  }, [editorFrame, editorFrameIndex, changed])
+  const editorInlineValues = useMemo(
+    () => (editorFrame ? inlineValues(editorFrame, activeContent, changed[editorFrameIndex]) : undefined),
+    [editorFrame, editorFrameIndex, activeContent, changed],
+  )
+  const openFrame = (index) => {
+    selectFrame(index)
+    const frame = debugPause?.frames?.[index]
+    if (frame) openTraceLocation(frame.file, frame.line)
+  }
+
+  // A new stop brings its file and line forward, as VS Code does, and the Debug tab unless
+  // the learner is on Preview (the request may come from there; the toolbar above the editor
+  // steps without leaving it). The ref keeps this current, so only a new stop moves the view.
+  const revealPauseRef = useRef(null)
+  revealPauseRef.current = ({ file, line }) => {
+    if (!names.has(file)) return
+    openTraceLocation(file, line)
+    if (tab !== 'preview') setTab('debug')
+    setPanelOpen(true)
+  }
+  useEffect(() => {
+    if (debugPause) revealPauseRef.current(debugPause)
+  }, [debugPause])
+
   // VS Code debugger keys, only while a request is paused so the browser keeps F5 (reload)
   // and F11 (full screen) the rest of the time: F5 continue, F10 over, F11 into, Shift+F11 out.
-  const { debugPause, resumeDebug } = api
   useEffect(() => {
     if (!debugPause) return undefined
     const onKey = (event) => {
@@ -405,7 +457,8 @@ export default function BackendWorkspace({
                       <span className={index === parts.length - 1 ? 'font-semibold text-ink-700 dark:text-ink-200' : ''}>{part}</span>
                     </span>
                   ))}
-                  {LAYER_LABEL[layer] && <span className="ml-auto shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-semibold text-ink-500 dark:bg-ink-800 dark:text-ink-300">{LAYER_LABEL[layer]}</span>}
+                  {api.debugPause && <DebugControls compact onResume={api.resumeDebug} onStop={api.runner.stop} className="ml-auto shrink-0" />}
+                  {LAYER_LABEL[layer] && <span className={`${api.debugPause ? 'ml-2' : 'ml-auto'} shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-semibold text-ink-500 dark:bg-ink-800 dark:text-ink-300`}>{LAYER_LABEL[layer]}</span>}
                 </div>
                 <ErrorBoundary>
                   <CodeEditor
@@ -415,6 +468,8 @@ export default function BackendWorkspace({
                     onToggleBreakpoint={(line) => toggleBreakpoint(activeFile.name, line)}
                     onBreakpointsChange={(lines) => moveBreakpoints(activeFile.name, lines)}
                     pausedLine={api.debugPause?.file === activeFile.name ? api.debugPause.line : undefined}
+                    debugHover={debugHover}
+                    inlineValues={editorInlineValues}
                     value={activeFile.content ?? ''}
                     onChange={(value) => onFileChange(activeFile.name, value)}
                     language={activeFile.language ?? 'plaintext'}
@@ -515,6 +570,9 @@ export default function BackendWorkspace({
                     onResume={api.resumeDebug}
                     onStop={api.runner.stop}
                     onOpenLocation={openTraceLocation}
+                    selectedFrame={selectedFrame}
+                    onSelectFrame={openFrame}
+                    changed={changed}
                   />
                 )}
                 <div hidden={tab !== 'preview'} className="flex min-h-[420px] flex-1 flex-col gap-3">

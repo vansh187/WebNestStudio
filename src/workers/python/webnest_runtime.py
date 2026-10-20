@@ -11,6 +11,7 @@ import importlib
 import inspect
 import json
 import os
+import reprlib
 import shutil
 import sqlite3
 import sys
@@ -336,6 +337,169 @@ def _on_start(code, offset):
     return None
 
 
+_SNAP_DEPTH = 4  # levels below a variable that can be opened in the Variables view
+_SNAP_CHILDREN = 50  # items shown per dict, list, tuple, set or object
+_SNAP_NODES = 3000  # all values sent for one pause, so a huge object cannot stall the page
+_SNAP_FRAMES = 12
+_SNAP_REPR = 200
+_LEAF_TYPES = (type(None), bool, int, float, complex, str, bytes, bytearray, range)
+_OPAQUE_TYPES = (types.ModuleType, types.FunctionType, types.BuiltinFunctionType, types.MethodType, type)
+
+
+class _BoundedRepr(reprlib.Repr):
+    """repr() that stops early, so a 100k-row list costs the same as a short one on every
+    step. Pydantic models and dataclasses are spelled from their fields, which keeps a
+    model holding a huge list just as cheap."""
+
+    def __init__(self):
+        super().__init__()
+        self.maxlevel = 3
+        self.maxdict = self.maxlist = self.maxtuple = self.maxset = self.maxfrozenset = self.maxdeque = 12
+        self.maxstring = self.maxother = _SNAP_REPR
+        self.maxlong = 60
+
+    def repr_instance(self, value, level):
+        import dataclasses
+
+        fields = getattr(type(value), "model_fields", None)
+        if isinstance(fields, dict):
+            names = list(fields)
+        elif dataclasses.is_dataclass(value) and getattr(getattr(type(value), "__dataclass_params__", None), "repr", False):
+            names = [field.name for field in dataclasses.fields(value) if field.repr]
+        else:
+            return super().repr_instance(value, level)
+        if level <= 0:
+            return f"{type(value).__name__}(...)"
+        parts = [f"{name}={self.repr1(getattr(value, name, None), level - 1)}" for name in names[:self.maxdict]]
+        if len(names) > self.maxdict:
+            parts.append("...")
+        return f"{type(value).__name__}({', '.join(parts)})"
+
+
+_REPR = _BoundedRepr()
+
+
+def _safe_repr(value):
+    try:
+        text = _REPR.repr(value)
+    except Exception as error:  # noqa: BLE001 - a learner's broken __repr__ must not stop the debugger
+        text = f"<repr failed: {type(error).__name__}>"
+    return text if len(text) <= _SNAP_REPR else text[:_SNAP_REPR - 1] + "…"
+
+
+def _set_children(value, limit):
+    """Set members labelled by their own repr in sorted order, so a member keeps its label
+    (and its changed-marking) when the set grows and its iteration order shifts."""
+    import itertools
+
+    members = list(value) if len(value) <= 2000 else list(itertools.islice(value, limit))
+    labelled = sorted(((_safe_repr(item), item) for item in members), key=lambda pair: pair[0])
+    return [(label, False, item) for label, item in labelled[:limit]]
+
+
+def _children_of(value):
+    """(name, is_attribute, value) for what the Variables view can open, or None for a leaf.
+
+    Only stored data is read (items, model fields, __dict__), never properties, so looking
+    at a value cannot run the learner's code or trigger a SQLAlchemy lazy load."""
+    import collections.abc
+    import dataclasses
+    import itertools
+
+    if isinstance(value, _LEAF_TYPES + _OPAQUE_TYPES):
+        return None
+    limit = _SNAP_CHILDREN
+    if isinstance(value, collections.abc.Mapping):
+        return [(_safe_repr(key), False, item) for key, item in itertools.islice(value.items(), limit)]
+    if isinstance(value, (list, tuple, collections.deque)):
+        return [(str(index), False, item) for index, item in enumerate(itertools.islice(value, limit))]
+    if isinstance(value, (set, frozenset)):
+        return _set_children(value, limit)
+    if isinstance(value, sqlite3.Row):
+        return [(_safe_repr(key), False, value[key]) for key in value.keys()[:limit]]
+    fields = getattr(type(value), "model_fields", None)  # Pydantic v2 models
+    if isinstance(fields, dict):
+        return [(name, True, getattr(value, name, None)) for name in list(fields)[:limit]]
+    if dataclasses.is_dataclass(value):
+        return [(field.name, True, getattr(value, field.name, None)) for field in dataclasses.fields(value)[:limit]]
+    attributes = getattr(value, "__dict__", None)
+    if isinstance(attributes, dict):
+        names = [name for name in attributes if not name.startswith("__") and name != "_sa_instance_state"]
+        return [(name, True, attributes[name]) for name in names[:limit]]
+    return None
+
+
+def _snapshot(value, depth, budget):
+    """One value as {t: type, r: repr, n: length, c: children, more: hidden children}."""
+    budget[0] -= 1
+    node = {"t": type(value).__name__, "r": _safe_repr(value)}
+    try:
+        node["n"] = len(value) if isinstance(value, (dict, list, tuple, set, frozenset, str, bytes)) else None
+    except Exception:  # noqa: BLE001
+        node["n"] = None
+    try:
+        children = _children_of(value)
+    except Exception:  # noqa: BLE001 - an odd container is shown as its repr only
+        children = None
+    if children is None:
+        return node
+    node["c"] = []
+    if depth >= _SNAP_DEPTH or budget[0] <= 0:
+        node["cut"] = True  # too deep to send: the view shows the repr instead
+        return node
+    for name, is_attribute, child in children:
+        if budget[0] <= 0:
+            node["cut"] = True
+            break
+        item = _snapshot(child, depth + 1, budget)
+        item["k"] = name
+        if is_attribute:
+            item["a"] = 1
+        node["c"].append(item)
+    total = node["n"] if node["n"] is not None and not isinstance(value, (str, bytes)) else None
+    if total is not None and total > len(node["c"]):
+        node["more"] = total - len(node["c"])
+    return node
+
+
+def _snapshot_frames(frame, line_number):
+    """The learner's frames at a pause, innermost first, each with its local variables.
+
+    Only the innermost _SNAP_FRAMES are sent, but each carries its `level` counted from the
+    outermost learner frame, so the page can line up the same frame across two stops even
+    when deep recursion pushes the outer ones out of the list."""
+    budget = [_SNAP_NODES]
+    user_frames = []
+    current = frame
+    while current is not None:
+        if current.f_code.co_filename.startswith(PACKAGE_DIR):
+            user_frames.append(current)
+        current = current.f_back
+    frames = []
+    for index, current in enumerate(user_frames[:_SNAP_FRAMES]):
+        code = current.f_code
+        variables = []
+        try:
+            items = list(current.f_locals.items())
+        except Exception:  # noqa: BLE001
+            items = []
+        for name, value in items:
+            if name.startswith("__"):
+                continue
+            item = _snapshot(value, 0, budget)
+            item["k"] = name
+            variables.append(item)
+        frames.append({
+            "fn": code.co_qualname,
+            "file": _short_path(code.co_filename),
+            "line": line_number if current is frame else current.f_lineno,
+            "first": code.co_firstlineno,
+            "level": len(user_frames) - 1 - index,
+            "vars": variables,
+        })
+    return frames
+
+
 def _on_line(code, line_number):
     """Pause the worker at a requested user breakpoint or next step location."""
     global _debug_step
@@ -361,14 +525,8 @@ def _on_line(code, line_number):
     if (filename, int(line_number)) not in _debug_breakpoints and not should_step:
         return None
     _debug_step = None
-    local_values = {}
-    for name, value in list(frame.f_locals.items())[:30]:
-        try:
-            rendered = repr(value)
-        except Exception:
-            rendered = "<unavailable>"
-        local_values[name] = rendered[:300]
-    command = bridge(filename, int(line_number), json.dumps(local_values), depth)
+    frames = json.dumps(_snapshot_frames(frame, int(line_number)), default=str)
+    command = bridge(filename, int(line_number), frames, depth)
     if command == 1:
         _debug_step = ("into", frame_id, depth)
     elif command == 2:
