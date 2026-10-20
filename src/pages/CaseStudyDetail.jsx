@@ -59,9 +59,12 @@ export default function CaseStudyDetail() {
           <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Case Studies', to: '/case-studies' }, { label: study.title, to: path }]} />
           <div className="mt-8 grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
             <div>
-              <span className="inline-flex items-center rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">
-                {study.badge}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">
+                  {study.badge}
+                </span>
+                {study.status && <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">{study.status}</span>}
+              </div>
               <h1 className="mt-5 font-display text-3xl font-extrabold leading-tight tracking-tight text-ink-900 dark:text-white sm:text-4xl lg:text-5xl">
                 {study.hero.h1}
               </h1>
@@ -116,12 +119,12 @@ export default function CaseStudyDetail() {
               {study.challenge.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </div>
           </Reveal>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
             {study.challenge.summary.map((item, i) => (
               <Reveal key={item.label} delay={i * 0.08}>
-                <div className="h-full rounded-2xl border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900/40">
+                <div className="flex h-full min-h-40 flex-col items-center justify-center rounded-2xl border border-ink-200 bg-white p-6 text-center dark:border-ink-800 dark:bg-ink-900/40">
                   <h3 className={eyebrow}>{item.label}</h3>
-                  <p className="mt-3 font-display text-lg font-semibold text-ink-900 dark:text-white">{item.text}</p>
+                  <p className="mt-3 max-w-xs font-display text-lg font-semibold leading-snug text-ink-900 dark:text-white">{item.text}</p>
                 </div>
               </Reveal>
             ))}
