@@ -23,7 +23,10 @@ export default function CaseStudyCard({ study }) {
         </div>
       )}
       <div className="flex flex-col p-7 sm:p-9">
-        <span className="text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">{study.category}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">{study.category}</span>
+          {study.status && <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{study.status}</span>}
+        </div>
         <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-ink-900 dark:text-white sm:text-3xl">{study.title}</h3>
         <p className="mt-4 leading-relaxed text-ink-500 dark:text-ink-300">{study.description}</p>
         {study.challenge?.summary?.length > 0 && (

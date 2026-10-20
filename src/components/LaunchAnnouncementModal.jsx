@@ -4,14 +4,16 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { FiX, FiExternalLink, FiArrowRight } from 'react-icons/fi'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 
+const ANNOUNCEMENT_KEY = 'wns-launch-seen-2026-10'
+
 export default function LaunchAnnouncementModal() {
   const [open, setOpen] = useState(false)
   const project = DELIVERED_PROJECTS[0]
 
   useEffect(() => {
     if (!project || window.__PRERENDER__) return
-    try { if (sessionStorage.getItem('wns-launch-seen')) return } catch { /* Storage is optional. */ }
-    const timer = setTimeout(() => { setOpen(true); try { sessionStorage.setItem('wns-launch-seen', '1') } catch { /* Storage is optional. */ } }, 15000)
+    try { if (sessionStorage.getItem(ANNOUNCEMENT_KEY)) return } catch { /* Storage is optional. */ }
+    const timer = setTimeout(() => { setOpen(true); try { sessionStorage.setItem(ANNOUNCEMENT_KEY, '1') } catch { /* Storage is optional. */ } }, 15000)
     return () => clearTimeout(timer)
   }, [project])
 
@@ -70,7 +72,7 @@ export default function LaunchAnnouncementModal() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 </span>
-                First Project Delivered
+                Latest Project Delivered
               </span>
             </div>
 
@@ -81,9 +83,7 @@ export default function LaunchAnnouncementModal() {
                 {project.name} is <span className="text-gradient-gold">live</span>
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-300">
-                Our first client project just shipped to production
-                {project.phase ? ` — ${project.phase.toLowerCase()}` : ''}. Take a look, then let's
-                talk about what we build for you next.
+                Our latest client platform is now live in production. Take a look, then explore the case study to see how it was built.
               </p>
 
               <div className="mt-5 flex flex-col gap-2.5">
@@ -98,11 +98,11 @@ export default function LaunchAnnouncementModal() {
                   <FiExternalLink className="h-4 w-4" />
                 </a>
                 <Link
-                  to="/contact"
+                  to="/case-studies/divine-vision-infratech"
                   onClick={close}
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-gold-400/30 px-5 py-3 text-sm font-semibold text-ink-100 transition-colors hover:border-gold-400/70 hover:text-gold-300"
                 >
-                  Discuss Your Tech Stack
+                  Read the Case Study
                   <FiArrowRight className="h-4 w-4" />
                 </Link>
               </div>
