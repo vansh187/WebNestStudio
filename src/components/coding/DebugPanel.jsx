@@ -1,9 +1,86 @@
-import { FiAlertCircle, FiArrowUpRight, FiDatabase, FiGitBranch, FiPlay, FiSkipForward, FiSquare } from 'react-icons/fi'
+import { useState } from 'react'
+import { FiAlertCircle, FiArrowDown, FiArrowUp, FiArrowUpRight, FiChevronRight, FiCornerUpRight, FiDatabase, FiGitBranch, FiPlay, FiSquare } from 'react-icons/fi'
 import { METHOD_STYLES, statusTone } from '../../lib/codelab/httpStyles'
+import { describeType, pathKey } from '../../lib/codelab/debugValues'
 
 const UNSUPPORTED = 'This browser cannot pause the API at breakpoints (it needs cross-origin isolation, which Safari does not offer). Use Chrome, Edge or Firefox; the execution trace below still works here.'
+const EMPTY = new Set()
 
-export default function DebugPanel({ exchange, paused, armed, breakpoints = [], isolationUnsupported = false, onResume, onStop, onOpenLocation }) {
+// mode: 0 continue, 1 step into, 2 step over, 3 step out (see resumeDebug in useApiRuntime).
+const CONTROLS = [
+  { mode: 0, label: 'Continue', key: 'F5', icon: FiPlay },
+  { mode: 1, label: 'Step into', key: 'F11', icon: FiArrowDown },
+  { mode: 2, label: 'Step over', key: 'F10', icon: FiCornerUpRight },
+  { mode: 3, label: 'Step out', key: '⇧F11', icon: FiArrowUp },
+]
+
+// Continue / step / stop buttons. `compact` is the icon-only toolbar shown above the editor
+// while paused, so stepping works from any panel tab (the Preview stays visible).
+export function DebugControls({ onResume, onStop, compact = false, className = '' }) {
+  if (compact) {
+    return (
+      <div role="toolbar" aria-label="Debugger controls" className={`flex items-center gap-0.5 ${className}`}>
+        {CONTROLS.map(({ mode, label, key, icon: Icon }) => (
+          <button key={mode} type="button" onClick={() => onResume?.(mode)} aria-label={label} title={`${label} (${key})`} className={`inline-flex h-6 w-6 items-center justify-center rounded hover:bg-ink-200 dark:hover:bg-ink-800 ${mode === 0 ? 'text-green-600 dark:text-green-400' : 'text-sky-600 dark:text-sky-300'}`}>
+            <Icon className="h-3.5 w-3.5" />
+          </button>
+        ))}
+        <button type="button" onClick={onStop} aria-label="Stop API" title="Stop API" className="inline-flex h-6 w-6 items-center justify-center rounded text-red-600 hover:bg-ink-200 dark:text-red-300 dark:hover:bg-ink-800">
+          <FiSquare className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    )
+  }
+  return (
+    <div className={`flex flex-wrap gap-1.5 ${className}`}>
+      {CONTROLS.map(({ mode, label, key, icon: Icon }) => (
+        <button key={mode} type="button" onClick={() => onResume?.(mode)} className={mode === 0 ? 'inline-flex items-center gap-1 rounded bg-ink-900 px-2 py-1 text-[11px] font-semibold text-white dark:bg-gold-400 dark:text-ink-950' : 'inline-flex items-center gap-1 rounded border border-ink-300 px-2 py-1 text-[11px] font-semibold dark:border-ink-700'}>
+          <Icon /> {label} <kbd className="opacity-60">{key}</kbd>
+        </button>
+      ))}
+      <button type="button" onClick={onStop} className="inline-flex items-center gap-1 rounded border border-red-400/50 px-2 py-1 text-[11px] font-semibold text-red-600 dark:text-red-300"><FiSquare /> Stop API</button>
+    </div>
+  )
+}
+
+// One variable, dict item, list element or attribute; opens like VS Code's Variables view.
+function ValueRow({ node, path, scope, expanded, onToggle, changed, depth }) {
+  const key = `${scope}|${pathKey(path)}`
+  const canOpen = node.c != null && (node.c.length > 0 || node.cut)
+  const open = canOpen && expanded.has(key)
+  const isChanged = changed.has(pathKey(path))
+  return (
+    <li role="treeitem" aria-expanded={canOpen ? open : undefined}>
+      <button
+        type="button"
+        onClick={() => canOpen && onToggle(key)}
+        title={node.r}
+        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        className={`flex w-full items-baseline gap-1 py-0.5 pr-2 text-left ${canOpen ? 'hover:bg-ink-100 dark:hover:bg-ink-800' : 'cursor-default'} ${isChanged ? 'bg-amber-500/10' : ''}`}
+      >
+        <FiChevronRight className={`h-3 w-3 shrink-0 self-center text-ink-400 transition-transform ${open ? 'rotate-90' : ''} ${canOpen ? '' : 'invisible'}`} />
+        <span className={node.a ? 'text-sky-700 dark:text-sky-300' : 'text-violet-700 dark:text-violet-300'}>{node.k}</span>
+        <span className="text-ink-400">:</span>
+        <span className={`min-w-0 truncate ${isChanged ? 'font-semibold text-amber-700 dark:text-amber-300' : 'text-ink-800 dark:text-ink-100'}`}>
+          {/* The type, unless the repr already starts with it, e.g. TaskCreate(title=...). */}
+          {canOpen && (open || !node.r.startsWith(node.t)) ? <span className="text-ink-500 dark:text-ink-400">{describeType(node)} </span> : null}{open ? '' : node.r}
+        </span>
+      </button>
+      {open && (
+        <ul role="group">
+          {node.c.map((child) => (
+            <ValueRow key={child.k} node={child} path={[...path, child.k]} scope={scope} expanded={expanded} onToggle={onToggle} changed={changed} depth={depth + 1} />
+          ))}
+          {node.more > 0 && <li style={{ paddingLeft: `${(depth + 1) * 12 + 24}px` }} className="py-0.5 text-ink-400">… {node.more} more</li>}
+          {node.cut && !node.c.length && <li style={{ paddingLeft: `${(depth + 1) * 12 + 24}px` }} className="py-0.5 text-ink-400">Too deep to show here: {node.r}</li>}
+        </ul>
+      )}
+    </li>
+  )
+}
+
+export default function DebugPanel({ exchange, paused, armed, breakpoints = [], isolationUnsupported = false, onResume, onStop, onOpenLocation, selectedFrame = 0, onSelectFrame, changed }) {
+  const [expanded, setExpanded] = useState(() => new Set())
   if (!exchange && !paused && !breakpoints.length) {
     return (
       <div className="rounded-lg border border-dashed border-ink-300 p-5 text-center dark:border-ink-700">
@@ -27,8 +104,18 @@ export default function DebugPanel({ exchange, paused, armed, breakpoints = [], 
   const open = (file, line) => {
     if (file && Number.isInteger(line)) onOpenLocation?.(file, line)
   }
-  let locals = {}
-  try { locals = paused?.locals ? JSON.parse(paused.locals) : {} } catch { locals = {} }
+  const frames = paused?.frames ?? []
+  const frameIndex = Math.min(selectedFrame, Math.max(frames.length - 1, 0))
+  const frame = frames[frameIndex]
+  const changedHere = changed?.[frameIndex] ?? EMPTY
+  // Opened values stay open across steps, per function, as in VS Code.
+  const scope = frame ? `${frame.file}:${frame.fn}` : ''
+  const toggle = (key) => setExpanded((current) => {
+    const next = new Set(current)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    return next
+  })
 
   return (
     <div className="flex flex-col gap-3">
@@ -42,14 +129,8 @@ export default function DebugPanel({ exchange, paused, armed, breakpoints = [], 
         {paused && (
           <>
             <button type="button" onClick={() => open(paused.file, paused.line)} className="mt-2 rounded px-1 py-0.5 font-mono text-xs text-red-600 underline decoration-dotted underline-offset-2 dark:text-red-300">{paused.file}:{paused.line}</button>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <button type="button" onClick={() => onResume?.(0)} className="inline-flex items-center gap-1 rounded bg-ink-900 px-2 py-1 text-[11px] font-semibold text-white dark:bg-gold-400 dark:text-ink-950"><FiPlay /> Continue <kbd className="opacity-60">F5</kbd></button>
-              <button type="button" onClick={() => onResume?.(1)} className="inline-flex items-center gap-1 rounded border border-ink-300 px-2 py-1 text-[11px] font-semibold dark:border-ink-700"><FiSkipForward /> Step into <kbd className="opacity-60">F11</kbd></button>
-              <button type="button" onClick={() => onResume?.(2)} className="inline-flex items-center gap-1 rounded border border-ink-300 px-2 py-1 text-[11px] font-semibold dark:border-ink-700"><FiSkipForward /> Step over <kbd className="opacity-60">F10</kbd></button>
-              <button type="button" onClick={() => onResume?.(3)} className="inline-flex items-center gap-1 rounded border border-ink-300 px-2 py-1 text-[11px] font-semibold dark:border-ink-700"><FiSkipForward /> Step out <kbd className="opacity-60">⇧F11</kbd></button>
-              <button type="button" onClick={onStop} className="inline-flex items-center gap-1 rounded border border-red-400/50 px-2 py-1 text-[11px] font-semibold text-red-600 dark:text-red-300"><FiSquare /> Stop API</button>
-            </div>
-            {Object.keys(locals).length > 0 && <pre className="mt-2 max-h-32 overflow-auto rounded bg-ink-950 p-2 font-mono text-[10px] text-ink-100">{Object.entries(locals).map(([name, value]) => `${name} = ${value}`).join('\n')}</pre>}
+            <DebugControls onResume={onResume} onStop={onStop} className="mt-2" />
+            <p className="mt-2 text-[10px] text-ink-500 dark:text-ink-400">Hover a variable in the editor to see its value. Values that the last step changed are highlighted.</p>
           </>
         )}
         {breakpoints.length > 0 && (
@@ -63,6 +144,36 @@ export default function DebugPanel({ exchange, paused, armed, breakpoints = [], 
         )}
       </div>
       {isolationUnsupported && <p className="rounded bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300">{UNSUPPORTED}</p>}
+      {frames.length > 0 && (
+        <>
+          <section aria-label="Variables" className="rounded-lg border border-ink-200 dark:border-ink-800">
+            <h3 className="flex items-center justify-between border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">
+              <span>Variables</span>
+              <code className="truncate pl-2 text-[10px] font-normal text-ink-400">{frame.fn}()</code>
+            </h3>
+            {frame.vars?.length ? (
+              <ul role="tree" className="max-h-80 overflow-auto py-1 font-mono text-[11px]">
+                {frame.vars.map((node) => (
+                  <ValueRow key={node.k} node={node} path={[node.k]} scope={scope} expanded={expanded} onToggle={toggle} changed={changedHere} depth={0} />
+                ))}
+              </ul>
+            ) : <p className="px-3 py-2 text-[11px] text-ink-500">No local variables yet.</p>}
+          </section>
+          <section aria-label="Call stack" className="rounded-lg border border-ink-200 dark:border-ink-800">
+            <h3 className="border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">Call stack</h3>
+            <ol className="py-1">
+              {frames.map((item, index) => (
+                <li key={`${item.file}:${item.fn}:${index}`}>
+                  <button type="button" onClick={() => onSelectFrame?.(index)} aria-current={index === frameIndex} className={`flex w-full items-center gap-2 px-3 py-1 text-left text-[11px] ${index === frameIndex ? 'bg-gold-400/15 text-ink-900 dark:text-white' : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800'}`}>
+                    <code className="font-semibold">{item.fn}</code>
+                    <span className="ml-auto truncate text-[10px] text-ink-400">{item.file}:{item.line}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </>
+      )}
       {exchange && <header className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 p-3 dark:border-ink-800">
         <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${METHOD_STYLES[paused?.method ?? spec.method] ?? ''}`}>{paused?.method ?? spec.method ?? 'REQUEST'}</span>
         <code className="min-w-0 flex-1 truncate text-xs text-ink-800 dark:text-ink-100">{paused?.path ?? spec.path ?? '/'}</code>

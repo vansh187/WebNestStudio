@@ -21,6 +21,28 @@ function useIsLargeScreen() {
   return isLarge
 }
 
+// Monaco hover providers are per language, not per editor, so one provider looks up the
+// paused debugger's values for whichever model is hovered (see the debugHover prop).
+const debugHovers = new Map()
+let debugHoverProvider = null
+
+function registerDebugHover(monaco) {
+  if (debugHoverProvider) return
+  debugHoverProvider = monaco.languages.registerHoverProvider('python', {
+    provideHover(model, position) {
+      const hover = debugHovers.get(model.uri.toString())
+      if (!hover) return null
+      const lineText = model.getLineContent(position.lineNumber)
+      const result = hover(lineText, position.column)
+      if (!result) return null
+      return {
+        range: new monaco.Range(position.lineNumber, result.startColumn, position.lineNumber, result.endColumn),
+        contents: [{ value: result.markdown }],
+      }
+    },
+  })
+}
+
 // Java suggestions (see lib/codelab/javaIntel) load on first use so other languages never pay for them.
 function useJavaIntel({ editorState, language, readOnly, javaProject, markers }) {
   const [intel, setIntel] = useState(null)
@@ -61,13 +83,52 @@ export default function CodeEditor({
   // `path` keeps a separate Monaco model (and undo history) per file; `frameless` drops the
   // border so the editor can sit edge to edge inside an IDE layout.
   path, frameless = false, revealLine, breakpoints = [], onToggleBreakpoint, onBreakpointsChange, pausedLine,
+  // While a debugged request is paused: debugHover(lineText, column) returns
+  // { markdown, startColumn, endColumn } for the value under the pointer, and inlineValues
+  // ([{ line, text, changed }]) are drawn after their lines, as in VS Code.
+  debugHover, inlineValues,
 }) {
   const { theme } = useTheme()
   const isLarge = useIsLargeScreen()
   const [editorState, setEditorState] = useState(null)
   const breakpointDecorationsRef = useRef([])
   const pausedDecorationsRef = useRef([])
+  const inlineDecorationsRef = useRef({ model: null, ids: [] })
   useJavaIntel({ editorState, language, readOnly, javaProject, markers })
+
+  useEffect(() => {
+    if (!editorState || !debugHover) return undefined
+    const { editor, monaco } = editorState
+    registerDebugHover(monaco)
+    const model = editor.getModel()
+    if (!model) return undefined
+    const key = model.uri.toString()
+    debugHovers.set(key, debugHover)
+    return () => {
+      if (debugHovers.get(key) === debugHover) debugHovers.delete(key)
+    }
+  }, [editorState, debugHover, path])
+
+  useEffect(() => {
+    if (!editorState) return
+    const { editor, monaco } = editorState
+    const model = editor.getModel()
+    if (!model) return
+    // Values belong to one file: clear the last file's when the editor switched models.
+    const last = inlineDecorationsRef.current
+    if (last.model && last.model !== model && !last.model.isDisposed()) last.model.deltaDecorations(last.ids, [])
+    const lineCount = model.getLineCount()
+    const ids = model.deltaDecorations(last.model === model ? last.ids : [], (inlineValues ?? [])
+      .filter((item) => item.line >= 1 && item.line <= lineCount)
+      .map((item) => ({
+        range: new monaco.Range(item.line, Number.MAX_SAFE_INTEGER, item.line, Number.MAX_SAFE_INTEGER),
+        options: {
+          after: { content: `  ${item.text}`, inlineClassName: item.changed ? 'wn-debug-inline-value wn-debug-inline-changed' : 'wn-debug-inline-value' },
+          showIfCollapsed: true,
+        },
+      })))
+    inlineDecorationsRef.current = { model, ids }
+  }, [editorState, inlineValues, path])
 
   useEffect(() => {
     if (!editorState || !Number.isInteger(revealLine) || revealLine < 1) return

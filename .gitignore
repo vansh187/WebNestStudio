@@ -35,5 +35,9 @@ public/pyodide/
 
 .seo-build/
 
+# Python bytecode (from running webnest_runtime.py checks locally)
+__pycache__/
+*.pyc
+
 # Hero videos ship as WebM only
 public/media/*.mp4

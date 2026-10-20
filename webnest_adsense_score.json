@@ -1,0 +1,55 @@
+{
+  "metric": "internal_readiness_diagnostic",
+  "score": 79,
+  "maximum": 100,
+  "not_a_google_score_or_approval_probability": true,
+  "audit_date": "2026-10-20",
+  "crawl": {
+    "urls_inspected": 2088,
+    "sitemap_candidates": 594,
+    "valuable": 609,
+    "thin": 7,
+    "duplicate": 1459,
+    "private_or_utility": 13,
+    "broken": 0,
+    "browser_rendering_verified": false
+  },
+  "categories": {
+    "content_quality": {
+      "score": 22,
+      "weight": 30,
+      "evidence": "The crawl found 609 valuable candidates and 7 thin classifications. Manual inspection confirmed expanded CodeLab and case-study content, but this is not a human quality review of all indexable pages."
+    },
+    "technical_accessibility": {
+      "score": 19,
+      "weight": 20,
+      "evidence": "Robots and sitemap returned HTTP 200; 594 sitemap candidates were parsed; no broken responses, blocked URLs, or malformed same-host links were reported. HTTP/host variants and confirmed duplicate service routes redirect permanently."
+    },
+    "navigation_and_user_experience": {
+      "score": 12,
+      "weight": 15,
+      "evidence": "The site has global navigation, legal/footer links, working contact paths, and multiple learning routes. Mobile, keyboard, and end-to-end form behavior were not tested."
+    },
+    "trust_and_transparency": {
+      "score": 12,
+      "weight": 15,
+      "evidence": "Privacy, terms, and disclaimer pages are linked; Contact provides phone, email, location, service area, hours, and response expectations. Accuracy of claims and AdSense account disclosures needs owner verification."
+    },
+    "indexing_hygiene": {
+      "score": 8,
+      "weight": 10,
+      "evidence": "Preferred service URLs are canonical and in the sitemap; query-filter and utility variants are generally canonicalized or noindex. Eleven noindex utility routes lack canonical declarations, with no change indicated."
+    },
+    "mobile_usability": {
+      "score": 6,
+      "weight": 10,
+      "evidence": "Responsive layouts are present in the application, but no browser viewport, touch interaction, or performance assessment was run."
+    }
+  },
+  "limitations": [
+    "The crawl's Valuable and Thin labels are triage signals, not AdSense policy classifications.",
+    "Playwright rendering and authenticated routes were not inspected.",
+    "AdSense account status, site ownership review, and Policy Center cannot be verified from public pages."
+  ],
+  "recommendation": "Complete browser review of representative monetized lessons and articles, verify the AdSense consent configuration for applicable regions, and confirm policy and business details before requesting review."
+}

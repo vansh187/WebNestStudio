@@ -153,13 +153,13 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_connecting_to_a_database_with_drivermanager</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_connection_pooling_concepts</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -171,7 +171,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_entity_mapping_and_configuration</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -183,31 +183,31 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_hibernate_caching_first_level_and_second_level</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_hibernate_inheritance_mapping_strategies</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_hibernate_introduction_and_architecture</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_hibernate_relationships_one_to_one_one_to_many_many_to_many</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_hql_and_the_criteria_api</loc>
-    <lastmod>2026-09-22</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -225,37 +225,37 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_jdbc_drivers</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_jdbc_introduction_and_architecture</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_jsp_directives_and_actions</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_jsp_implicit_objects</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_jsp_introduction_and_lifecycle</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_jsp_scripting_elements</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -273,7 +273,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_mvc_architecture_with_servlets_and_jsp</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -297,49 +297,49 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_request_and_response_objects</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_requestdispatcher_forward_vs_include</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_servlet_configuration_web_xml_vs_annotations</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_servlet_filters_and_listeners</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_servlet_introduction_and_lifecycle</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_session_tracking_cookies_httpsession_url_rewriting</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_statement_preparedstatement_and_callablestatement</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_transactions_in_jdbc</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -351,7 +351,7 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_advanced_java_working_with_resultset</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -2631,847 +2631,847 @@
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_actuator</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_aop_advice_types_before_after_around_after_returning_and_after_throwing</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_apache_kafka_with_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_api_gateway_with_spring_cloud_gateway</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_api_versioning</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_application_properties_and_common_settings</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_application_startup_runners_and_lifecycle_events</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_aspect_oriented_programming_aop_with_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_async_processing_with_async</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_auditing_optimistic_locking_and_soft_deletes</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_authentication_with_users_and_roles</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_authorization_rules_and_method_security</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_auto_configuration</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_batch_processing_with_spring_batch</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_building_container_images_with_buildpacks</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_caching_with_spring_cache</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_capstone_project_building_a_production_ready_course_platform_api</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_centralized_configuration_with_spring_cloud_config</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_chat_memory</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_chatclient_and_prompt_templates</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_ci_cd_with_github_actions</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_configuration_properties</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_connecting_to_postgresql_and_mysql</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_content_negotiation_json_and_xml</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_creating_a_custom_starter</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_csrf_and_cors_in_spring_security</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_custom_queries_and_projections</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_data_layer_tests_with_datajpatest</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_database_migrations_with_flyway_and_liquibase</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_dependency_management_and_the_starter_parent</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_deploying_to_kubernetes</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_distributed_tracing_with_opentelemetry</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_distributed_transactions_and_the_saga_pattern</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_docker_deployment_concepts</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_dtos</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_embeddings_and_vector_stores</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_entity_relationships_in_depth</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_event_driven_microservices_with_spring_cloud_stream</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_exception_handling</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_file_upload_and_download</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_filtering_api_responses_static_and_dynamic</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_filters_and_interceptors</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_graphql_with_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_grpc_with_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_h2_database_and_a_complete_crud_application</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_health_checks_readiness_and_liveness_probes</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_hibernate</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_http_service_clients_with_httpexchange</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_integration_tests_with_testcontainers</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_internationalization_i18n</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_introduction_to_spring_ai</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_jdbcclient_and_spring_data_jdbc</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_json_with_jackson_3</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_jwt_authentication_with_oauth2_resource_server</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_jwt_concepts</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_logging</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_metrics_with_micrometer_and_prometheus</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_microservices_architecture_with_spring_boot</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_model_context_protocol_mcp_servers_and_clients</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_modular_monoliths_with_spring_modulith</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_multi_module_projects</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_oauth2_login_with_google_and_github</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_openapi</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_packaging_and_deployment_jar_war_and_external_tomcat</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_pagination</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_passkeys_and_one_time_token_login</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_password_encoding</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_production_configuration</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_profiles</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_project_setup</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_r2dbc_reactive_database_access</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_rabbitmq_with_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_reactive_programming_with_project_reactor</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_redis_with_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_request_mapping_and_parameters</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_resilience_retries_rate_limits_and_circuit_breakers</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_rest_api_best_practices_and_the_richardson_maturity_model</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_rest_apis</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_restclient</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_retrieval_augmented_generation_rag</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_running_local_models_with_ollama</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_scheduling_tasks_with_scheduled</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_security_concepts</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_security_hardening_checklist</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_sending_email</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_server_side_rendering_with_thymeleaf</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_service_discovery_with_eureka_and_load_balancing</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_solving_the_n_1_problem</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_application_events</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_authorization_server</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_3_and_graalvm_native_images</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_annotations_reference</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_devtools</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_boot_interview_questions_and_answers</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_data_jpa</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_data_mongodb</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_hateoas</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_security_architecture_and_the_filter_chain</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_vs_spring_boot_vs_spring_mvc</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_spring_webflux</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_starters</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_structured_logging</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_structured_output</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_testing</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_testing_and_observing_ai_applications</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_testing_secured_endpoints</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_tool_calling</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_transactions_in_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_unit_testing_with_junit_and_mockito</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_validation</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_virtual_threads_in_spring_boot</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_web_layer_tests_with_webmvctest</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_webclient</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_websockets_and_stomp</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_boot_what_is_new_in_spring_boot_4</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_aop</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_application_context</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_bean_lifecycle</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_beans</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_component_scanning</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_configuration</loc>
-    <lastmod>2026-10-10</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_creating_a_project_with_spring_initializr</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_events</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_exception_handling</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_installing_maven_and_gradle</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_installing_the_jdk_on_windows_macos_and_linux</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_ioc_and_dependency_injection</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_profiles</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_resource_handling</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_running_packaging_and_troubleshooting_spring_applications</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_setting_up_a_spring_project</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_setting_up_your_ide_for_spring</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_spring_data_fundamentals</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_spring_framework_overview_and_modules</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_spring_mvc</loc>
-    <lastmod>2026-09-21</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_spring_reactive_programming_overview</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_testing</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_transactions</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_validation</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_your_first_spring_application</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.webneststudio.co.in/learn/lessons/lesson_spring_framework_your_first_spring_boot_web_application</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

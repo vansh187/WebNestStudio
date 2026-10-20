@@ -132,8 +132,11 @@ export default function PrivacyPolicy() {
               including the page URL and IP address. If ad serving or automated placements are enabled, Google
               and participating providers may process device, cookie, and ad interaction information to deliver
               and measure ads, personalize them where permitted, limit repeated ads, and prevent fraud. You can
-              manage Google ad personalization through Google Ads Settings and manage cookies through your
-              browser.
+              manage Google ad personalization through{' '}
+              <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-500 hover:underline">
+                Google Ads Settings
+              </a>
+              {' '}and manage cookies through your browser.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Legal requirements.</strong> We may disclose

@@ -1,8 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { createHash } from 'node:crypto'
 import path from 'node:path'
-import { SAMPLE_COURSES, SAMPLE_LESSONS, SAMPLE_PROBLEMS } from '../src/data/codelabDefaults.js'
-import { getLessonVideo } from '../src/data/lessonVideos.js'
+import { SAMPLE_COURSES, SAMPLE_PROBLEMS } from '../src/data/codelabDefaults.js'
+import { indexableLessonIds, isLessonCurrent, lessonHash } from './lesson-hash.mjs'
 
 import { SITE_URL, validLastmod, BLOG_REDIRECT_SLUGS } from '../src/lib/seo.js'
 import { SERVICE_PAGES } from '../src/data/servicePages.js'
@@ -105,15 +104,6 @@ async function getLiveRoutes() {
   })
 }
 
-const shortHash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16)
-
-// Covers everything LessonDetail renders: the whole lesson record (body, examples,
-// practice, resources...) plus any spliced-in video.
-const lessonHash = (id) => shortHash([SAMPLE_LESSONS[id], getLessonVideo(id)])
-// Pre-2026-10-08 manifests hashed only these fields; matching one keeps its date
-// instead of bumping every lesson at once. Safe to drop once the manifest is rewritten.
-const legacyLessonHash = (lesson) => shortHash([lesson.seo_title, lesson.description, lesson.content.body])
-
 // Builds only read the committed manifest. A lesson whose hash no longer matches
 // gets no <lastmod> at all (rather than the deploy date) until someone runs
 // `npm run sitemap` locally and commits scripts/lesson-lastmod.json.
@@ -130,7 +120,7 @@ async function getLessonLastmods(lessonIds) {
   for (const id of lessonIds) {
     const hash = lessonHash(id)
     const known = previous[id]
-    if (known && (known.hash === hash || known.hash === legacyLessonHash(SAMPLE_LESSONS[id]))) {
+    if (isLessonCurrent(id, known)) {
       next[id] = { hash, lastmod: known.lastmod }
     } else {
       stale.push(id)
@@ -147,7 +137,7 @@ async function getLessonLastmods(lessonIds) {
 }
 
 async function getLocalRoutes() {
-  const lessonIds = Object.keys(SAMPLE_LESSONS).filter((id) => SAMPLE_LESSONS[id]?.id === id && SAMPLE_LESSONS[id].indexable)
+  const lessonIds = indexableLessonIds()
   const lessonLastmods = await getLessonLastmods(lessonIds)
 
   return [

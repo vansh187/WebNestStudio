@@ -492,100 +492,100 @@
     "lastmod": "2026-10-02"
   },
   "lesson_advanced_java_jdbc_introduction_and_architecture": {
-    "hash": "fa386165a533d5dc",
-    "lastmod": "2026-09-21"
+    "hash": "f20d94429dfbf4b2",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_jdbc_drivers": {
-    "hash": "b490ec099a51d9f1",
-    "lastmod": "2026-09-21"
+    "hash": "2ecfd934fe54740d",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_connecting_to_a_database_with_drivermanager": {
-    "hash": "768954b0911f4d4e",
-    "lastmod": "2026-10-10"
+    "hash": "e3b73e649800560c",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_statement_preparedstatement_and_callablestatement": {
-    "hash": "50e9176cb132684f",
-    "lastmod": "2026-10-10"
+    "hash": "6c61a34104b6fb5e",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_working_with_resultset": {
-    "hash": "27c40fd97ea2f785",
-    "lastmod": "2026-10-10"
+    "hash": "2321d811f67f3391",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_transactions_in_jdbc": {
-    "hash": "1b099fe31067f772",
-    "lastmod": "2026-10-10"
+    "hash": "429e03393f1909ed",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_connection_pooling_concepts": {
-    "hash": "de33f8cbebfb8f04",
-    "lastmod": "2026-09-21"
+    "hash": "1827ff2d8ca9326f",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_servlet_introduction_and_lifecycle": {
-    "hash": "8d20a498e08a9591",
-    "lastmod": "2026-09-21"
+    "hash": "739daf3136b30254",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_servlet_configuration_web_xml_vs_annotations": {
-    "hash": "29244d50a177657e",
-    "lastmod": "2026-09-21"
+    "hash": "b5f983ba306fb8ed",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_request_and_response_objects": {
-    "hash": "e44e7a8db392eba8",
-    "lastmod": "2026-09-21"
+    "hash": "62152efb8a964b18",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_session_tracking_cookies_httpsession_url_rewriting": {
-    "hash": "e3cc1f5ab2a38a87",
-    "lastmod": "2026-09-21"
+    "hash": "99fcfec8759a7e2a",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_servlet_filters_and_listeners": {
-    "hash": "bfcfa8a6041e83ad",
-    "lastmod": "2026-09-21"
+    "hash": "61779f1230e07bfa",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_requestdispatcher_forward_vs_include": {
-    "hash": "d75c24f0a14f8465",
-    "lastmod": "2026-09-21"
+    "hash": "f2027a8a1120e8ee",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_jsp_introduction_and_lifecycle": {
-    "hash": "1ab03f87ffb9469e",
-    "lastmod": "2026-09-21"
+    "hash": "84f0b84cd6405706",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_jsp_scripting_elements": {
-    "hash": "dc6a3cd9e46412cb",
-    "lastmod": "2026-09-21"
+    "hash": "a3719d342934fc55",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_jsp_implicit_objects": {
-    "hash": "7f90861e4784e6af",
-    "lastmod": "2026-09-21"
+    "hash": "e873417b1cd83487",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_jsp_directives_and_actions": {
-    "hash": "f713876e52dc3e65",
-    "lastmod": "2026-09-21"
+    "hash": "36fbe4aae8e9d242",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_mvc_architecture_with_servlets_and_jsp": {
-    "hash": "18dc8cc173e8acea",
-    "lastmod": "2026-09-21"
+    "hash": "fa2985b1e7bd3477",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_hibernate_introduction_and_architecture": {
-    "hash": "4652f55617b3fd9e",
-    "lastmod": "2026-09-22"
+    "hash": "dc8564a273cb0bb3",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_entity_mapping_and_configuration": {
-    "hash": "aaae92e4d8af93bf",
-    "lastmod": "2026-09-22"
+    "hash": "ec5d19a46d1046ca",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_hibernate_relationships_one_to_one_one_to_many_many_to_many": {
-    "hash": "9638813e820fcd39",
-    "lastmod": "2026-09-22"
+    "hash": "7e14383dc2fc9c0c",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_hibernate_inheritance_mapping_strategies": {
-    "hash": "cbdc785930635177",
-    "lastmod": "2026-09-22"
+    "hash": "5a1222ff8648078e",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_hibernate_caching_first_level_and_second_level": {
-    "hash": "9da4519f017ca3d5",
-    "lastmod": "2026-09-22"
+    "hash": "d5a24dc84b14a091",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_hql_and_the_criteria_api": {
-    "hash": "fd02a46a898138e2",
-    "lastmod": "2026-09-22"
+    "hash": "420bc77b4b5488e3",
+    "lastmod": "2026-10-20"
   },
   "lesson_advanced_java_networking_basics_socket_serversocket_and_url": {
     "hash": "3b8d8c47806e528e",
@@ -636,568 +636,568 @@
     "lastmod": "2026-10-10"
   },
   "lesson_spring_framework_spring_framework_overview_and_modules": {
-    "hash": "5f947e8a24d4e622",
-    "lastmod": "2026-09-26"
+    "hash": "6a3408599ea21c67",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_installing_the_jdk_on_windows_macos_and_linux": {
-    "hash": "a16f010492828191",
-    "lastmod": "2026-09-26"
+    "hash": "0528133ccc172bf5",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_installing_maven_and_gradle": {
-    "hash": "dbca69f4f45992c8",
-    "lastmod": "2026-09-26"
+    "hash": "d769591bc19f1a54",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_setting_up_your_ide_for_spring": {
-    "hash": "38c04f66a9412f32",
-    "lastmod": "2026-09-26"
+    "hash": "c25a7d380e3d0ffb",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_setting_up_a_spring_project": {
-    "hash": "61e721e406cf2e82",
-    "lastmod": "2026-09-27"
+    "hash": "b1c2d606fcd39138",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_creating_a_project_with_spring_initializr": {
-    "hash": "79997f226407a501",
-    "lastmod": "2026-09-26"
+    "hash": "9fa74a1c3c151c18",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_your_first_spring_application": {
-    "hash": "0c018e1a6d9d8028",
-    "lastmod": "2026-09-26"
+    "hash": "79ef69b15f1578ea",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_your_first_spring_boot_web_application": {
-    "hash": "91511bd3f2d69553",
-    "lastmod": "2026-09-26"
+    "hash": "c19f8a635f8e7755",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_running_packaging_and_troubleshooting_spring_applications": {
-    "hash": "7474c322a6ab11ec",
-    "lastmod": "2026-09-26"
+    "hash": "0082fed2042cdf81",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_ioc_and_dependency_injection": {
-    "hash": "118f5e59125870d2",
-    "lastmod": "2026-09-21"
+    "hash": "9945a753810e8216",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_beans": {
-    "hash": "79a3d120c8b93ecc",
-    "lastmod": "2026-09-27"
+    "hash": "a98129882dab55c6",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_application_context": {
-    "hash": "4366c4cbc2335c12",
-    "lastmod": "2026-09-21"
+    "hash": "2812888ac5f178c5",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_component_scanning": {
-    "hash": "22d5775aaf4213d2",
-    "lastmod": "2026-09-21"
+    "hash": "a0177ceec04d75e3",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_configuration": {
-    "hash": "b6a47b40258bf83b",
-    "lastmod": "2026-10-10"
+    "hash": "28454946adf67c2b",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_bean_lifecycle": {
-    "hash": "0e1fdeb5b10400cd",
-    "lastmod": "2026-09-21"
+    "hash": "a83704bb59aa141e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_profiles": {
-    "hash": "4d769744cae4e5a8",
-    "lastmod": "2026-09-27"
+    "hash": "c9914de0691ef305",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_events": {
-    "hash": "dbc582f04545f444",
-    "lastmod": "2026-10-02"
+    "hash": "adbdf0d3d6557e33",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_resource_handling": {
-    "hash": "9d2566731fdf8040",
-    "lastmod": "2026-09-21"
+    "hash": "d76897b6015c88e8",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_spring_mvc": {
-    "hash": "6d7e7c1cba13ecf9",
-    "lastmod": "2026-09-21"
+    "hash": "f1f4baaa38074313",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_validation": {
-    "hash": "57ce2b0cf2b1a94b",
-    "lastmod": "2026-10-02"
+    "hash": "98f5358a5941205e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_exception_handling": {
-    "hash": "9c24cea2934eded2",
-    "lastmod": "2026-09-27"
+    "hash": "bf97ec36b4d2cad0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_aop": {
-    "hash": "c3f9d433bfdab92e",
-    "lastmod": "2026-09-21"
+    "hash": "a1a0c3d95d550a3e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_spring_data_fundamentals": {
-    "hash": "d1011cb45fae1325",
-    "lastmod": "2026-09-21"
+    "hash": "6ac0197e457e2538",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_transactions": {
-    "hash": "44e873df24a1f37d",
-    "lastmod": "2026-10-02"
+    "hash": "9eb7566c6cad89b7",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_testing": {
-    "hash": "197e2a67ab98d2dd",
-    "lastmod": "2026-10-02"
+    "hash": "d85228764e5c1585",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_framework_spring_reactive_programming_overview": {
-    "hash": "084dac1f6821ac7f",
-    "lastmod": "2026-09-27"
+    "hash": "7960642bada76dcf",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_vs_spring_boot_vs_spring_mvc": {
-    "hash": "44107b54e7bb3b3d",
-    "lastmod": "2026-09-27"
+    "hash": "0042607d80e53238",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_project_setup": {
-    "hash": "cba1972727122db1",
-    "lastmod": "2026-09-27"
+    "hash": "b5fba6ccf08c878d",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_what_is_new_in_spring_boot_4": {
-    "hash": "a1ae8adf1b968239",
-    "lastmod": "2026-09-27"
+    "hash": "fa4db7ada654d283",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_dependency_management_and_the_starter_parent": {
-    "hash": "1333db247eb77819",
-    "lastmod": "2026-09-27"
+    "hash": "823a5283891c4ceb",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_starters": {
-    "hash": "be5ea81c05834d5f",
-    "lastmod": "2026-10-10"
+    "hash": "fe72c5e5ce0702c6",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_boot_annotations_reference": {
-    "hash": "742387f5ba69ffeb",
-    "lastmod": "2026-09-27"
+    "hash": "6d82ab4ab545a3b8",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_auto_configuration": {
-    "hash": "bc8fbbe84e18c3fb",
-    "lastmod": "2026-10-10"
+    "hash": "644acb25b9fe3d92",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_configuration_properties": {
-    "hash": "0979ac1358451e8f",
-    "lastmod": "2026-10-10"
+    "hash": "275d94058a9089b5",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_application_properties_and_common_settings": {
-    "hash": "2b5f6058212b1723",
-    "lastmod": "2026-09-27"
+    "hash": "e3f5a62061c6b7cc",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_profiles": {
-    "hash": "bc74b3977ced44b8",
-    "lastmod": "2026-10-10"
+    "hash": "a6a8e195202f0010",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_boot_devtools": {
-    "hash": "1c404817e78b28e9",
-    "lastmod": "2026-09-27"
+    "hash": "1ad546b993258cf1",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_application_startup_runners_and_lifecycle_events": {
-    "hash": "f489ea6f9658890d",
-    "lastmod": "2026-09-27"
+    "hash": "2dcca37df7e015e7",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_multi_module_projects": {
-    "hash": "094b4480c7307d51",
-    "lastmod": "2026-09-27"
+    "hash": "5279217df575c4a1",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_packaging_and_deployment_jar_war_and_external_tomcat": {
-    "hash": "ff962f896f7f3582",
-    "lastmod": "2026-09-27"
+    "hash": "76a0dca2d8df778d",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_creating_a_custom_starter": {
-    "hash": "54ba8374d2bc2b43",
-    "lastmod": "2026-09-27"
+    "hash": "16ed5847e7ffb953",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_aspect_oriented_programming_aop_with_spring_boot": {
-    "hash": "fee7a4b4557d477c",
-    "lastmod": "2026-09-27"
+    "hash": "92cf5451add0a3e4",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_aop_advice_types_before_after_around_after_returning_and_after_throwing": {
-    "hash": "3b71f68305bd929a",
-    "lastmod": "2026-09-27"
+    "hash": "43cec86ef22c5805",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_rest_apis": {
-    "hash": "ccc0c59da8f848f5",
-    "lastmod": "2026-10-10"
+    "hash": "093b640d4fa645a3",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_request_mapping_and_parameters": {
-    "hash": "f54e1732f46d12e5",
-    "lastmod": "2026-09-27"
+    "hash": "5b6857ab3c57e61e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_dtos": {
-    "hash": "1423f77f1edb9ec7",
-    "lastmod": "2026-09-27"
+    "hash": "6e95b3b287897409",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_json_with_jackson_3": {
-    "hash": "5b3b2f032acbe051",
-    "lastmod": "2026-09-27"
+    "hash": "2dcf5ae6600721a3",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_validation": {
-    "hash": "2785149dd7b577a2",
-    "lastmod": "2026-10-10"
+    "hash": "a8473c7920f5ce2a",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_exception_handling": {
-    "hash": "50d4295ded226068",
-    "lastmod": "2026-10-10"
+    "hash": "c4f85147b76a3084",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_file_upload_and_download": {
-    "hash": "b6567f7be2f7f475",
-    "lastmod": "2026-09-27"
+    "hash": "a11c839c29a264c7",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_api_versioning": {
-    "hash": "6babdf5bf683f0ed",
-    "lastmod": "2026-09-27"
+    "hash": "a49095eecd1bac04",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_filters_and_interceptors": {
-    "hash": "35316fa82cd4afe7",
-    "lastmod": "2026-09-27"
+    "hash": "482d18ac4f43cb53",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_content_negotiation_json_and_xml": {
-    "hash": "5be43885383b278f",
-    "lastmod": "2026-09-27"
+    "hash": "7b7a8812a73f92c5",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_filtering_api_responses_static_and_dynamic": {
-    "hash": "42ab57eb63252887",
-    "lastmod": "2026-09-27"
+    "hash": "923002f4e983771d",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_internationalization_i18n": {
-    "hash": "358ec90342e01119",
-    "lastmod": "2026-09-27"
+    "hash": "9d2bfda52cc77ebb",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_hateoas": {
-    "hash": "b705ae5e810bf901",
-    "lastmod": "2026-09-27"
+    "hash": "a7c653dd85c19e32",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_openapi": {
-    "hash": "d48b5ba16f27245b",
-    "lastmod": "2026-10-10"
+    "hash": "b0a175f774ba39d1",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_server_side_rendering_with_thymeleaf": {
-    "hash": "f6e5436b0828b39e",
-    "lastmod": "2026-09-27"
+    "hash": "96be4c9a1da60855",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_rest_api_best_practices_and_the_richardson_maturity_model": {
-    "hash": "c9450cb5d14bc40f",
-    "lastmod": "2026-09-27"
+    "hash": "6f57440a3f11d459",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_restclient": {
-    "hash": "fb192b7975a18764",
-    "lastmod": "2026-09-27"
+    "hash": "d8a46107b98136f0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_http_service_clients_with_httpexchange": {
-    "hash": "af807f31cae76dfc",
-    "lastmod": "2026-09-27"
+    "hash": "f698bd267100de8e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_data_jpa": {
-    "hash": "bf8136146533cbb6",
-    "lastmod": "2026-10-10"
+    "hash": "ee95def0ed7e9eaf",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_h2_database_and_a_complete_crud_application": {
-    "hash": "7d9e0a32c3546117",
-    "lastmod": "2026-09-27"
+    "hash": "e1e0646e6085ffe4",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_connecting_to_postgresql_and_mysql": {
-    "hash": "182f346c6ece0b4a",
-    "lastmod": "2026-09-27"
+    "hash": "9cf7187e1e224370",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_hibernate": {
-    "hash": "0c0f9adfa039c7c6",
-    "lastmod": "2026-10-10"
+    "hash": "2fb040363d85ded0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_entity_relationships_in_depth": {
-    "hash": "08df038318007d15",
-    "lastmod": "2026-09-27"
+    "hash": "bf6c0cea8cb84fea",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_custom_queries_and_projections": {
-    "hash": "7dfcdaff67f87092",
-    "lastmod": "2026-09-27"
+    "hash": "bbe9d489ffd498c5",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_pagination": {
-    "hash": "c9d5ed14e7131f1f",
-    "lastmod": "2026-10-10"
+    "hash": "d8e73b0dd5597673",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_transactions_in_spring_boot": {
-    "hash": "a6d4992705fb5ef1",
-    "lastmod": "2026-09-27"
+    "hash": "b624ba7f94827af3",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_database_migrations_with_flyway_and_liquibase": {
-    "hash": "19deb1af599d4666",
-    "lastmod": "2026-09-27"
+    "hash": "9771f04caddef1d4",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_solving_the_n_1_problem": {
-    "hash": "a2ee7a11a8c4931f",
-    "lastmod": "2026-09-27"
+    "hash": "ac8c485bf7fe2791",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_auditing_optimistic_locking_and_soft_deletes": {
-    "hash": "b67fb9e9a518de5c",
-    "lastmod": "2026-09-27"
+    "hash": "6a13b27cd175a4fd",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_jdbcclient_and_spring_data_jdbc": {
-    "hash": "3f89b3eb1b9cfd1b",
-    "lastmod": "2026-09-27"
+    "hash": "319eeedcb66f418c",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_data_mongodb": {
-    "hash": "abef1ebad464d508",
-    "lastmod": "2026-09-27"
+    "hash": "0c1a3958d5094136",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_caching_with_spring_cache": {
-    "hash": "18c32518e41ef343",
-    "lastmod": "2026-09-27"
+    "hash": "97a6e00e44256e4e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_redis_with_spring_boot": {
-    "hash": "4e1603625d3023c1",
-    "lastmod": "2026-09-27"
+    "hash": "71d3ce555d46c6e3",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_security_concepts": {
-    "hash": "1c5eb12f45fef80d",
-    "lastmod": "2026-10-10"
+    "hash": "c830357e4d431b48",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_jwt_concepts": {
-    "hash": "d0416ecd34447ee7",
-    "lastmod": "2026-09-27"
+    "hash": "86b401d3c5a75a5e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_security_architecture_and_the_filter_chain": {
-    "hash": "b30184a676af2ec9",
-    "lastmod": "2026-09-27"
+    "hash": "ad3adacc9e592666",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_authentication_with_users_and_roles": {
-    "hash": "bc0ae314efe08449",
-    "lastmod": "2026-09-27"
+    "hash": "441a2546155dcfdf",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_password_encoding": {
-    "hash": "4b88b0115ad44f04",
-    "lastmod": "2026-09-27"
+    "hash": "b1f402cf0eb7702d",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_authorization_rules_and_method_security": {
-    "hash": "861b7c6a893f6046",
-    "lastmod": "2026-09-27"
+    "hash": "97100ba908c598ba",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_jwt_authentication_with_oauth2_resource_server": {
-    "hash": "c31813680aecef88",
-    "lastmod": "2026-09-27"
+    "hash": "22b9ca61714d3a97",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_oauth2_login_with_google_and_github": {
-    "hash": "712e86191ad80c6c",
-    "lastmod": "2026-09-27"
+    "hash": "ac9f91b410d82cf4",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_authorization_server": {
-    "hash": "c48a9ff74cc0376d",
-    "lastmod": "2026-09-27"
+    "hash": "759aa44571146e99",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_csrf_and_cors_in_spring_security": {
-    "hash": "6511dbfba82a11af",
-    "lastmod": "2026-09-27"
+    "hash": "df764106647ef990",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_passkeys_and_one_time_token_login": {
-    "hash": "9a56e369702a75df",
-    "lastmod": "2026-09-27"
+    "hash": "fe48b3bec3008fd9",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_testing_secured_endpoints": {
-    "hash": "25998e9d195c0a14",
-    "lastmod": "2026-09-27"
+    "hash": "f2de893b642d1110",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_security_hardening_checklist": {
-    "hash": "9329cd7ee1a964b5",
-    "lastmod": "2026-09-27"
+    "hash": "6cf76d138b76e929",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_introduction_to_spring_ai": {
-    "hash": "24b7784425bc7f01",
-    "lastmod": "2026-09-27"
+    "hash": "dd0173778d75dcf8",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_chatclient_and_prompt_templates": {
-    "hash": "65f2787f817ef0c1",
-    "lastmod": "2026-09-27"
+    "hash": "8dd9b79e5da56ea1",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_structured_output": {
-    "hash": "2d6cfe6d161f81da",
-    "lastmod": "2026-09-27"
+    "hash": "4b209e79e72009f5",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_chat_memory": {
-    "hash": "ff09533010ed8171",
-    "lastmod": "2026-09-27"
+    "hash": "ad699098b0c44fb2",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_tool_calling": {
-    "hash": "75db710bc4f0f407",
-    "lastmod": "2026-09-27"
+    "hash": "e4b074de7d3b1f0c",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_embeddings_and_vector_stores": {
-    "hash": "0ec067cea9c67ece",
-    "lastmod": "2026-09-27"
+    "hash": "113ad025af14a065",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_retrieval_augmented_generation_rag": {
-    "hash": "c42293780bb0505b",
-    "lastmod": "2026-09-27"
+    "hash": "233025e14d387a78",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_model_context_protocol_mcp_servers_and_clients": {
-    "hash": "b40a0f0a48cf6bf8",
-    "lastmod": "2026-09-27"
+    "hash": "e32e16cb6c145e31",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_running_local_models_with_ollama": {
-    "hash": "c07654af47720834",
-    "lastmod": "2026-09-27"
+    "hash": "22bf44399c4f4dbe",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_testing_and_observing_ai_applications": {
-    "hash": "78fcb79406e900f6",
-    "lastmod": "2026-09-27"
+    "hash": "d6ecd5b9a45bc3ae",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_async_processing_with_async": {
-    "hash": "756b6a22fb2f7436",
-    "lastmod": "2026-09-27"
+    "hash": "659b2ec7863d0ab0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_scheduling_tasks_with_scheduled": {
-    "hash": "f5f5e8e2cf4e3652",
-    "lastmod": "2026-09-27"
+    "hash": "0d72955018c7730f",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_application_events": {
-    "hash": "26181064b9df2169",
-    "lastmod": "2026-09-27"
+    "hash": "fbf71778f4ce2600",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_apache_kafka_with_spring_boot": {
-    "hash": "b00f477b8610a5f6",
-    "lastmod": "2026-09-27"
+    "hash": "8447f9007f2965d2",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_rabbitmq_with_spring_boot": {
-    "hash": "51a6994082198919",
-    "lastmod": "2026-09-27"
+    "hash": "e701857f6bb1c431",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_sending_email": {
-    "hash": "a9f2774ef024a370",
-    "lastmod": "2026-09-27"
+    "hash": "70eb504e314edaab",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_websockets_and_stomp": {
-    "hash": "c1a109a3b87a0784",
-    "lastmod": "2026-09-27"
+    "hash": "1c11c7a3651d4e2e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_reactive_programming_with_project_reactor": {
-    "hash": "e448afa44133c7cc",
-    "lastmod": "2026-09-27"
+    "hash": "3ce7f711c521082b",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_webflux": {
-    "hash": "06358b46e6760544",
-    "lastmod": "2026-09-27"
+    "hash": "c18fded567859796",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_webclient": {
-    "hash": "58e9161833a3197e",
-    "lastmod": "2026-09-27"
+    "hash": "c769a7c217539cfa",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_r2dbc_reactive_database_access": {
-    "hash": "f17894aca5153f35",
-    "lastmod": "2026-09-27"
+    "hash": "ea92ac3d26febdbe",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_testing": {
-    "hash": "723ee7834b78f76d",
-    "lastmod": "2026-10-02"
+    "hash": "0fb416beb58b9c31",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_unit_testing_with_junit_and_mockito": {
-    "hash": "44fdcea5ad340adf",
-    "lastmod": "2026-09-27"
+    "hash": "a17be600c92f84d9",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_web_layer_tests_with_webmvctest": {
-    "hash": "132f57d26e4f76c9",
-    "lastmod": "2026-09-27"
+    "hash": "d4555b6519dd0c30",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_data_layer_tests_with_datajpatest": {
-    "hash": "b2bc75f2b877cf97",
-    "lastmod": "2026-09-27"
+    "hash": "1418f0ad796a42e6",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_integration_tests_with_testcontainers": {
-    "hash": "05c9e90e2969d9f4",
-    "lastmod": "2026-09-27"
+    "hash": "f3bb79b7e2ee0c2d",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_actuator": {
-    "hash": "92911218b2ca0fcb",
-    "lastmod": "2026-10-10"
+    "hash": "2f4564fc6e390b0c",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_health_checks_readiness_and_liveness_probes": {
-    "hash": "7cac448015998f1b",
-    "lastmod": "2026-09-27"
+    "hash": "dc505b8ecbe4ef27",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_logging": {
-    "hash": "d9572aef03f34c84",
-    "lastmod": "2026-10-10"
+    "hash": "bf27a783668e9a55",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_structured_logging": {
-    "hash": "98f82dc0f7439281",
-    "lastmod": "2026-09-27"
+    "hash": "157d913f56c11df0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_metrics_with_micrometer_and_prometheus": {
-    "hash": "f84403680eb0f0a8",
-    "lastmod": "2026-09-27"
+    "hash": "809bc411b37e3400",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_distributed_tracing_with_opentelemetry": {
-    "hash": "e0f0d252b69b88b7",
-    "lastmod": "2026-09-27"
+    "hash": "16df1c5a0140f8c6",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_resilience_retries_rate_limits_and_circuit_breakers": {
-    "hash": "2a1e998c1efc3208",
-    "lastmod": "2026-09-27"
+    "hash": "e45978c2c9875387",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_virtual_threads_in_spring_boot": {
-    "hash": "587b18417df3a6aa",
-    "lastmod": "2026-09-27"
+    "hash": "2f34700fa0466775",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_production_configuration": {
-    "hash": "ea871b72d4ee43f8",
-    "lastmod": "2026-10-10"
+    "hash": "d37b8df1817ef9b3",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_docker_deployment_concepts": {
-    "hash": "3e1b6af37292214b",
-    "lastmod": "2026-10-10"
+    "hash": "93d66a9f299906ea",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_building_container_images_with_buildpacks": {
-    "hash": "c1167d6edd0f1a0e",
-    "lastmod": "2026-09-27"
+    "hash": "40f42ef736c0dc64",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_boot_3_and_graalvm_native_images": {
-    "hash": "237a0999a0ce33d7",
-    "lastmod": "2026-09-27"
+    "hash": "2c29fa4c42d294bf",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_deploying_to_kubernetes": {
-    "hash": "f5c2672c8c4970bb",
-    "lastmod": "2026-09-27"
+    "hash": "8e4cd3aed8e1ae19",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_ci_cd_with_github_actions": {
-    "hash": "0a5e35f24e9280ed",
-    "lastmod": "2026-09-27"
+    "hash": "92e7444a435f21c0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_microservices_architecture_with_spring_boot": {
-    "hash": "bbb693f94b21ac50",
-    "lastmod": "2026-10-10"
+    "hash": "62bfd9df56346329",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_centralized_configuration_with_spring_cloud_config": {
-    "hash": "80e77084cd7e1ffe",
-    "lastmod": "2026-09-27"
+    "hash": "1d3cf2f8d7a45d10",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_service_discovery_with_eureka_and_load_balancing": {
-    "hash": "6c2d1625c3732812",
-    "lastmod": "2026-09-27"
+    "hash": "2f2ad2b773c75d1b",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_api_gateway_with_spring_cloud_gateway": {
-    "hash": "07c7bf98ddd05404",
-    "lastmod": "2026-09-27"
+    "hash": "b1286fa472c8b10e",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_event_driven_microservices_with_spring_cloud_stream": {
-    "hash": "56ce44496a167266",
-    "lastmod": "2026-09-27"
+    "hash": "863046e3e2deec01",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_distributed_transactions_and_the_saga_pattern": {
-    "hash": "f4934dc24b92fcc0",
-    "lastmod": "2026-09-27"
+    "hash": "e71e978879e943a6",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_modular_monoliths_with_spring_modulith": {
-    "hash": "c5085a3b6e95d11a",
-    "lastmod": "2026-09-27"
+    "hash": "7e1931ff5d059112",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_batch_processing_with_spring_batch": {
-    "hash": "82ab68b826cd71ac",
-    "lastmod": "2026-09-27"
+    "hash": "eab3eb118c0cb4b9",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_graphql_with_spring_boot": {
-    "hash": "3b15ad1a95c0a79f",
-    "lastmod": "2026-09-27"
+    "hash": "a70f1be11620f789",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_grpc_with_spring_boot": {
-    "hash": "bd147e1752881e78",
-    "lastmod": "2026-09-27"
+    "hash": "9d5151a0ba18d611",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_capstone_project_building_a_production_ready_course_platform_api": {
-    "hash": "cb8afc5e5a895f00",
-    "lastmod": "2026-09-27"
+    "hash": "d039f4faed58f1a0",
+    "lastmod": "2026-10-20"
   },
   "lesson_spring_boot_spring_boot_interview_questions_and_answers": {
-    "hash": "ff7552687c4c880b",
-    "lastmod": "2026-09-27"
+    "hash": "f9e4f7bb22c945f6",
+    "lastmod": "2026-10-20"
   },
   "lesson_python_introduction_to_python": {
     "hash": "c0f88bf3d170ac90",

@@ -77,10 +77,11 @@ const handlers = {
     let bridge = null
     if (typeof SharedArrayBuffer !== 'undefined' && control instanceof SharedArrayBuffer && breakpoints.length) {
       const gates = new Int32Array(control)
-      bridge = (file, line, locals, depth) => {
+      // `frames` is JSON text: the learner's call stack with each frame's variables.
+      bridge = (file, line, frames, depth) => {
         Atomics.store(gates, 0, 0)
         // `control` is shared, not copied: the page resumes this request through it.
-        self.postMessage({ id, type: 'debugPaused', control, file, line, locals, depth, method: spec?.method, path: spec?.path })
+        self.postMessage({ id, type: 'debugPaused', control, file, line, frames, depth, method: spec?.method, path: spec?.path })
         const result = Atomics.wait(gates, 0, 0, 600000)
         if (result === 'timed-out') return 0
         const command = Atomics.load(gates, 1)

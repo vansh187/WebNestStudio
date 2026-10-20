@@ -47,10 +47,12 @@ export function useSeo({ title, description = DEFAULT_DESCRIPTION, path = '', im
     const adsbygoogle = (window.adsbygoogle = window.adsbygoogle || [])
     adsbygoogle.pauseAdRequests = 1
 
-    // Prerendered snapshots must not carry the script: it would run before React
-    // mounts and bypass these gates.
+    // The base template loads Google's publisher script (id adsbygoogle-js) so its
+    // configured CMP message can render, and pauses ad requests before it runs. They are
+    // un-paused only on eligible content routes. The script is added here only when the
+    // shell's copy is missing, so the library never loads twice.
     if (shouldLoadAds && !window.__PRERENDER__) {
-      if (!document.getElementById('adsbygoogle-js')) {
+      if (!document.getElementById('adsbygoogle-js') && !document.querySelector('script[src*="pagead/js/adsbygoogle.js"]')) {
         const script = document.createElement('script')
         script.id = 'adsbygoogle-js'
         script.async = true
