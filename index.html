@@ -7,6 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="WebNest Studio — websites, AI and full-stack software for brands, plus courses and a coding lab for learners. Where brands go digital and developers are born." />
     <meta name="google-adsense-account" content="%ADSENSE_CLIENT%">
+    <!-- Google's script stays in the shell so the consent (CMP) message can render, but ad
+         requests start paused: useSeo un-pauses them only on indexable ad routes. -->
+    <script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1</script>
+    <script id="adsbygoogle-js" async crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=%ADSENSE_CLIENT%"></script>
     <title>WebNest Studio | Where Brands Go Digital &amp; Developers Are Born</title>
   </head>
   <body>
