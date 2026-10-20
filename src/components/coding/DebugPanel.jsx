@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FiAlertCircle, FiArrowDown, FiArrowUp, FiArrowUpRight, FiChevronRight, FiCornerUpRight, FiDatabase, FiGitBranch, FiPlay, FiSquare } from 'react-icons/fi'
 import { METHOD_STYLES, statusTone } from '../../lib/codelab/httpStyles'
 import { describeType, pathKey } from '../../lib/codelab/debugValues'
+import { bodyText } from '../../lib/codelab/openapi'
 
 const UNSUPPORTED = 'This browser cannot pause the API at breakpoints (it needs cross-origin isolation, which Safari does not offer). Use Chrome, Edge or Firefox; the execution trace below still works here.'
 const EMPTY = new Set()
@@ -79,9 +80,15 @@ function ValueRow({ node, path, scope, expanded, onToggle, changed, depth }) {
   )
 }
 
-export default function DebugPanel({ exchange, paused, armed, breakpoints = [], isolationUnsupported = false, onResume, onStop, onOpenLocation, selectedFrame = 0, onSelectFrame, changed }) {
+// `running` is the debugged request still in flight ({ spec }), if any; `exchange` is the
+// last one that finished, so its results are only shown while nothing newer is live.
+export default function DebugPanel({ exchange, paused, running, armed, breakpoints = [], isolationUnsupported = false, onResume, onStop, onOpenLocation, selectedFrame = 0, onSelectFrame, changed }) {
   const [expanded, setExpanded] = useState(() => new Set())
-  if (!exchange && !paused && !breakpoints.length) {
+  const live = Boolean(paused || running)
+  const finished = live ? null : exchange
+  // Once per exchange, not on every step, frame pick or tree toggle.
+  const body = useMemo(() => (finished?.response?.status > 0 ? bodyText(finished.response) : ''), [finished])
+  if (!exchange && !live && !breakpoints.length) {
     return (
       <div className="rounded-lg border border-dashed border-ink-300 p-5 text-center dark:border-ink-700">
         <FiGitBranch className="mx-auto h-5 w-5 text-ink-400" />
@@ -92,7 +99,9 @@ export default function DebugPanel({ exchange, paused, armed, breakpoints = [], 
     )
   }
 
-  const { spec = {}, response = {}, source } = exchange ?? {}
+  const { spec = {}, response = {}, source } = finished ?? {}
+  // The request the header describes: the paused or running one, else the last finished one.
+  const shown = paused ?? running?.spec ?? spec
   const trace = response.trace ?? { calls: [], sql: [] }
   const steps = []
   trace.calls?.forEach((call, index) => {
@@ -174,19 +183,26 @@ export default function DebugPanel({ exchange, paused, armed, breakpoints = [], 
           </section>
         </>
       )}
-      {exchange && <header className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 p-3 dark:border-ink-800">
-        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${METHOD_STYLES[paused?.method ?? spec.method] ?? ''}`}>{paused?.method ?? spec.method ?? 'REQUEST'}</span>
-        <code className="min-w-0 flex-1 truncate text-xs text-ink-800 dark:text-ink-100">{paused?.path ?? spec.path ?? '/'}</code>
-        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusTone(paused ? 0 : response.status)}`}>{paused ? 'Paused' : response.status || 'No response'}</span>
-        {!paused && typeof response.ms === 'number' && <span className="text-[10px] text-ink-400">{Math.round(response.ms)} ms</span>}
-        <span className="w-full text-[10px] text-ink-400">{paused ? 'Request is paused at a breakpoint' : `Request sent from ${source === 'preview' ? 'Preview' : 'API tester'}`}</span>
+      {(exchange || live) && <header className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 p-3 dark:border-ink-800">
+        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${METHOD_STYLES[shown.method] ?? ''}`}>{shown.method ?? 'REQUEST'}</span>
+        <code className="min-w-0 flex-1 truncate text-xs text-ink-800 dark:text-ink-100">{shown.path ?? '/'}</code>
+        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusTone(live ? 0 : response.status)}`}>{paused ? 'Paused' : running ? 'Running' : response.status || 'No response'}</span>
+        {!live && typeof response.ms === 'number' && <span className="text-[10px] text-ink-400">{Math.round(response.ms)} ms</span>}
+        <span className="w-full text-[10px] text-ink-400">{paused ? 'Request is paused at a breakpoint' : running ? 'Request is running. Its response appears here when it finishes.' : `Request sent from ${source === 'preview' ? 'Preview' : 'API tester'}`}</span>
       </header>}
-      {!exchange && !paused && <p className="rounded-lg bg-ink-100/70 p-3 text-xs text-ink-600 dark:bg-ink-900 dark:text-ink-300">Breakpoints are set. Press Debug, then send a request from the API tab or Preview.</p>}
+      {!exchange && !live && <p className="rounded-lg bg-ink-100/70 p-3 text-xs text-ink-600 dark:bg-ink-900 dark:text-ink-300">Breakpoints are set. Press Debug, then send a request from the API tab or Preview.</p>}
 
       {response.error && (
         <section className="rounded-lg border border-red-500/30 bg-red-500/5 p-3" aria-label="Request error">
           <h3 className="flex items-center gap-1.5 text-xs font-semibold text-red-500"><FiAlertCircle /> Request error</h3>
           <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-red-700 dark:text-red-300">{response.error}</pre>
+        </section>
+      )}
+
+      {body && (
+        <section aria-label="Response body" className="rounded-lg border border-ink-200 dark:border-ink-800">
+          <h3 className="border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">Response</h3>
+          <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-[11px] leading-relaxed text-ink-800 dark:text-ink-100">{body}</pre>
         </section>
       )}
 
@@ -203,7 +219,7 @@ export default function DebugPanel({ exchange, paused, armed, breakpoints = [], 
           <span className="text-[10px] text-ink-400">{trace.calls?.length ?? 0} calls · {trace.sql?.length ?? 0} SQL</span>
         </div>
         {!steps.length ? (
-          <p className="rounded-lg bg-ink-100/70 p-3 text-xs text-ink-500 dark:bg-ink-900 dark:text-ink-300">{exchange ? 'No user-code calls were traced. FastAPI may have returned a validation, authentication, or routing error before your handler ran.' : 'Execution will appear here when the request finishes.'}</p>
+          <p className="rounded-lg bg-ink-100/70 p-3 text-xs text-ink-500 dark:bg-ink-900 dark:text-ink-300">{finished ? 'No user-code calls were traced. FastAPI may have returned a validation, authentication, or routing error before your handler ran.' : 'Execution will appear here when the request finishes.'}</p>
         ) : (
           <ol className="flex flex-col gap-1">
             {steps.map((step, index) => (

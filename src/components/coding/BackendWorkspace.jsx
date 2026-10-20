@@ -15,6 +15,7 @@ import ResizeHandle from './ResizeHandle'
 import ErrorBoundary from '../ErrorBoundary'
 import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFiles'
 import { PANEL_LIMITS, useIdeLayout } from '../../hooks/useIdeLayout'
+import { useApiTesterSession } from '../../hooks/useApiTesterSession'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
 import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 import { statusTone } from '../../lib/codelab/httpStyles'
@@ -133,6 +134,7 @@ export default function BackendWorkspace({
   const debuggerConfig = useMemo(() => (debugging ? { breakpoints: liveBreakpoints } : null), [debugging, liveBreakpoints])
   const previewRequest = useCallback((spec) => request(spec, 'preview', debuggerConfig), [request, debuggerConfig])
   const testerRequest = useCallback((spec) => request(spec, 'tester', debuggerConfig), [request, debuggerConfig])
+  const testerSession = useApiTesterSession(`wns-codelab-api:${workspaceKey}`, testerRequest)
   const toggleBreakpoint = useCallback((file, line) => {
     setBreakpoints((current) => current.some((item) => item.file === file && item.line === line)
       ? current.filter((item) => item.file !== file || item.line !== line)
@@ -539,8 +541,7 @@ export default function BackendWorkspace({
                     key={workspaceKey}
                     openapi={api.openapi}
                     ready={api.ready}
-                    onSend={testerRequest}
-                    storageKey={`wns-codelab-api:${workspaceKey}`}
+                    session={testerSession}
                     embedded
                   />
                 )}
@@ -564,6 +565,7 @@ export default function BackendWorkspace({
                   <DebugPanel
                     exchange={api.lastExchange}
                     paused={api.debugPause}
+                    running={api.debugRequest}
                     armed={debugging}
                     breakpoints={liveBreakpoints}
                     isolationUnsupported={isolationUnsupported()}
