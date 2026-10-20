@@ -32,8 +32,6 @@ export const upsertProjectStatus = (clientUserId, payload) =>
   api.put(`/api/admin/project-status/${clientUserId}`, payload).then((r) => r.data)
 
 // Course catalog on the server (structure only; COURSE_EXAMS_CERTIFICATES.md §1).
-export const getAdminLearningCourse = (slug) =>
-  api.get(`/api/admin/learning/courses/${slug}`).then((r) => r.data)
 export const upsertLearningCourse = (payload) =>
   api.put('/api/admin/learning/courses', payload).then((r) => r.data)
 export const uploadExamContext = (slug, modules) =>
@@ -50,8 +48,6 @@ export const createExamQuestion = (payload) =>
   api.post('/api/admin/learning/exam-questions', payload).then((r) => r.data)
 export const voidExamQuestion = (id) =>
   api.post(`/api/admin/learning/exam-questions/${id}/void`).then((r) => r.data)
-export const importExamQuestions = (items) =>
-  api.post('/api/admin/learning/exam-questions/import', items).then((r) => r.data)
 export const setCourseExam = (courseSlug, payload) =>
   api.put(`/api/admin/learning/courses/${courseSlug}/exam`, payload).then((r) => r.data)
 export const refillExamPool = (courseSlug) =>

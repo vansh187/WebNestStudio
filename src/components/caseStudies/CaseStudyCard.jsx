@@ -26,6 +26,16 @@ export default function CaseStudyCard({ study }) {
         <span className="text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">{study.category}</span>
         <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-ink-900 dark:text-white sm:text-3xl">{study.title}</h3>
         <p className="mt-4 leading-relaxed text-ink-500 dark:text-ink-300">{study.description}</p>
+        {study.challenge?.summary?.length > 0 && (
+          <dl className="mt-6 grid gap-4 border-t border-ink-200 pt-5 dark:border-ink-800 sm:grid-cols-3">
+            {study.challenge.summary.map((item) => (
+              <div key={item.label}>
+                <dt className="text-xs font-semibold uppercase tracking-widest text-gold-600 dark:text-gold-400">{item.label}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-ink-600 dark:text-ink-200">{item.text}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         <ul className="mt-6 flex flex-wrap gap-2">
           {study.technologies.map((tech) => (
             <li key={tech} className="rounded-full border border-ink-200 px-3 py-1 text-xs font-semibold text-ink-600 dark:border-ink-700 dark:text-ink-200">{tech}</li>

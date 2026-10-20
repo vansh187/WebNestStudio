@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import { FiAlertTriangle, FiAward, FiCheck, FiChevronLeft, FiChevronRight, FiClock, FiFlag, FiLoader, FiSend } from 'react-icons/fi'
+import { FiAlertTriangle, FiAward, FiCheck, FiChevronLeft, FiChevronRight, FiClock, FiFlag, FiLoader, FiRefreshCw, FiSend } from 'react-icons/fi'
 import { SAMPLE_COURSES } from '../../data/codelabDefaults'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
@@ -52,8 +52,10 @@ export default function CourseExam() {
     const notice = typeof noticeArg === 'string' ? noticeArg : undefined
     setState({ phase: 'loading' })
     try {
-      // Send lessons completed in this browser first, so the server counts them.
-      if (isAuthenticated) await syncLocalProgress(userKey, bulkUpdateProgress)
+      // Send lessons completed in this browser first, so the server counts them. If some could
+      // not be sent, the locked message says so and offers a retry.
+      const synced = isAuthenticated ? await syncLocalProgress(userKey, bulkUpdateProgress) : true
+      const syncFailed = !synced
       const NOT_AVAILABLE = { enabled: false, eligible: false, reasons: ['exam_disabled'] }
       const exam = (await getCourseExam(courseSlug).catch((err) => {
         // The course isn't on the server yet: show "not available" rather than an error.
@@ -67,7 +69,7 @@ export default function CourseExam() {
           throw err
         })
         if (!attempt) {
-          setState({ phase: 'intro', exam: { ...exam, active_attempt_id: null }, notice })
+          setState({ phase: 'intro', exam: { ...exam, active_attempt_id: null }, notice, syncFailed })
         } else if (attempt.status === 'active') {
           if (!Array.isArray(attempt.questions) || !attempt.questions.length) throw new Error('Your exam questions could not be loaded. Please try again.')
           setState({ phase: 'running', exam, attempt })
@@ -75,7 +77,7 @@ export default function CourseExam() {
           setState({ phase: 'result', exam, result: attempt.result })
         }
       } else {
-        setState({ phase: 'intro', exam, notice })
+        setState({ phase: 'intro', exam, notice, syncFailed })
       }
     } catch (err) {
       // The active attempt was lost on the server: reload the exam view, which now allows a
@@ -112,7 +114,7 @@ export default function CourseExam() {
         </div>
       )}
       {state.phase === 'intro' && (
-        <ExamIntro course={course} exam={state.exam} onStarted={(attempt) => setState({ phase: 'running', exam: state.exam, attempt })} />
+        <ExamIntro course={course} exam={state.exam} syncFailed={state.syncFailed} onRetry={() => load()} onStarted={(attempt) => setState({ phase: 'running', exam: state.exam, attempt })} />
       )}
       {state.phase === 'running' && (
         <ExamRunner
@@ -127,7 +129,7 @@ export default function CourseExam() {
   )
 }
 
-function ExamIntro({ course, exam, onStarted }) {
+function ExamIntro({ course, exam, syncFailed, onRetry, onStarted }) {
   const { user } = useAuth()
   const toast = useToast()
   const [name, setName] = useState(user?.full_name || user?.name || '')
@@ -153,8 +155,13 @@ function ExamIntro({ course, exam, onStarted }) {
   if (!exam.enabled || !exam.eligible) {
     return (
       <Panel>
-        <p className="text-ink-700 dark:text-ink-200">{examLockedMessage(exam)}</p>
-        <Link to={`/learn/${course.slug}`} className={`${SECONDARY} mt-4`}>Back to course</Link>
+        <p className="text-ink-700 dark:text-ink-200">{examLockedMessage(exam, { syncFailed })}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {syncFailed && exam.enabled && Number(exam.lessons_remaining) > 0 && (
+            <button type="button" onClick={onRetry} className={PRIMARY}><FiRefreshCw /> Try again</button>
+          )}
+          <Link to={`/learn/${course.slug}`} className={SECONDARY}>Back to course</Link>
+        </div>
       </Panel>
     )
   }
@@ -211,8 +218,12 @@ function ExamRunner({ course, attempt, onFinished, onLost }) {
   const [tabSwitches, setTabSwitches] = useState(0)
   const [confirming, setConfirming] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const offset = useMemo(() => clockOffset(attempt.server_now), [attempt.server_now])
-  const [remaining, setRemaining] = useState(() => msLeft(attempt.expires_at, offset))
+  // The server's deadline and this browser's clock offset. Both start from the attempt and are
+  // refreshed by every ping, so a sleeping laptop or a corrected system clock cannot leave the
+  // countdown out of step with the server.
+  const [clock, setClock] = useState(() => ({ expiresAt: attempt.expires_at, offset: clockOffset(attempt.server_now) }))
+  const { expiresAt, offset } = clock
+  const [remaining, setRemaining] = useState(() => msLeft(expiresAt, offset))
   const finishing = useRef(false)
   const warned = useRef(new Set())
   const autoSubmitted = useRef(false)
@@ -238,13 +249,53 @@ function ExamRunner({ course, attempt, onFinished, onLost }) {
   // A crash lost this attempt on the server: hand back to the page, which offers a fresh start.
   useEffect(() => { if (lost) onLost() }, [lost, onLost])
 
-  // Keep the server awake for the whole exam; also how a lost attempt is noticed while idle.
+  // Keep the server awake for the whole exam, resync the timer, and notice a lost or closed
+  // attempt while idle. Also pings as soon as the tab is visible again (after sleep or a
+  // switch), when the clock is most likely to have drifted.
   useEffect(() => {
-    const timer = setInterval(() => {
-      pingExamAttempt(attempt.attempt_id).catch((err) => { if (isAttemptLost(err)) setLost(true) })
-    }, PING_MS)
-    return () => clearInterval(timer)
+    let cancelled = false
+    const ping = () => {
+      pingExamAttempt(attempt.attempt_id)
+        .then((data) => {
+          if (cancelled || !data) return
+          if (data.server_now || data.expires_at) {
+            setClock((current) => ({
+              expiresAt: data.expires_at || current.expiresAt,
+              offset: data.server_now ? clockOffset(data.server_now) : current.offset,
+            }))
+          }
+          // The server already graded the attempt (expired, or submitted from another tab):
+          // collect the stored result.
+          if (data.status && data.status !== 'active') setClosed(true)
+        })
+        .catch((err) => { if (!cancelled && isAttemptLost(err)) setLost(true) })
+    }
+    const timer = setInterval(ping, PING_MS)
+    const onVisible = () => { if (document.visibilityState === 'visible') ping() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [attempt.attempt_id])
+
+  // A failed save is retried on its own (2 s, 4 s, 8 s, then every 15 s) and as soon as the
+  // browser is back online, so "retrying" in the bar is true even if no answer changes.
+  const retryCount = useRef(0)
+  useEffect(() => {
+    if (saveStatus === 'saved') retryCount.current = 0
+    if (saveStatus !== 'error' || closed || lost || submitting) return undefined
+    const delay = Math.min(2000 * 2 ** retryCount.current, 15000)
+    retryCount.current += 1
+    const timer = setTimeout(() => { flush() }, delay)
+    const onOnline = () => { clearTimeout(timer); flush() }
+    window.addEventListener('online', onOnline)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('online', onOnline)
+    }
+  }, [saveStatus, closed, lost, submitting, flush])
 
   // The parent passes an inline onFinished; keep it in a ref so `finish` stays stable and the
   // effects below that depend on it do not re-run (and re-submit) on every parent render.
@@ -262,12 +313,15 @@ function ExamRunner({ course, attempt, onFinished, onLost }) {
       // server closes the attempt anyway, so submit with whatever was saved.
       let saved = await flush()
       if (!saved) saved = await flush()
-      if (!saved && msLeft(attempt.expires_at, offset) > 0) {
+      if (!saved && msLeft(expiresAt, offset) > 0) {
         finishing.current = false
         setSubmitting(false)
         toast.error('Your latest answers could not be saved. Check your connection, then submit again.')
         return
       }
+      // Time is up and the newest answers never reached the server: say so rather than let
+      // the learner believe they were still being retried.
+      if (!saved) toast.error('Time is up. Your most recent answers could not be saved, so they are not included in your score.')
       const result = await submitExamAttempt(attempt.attempt_id)
       trackEvent('course_exam_submitted', { course_slug: course.slug, passed: Boolean(result?.passed) })
       onFinishedRef.current(result)
@@ -282,7 +336,7 @@ function ExamRunner({ course, attempt, onFinished, onLost }) {
       setSubmitting(false)
       toast.error(getErrorDetail(err, 'Could not submit your exam. Check your connection and try again.'))
     }
-  }, [flush, attempt.attempt_id, attempt.expires_at, offset, course.slug, toast])
+  }, [flush, attempt.attempt_id, expiresAt, offset, course.slug, toast])
 
   // The server closed the attempt (409 on save): collect the graded result once. If that
   // fails, the learner retries with the Submit button instead of automatic repeats.
@@ -297,7 +351,7 @@ function ExamRunner({ course, attempt, onFinished, onLost }) {
   // Countdown to the server's deadline, with two warnings and an automatic submit at zero.
   useEffect(() => {
     const tick = () => {
-      const left = msLeft(attempt.expires_at, offset)
+      const left = msLeft(expiresAt, offset)
       setRemaining(left)
       for (const [at, message] of WARNINGS) {
         if (left <= at && left > 0 && !warned.current.has(at)) {
@@ -314,7 +368,7 @@ function ExamRunner({ course, attempt, onFinished, onLost }) {
     tick()
     const timer = setInterval(tick, 1000)
     return () => clearInterval(timer)
-  }, [attempt.expires_at, offset, finish, toast])
+  }, [expiresAt, offset, finish, toast])
 
   // Leaving the tab is counted and stored with the answers (it does not block anything).
   useEffect(() => {

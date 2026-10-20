@@ -22,21 +22,29 @@ export function readUserNotes(userKey) {
 
 // Notes for one lesson, cleaned up so data saved by older versions (a plain
 // string) or damaged entries can never crash the lesson page.
-export function readLessonNotes(userKey, lessonId) {
-  const stored = readUserNotes(userKey)[lessonId]
-  if (typeof stored === 'string') {
-    return stored.trim() ? [{ id: `legacy-${lessonId}`, text: stored, createdAt: null }] : []
-  }
-  if (!Array.isArray(stored)) return []
+// `aliasIds` are older ids of the same lesson (alias URLs of merged lessons); notes saved under
+// them are included after the lesson's own, so nothing written before is hidden.
+export function readLessonNotes(userKey, lessonId, aliasIds = []) {
+  const all = readUserNotes(userKey)
   const seenIds = new Set()
-  return stored
-    .filter((note) => isPlainObject(note) && ['string', 'number'].includes(typeof note.text))
-    .map((note, index) => {
-      let id = typeof note.id === 'string' && note.id ? note.id : `note-${index}`
-      if (seenIds.has(id)) id = `${id}-${index}`
+  return [lessonId, ...aliasIds].flatMap((key) => {
+    const stored = all[key]
+    if (typeof stored === 'string') {
+      const id = `legacy-${key}`
+      if (!stored.trim() || seenIds.has(id)) return []
       seenIds.add(id)
-      return { id, text: String(note.text), createdAt: typeof note.createdAt === 'string' ? note.createdAt : null }
-    })
+      return [{ id, text: stored, createdAt: null }]
+    }
+    if (!Array.isArray(stored)) return []
+    return stored
+      .filter((note) => isPlainObject(note) && ['string', 'number'].includes(typeof note.text))
+      .map((note, index) => {
+        let id = typeof note.id === 'string' && note.id ? note.id : `note-${key}-${index}`
+        if (seenIds.has(id)) id = `${id}-${key}-${index}`
+        seenIds.add(id)
+        return { id, text: String(note.text), createdAt: typeof note.createdAt === 'string' ? note.createdAt : null }
+      })
+  })
 }
 
 // Human-readable save time, or '' when the stored date is missing or invalid.

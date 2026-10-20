@@ -45,12 +45,12 @@
     {
       "source": "/services/software-development",
       "destination": "/software-development-company-gurugram",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/services/ai-development",
       "destination": "/ai-development-company-india",
-      "permanent": true
+      "statusCode": 301
     },
     {
       "source": "/blog/react-frontend-with-python-and-java-backend-development-for-scaling-businesses-2",

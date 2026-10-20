@@ -34,12 +34,11 @@ export default function CertificateView() {
   const toast = useToast()
   const [cert, setCert] = useState(undefined) // undefined = loading, null = not found
   const [error, setError] = useState(false)
-  const pageUrl = `${SITE_URL}/certificates/${certificateId}`
 
   useSeo({
     title: cert ? `${cert.recipient_name} · ${cert.course_title} certificate` : 'Certificate verification',
     description: 'Verify a WebNest Studio course certificate.',
-    path: `/certificates/${certificateId}`,
+    path: `/certificates/${encodeURIComponent(cert?.certificate_id || certificateId)}`,
     noindex: true,
     ads: false,
   })
@@ -73,6 +72,9 @@ export default function CertificateView() {
   }
 
   const valid = cert.status === 'valid'
+  // Built from the server's ID, not the address bar: lookups are case-insensitive, so the URL
+  // may hold a hand-typed or otherwise non-canonical ID that must not be printed or shared.
+  const pageUrl = `${SITE_URL}/certificates/${encodeURIComponent(cert.certificate_id)}`
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(pageUrl)

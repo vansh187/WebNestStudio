@@ -33,8 +33,10 @@ export function formatWait(until) {
 }
 
 // Why a learner cannot start the exam right now, from the server's exam view. Shared by the
-// course page card and the exam page so both always say the same thing.
-export function examLockedMessage(exam) {
+// course page card and the exam page so both always say the same thing. `syncFailed` means
+// lessons completed in this browser could not all be sent to the server, so the server's
+// lesson count may be behind; both callers then offer a retry.
+export function examLockedMessage(exam, { syncFailed = false } = {}) {
   if (!exam?.enabled) return 'The final exam for this course is being prepared. Check back soon.'
   if (exam.cooldown_until) {
     const wait = formatWait(exam.cooldown_until)
@@ -43,6 +45,9 @@ export function examLockedMessage(exam) {
       : `You can retake the exam ${wait}, with a new set of questions.`
   }
   const remaining = Number(exam.lessons_remaining) || 0
+  if (remaining > 0 && syncFailed) {
+    return `The server counts ${remaining} lesson${remaining === 1 ? '' : 's'} as not completed yet. Some lessons you completed in this browser could not be sent to the server, so they may not be counted. Try again in a moment.`
+  }
   if (remaining > 0) return `Complete ${remaining} more lesson${remaining === 1 ? '' : 's'} to unlock the final exam.`
   return 'The final exam is not available right now. Please check back later.'
 }

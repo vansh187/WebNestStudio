@@ -1,27 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiAward, FiClock, FiLock, FiPlay } from 'react-icons/fi'
-import { bulkUpdateProgress, getCourseExam } from '../api/learning'
-import { syncLocalProgress } from '../lib/learningProgress'
+import { FiAward, FiClock, FiLock, FiPlay, FiRefreshCw } from 'react-icons/fi'
 import { examLockedMessage } from '../lib/examTime'
 
 // Last step of a course: the timed final exam and its certificate. The server decides
 // everything shown here (COURSE_EXAMS_CERTIFICATES.md); the card stays hidden until the
 // server reports the course's exam as enabled, so it can ship before the backend does.
-export default function CourseExamCard({ course, userKey, isAuthenticated }) {
-  const [exam, setExam] = useState(null)
-
-  useEffect(() => {
-    let cancelled = false
-    setExam(null)
-    // Send lessons completed in this browser first, so eligibility counts them.
-    const ready = isAuthenticated ? syncLocalProgress(userKey, bulkUpdateProgress) : Promise.resolve()
-    ready
-      .then(() => getCourseExam(course.slug))
-      .then((data) => { if (!cancelled) setExam(data) })
-      .catch(() => { if (!cancelled) setExam(null) })
-    return () => { cancelled = true }
-  }, [course.slug, userKey, isAuthenticated])
+// `exam`, `syncFailed` and `onRetry` come from useCourseExam on the course page.
+export default function CourseExamCard({ course, isAuthenticated, exam, syncFailed, onRetry }) {
+  const [retrying, setRetrying] = useState(false)
 
   if (!exam?.enabled) return null
 
@@ -30,6 +17,7 @@ export default function CourseExamCard({ course, userKey, isAuthenticated }) {
   let icon = FiLock
   let message
   let action = null
+  let canRetry = false
 
   if (exam.passed && exam.certificate_id) {
     icon = FiAward
@@ -48,7 +36,17 @@ export default function CourseExamCard({ course, userKey, isAuthenticated }) {
     action = { to: examPath, label: 'Start final exam' }
   } else {
     if (exam.cooldown_until) icon = FiClock
-    message = examLockedMessage(exam)
+    message = examLockedMessage(exam, { syncFailed })
+    canRetry = syncFailed && Number(exam.lessons_remaining) > 0
+  }
+
+  const retry = async () => {
+    setRetrying(true)
+    try {
+      await onRetry?.()
+    } finally {
+      setRetrying(false)
+    }
   }
 
   const Icon = icon
@@ -67,6 +65,11 @@ export default function CourseExamCard({ course, userKey, isAuthenticated }) {
           <Link to={action.to} state={action.state} className="inline-flex shrink-0 items-center justify-center rounded-lg bg-ink-900 px-5 py-3 text-sm font-semibold text-white dark:bg-gold-400 dark:text-ink-950">
             {action.label}
           </Link>
+        )}
+        {canRetry && (
+          <button type="button" onClick={retry} disabled={retrying} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-ink-900 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50 dark:bg-gold-400 dark:text-ink-950">
+            <FiRefreshCw className={retrying ? 'animate-spin' : ''} /> Try again
+          </button>
         )}
       </div>
     </section>

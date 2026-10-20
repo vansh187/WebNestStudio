@@ -12,6 +12,7 @@ import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../../hooks/useS
 import { NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, getCourseProgress } from '../../lib/learningProgress'
+import { useCourseExam } from '../../hooks/useCourseExam'
 
 export default function CourseDetail() {
   const { courseSlug } = useParams()
@@ -23,6 +24,8 @@ export default function CourseDetail() {
 
   const progress = useMemo(() => readLearningProgress(userKey), [userKey])
   const courseStats = course ? getCourseProgress(progress, course) : null
+  // One exam view for the roadmap's finish line and the exam card, so they always agree.
+  const { exam, syncFailed, reload: reloadExam } = useCourseExam(course?.slug ?? null, userKey, isAuthenticated)
 
   useSeo({
     title: course?.title ? `${course.title} | Learn` : 'Course',
@@ -89,9 +92,9 @@ export default function CourseDetail() {
         </section>
       )}
 
-      <CourseRoadmap course={course} progress={progress} nextLessonId={nextLessonId} />
+      <CourseRoadmap course={course} progress={progress} nextLessonId={nextLessonId} examEnabled={Boolean(exam?.enabled)} />
       {/* The last step of every course. Renders nothing until the server enables the exam. */}
-      <CourseExamCard course={course} userKey={userKey} isAuthenticated={isAuthenticated} />
+      <CourseExamCard course={course} isAuthenticated={isAuthenticated} exam={exam} syncFailed={syncFailed} onRetry={reloadExam} />
       <RelatedService courseSlug={course.slug} className="mt-8" />
     </div>
   )
