@@ -1,26 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FiLoader, FiLock, FiPlus, FiSend, FiTrash2, FiUnlock, FiZap } from 'react-icons/fi'
 import { EmptyState } from '../states/StateViews'
-import { buildPath, formatBody, groupByTag, listEndpoints, requestTemplate } from '../../lib/codelab/openapi'
+import { bodyText, buildPath, groupByTag, listEndpoints, requestTemplate } from '../../lib/codelab/openapi'
 import { METHOD_STYLES, statusTone } from '../../lib/codelab/httpStyles'
 
 const INPUT = 'w-full min-w-0 rounded-md border border-ink-200 bg-white px-2 py-1.5 font-mono text-xs text-ink-900 outline-none focus:border-gold-500 dark:border-ink-700 dark:bg-ink-900 dark:text-white'
 const LABEL = 'text-[11px] font-semibold uppercase tracking-widest text-ink-400'
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-const HISTORY_LIMIT = 15
 
-function loadState(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? {}
-  } catch {
-    return {}
-  }
-}
-
-export default function ApiClientPanel({ openapi, ready, onSend, storageKey, className = '', embedded = false }) {
+// `session` comes from useApiTesterSession in the workspace: the response, history and
+// token outlive this panel, so switching tabs mid-request loses nothing.
+export default function ApiClientPanel({ openapi, ready, session, className = '', embedded = false }) {
   const endpoints = useMemo(() => listEndpoints(openapi), [openapi])
   const groups = useMemo(() => groupByTag(endpoints), [endpoints])
-  const saved = useMemo(() => loadState(storageKey), [storageKey])
+  const { token, setToken, history, response, sending, notice, clearNotice } = session
   const [selected, setSelected] = useState(null)
   const [method, setMethod] = useState('GET')
   const [pathTemplate, setPathTemplate] = useState('/api/health')
@@ -29,20 +22,7 @@ export default function ApiClientPanel({ openapi, ready, onSend, storageKey, cla
   const [headers, setHeaders] = useState([])
   const [contentType, setContentType] = useState('application/json')
   const [body, setBody] = useState('')
-  const [token, setToken] = useState(saved.token ?? '')
-  const [history, setHistory] = useState(saved.history ?? [])
-  const [response, setResponse] = useState(null)
-  const [view, setView] = useState('body')
-  const [sending, setSending] = useState(false)
-  const [notice, setNotice] = useState('')
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ token, history }))
-    } catch {
-      /* Storage can be unavailable; the tester keeps working for this visit. */
-    }
-  }, [storageKey, token, history])
+  const [view, setView] = useState(() => (response?.error ? 'error' : 'body'))
 
   const choose = (endpoint) => {
     const template = requestTemplate(endpoint, openapi)
@@ -53,7 +33,7 @@ export default function ApiClientPanel({ openapi, ready, onSend, storageKey, cla
     setQuery(template.query)
     setContentType(template.contentType || 'application/json')
     setBody(template.body)
-    setNotice('')
+    clearNotice()
   }
 
   const path = buildPath(pathTemplate, pathParams, query)
@@ -64,33 +44,8 @@ export default function ApiClientPanel({ openapi, ready, onSend, storageKey, cla
     if (hasBody && contentType) list.push(['content-type', contentType])
     if (token.trim() && !list.some(([key]) => key.toLowerCase() === 'authorization')) list.push(['authorization', `Bearer ${token.trim()}`])
     const spec = { method, path, headers: list, body: hasBody ? body : '' }
-    setSending(true)
-    setNotice('')
-    try {
-      let result
-      try {
-        result = await onSend(spec)
-      } catch (error) {
-        result = { status: 0, error: error?.message || 'The request failed.', body: '', headers: [] }
-      }
-      setResponse(result)
-      setView(result.error ? 'error' : 'body')
-      setHistory((items) => [{ method, pathTemplate, pathParams, query, contentType, body, status: result.status, at: Date.now() }, ...items].slice(0, HISTORY_LIMIT))
-      // Save the token from a login response so protected routes work straight away.
-      if (result.status === 200 && /json/.test(result.headers?.find(([key]) => key === 'content-type')?.[1] ?? '')) {
-        try {
-          const data = JSON.parse(result.body)
-          if (typeof data?.access_token === 'string') {
-            setToken(data.access_token)
-            setNotice('Token saved. Protected routes now send it as Authorization: Bearer.')
-          }
-        } catch {
-          /* Not JSON after all. */
-        }
-      }
-    } finally {
-      setSending(false)
-    }
+    const result = await session.send(spec, { method, pathTemplate, pathParams, query, contentType, body })
+    setView(result.error ? 'error' : 'body')
   }
 
   const restore = (item) => {
@@ -103,7 +58,9 @@ export default function ApiClientPanel({ openapi, ready, onSend, storageKey, cla
     setBody(item.body ?? '')
   }
 
-  const formatted = response ? formatBody(response.body, response.headers) : ''
+  // Once per response, not on every keystroke in the form.
+  const formatted = useMemo(() => bodyText(response), [response])
+  const bytes = useMemo(() => (response?.body ? new TextEncoder().encode(response.body).length : 0), [response])
 
   return (
     <div className={`flex flex-col gap-3 ${embedded ? '' : 'rounded-xl border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40'} ${className}`}>
@@ -234,7 +191,7 @@ export default function ApiClientPanel({ openapi, ready, onSend, storageKey, cla
                   {response.status ? `${response.status} ${response.reason ?? ''}` : 'No response'}
                 </span>
                 {typeof response.ms === 'number' && <span>{Math.round(response.ms)} ms</span>}
-                {response.body ? <span>{new TextEncoder().encode(response.body).length} bytes</span> : null}
+                {bytes ? <span>{bytes} bytes</span> : null}
                 <div className="ml-auto flex gap-1" role="tablist" aria-label="Response details">
                   {['body', 'headers', 'logs', ...(response.error ? ['error'] : [])].map((item) => (
                     <button key={item} type="button" role="tab" aria-selected={view === item} onClick={() => setView(item)} className={`rounded px-2 py-0.5 font-semibold capitalize ${view === item ? 'bg-ink-100 text-ink-900 dark:bg-ink-800 dark:text-white' : 'hover:text-ink-700'}`}>
@@ -244,7 +201,7 @@ export default function ApiClientPanel({ openapi, ready, onSend, storageKey, cla
                 </div>
               </div>
               <pre className={`max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-ink-50 p-3 font-mono text-xs leading-relaxed dark:bg-ink-900 ${view === 'error' ? 'text-red-500' : 'text-ink-800 dark:text-ink-100'}`}>
-                {view === 'body' && (formatted || (response.status === 204 ? '(204 No Content: empty body)' : response.error || '(empty body)'))}
+                {view === 'body' && formatted}
                 {view === 'headers' && (response.headers ?? []).map(([key, value]) => `${key}: ${value}`).join('\n')}
                 {view === 'logs' && (response.logs || 'Nothing was printed during this request.')}
                 {view === 'error' && response.error}

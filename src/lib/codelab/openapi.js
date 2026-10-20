@@ -133,3 +133,10 @@ export function formatBody(text, headers = []) {
     return text
   }
 }
+
+// What a response's body view shows: the formatted body, or why there is none.
+export function bodyText(response) {
+  if (!response) return ''
+  return formatBody(response.body, response.headers ?? [])
+    || (response.status === 204 ? '(204 No Content: empty body)' : response.error || '(empty body)')
+}

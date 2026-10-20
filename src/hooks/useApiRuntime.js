@@ -65,6 +65,9 @@ export function useApiRuntime(workspaceKey) {
   const [lastExchange, setLastExchange] = useState(null)
   const [booted, setBooted] = useState(false)
   const [debugPause, setDebugPause] = useState(null)
+  // The newest request that can pause and has not finished, so the Debug tab does not show
+  // an older response as if it were this one.
+  const [debugRequest, setDebugRequest] = useState(null)
 
   const rejectAll = useCallback((reason) => {
     for (const { reject, timer } of pendingRef.current.values()) {
@@ -97,6 +100,7 @@ export function useApiRuntime(workspaceKey) {
     if (mountedRef.current) {
       setBooted(false)
       setDebugPause(null)
+      setDebugRequest(null)
     }
   }, [clearTimers, rejectAll])
 
@@ -375,6 +379,7 @@ export function useApiRuntime(workspaceKey) {
         control = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 2)
         debugActiveRef.current += 1
         breakpoints = debuggerConfig.breakpoints ?? []
+        if (mountedRef.current) setDebugRequest({ spec, startedAt })
       }
       const reply = await call('request', { spec, breakpoints, control: control ?? undefined }, control ? DEBUG_CALL_TIMEOUT_MS : CALL_TIMEOUT_MS)
       response = { ...reply.data, logs: [reply.stdout, reply.stderr].filter(Boolean).join('\n') }
@@ -389,7 +394,10 @@ export function useApiRuntime(workspaceKey) {
         }
       }
     }
-    if (mountedRef.current) setLastExchange({ spec, response, source, at: startedAt })
+    if (mountedRef.current) {
+      setLastExchange({ spec, response, source, at: startedAt })
+      if (control) setDebugRequest((current) => (current?.startedAt === startedAt && current.spec === spec ? null : current))
+    }
     if (WRITE_METHODS.has(String(spec?.method).toUpperCase()) && response.status) {
       scheduleSnapshot()
       scheduleSchema()
@@ -464,7 +472,8 @@ export function useApiRuntime(workspaceKey) {
     schema,
     lastExchange,
     debugPause,
+    debugRequest,
     resumeDebug,
     ready: Boolean(openapi),
-  }), [runner, run, request, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, resumeDebug])
+  }), [runner, run, request, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug])
 }
