@@ -16,7 +16,7 @@ export const CODELAB_TRACKS = [
   { id: 'python', label: 'Python', runner: 'pyodide' },
 ]
 
-import { JAVA_LESSON_CONTENT, JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES } from './java/index.js'
+import { JAVA_LESSON_CONTENT, ADVANCED_JAVA_LESSON_CONTENT, JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES } from './java/index.js'
 import { TUTORIALS_BY_COURSE } from './tutorials/index.js'
 import { renderLessonContent, firstExampleCode } from './lessons/render.js'
 
@@ -31,7 +31,7 @@ const TUTORIAL_LANGUAGE_LABEL = {
 
 const TUTORIAL_CONTENT = {
   'java-core': JAVA_LESSON_CONTENT,
-  'advanced-java': JAVA_LESSON_CONTENT,
+  'advanced-java': ADVANCED_JAVA_LESSON_CONTENT,
   ...TUTORIALS_BY_COURSE,
 }
 

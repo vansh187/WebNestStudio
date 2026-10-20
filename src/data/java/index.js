@@ -36,6 +36,7 @@ import { practice10Platform } from './practice-10-platform.js'
 import { practice11Algorithms } from './practice-11-algorithms.js'
 import { practiceAdvRuntimeEngineering } from './practice-adv-03-runtime-engineering.js'
 import { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex } from './topics.js'
+import { addDerivedPractice } from '../lessons/derivedPractice.js'
 
 // Practice blocks live in their own per-module files, keyed by the same slugs.
 export const JAVA_PRACTICE = {
@@ -83,6 +84,15 @@ const LESSON_PROSE = {
 
 export const JAVA_LESSON_CONTENT = Object.fromEntries(
   Object.entries(LESSON_PROSE).map(([slug, entry]) => [slug, JAVA_PRACTICE[slug] ? { ...entry, ...JAVA_PRACTICE[slug] } : entry]),
+)
+
+const advancedJavaSlugs = buildTopicIndex(ADVANCED_JAVA_MODULES).map(({ slug }) => slug)
+const advancedJavaWithPractice = addDerivedPractice(JAVA_LESSON_CONTENT, advancedJavaSlugs)
+
+// Keep Java Core's hand-authored practice as-is; fill the identified gaps in
+// Advanced Java with checkpoints grounded in each lesson's own content.
+export const ADVANCED_JAVA_LESSON_CONTENT = Object.fromEntries(
+  Object.entries(advancedJavaWithPractice).filter(([slug]) => advancedJavaSlugs.includes(slug)),
 )
 
 export { JAVA_CORE_MODULES, ADVANCED_JAVA_MODULES, buildTopicIndex }

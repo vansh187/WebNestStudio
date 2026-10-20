@@ -69,6 +69,7 @@ import { practiceDatabaseSql } from './practice-database-sql.js'
 import { practiceDatabaseDesign } from './practice-database-design.js'
 import { practicePostgresql } from './practice-postgresql.js'
 import { practiceReact } from './practice-react.js'
+import { addDerivedPractice } from '../lessons/derivedPractice.js'
 
 // Practice blocks live in their own files, keyed by course slug and then by the same
 // topic slugs as the lesson prose.
@@ -144,9 +145,12 @@ const TUTORIAL_PROSE = {
 export const TUTORIALS_BY_COURSE = Object.fromEntries(
   Object.entries(TUTORIAL_PROSE).map(([course, lessons]) => {
     const practice = TUTORIAL_PRACTICE[course]
-    if (!practice) return [course, lessons]
-    return [course, Object.fromEntries(
+    const merged = !practice ? lessons : Object.fromEntries(
       Object.entries(lessons).map(([slug, entry]) => [slug, practice[slug] ? { ...entry, ...practice[slug] } : entry]),
-    )]
+    )
+    if (course === 'spring-framework' || course === 'spring-boot') {
+      return [course, addDerivedPractice(merged, Object.keys(merged))]
+    }
+    return [course, merged]
   }),
 )
