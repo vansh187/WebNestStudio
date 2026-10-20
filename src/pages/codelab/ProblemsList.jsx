@@ -18,6 +18,7 @@ function normalizeProblems(data) {
     difficulty: item?.difficulty || 'easy',
     points: Number(item?.points || 0),
     topics: Array.isArray(item?.topics) ? item.topics : [],
+    statement: item?.statement || item?.description || '',
     status: item?.status || item?.user_progress?.status || 'not_started',
   })).filter((item) => item.slug)
 }
@@ -84,6 +85,11 @@ export default function ProblemsList() {
 
   const problems = items.length ? items : SAMPLE_PROBLEMS
   const groups = DIFFICULTIES.map((level) => ({ ...level, problems: problems.filter((problem) => difficultyKey(problem) === level.key) }))
+  const trackDescription = track === 'python'
+    ? 'Python problems focus on reading input, working with data structures, and expressing solutions clearly.'
+    : track === 'web'
+      ? 'Web problems focus on building interfaces with semantic HTML and responsive CSS.'
+      : 'Browse Python and web development exercises. Each problem includes its difficulty, topics, requirements, and examples.'
   const visibleGroups = groups.filter((group) => group.problems.length && (!difficulty || group.key === difficulty))
   const chips = [{ key: '', label: 'All', count: problems.length }, ...groups.map((group) => ({ key: group.key, label: group.label, count: group.problems.length, dot: group.dot }))]
 
@@ -94,6 +100,9 @@ export default function ProblemsList() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Practice</p>
           <h1 className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">Problems</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500 dark:text-ink-300">
+            Choose a track, then filter by difficulty. Read the requirements and examples before coding; run your solution against the sample cases, then submit it to save your progress.
+          </p>
         </div>
         <label className="inline-flex items-center gap-2 text-sm font-semibold text-ink-600 dark:text-ink-200">
           <FiFilter className="h-4 w-4" />
@@ -105,6 +114,7 @@ export default function ProblemsList() {
         </label>
       </div>
       {error && <div className="mt-4"><ErrorState message={error} /></div>}
+      <p className="mt-4 text-sm text-ink-500 dark:text-ink-300" aria-live="polite">{trackDescription}</p>
       {!loading && !items.length ? (
         <div className="mt-6"><EmptyState icon={FiCode} title="No problems yet" description="Published problems will appear here." /></div>
       ) : (
@@ -140,12 +150,14 @@ export default function ProblemsList() {
                       <h3 className="font-display text-lg font-semibold text-ink-900 dark:text-white">{problem.title}</h3>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${group.badge}`}>{group.label}</span>
                     </div>
+                    {problem.statement && <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-500 dark:text-ink-300">{problem.statement}</p>}
                     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-500 dark:text-ink-300">
                       <span className="capitalize">{problem.track}</span>
                       <span aria-hidden="true">·</span>
                       <StatusLabel status={problem.status} />
                       <span className="ml-auto rounded-full bg-gold-400/10 px-2 py-1 text-xs font-semibold text-gold-600">{problem.points} XP</span>
                     </div>
+                    {!!problem.topics.length && <p className="mt-2 text-xs text-ink-400">Topics: {problem.topics.join(', ')}</p>}
                   </Link>
                 ))}
               </div>

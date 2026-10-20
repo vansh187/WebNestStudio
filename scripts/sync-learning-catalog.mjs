@@ -39,21 +39,19 @@ async function adminToken() {
 }
 
 async function main() {
-  const courses = SAMPLE_COURSES
-    .map((course, index) => ({ course, index }))
-    .filter(({ course }) => !onlyCourse || course.slug === onlyCourse)
+  const courses = SAMPLE_COURSES.filter((course) => !onlyCourse || course.slug === onlyCourse)
   if (!courses.length) throw new Error(`No course with slug "${onlyCourse}".`)
 
   const contextsFile = option('--contexts')
   if (contextsFile) {
-    const contexts = Object.fromEntries(courses.map(({ course }) => [course.slug, courseExamContexts(course.slug)]))
+    const contexts = Object.fromEntries(courses.map((course) => [course.slug, courseExamContexts(course.slug)]))
     await writeFile(contextsFile, `${JSON.stringify(contexts, null, 2)}\n`)
     console.log(`Wrote exam generation context for ${courses.length} course(s) to ${contextsFile}`)
     return
   }
 
   if (flag('--dry-run')) {
-    for (const { course } of courses) {
+    for (const course of courses) {
       const payload = courseCatalogPayload(course)
       const lessons = payload.modules.reduce((sum, module) => sum + module.lessons.length, 0)
       console.log(`${payload.slug} (${payload.exam_code}): ${payload.modules.length} modules, ${lessons} lessons`)
@@ -68,7 +66,7 @@ async function main() {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
   })
-  for (const { course } of courses) {
+  for (const course of courses) {
     // The outline first (the server needs the modules), then the lesson context the exam
     // question generator writes from.
     const outline = await put('/api/admin/learning/courses', courseCatalogPayload(course))

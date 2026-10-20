@@ -80,11 +80,13 @@ export default function AdminExamBank() {
   currentSlug.current = courseSlug
   const loadSeq = useRef(0)
 
-  const load = useCallback(async () => {
+  // `quiet` refreshes in place (after saving or voiding one question): the list stays mounted,
+  // so unsaved edits in the other question editors are kept.
+  const load = useCallback(async ({ quiet = false } = {}) => {
     const seq = ++loadSeq.current
     const isStale = () => seq !== loadSeq.current
     setError('')
-    setQuestions(null)
+    if (!quiet) setQuestions(null)
     try {
       const [sum, list] = await Promise.all([
         getExamBankSummary(courseSlug),
@@ -105,8 +107,10 @@ export default function AdminExamBank() {
         setQuestions([])
         return
       }
-      setSummary(null)
       setError(getErrorDetail(err, 'Could not load the question pool.'))
+      // A failed quiet refresh keeps what is on screen (and any unsaved edits).
+      if (quiet) return
+      setSummary(null)
       setQuestions([])
     }
   }, [courseSlug, status, moduleFilter, syncCourse, course, toast])
@@ -121,9 +125,9 @@ export default function AdminExamBank() {
   }
 
   useEffect(() => { load() }, [load])
-  // A different course: reset the filters and stop following the previous course's job.
+  // A different course: stop following the previous course's job. (The module filter is reset
+  // in the course select's onChange, in the same render, so the list loads once per switch.)
   useEffect(() => {
-    setModuleFilter('')
     setAdding(false)
     clearTimeout(pollRef.current)
     pollRef.current = null
@@ -193,7 +197,7 @@ export default function AdminExamBank() {
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
         <label className="text-xs font-semibold">Course
-          <select value={courseSlug} onChange={(event) => setCourseSlug(event.target.value)} className={`${INPUT} mt-1 w-56`}>
+          <select value={courseSlug} onChange={(event) => { setCourseSlug(event.target.value); setModuleFilter('') }} className={`${INPUT} mt-1 w-56`}>
             {SAMPLE_COURSES.map((item) => <option key={item.slug} value={item.slug}>{item.title}</option>)}
           </select>
         </label>
@@ -256,7 +260,7 @@ export default function AdminExamBank() {
           onSave={async (payload) => {
             const created = await createExamQuestion({ ...payload, course_slug: courseSlug })
             setAdding(false)
-            load()
+            load({ quiet: true })
             return created?.status === 'live' ? 'Question passed the checks and is live.' : `Question saved as ${created?.status ?? 'submitted'}.`
           }}
           onCancel={() => setAdding(false)}
@@ -273,10 +277,10 @@ export default function AdminExamBank() {
               question={question}
               onSave={async (payload) => {
                 const updated = await updateExamQuestion(question.id, payload)
-                load()
+                load({ quiet: true })
                 return updated?.status === 'live' ? 'Saved — the question is live.' : `Saved — status ${updated?.status ?? 'updated'}.`
               }}
-              onVoid={async () => { await voidExamQuestion(question.id); load() }}
+              onVoid={async () => { await voidExamQuestion(question.id); load({ quiet: true }) }}
             />
           ))}
     </div>

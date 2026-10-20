@@ -9,7 +9,7 @@ import { trackEvent } from '../../lib/analytics'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiArrowLeft, FiArrowRight, FiBarChart2, FiBookmark, FiCheckCircle, FiCode, FiList, FiLock, FiMenu, FiPlay, FiSave, FiTrash2 } from 'react-icons/fi'
-import { SAMPLE_COURSES, SAMPLE_LESSONS } from '../../data/codelabDefaults'
+import { SAMPLE_COURSES, SAMPLE_LESSONS, canonicalLessonId } from '../../data/codelabDefaults'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
 import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../../hooks/useSeo'
@@ -19,6 +19,12 @@ import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, writeLearningProgress, getLessonProgress, markLessonsSynced } from '../../lib/learningProgress'
 import { updateLessonProgress } from '../../api/learning'
 import { readUserNotes, readLessonNotes, writeUserNotes, createNoteId, noteDateLabel } from '../../lib/lessonNotes'
+
+// Older ids of a lesson (alias URLs of merged lessons) that notes may have been saved under.
+// Notes are read from them too and moved under the lesson's own id on the next save.
+function noteAliasKeys(allNotes, lessonKey) {
+  return Object.keys(allNotes).filter((key) => key !== lessonKey && canonicalLessonId(key) === lessonKey)
+}
 
 function normalize(id) {
   const source = SAMPLE_LESSONS[id]
@@ -173,9 +179,11 @@ export default function LessonDetail() {
       setCourseProgress({})
       return
     }
-    setNotes(readLessonNotes(userKey, lessonId))
+    // Notes use the same canonical id as progress and bookmarks, so the alias URL and the
+    // lesson's own URL show the same notes.
+    setNotes(readLessonNotes(userKey, progressId, noteAliasKeys(readUserNotes(userKey), progressId)))
     setCourseProgress(readLearningProgress(userKey))
-  }, [userKey, lessonId])
+  }, [userKey, progressId])
 
   // Memoized so typing a note or toggling a bookmark doesn't rewrite the JSON-LD tag.
   const lessonSchema = useMemo(() => (lesson && lesson.indexable ? {
@@ -240,7 +248,8 @@ export default function LessonDetail() {
     const entry = { id: createNoteId(), text: trimmed, createdAt: new Date().toISOString() }
     const allNotes = readUserNotes(userKey)
     const nextNotes = [entry, ...notes]
-    allNotes[lessonId] = nextNotes
+    noteAliasKeys(allNotes, progressId).forEach((key) => { delete allNotes[key] })
+    allNotes[progressId] = nextNotes
     if (!writeUserNotes(userKey, allNotes)) {
       setSaving(false)
       toast.error('Could not save your note. Your browser storage may be full or unavailable.')
@@ -250,19 +259,20 @@ export default function LessonDetail() {
     setDraftNote('')
     setSaving(false)
     toast.success('Note saved.')
-  }, [userKey, lessonId, notes, draftNote, toast])
+  }, [userKey, progressId, notes, draftNote, toast])
 
   const deleteNote = useCallback((noteId) => {
     if (!userKey) return
     const allNotes = readUserNotes(userKey)
     const nextNotes = notes.filter((n) => n.id !== noteId)
-    allNotes[lessonId] = nextNotes
+    noteAliasKeys(allNotes, progressId).forEach((key) => { delete allNotes[key] })
+    allNotes[progressId] = nextNotes
     if (!writeUserNotes(userKey, allNotes)) {
       toast.error('Could not delete the note. Please try again.')
       return
     }
     setNotes(nextNotes)
-  }, [userKey, lessonId, notes, toast])
+  }, [userKey, progressId, notes, toast])
 
   if (!lesson) return <NotFoundState title="Lesson not found" backTo="/learn" backLabel="Back to courses" />
 

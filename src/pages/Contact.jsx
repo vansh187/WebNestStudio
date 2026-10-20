@@ -257,6 +257,7 @@ export default function Contact() {
       <section className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="min-w-0 lg:col-span-2">
+            <h2 className="sr-only">Contact information</h2>
             <div className="h-full space-y-6">
               <a
                 href={CONTACT.phoneHref}
@@ -328,11 +329,13 @@ export default function Contact() {
               visible (that was leaving the form invisible on some mobile browsers). */}
           <div className="min-w-0 lg:col-span-3">
             <div className="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-6 sm:p-8">
-              <div className="mb-8 flex flex-wrap gap-2 border-b border-ink-200 dark:border-ink-800 pb-4">
+              <h2 className="sr-only">Send a message or request a consultation</h2>
+              <div role="group" aria-label="Contact options" className="mb-8 flex flex-wrap gap-2 border-b border-ink-200 dark:border-ink-800 pb-4">
                 {TABS.map((t) => (
                   <button
                     key={t.key}
                     type="button"
+                    aria-pressed={tab === t.key}
                     onClick={() => setTab(t.key)}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                       tab === t.key

@@ -33,11 +33,12 @@ const STATIC_ROUTES = [
   { path: '/terms-and-conditions', changefreq: 'yearly', priority: '0.3' },
   { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
   { path: '/download-app', changefreq: 'monthly', priority: '0.6' },
+  // Index the CodeLab overview; keep interactive tools and problem utilities out.
+  { path: '/codelab', changefreq: 'monthly', priority: '0.8' },
   // Still prerendered so the QR link works, but kept out of the sitemap.
   { path: '/card', noindex: true },
-  // CodeLab tool and problem pages are prerendered with noindex and kept out of the
-  // sitemap: they have too little written content to be useful search results.
-  { path: '/codelab', noindex: true },
+  // Interactive CodeLab tools and problem pages stay noindex; only the overview
+  // is a standalone search landing page.
   { path: '/codelab/playground', noindex: true },
   { path: '/codelab/problems', noindex: true },
   { path: '/learn', changefreq: 'weekly', priority: '0.8' },

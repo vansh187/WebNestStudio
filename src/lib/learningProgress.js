@@ -187,8 +187,10 @@ export function unsyncedCompletions(userKey) {
     .map(([id]) => ({ lesson_id: id, status: 'completed', completed_percent: 100 }))
 }
 
-// One in-flight sync per user: pages that mount together (or effects that run twice) share it
-// instead of sending the same lessons again.
+// One in-flight sync per user, so pages that mount together (or effects that run twice) never
+// send the same lessons twice at once. A caller that arrives while one is running waits for it,
+// then sends whatever is still unsynced (lessons completed meanwhile, here or in another tab,
+// and anything the first sync could not send), so its result covers every completion so far.
 const inFlight = new Map()
 
 // The server accepts at most this many lessons per bulk request.
@@ -201,7 +203,11 @@ const SYNC_BATCH = 500
 // been uploaded) are not remembered, so they are sent again on a later visit.
 export function syncLocalProgress(userKey, send) {
   if (!userKey) return Promise.resolve(true)
-  if (inFlight.has(userKey)) return inFlight.get(userKey)
+  if (inFlight.has(userKey)) {
+    // The running sync's result is not reused: this call re-reads what is still unsynced, so
+    // a failure or an `unknown` lesson from that sync is reported here too.
+    return inFlight.get(userKey).then(() => syncLocalProgress(userKey, send))
+  }
   const pending = unsyncedCompletions(userKey)
   if (!pending.length) return Promise.resolve(true)
   const request = (async () => {
