@@ -200,9 +200,9 @@ export const CASE_STUDIES = [
         'The brief called for a clear public website and a connected platform where buyers could explore active townships, ask questions, arrange a visit, and reserve a plot online, while management and field teams could work from current records.',
       ],
       summary: [
-        { label: 'Challenge', text: 'Connect project discovery to booking and day-to-day sales operations.' },
-        { label: 'Approach', text: 'Deliver the public experience, transaction flows, AI assistance, and staff portals as one coordinated platform.' },
-        { label: 'Status', text: 'Delivered; the public website is live and post-launch support continues.' },
+        { label: 'Challenge', text: 'Connect project discovery, plot booking, and sales operations.' },
+        { label: 'Approach', text: 'Deliver one platform for buyers, payments, AI, and staff workflows.' },
+        { label: 'Status', text: 'Delivered and live, with post-launch support in place.' },
       ],
     },
     architecture: {

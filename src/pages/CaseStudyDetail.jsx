@@ -119,12 +119,12 @@ export default function CaseStudyDetail() {
               {study.challenge.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </div>
           </Reveal>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
             {study.challenge.summary.map((item, i) => (
               <Reveal key={item.label} delay={i * 0.08}>
-                <div className="h-full rounded-2xl border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900/40">
+                <div className="flex h-full min-h-40 flex-col items-center justify-center rounded-2xl border border-ink-200 bg-white p-6 text-center dark:border-ink-800 dark:bg-ink-900/40">
                   <h3 className={eyebrow}>{item.label}</h3>
-                  <p className="mt-3 font-display text-lg font-semibold text-ink-900 dark:text-white">{item.text}</p>
+                  <p className="mt-3 max-w-xs font-display text-lg font-semibold leading-snug text-ink-900 dark:text-white">{item.text}</p>
                 </div>
               </Reveal>
             ))}
