@@ -14,8 +14,12 @@ const files = [
   'python_stdlib.zip',
 ]
 // The backend playground (src/workers/apiRuntime.worker.js) loads these packages and their
-// dependencies. The plain Python playground never does.
-const BACKEND_PACKAGES = ['fastapi', 'bcrypt', 'sqlalchemy']
+// dependencies; micropip is for `pip install` in its terminal. The plain Python playground
+// never loads any of them.
+const BACKEND_PACKAGES = ['fastapi', 'bcrypt', 'sqlalchemy', 'micropip']
+// Names the lock-file wheels served from public/pyodide. The backend worker loads every
+// other Pyodide package (numpy, pandas…) from the CDN instead.
+const MANIFEST = 'backend-wheels.json'
 
 await mkdir(targetDir, { recursive: true })
 await Promise.all(files.map((file) => copyFile(join(sourceDir, file), join(targetDir, file))))
@@ -60,8 +64,9 @@ try {
   const lock = JSON.parse(await readFile(join(sourceDir, 'pyodide-lock.json'), 'utf8'))
   const { version } = JSON.parse(await readFile(join(sourceDir, 'package.json'), 'utf8'))
   const extras = JSON.parse(await readFile(join(root, 'scripts', 'extra-wheels.json'), 'utf8')).wheels
+  const hosted = resolvePackages(lock, BACKEND_PACKAGES)
   const wheels = [
-    ...resolvePackages(lock, BACKEND_PACKAGES).map((wheel) => ({
+    ...hosted.map((wheel) => ({
       ...wheel,
       url: `https://cdn.jsdelivr.net/pyodide/v${version}/full/${wheel.file_name}`,
     })),
@@ -69,6 +74,8 @@ try {
   ]
   await mkdir(cacheDir, { recursive: true })
   for (const wheel of wheels) await ensureWheel(wheel)
+  // Written last, so it only ever names wheels that are really there.
+  await writeFile(join(targetDir, MANIFEST), `${JSON.stringify({ files: hosted.map((wheel) => wheel.file_name) }, null, 2)}\n`)
   console.log(`[pyodide] ${wheels.length} backend playground wheels ready in public/pyodide`)
 } catch (error) {
   // Without the wheels only the backend playground breaks, so local work can continue

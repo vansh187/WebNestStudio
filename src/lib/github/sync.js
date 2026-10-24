@@ -7,7 +7,7 @@
 // `paths` without a SHA is a local file not on GitHub yet that must go to that path.
 // `unverified` lists files the last pull could not read from GitHub (too large, over a
 // limit), whose GitHub version may be newer than their SHA says.
-import { MAX_BACKEND_BYTES, MAX_BACKEND_FILES, languageForFile, validateBackendPath } from '../codelab/backendFiles.js'
+import { MAX_BACKEND_BYTES, MAX_BACKEND_FILES, isPrivateFile, languageForFile, validateBackendPath } from '../codelab/backendFiles.js'
 import { GitHubLocalError } from './errors.js'
 
 export const MODES = ['backend', 'web', 'python', 'java']
@@ -62,6 +62,10 @@ export function filesForMode(repoFiles = [], mode) {
   for (const file of sorted) {
     const size = encoder.encode(file.content).length
     if (mode === 'backend') {
+      if (isPrivateFile(file.path)) {
+        skipped.push({ path: file.path, reason: 'private', message: 'Secrets stay out of sync: create your own .env in the editor.' })
+        continue
+      }
       const problem = validateBackendPath(file.path, files)
       if (problem) {
         skipped.push({ path: file.path, reason: 'not_supported', message: problem })
@@ -128,8 +132,10 @@ export function isValidLink(link) {
     && link.paths && typeof link.paths === 'object' && link.shas && typeof link.shas === 'object')
 }
 
-// Files changed since the last sync: { upserts: [names], deletes: [names] }.
-export async function changedFiles(files = [], link) {
+// Files changed since the last sync: { upserts: [names], deletes: [names] }. The .env file
+// holds the learner's keys, so it is never pushed (and so never counts as a change).
+export async function changedFiles(allFiles = [], link) {
+  const files = allFiles.filter((file) => !isPrivateFile(file.name))
   if (!isValidLink(link)) return { upserts: files.map((file) => file.name), deletes: [] }
   const upserts = []
   for (const file of files) {

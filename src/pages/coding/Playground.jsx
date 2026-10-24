@@ -31,14 +31,17 @@ function defaultFiles(language) {
   return PYTHON_FILES
 }
 
-// A FastAPI lesson brings only app/main.py; add the database file, schema.sql and the
-// frontend from the blank starter so the rest of the workspace works around it.
+// A FastAPI lesson brings only app/main.py; add the database file, schema.sql, the
+// frontend and the terminal's requirements.txt and package.json from the blank starter so
+// the rest of the workspace works around it.
+const STARTER_EXTRAS = new Set(['schema.sql', 'app/database.py', 'requirements.txt', 'package.json'])
+
 function withBackendStarter(template) {
   if (template?.language !== 'backend') return template
   if (!template.files.length) return { ...template, files: backendStarterFiles(template.starter || 'blank') }
   const own = new Set(template.files.map((file) => file.name))
   const extras = backendStarterFiles(template.starter || 'blank')
-    .filter((file) => !own.has(file.name) && (file.name === 'schema.sql' || file.name === 'app/database.py' || file.name.startsWith('frontend/')))
+    .filter((file) => !own.has(file.name) && (STARTER_EXTRAS.has(file.name) || file.name.startsWith('frontend/')))
   return { ...template, files: [...template.files, ...extras] }
 }
 

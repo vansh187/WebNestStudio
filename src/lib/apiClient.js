@@ -5,6 +5,9 @@ import { getAccessToken, getRefreshToken, setSession, clearSession } from './tok
 // hosting platform (e.g. a missing env var in Vercel/Netlify build settings) — otherwise
 // axios defaults to a relative path on the current origin, which has no /api routes.
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://webneststudiobackend-n00h.onrender.com'
+// For code that calls the backend without this axios client (the CodeLab API relay, which
+// is called from a worker).
+export const API_BASE_URL = BASE_URL
 
 // Render free-tier cold start can take 30-50s on the very first request of a session.
 const COLD_START_TIMEOUT = 60000
@@ -75,6 +78,21 @@ async function performRefresh() {
     const { data } = await axios.post(`${BASE_URL}/api/auth/refresh`, { refresh_token: refreshToken })
     setSession({ accessToken: data.access_token, refreshToken: data.refresh_token })
     return true
+  } catch {
+    return false
+  }
+}
+
+// Refreshes the WebNest session once, sharing an in-flight refresh. True when a new access
+// token is stored. Used by callers outside this client, such as the CodeLab API relay.
+export async function refreshSession() {
+  try {
+    if (!refreshPromise) {
+      refreshPromise = performRefresh().finally(() => {
+        refreshPromise = null
+      })
+    }
+    return await refreshPromise
   } catch {
     return false
   }

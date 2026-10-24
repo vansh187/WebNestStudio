@@ -1,22 +1,60 @@
 // Backend playground runtime: one long-lived Pyodide instance per workspace that holds the
 // learner's FastAPI app and its SQLite database. useApiRuntime.js talks to it; the Python
 // side lives in python/webnest_runtime.py.
-import { loadPyodide } from 'pyodide'
+import { loadPyodide, version as pyodideVersion } from 'pyodide'
 import runtimeSource from './python/webnest_runtime.py?raw'
 import extraWheels from '../../scripts/extra-wheels.json'
 import { PYODIDE_INDEX_URL, cap, createSink, flushStreams } from './pyodideShared'
+import { ENV_FILE } from '../lib/codelab/backendFiles'
+import { envFromFiles } from '../lib/codelab/dotenv'
+import { RelayBridge } from './relayBridge'
 
 const BASE_PACKAGES = ['fastapi', 'bcrypt']
 const EXTRA_WHEELS = extraWheels.wheels.map((wheel) => new URL(`${PYODIDE_INDEX_URL}${wheel.file_name}`, self.location.origin).href)
 const DB_PATH = '/data/app.db'
+const CDN_URL = `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`
+
+// Installed before Pyodide loads, so every HTTP call from learner Python passes through it.
+// It relays nothing until the page sends `relayConfig` (see useApiRuntime).
+const relayBridge = new RelayBridge(self, (notice) => {
+  try {
+    self.postMessage({ type: 'relayNotice', ...notice })
+  } catch (error) {
+    console.warn('Relay notice not sent:', error?.message)
+  }
+})
+relayBridge.install()
 
 let pyodidePromise
 let runtime
 let sqlalchemyLoaded = false
+let micropipLoaded = false
 let queue = Promise.resolve()
 
+// Pyodide packages for `pip install` (numpy, pandas…) come from the CDN, while the wheels
+// copy-pyodide.mjs self-hosts (backend-wheels.json) keep loading from this site. Without the
+// manifest (an offline dev setup) everything resolves against /pyodide/ as before.
+async function loaderOptions() {
+  const base = new URL(PYODIDE_INDEX_URL, self.location.origin).href
+  try {
+    const [lock, manifest] = await Promise.all(['pyodide-lock.json', 'backend-wheels.json'].map(async (file) => {
+      const response = await fetch(`${base}${file}`)
+      if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`)
+      return response.json()
+    }))
+    const hosted = new Set(manifest.files)
+    for (const entry of Object.values(lock.packages)) {
+      if (hosted.has(entry.file_name)) entry.file_name = `${base}${entry.file_name}`
+    }
+    return { lockFileContents: lock, packageBaseUrl: CDN_URL }
+  } catch (error) {
+    console.warn('Using the local package index only:', error)
+    return {}
+  }
+}
+
 async function boot() {
-  const pyodide = await loadPyodide({ indexURL: PYODIDE_INDEX_URL })
+  const pyodide = await loadPyodide({ indexURL: PYODIDE_INDEX_URL, ...(await loaderOptions()) })
   const failed = []
   await pyodide.loadPackage([...BASE_PACKAGES, ...EXTRA_WHEELS], { messageCallback: () => {}, errorCallback: (message) => failed.push(message) })
   if (failed.length) throw new Error(`Could not load the Python packages for the backend playground. ${failed[0]}`)
@@ -39,7 +77,20 @@ function getPyodide() {
 
 const usesSqlalchemy = (files) => files.some((file) => /^\s*(?:from|import)\s+sqlalchemy\b/m.test(file.content))
 
+async function ensureSqlalchemy(pyodide, files) {
+  if (sqlalchemyLoaded || !usesSqlalchemy(files)) return
+  try {
+    await pyodide.loadPackage('sqlalchemy', { messageCallback: () => {} })
+    sqlalchemyLoaded = true
+  } catch (error) {
+    throw new Error(`SQLAlchemy could not be loaded: ${error?.message ?? error}`)
+  }
+}
+
 const parse = (text) => JSON.parse(String(text))
+
+// The project's .env as os.environ, for the API and for terminal commands alike.
+const applyEnv = (files) => runtime.apply_env(JSON.stringify(envFromFiles(files).values))
 
 const handlers = {
   async init(pyodide, { dbBytes }) {
@@ -59,15 +110,11 @@ const handlers = {
   async load(pyodide, { files }) {
     if (!Array.isArray(files)) throw new TypeError('The project files are missing.')
     const python = files.filter((file) => typeof file?.name === 'string' && file.name.endsWith('.py'))
-    if (!sqlalchemyLoaded && usesSqlalchemy(python)) {
-      try {
-        await pyodide.loadPackage('sqlalchemy', { messageCallback: () => {} })
-        sqlalchemyLoaded = true
-      } catch (error) {
-        throw new Error(`SQLAlchemy could not be loaded: ${error?.message ?? error}`)
-      }
-    }
-    runtime.write_project(JSON.stringify(python.map(({ name, content }) => ({ name, content }))))
+    await ensureSqlalchemy(pyodide, python)
+    applyEnv(files)
+    // .env goes along too, so load_dotenv() in learner code finds it.
+    const env = files.filter((file) => file?.name === ENV_FILE)
+    runtime.write_project(JSON.stringify([...python, ...env].map(({ name, content }) => ({ name, content }))))
     return parse(runtime.load_app())
   },
   async applySchema(pyodide, { sql, rebuild }) {
@@ -109,6 +156,35 @@ const handlers = {
   },
   async reset() {
     return parse(runtime.reset_database())
+  },
+  // The API relay's base URL, provider list and the learner's WebNest token.
+  async relayConfig(pyodide, { baseUrl, listing, token }) {
+    try {
+      relayBridge.configure({ baseUrl, listing, token })
+      return { ok: true, enabled: relayBridge.matcher.enabled && Boolean(relayBridge.baseUrl) }
+    } catch (error) {
+      throw new Error(`Relay settings could not be applied: ${error?.message ?? error}`)
+    }
+  },
+  // Terminal: `pip install`, `pip list` and `python …`.
+  async install(pyodide, { requirements }) {
+    if (!Array.isArray(requirements)) throw new TypeError('The packages to install are missing.')
+    if (!micropipLoaded) {
+      await pyodide.loadPackage('micropip', { messageCallback: () => {} })
+      micropipLoaded = true
+    }
+    return parse(await runtime.install_packages(JSON.stringify(requirements.map(String))))
+  },
+  async pipList() {
+    return parse(runtime.installed_packages())
+  },
+  async exec(pyodide, { files, mode, target, args }) {
+    if (!Array.isArray(files)) throw new TypeError('The project files are missing.')
+    await ensureSqlalchemy(pyodide, files.filter((file) => String(file?.name).endsWith('.py')))
+    applyEnv(files)
+    // Every text file, so scripts can read schema.sql or data files next to them.
+    runtime.write_project(JSON.stringify(files.map(({ name, content }) => ({ name, content }))))
+    return parse(runtime.run_command(JSON.stringify({ mode, target, args })))
   },
 }
 

@@ -16,6 +16,7 @@ import ErrorBoundary from '../ErrorBoundary'
 import { layerOfFile, layeringHints, LAYERS } from '../../lib/codelab/backendFiles'
 import { PANEL_LIMITS, useIdeLayout } from '../../hooks/useIdeLayout'
 import { useApiTesterSession } from '../../hooks/useApiTesterSession'
+import { useBackendTerminal } from '../../hooks/useBackendTerminal'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
 import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 import { statusTone } from '../../lib/codelab/httpStyles'
@@ -97,6 +98,8 @@ export default function BackendWorkspace({
       ms: response?.ms,
       logs: response?.logs,
       error: response?.status ? null : response?.error,
+      // The API relay's refusals while this request ran (they arrive before its reply).
+      notices: api.relayNotices.filter((notice) => notice.at >= at).map((notice) => notice.text),
     }].slice(-REQUEST_LOG_LIMIT))
   }
 
@@ -135,6 +138,8 @@ export default function BackendWorkspace({
   const previewRequest = useCallback((spec) => request(spec, 'preview', debuggerConfig), [request, debuggerConfig])
   const testerRequest = useCallback((spec) => request(spec, 'tester', debuggerConfig), [request, debuggerConfig])
   const testerSession = useApiTesterSession(`wns-codelab-api:${workspaceKey}`, testerRequest)
+  const clearRequests = useCallback(() => setRequests([]), [])
+  const terminal = useBackendTerminal({ api, files, onFilesChange, onRun, onClearRequests: clearRequests, workspaceKey })
   const toggleBreakpoint = useCallback((file, line) => {
     setBreakpoints((current) => current.some((item) => item.file === file && item.line === line)
       ? current.filter((item) => item.file !== file || item.line !== line)
@@ -534,7 +539,7 @@ export default function BackendWorkspace({
             <div className={`flex flex-col gap-3 p-3 ${large ? 'min-h-0 flex-1 overflow-auto' : ''}`}>
               <ErrorBoundary>
                 {tab === 'output' && (
-                  <BackendConsole runner={api.runner} requests={requests} onClearRequests={() => setRequests([])} />
+                  <BackendConsole runner={api.runner} requests={requests} onClearRequests={clearRequests} terminal={terminal} onStop={api.runner.stop} />
                 )}
                 {tab === 'api' && (
                   <ApiClientPanel

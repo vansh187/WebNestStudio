@@ -11,6 +11,7 @@ const EXTENSION_LANGUAGE = {
   js: 'javascript',
   json: 'json',
   md: 'markdown',
+  txt: 'plaintext', // requirements.txt
 }
 
 // Folders under app/ that map to a layer of the architecture diagram.
@@ -38,17 +39,23 @@ export function layerOfFile(name) {
 const SEGMENT = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/
 const PYTHON_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/
 
+// The project's environment variables (see lib/codelab/dotenv.js). Only the root .env is
+// allowed, and it never leaves the browser: GitHub sync skips it.
+export const ENV_FILE = '.env'
+export const isPrivateFile = (name) => name === ENV_FILE
+
 // Returns an error message, or '' when the path is acceptable.
 export function validateBackendPath(rawName, files = [], current = null) {
   const name = String(rawName ?? '').trim().replace(/\\/g, '/').replace(/^\/+/, '')
   if (!name) return 'Enter a file name, for example app/services/order_service.py.'
   if (name.length > 120) return 'Keep the path under 120 characters.'
   const segments = name.split('/')
-  if (segments.some((segment) => !segment || segment === '.' || segment === '..' || !SEGMENT.test(segment))) {
+  if (name !== ENV_FILE && segments.some((segment) => !segment || segment === '.' || segment === '..' || !SEGMENT.test(segment))) {
+    if (segments[segments.length - 1] === ENV_FILE) return 'The .env file goes in the project root: name it .env'
     return 'Use letters, numbers, _ and - in each folder and file name.'
   }
-  if (!EXTENSION_LANGUAGE[/\.([a-z]+)$/i.exec(name)?.[1]?.toLowerCase()]) {
-    return 'Use one of these file types: .py, .sql, .html, .css, .js, .json or .md.'
+  if (name !== ENV_FILE && !EXTENSION_LANGUAGE[/\.([a-z]+)$/i.exec(name)?.[1]?.toLowerCase()]) {
+    return 'Use one of these file types: .py, .sql, .html, .css, .js, .json, .md or .txt (or a root .env).'
   }
   if (name.endsWith('.py')) {
     if (!name.startsWith('app/')) return 'Python files go inside the app/ folder so they can be imported as app.….'
@@ -100,6 +107,16 @@ const moduleName = (name) => name.split('/').pop().replace(/\.[^.]+$/, '')
 
 // A short starting point for a new file, written for the layer it is created in.
 export function newFileTemplate(name) {
+  if (name === ENV_FILE) {
+    return `# Environment variables for this project. Run loads them into os.environ:
+#   import os
+#   key_id = os.environ["RAZORPAY_KEY_ID"]
+# This file stays in your browser and GitHub sync never pushes it. It is still readable on
+# this device, so use test keys only (rzp_test_..., sk_test_...), never live ones.
+RAZORPAY_KEY_ID=rzp_test_replace_me
+RAZORPAY_KEY_SECRET=replace_me
+`
+  }
   const layer = layerOfFile(name)
   const base = moduleName(name)
   const feature = base.replace(/_(routes|service|repository)$/, '')

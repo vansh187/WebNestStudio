@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadDatabase, saveDatabase } from '../lib/codelab/dbStore'
+import { REQUIREMENTS_FILE, parseRequirements } from '../lib/codelab/terminal'
+import { envFromFiles } from '../lib/codelab/dotenv'
+import { API_BASE_URL, api, getErrorDetail, refreshSession } from '../lib/apiClient'
+import { getAccessToken } from '../lib/tokenStore'
+import { RELAY_TOKEN_HEADER } from '../lib/codelab/relay'
 
 // Client for apiRuntime.worker.js. The worker stays alive for the whole workspace so the
 // learner's API and database persist between requests; a hung call restarts it from the
@@ -10,6 +15,14 @@ const CALL_TIMEOUT_MS = 10000
 // Running time allowed for a debugged request, between pauses. Time spent paused at a
 // breakpoint never counts (see armTimer), so stepping slowly cannot hit it.
 const DEBUG_CALL_TIMEOUT_MS = 30000
+// Terminal commands: `pip install` downloads from PyPI; a script may do real work.
+const INSTALL_TIMEOUT_MS = 180000
+const EXEC_TIMEOUT_MS = 30000
+// While the API relay is on, one call may wait for a Render cold start plus the payment
+// provider (CODELAB_API_RELAY_FRONTEND.md).
+const RELAY_CALL_TIMEOUT_MS = 45000
+const RELAY_ENABLED = import.meta.env.VITE_CODELAB_RELAY === '1'
+const RELAY_NOTICE_LIMIT = 20
 const SNAPSHOT_DELAY_MS = 800
 const SCHEMA_DELAY_MS = 400
 const BOOT_HINT = 'Starting Python and FastAPI in your browser… the first run downloads about 5 MB.'
@@ -52,6 +65,11 @@ export function useApiRuntime(workspaceKey) {
   const debugActiveRef = useRef(0)
   const pausedRef = useRef(null)
   const lastPauseRef = useRef(null)
+  // API relay: the provider listing (loaded once per page), the config the current worker
+  // has, and whether a login refresh was already tried for a relay 401.
+  const relayListingRef = useRef(null)
+  const relaySentRef = useRef('')
+  const relayRefreshTriedRef = useRef(false)
   const dbKey = databaseKey(workspaceKey)
 
   const [running, setRunning] = useState(false)
@@ -68,6 +86,37 @@ export function useApiRuntime(workspaceKey) {
   // The newest request that can pause and has not finished, so the Debug tab does not show
   // an older response as if it were this one.
   const [debugRequest, setDebugRequest] = useState(null)
+  // Lines from the API relay when it refused a call (newest last).
+  const [relayNotices, setRelayNotices] = useState([])
+
+  // A `relayNotice` from the worker. The ref keeps spawn() stable while this stays current.
+  const noticeSeqRef = useRef(0)
+  const handleRelayNoticeRef = useRef(() => {})
+  handleRelayNoticeRef.current = (message) => {
+    try {
+      const notice = {
+        id: (noticeSeqRef.current += 1),
+        code: String(message.code ?? ''),
+        host: String(message.host ?? ''),
+        text: String(message.text ?? 'Relay: the API relay refused this call.'),
+        retryAfter: message.retryAfter ?? null,
+        at: Date.now(),
+      }
+      if (mountedRef.current) setRelayNotices((current) => [...current, notice].slice(-RELAY_NOTICE_LIMIT))
+      // An expired WebNest token: refresh once; the next call sends the new token.
+      if (notice.code === 'relay_login_required' && !relayRefreshTriedRef.current && getAccessToken()) {
+        relayRefreshTriedRef.current = true
+        refreshSession().then((ok) => { if (ok) relaySentRef.current = '' }).catch(() => {})
+      }
+      // Switched off on the server: reload the listing next time instead of relaying blindly.
+      if (notice.code === 'relay_disabled') {
+        relayListingRef.current = null
+        relaySentRef.current = ''
+      }
+    } catch (error) {
+      console.warn('Relay notice not handled:', error?.message)
+    }
+  }
 
   const rejectAll = useCallback((reason) => {
     for (const { reject, timer } of pendingRef.current.values()) {
@@ -96,6 +145,7 @@ export function useApiRuntime(workspaceKey) {
     pausedRef.current = null
     lastPauseRef.current = null
     bootRef.current = null
+    relaySentRef.current = '' // a new worker needs the relay config again
     rejectAll(reason)
     if (mountedRef.current) {
       setBooted(false)
@@ -135,6 +185,10 @@ export function useApiRuntime(workspaceKey) {
         lastPauseRef.current = pause
         pausedRef.current = pause
         if (mountedRef.current) setDebugPause(pause)
+        return
+      }
+      if (message.type === 'relayNotice') {
+        handleRelayNoticeRef.current(message)
         return
       }
       const entry = pendingRef.current.get(message.id)
@@ -240,6 +294,17 @@ export function useApiRuntime(workspaceKey) {
     if (watching && workerRef.current) refreshSchema().catch(() => null)
   }, [refreshSchema])
 
+  // Installs requirements.txt (packages from `pip install` live only as long as the worker).
+  // Returns a line per package that was installed now or failed; satisfied ones stay quiet.
+  const installRequirements = useCallback(async (files) => {
+    const requirements = parseRequirements(files.find((file) => file.name === REQUIREMENTS_FILE)?.content)
+    if (!requirements.length) return []
+    const { results = [] } = (await post('install', { requirements }, INSTALL_TIMEOUT_MS)).data ?? {}
+    return results
+      .filter((item) => !item.ok || !item.already)
+      .map((item) => (item.ok ? `Installed ${item.name} ${item.version ?? ''}`.trim() : `${REQUIREMENTS_FILE}: ${item.name} ${item.error}`))
+  }, [post])
+
   // After a timeout the worker is stuck: start a fresh one from the last snapshot. The
   // project is reloaded only when the hang was not in the import itself, otherwise the
   // reload would hang the new worker too.
@@ -247,11 +312,12 @@ export function useApiRuntime(workspaceKey) {
     terminate('Restarting the backend runtime.')
     try {
       await ensureBooted()
+      if (filesRef.current && failedType !== 'load' && failedType !== 'install') await installRequirements(filesRef.current).catch(() => [])
       if (filesRef.current && failedType !== 'load') await post('load', { files: filesRef.current }, LOAD_TIMEOUT_MS)
     } catch (err) {
       if (err?.timeout) terminate('The backend runtime stopped responding.')
     }
-  }, [ensureBooted, post, terminate])
+  }, [ensureBooted, installRequirements, post, terminate])
 
   const call = useCallback(async (type, payload, timeoutMs = CALL_TIMEOUT_MS) => {
     await ensureBooted()
@@ -267,6 +333,70 @@ export function useApiRuntime(workspaceKey) {
       throw err
     }
   }, [ensureBooted, post, recover])
+
+  // GET /api/codelab/relay/providers, once per page. null when the relay is off or the
+  // backend cannot be reached: then nothing is relayed and calls behave as before.
+  const loadRelayListing = useCallback(async () => {
+    try {
+      if (!RELAY_ENABLED) return null
+      if (!relayListingRef.current) {
+        const { data } = await api.get('/api/codelab/relay/providers')
+        relayListingRef.current = data?.enabled ? data : null
+      }
+      return relayListingRef.current
+    } catch (err) {
+      console.warn('API relay unavailable:', getErrorDetail(err, 'no response'))
+      return null
+    }
+  }, [])
+
+  // Gives the worker the current relay listing and WebNest token before a call that may run
+  // learner code. Re-sent only when either changed. True while relaying is on.
+  const syncRelay = useCallback(async () => {
+    try {
+      if (!RELAY_ENABLED) return false
+      // A request paused at a breakpoint blocks the worker; it already has the config.
+      if (debugActiveRef.current > 0) return Boolean(relayListingRef.current)
+      const listing = await loadRelayListing()
+      if (!listing && !relaySentRef.current) return false
+      const token = getAccessToken() || ''
+      const key = JSON.stringify([listing?.providers?.map((provider) => provider.id) ?? [], listing?.relay_path ?? '', token])
+      if (key !== relaySentRef.current) {
+        await ensureBooted()
+        await post('relayConfig', { baseUrl: API_BASE_URL, listing, token })
+        relaySentRef.current = key
+        relayRefreshTriedRef.current = false
+      }
+      return Boolean(listing)
+    } catch (err) {
+      console.warn('API relay settings not sent:', messageOf(err, 'unknown error'))
+      return false
+    }
+  }, [ensureBooted, loadRelayListing, post])
+
+  // The `relay` terminal command: the listing plus this learner's remaining quota.
+  const relayStatus = useCallback(async () => {
+    try {
+      const listing = await loadRelayListing()
+      const token = getAccessToken()
+      const loggedIn = Boolean(token)
+      let usage = null
+      if (listing && loggedIn) {
+        try {
+          // The relay reads the WebNest login from its own header (contract 2.0), like relayed calls.
+          usage = (await api.get('/api/codelab/relay/usage', { headers: { [RELAY_TOKEN_HEADER]: `Bearer ${token}` } })).data
+        } catch (err) {
+          console.warn('Relay usage unavailable:', getErrorDetail(err, 'no response'))
+        }
+      }
+      return { listing, usage, loggedIn, enabled: RELAY_ENABLED }
+    } catch (err) {
+      console.warn('Relay status unavailable:', messageOf(err, 'unknown error'))
+      return { listing: null, usage: null, loggedIn: false, enabled: RELAY_ENABLED }
+    }
+  }, [loadRelayListing])
+
+  const clearRelayNotices = useCallback(() => setRelayNotices([]), [])
 
   useEffect(() => {
     mountedRef.current = true
@@ -305,6 +435,8 @@ export function useApiRuntime(workspaceKey) {
     try {
       await ensureBooted()
       setRunningHint(null)
+      // Module-level code in the app (e.g. creating an SDK client) may already call out.
+      await syncRelay()
       // Ask the database itself: it may have been deleted or rebuilt since the last Run.
       const schemaFile = files.find((file) => file.name === 'schema.sql')
       const tables = (await post('tables')).data?.count ?? 0
@@ -315,6 +447,12 @@ export function useApiRuntime(workspaceKey) {
           : `schema.sql line ${applied.line}: ${applied.error}`)
       }
       filesRef.current = files
+      notes.push(...await installRequirements(files))
+      // The worker applies .env on load; say what it holds by name only, never the values.
+      const env = envFromFiles(files)
+      env.problems.forEach((problem) => notes.push(`.env line ${problem.line}: ${problem.message} (line ignored)`))
+      const names = Object.keys(env.values)
+      if (names.length) notes.push(`Loaded ${names.length} variable${names.length === 1 ? '' : 's'} from .env: ${names.join(', ')}`)
       const reply = await post('load', { files }, LOAD_TIMEOUT_MS)
       const loaded = reply.data
       await refreshSchema().catch(() => null)
@@ -345,7 +483,7 @@ export function useApiRuntime(workspaceKey) {
         setRunningHint(null)
       }
     }
-  }, [booted, ensureBooted, post, recover, refreshSchema, snapshotNow])
+  }, [booted, ensureBooted, installRequirements, post, recover, refreshSchema, snapshotNow, syncRelay])
 
   const cancel = useCallback(() => {
     terminate('Stopped.')
@@ -372,6 +510,7 @@ export function useApiRuntime(workspaceKey) {
     // must not clear the pause of one that is stopped at a breakpoint.
     let control = null
     try {
+      const relaying = await syncRelay()
       let breakpoints = []
       // Without an isolated page (Safari, or before the Debug reload) the request runs
       // normally: no pausing, but the execution trace still shows what happened.
@@ -381,7 +520,8 @@ export function useApiRuntime(workspaceKey) {
         breakpoints = debuggerConfig.breakpoints ?? []
         if (mountedRef.current) setDebugRequest({ spec, startedAt })
       }
-      const reply = await call('request', { spec, breakpoints, control: control ?? undefined }, control ? DEBUG_CALL_TIMEOUT_MS : CALL_TIMEOUT_MS)
+      const timeout = Math.max(control ? DEBUG_CALL_TIMEOUT_MS : CALL_TIMEOUT_MS, relaying ? RELAY_CALL_TIMEOUT_MS : 0)
+      const reply = await call('request', { spec, breakpoints, control: control ?? undefined }, timeout)
       response = { ...reply.data, logs: [reply.stdout, reply.stderr].filter(Boolean).join('\n') }
     } catch (err) {
       response = { status: 0, error: messageOf(err, 'The request failed.'), body: '', headers: [], trace: null, ms: Date.now() - startedAt }
@@ -403,7 +543,7 @@ export function useApiRuntime(workspaceKey) {
       scheduleSchema()
     }
     return response
-  }, [call, scheduleSchema, scheduleSnapshot])
+  }, [call, scheduleSchema, scheduleSnapshot, syncRelay])
 
   // mode: 0 continue, 1 step into, 2 step over, 3 step out (see _on_line in webnest_runtime.py).
   const resumeDebug = useCallback((mode = 0) => {
@@ -417,6 +557,24 @@ export function useApiRuntime(workspaceKey) {
     setDebugPause(null)
     armTimer(paused.id)
   }, [armTimer])
+
+  // Terminal commands. Each resolves to the worker's data plus what Python printed.
+  const install = useCallback(async (requirements) => {
+    const reply = await call('install', { requirements }, INSTALL_TIMEOUT_MS)
+    return { ...reply.data, stdout: reply.stdout, stderr: reply.stderr }
+  }, [call])
+
+  const pipList = useCallback(async () => (await call('pipList')).data?.packages ?? [], [call])
+
+  // `spec`: { files, mode: 'file' | 'module' | 'code', target, args }
+  const exec = useCallback(async (spec) => {
+    const relaying = await syncRelay()
+    const reply = await call('exec', spec, relaying ? Math.max(EXEC_TIMEOUT_MS, RELAY_CALL_TIMEOUT_MS) : EXEC_TIMEOUT_MS)
+    // A script may write to the database like a request does.
+    scheduleSnapshot()
+    scheduleSchema()
+    return { code: reply.data?.code ?? 0, stdout: reply.stdout, stderr: reply.stderr }
+  }, [call, scheduleSchema, scheduleSnapshot, syncRelay])
 
   const sql = useCallback(async (script) => {
     const reply = await call('sql', { script })
@@ -462,6 +620,12 @@ export function useApiRuntime(workspaceKey) {
     runner,
     run,
     request,
+    install,
+    pipList,
+    exec,
+    relayStatus,
+    relayNotices,
+    clearRelayNotices,
     sql,
     applySchema,
     resetDatabase,
@@ -475,5 +639,5 @@ export function useApiRuntime(workspaceKey) {
     debugRequest,
     resumeDebug,
     ready: Boolean(openapi),
-  }), [runner, run, request, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug])
+  }), [runner, run, request, install, pipList, exec, relayStatus, relayNotices, clearRelayNotices, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug])
 }
