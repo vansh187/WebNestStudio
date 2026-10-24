@@ -1,0 +1,4 @@
+fastapi
+bcrypt
+PyJWT
+python-multipart

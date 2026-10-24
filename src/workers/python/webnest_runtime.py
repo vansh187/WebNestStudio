@@ -8,10 +8,14 @@ import asyncio
 import concurrent.futures
 import contextlib
 import importlib
+import importlib.metadata
+import importlib.util
 import inspect
 import json
 import os
+import re
 import reprlib
+import runpy
 import shutil
 import sqlite3
 import sys
@@ -266,7 +270,7 @@ def setup():
 
 # ------------------------------------------------------------------ errors
 def _short_path(filename):
-    return filename[len(APP_ROOT) + 1:] if filename.startswith(PACKAGE_DIR) else filename
+    return filename[len(APP_ROOT) + 1:] if filename.startswith(APP_ROOT + "/") else filename
 
 
 def format_error(error):
@@ -274,13 +278,14 @@ def format_error(error):
     frames = [
         f'  File "{_short_path(frame.filename)}", line {frame.lineno}, in {frame.name}\n    {(frame.line or "").strip()}'
         for frame in traceback.extract_tb(error.__traceback__)
-        if frame.filename.startswith(PACKAGE_DIR)
+        if frame.filename.startswith(APP_ROOT + "/") or frame.filename == "<string>"
     ]
     message = "".join(traceback.format_exception_only(type(error), error)).strip()
     if isinstance(error, SyntaxError) and error.filename:
         message = message.replace(error.filename, _short_path(error.filename))
     if isinstance(error, ModuleNotFoundError) and not (error.name or "").startswith("app"):
-        message += f"\nOnly {AVAILABLE} are available in the playground."
+        package = (error.name or "").split(".")[0]
+        message += f"\nBuilt in: {AVAILABLE}. Install other packages from the terminal, e.g. pip install {package or '<package>'}"
     head = "Traceback (most recent call last):\n" + "\n".join(frames) + "\n" if frames else ""
     return head + message
 
@@ -624,6 +629,10 @@ def _record_sql(statement):
 
 
 def _traced_connect(*args, **kwargs):
+    # A relative database path means the playground's data folder even when a terminal
+    # command (run_command) has changed into /app, so scripts and the API share app.db.
+    if args and isinstance(args[0], str) and args[0] != ":memory:" and not args[0].startswith("file:") and not os.path.isabs(args[0]):
+        args = (os.path.join(DATA_DIR, args[0]), *args[1:])
     conn = _original_connect(*args, **kwargs)
     conn.set_trace_callback(_record_sql)
     return conn
@@ -660,15 +669,44 @@ def write_project(files_json):
     return json.dumps({"ok": True})
 
 
+_env_previous = {}  # .env keys set by apply_env -> the value they replaced (None: unset)
+
+
+def apply_env(env_json):
+    """Make os.environ match the project's .env. Keys deleted from the file since the last
+    call go back to what they were before, as if the process had restarted."""
+    try:
+        env = json.loads(env_json or "{}")
+    except (TypeError, json.JSONDecodeError):
+        env = {}
+    for key in [key for key in _env_previous if key not in env]:
+        previous = _env_previous.pop(key)
+        if previous is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = previous
+    for key, value in env.items():
+        if key not in _env_previous:
+            _env_previous[key] = os.environ.get(key)
+        os.environ[key] = str(value)
+    return json.dumps({"ok": True, "count": len(env)})
+
+
+def _forget_project_modules():
+    """Drop imported project modules so the next import reads the files as they are now."""
+    for name, module in list(sys.modules.items()):
+        if name == "app" or name.startswith("app.") or (getattr(module, "__file__", None) or "").startswith(APP_ROOT + "/"):
+            del sys.modules[name]
+    importlib.invalidate_caches()
+
+
 def load_app():
     """Import app.main and find the FastAPI instance. Returns the OpenAPI document."""
     global _app
     from fastapi import FastAPI
 
-    for name in list(sys.modules):
-        if name == "app" or name.startswith("app."):
-            del sys.modules[name]
-    importlib.invalidate_caches()
+    _forget_project_modules()
+    route_http_through_bridge()
     _app = None
     try:
         module = importlib.import_module("app.main")
@@ -706,6 +744,7 @@ async def request(spec_json):
         return json.dumps({"status": 0, "error": f"The request could not be read: {error}"})
     body = spec.get("body")
     content = body.encode("utf-8") if isinstance(body, str) and body != "" else None
+    route_http_through_bridge()
     _trace = Trace()
     if _events is not None:
         events = _events | sys.monitoring.events.LINE if _debug_pause_bridge is not None else _events
@@ -937,3 +976,120 @@ def reset_database():
         return json.dumps({"ok": True})
     finally:
         conn.close()
+
+
+# ------------------------------------------------------------------ http
+def route_http_through_bridge():
+    """Keep urllib3 (and so requests) off its private streaming web worker. On a
+    cross-origin-isolated page it would send requests from there, out of reach of the
+    worker's relay bridge (relayBridge.js); without it urllib3 uses this worker's
+    XMLHttpRequest or fetch. urllib3 creates that worker when the module is first imported,
+    so import it here, before learner code can, whenever urllib3 is installed (pip install
+    can add it at any time, hence a check per call)."""
+    try:
+        module = sys.modules.get("urllib3.contrib.emscripten.fetch")
+        if module is None and importlib.util.find_spec("urllib3") is not None:
+            module = importlib.import_module("urllib3.contrib.emscripten.fetch")
+        if module is not None and getattr(module, "_fetcher", None) is not None:
+            module._fetcher = None
+    except Exception as error:  # noqa: BLE001 - never block the learner's request over this
+        print(f"[webnest] relay routing not applied: {error}", file=sys.stderr)
+
+
+# ------------------------------------------------------------------ terminal
+def _requirement_name(requirement):
+    match = re.match(r"\s*([A-Za-z0-9][A-Za-z0-9._-]*)", requirement)
+    return match.group(1) if match else requirement.strip()
+
+
+def _installed_version(name):
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+
+def _install_failure(error):
+    text = str(error)
+    if "pure Python 3 wheel" in text:
+        return "needs compiled C code that has no browser (Pyodide) build, so it cannot run in the playground."
+    if "Can't fetch metadata" in text or "404" in text:
+        return "was not found on PyPI. Check the spelling."
+    if "Failed to fetch" in text or "NetworkError" in text:
+        return "could not be downloaded. Check your internet connection."
+    return text
+
+
+async def install_packages(requirements_json):
+    """`pip install` for the terminal: micropip, one requirement at a time so each reports
+    its own result. Requirements that are already satisfied return straight away."""
+    import micropip
+
+    results = []
+    for requirement in json.loads(requirements_json):
+        name = _requirement_name(requirement)
+        before = _installed_version(name)
+        try:
+            await micropip.install(requirement)
+        except Exception as error:  # noqa: BLE001 - reported per package
+            results.append({"requirement": requirement, "name": name, "ok": False, "error": _install_failure(error)})
+            continue
+        importlib.invalidate_caches()
+        after = _installed_version(name)
+        results.append({"requirement": requirement, "name": name, "ok": True, "version": after, "already": before is not None and before == after})
+    return json.dumps({"ok": True, "results": results})
+
+
+def installed_packages():
+    """`pip list`: every installed distribution, by name."""
+    found = {}
+    for dist in importlib.metadata.distributions():
+        name = dist.metadata["Name"]
+        if name:
+            found[name.lower()] = {"name": name, "version": dist.version}
+    return json.dumps({"ok": True, "packages": sorted(found.values(), key=lambda item: item["name"].lower())})
+
+
+def run_command(spec_json):
+    """`python file.py`, `python -m module` and `python -c code` for the terminal. Runs in
+    /app with sys.argv set; the exit code is returned, not raised."""
+    spec = json.loads(spec_json)
+    mode = spec.get("mode")
+    target = str(spec.get("target") or "")
+    args = [str(arg) for arg in spec.get("args") or []]
+    previous_argv, previous_cwd = sys.argv, os.getcwd()
+    _forget_project_modules()
+    route_http_through_bridge()
+    code = 0
+    try:
+        os.chdir(APP_ROOT)
+        if mode == "file":
+            path = os.path.normpath(os.path.join(APP_ROOT, target))
+            if not path.startswith(APP_ROOT + "/") or not os.path.isfile(path):
+                print(f"python: can't open file '{target}': [Errno 2] No such file or directory", file=sys.stderr)
+                return json.dumps({"ok": True, "code": 2})
+            sys.argv = [target, *args]
+            runpy.run_path(path, run_name="__main__")
+        elif mode == "module":
+            sys.argv = [target, *args]
+            runpy.run_module(target, run_name="__main__", alter_sys=True)
+        elif mode == "code":
+            sys.argv = ["-c", *args]
+            exec(compile(target, "<string>", "exec"), {"__name__": "__main__"})  # noqa: S102 - the learner's own code
+        else:
+            return _error(f"Unknown command mode: {mode}")
+    except SystemExit as exit_:
+        if exit_.code is None:
+            code = 0
+        elif isinstance(exit_.code, int):
+            code = exit_.code
+        else:
+            print(exit_.code, file=sys.stderr)
+            code = 1
+    except Exception as error:  # noqa: BLE001 - any error in the learner's code is reported, not raised
+        print(format_error(error), file=sys.stderr)
+        code = 1
+    finally:
+        sys.argv = previous_argv
+        os.chdir(previous_cwd)
+    return json.dumps({"ok": True, "code": code})
