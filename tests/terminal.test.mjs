@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  addRequirements, listFolder, packageScripts, parseRequirements, removeRequirements, resolveCommand, splitCommand,
+  addRequirements, installHint, listFolder, packageScripts, parseRequirements, removeRequirements, resolveCommand, splitCommand,
 } from '../src/lib/codelab/terminal.js'
 
 const PACKAGE = JSON.stringify({ scripts: { dev: 'uvicorn app.main:app --reload', build: 'python -m compileall -q app', all: 'npm run build && npm run dev' } })
@@ -72,6 +72,28 @@ test('shell basics and unknown commands', () => {
   assert.match(resolve('help').text, /pip install/)
   assert.equal(resolve('rm -rf /').ok, false)
   assert.equal(resolve('node index.js').ok, false)
+})
+
+test('packages that cannot connect from the browser get a hint with an alternative', () => {
+  assert.match(installHint('redis'), /fakeredis/)
+  assert.match(installHint('Redis==5.0.1'), /fakeredis/)
+  assert.match(installHint('psycopg2_binary'), /Postgres/)
+  assert.match(installHint('PyMySQL'), /MySQL/)
+  assert.match(installHint('mysql-connector-python>=9'), /MySQL/)
+  assert.match(installHint('pymongo'), /mongomock/)
+  assert.match(installHint('supabase'), /anon \/ publishable key/)
+  assert.doesNotMatch(installHint('supabase'), /next update|until/i, 'no time-relative promises')
+  assert.match(installHint('celery'), /BackgroundTasks/)
+  assert.equal(installHint('humanize'), '')
+  assert.equal(installHint(''), '')
+  assert.equal(installHint(null), '')
+})
+
+test('server packages from requirements.txt get no hint; by name they do', () => {
+  assert.match(installHint('uvicorn'), /Run/)
+  assert.equal(installHint('uvicorn[standard]', { fromFile: true }), '')
+  assert.equal(installHint('gunicorn', { fromFile: true }), '')
+  assert.match(installHint('redis', { fromFile: true }), /fakeredis/, 'connection hints still show from a file')
 })
 
 test('ls lists one folder level, folders first', () => {

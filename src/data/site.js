@@ -6,6 +6,9 @@ export const CONTACT = {
   whatsappHref: 'https://wa.me/917276971875?text=Hello%20WebNest%20Studio%2C%20I%27d%20like%20to%20discuss%20a%20premium%20digital%20experience%20for%20my%20brand.%20Please%20share%20the%20next%20steps.',
   instagramHref: 'https://www.instagram.com/webneststudio112026/',
   linkedinHref: 'https://www.linkedin.com/company/webneststudio.co.in',
+  youtubeHref: 'https://www.youtube.com/@webnestStudio-m5g',
+  // Opens the channel with YouTube's subscribe prompt.
+  youtubeSubscribeHref: 'https://www.youtube.com/@webnestStudio-m5g?sub_confirmation=1',
 }
 
 // The one company identity used by the footer, contact page and Organization

@@ -1,38 +1,40 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { bulkUpdateProgress, getCourseExam } from '../api/learning'
-import { syncLocalProgress } from '../lib/learningProgress'
+import { loadExamView } from '../lib/myCertificates'
 
 // The server's final-exam view for a course (COURSE_EXAMS_CERTIFICATES.md §5), fetched once
-// per course page and shared by the roadmap's finish line and the exam card. Lessons completed
-// in this browser are sent first so eligibility counts them.
+// per course page and shared by the roadmap's finish line and the exam card. Loaded through
+// loadExamView, which sends this browser's completed lessons first and applies the learner's
+// certificates (a passed course never offers the exam again).
 //
 // Returns { exam, syncFailed, reload }: `exam` is null while loading or when the server cannot
 // be reached (the exam then stays hidden), and `syncFailed` is true when some local
-// completions could not be sent, so the server's lesson count may be behind.
+// completions could not be sent, so the server's lesson count may be behind. `reload` (the
+// card's Try again) also refreshes the certificates.
 export function useCourseExam(courseSlug, userKey, isAuthenticated) {
   const [state, setState] = useState({ exam: null, syncFailed: false })
   const seq = useRef(0)
 
-  const reload = useCallback(async () => {
+  const load = useCallback(async ({ force = false } = {}) => {
     const current = ++seq.current
     if (!courseSlug) return
-    const synced = isAuthenticated ? await syncLocalProgress(userKey, bulkUpdateProgress) : true
-    let exam = null
+    let next = { exam: null, syncFailed: false }
     try {
-      exam = await getCourseExam(courseSlug)
+      const { exam, syncFailed } = await loadExamView(courseSlug, { userKey, isAuthenticated, force })
+      next = { exam: exam ?? null, syncFailed }
     } catch {
-      exam = null
+      next = { exam: null, syncFailed: false }
     }
     // Only the newest request may update the page (course or user changed meanwhile).
-    if (current === seq.current) setState({ exam: exam ?? null, syncFailed: !synced })
+    if (current === seq.current) setState(next)
   }, [courseSlug, userKey, isAuthenticated])
 
   useEffect(() => {
     setState({ exam: null, syncFailed: false })
-    reload()
+    load()
     // Invalidate the in-flight request when the course or user changes or the page unmounts.
     return () => { seq.current += 1 }
-  }, [reload])
+  }, [load])
 
+  const reload = useCallback(() => load({ force: true }), [load])
   return { ...state, reload }
 }

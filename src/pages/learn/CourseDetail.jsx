@@ -92,8 +92,8 @@ export default function CourseDetail() {
         </section>
       )}
 
-      <CourseRoadmap course={course} progress={progress} nextLessonId={nextLessonId} examEnabled={Boolean(exam?.enabled)} />
-      {/* The last step of every course. Renders nothing until the server enables the exam. */}
+      <CourseRoadmap course={course} progress={progress} nextLessonId={nextLessonId} examEnabled={Boolean(exam?.enabled)} examPassed={Boolean(exam?.passed)} certificateId={exam?.certificate_id ?? null} />
+      {/* The last step of every course. Renders nothing until the server enables the exam, except for a learner who already passed (their certificate stays reachable). */}
       <CourseExamCard course={course} isAuthenticated={isAuthenticated} exam={exam} syncFailed={syncFailed} onRetry={reloadExam} />
       <RelatedService courseSlug={course.slug} className="mt-8" />
     </div>

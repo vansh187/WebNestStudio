@@ -10,8 +10,9 @@ import { useAutosave } from '../../hooks/useAutosave'
 import { getErrorDetail } from '../../lib/apiClient'
 import { trackEvent } from '../../lib/analytics'
 import { clockOffset, examLockedMessage, formatClock, formatWait, msLeft } from '../../lib/examTime'
-import { bulkUpdateProgress, getCourseExam, getExamAttempt, isAttemptLost, pingExamAttempt, saveExamAnswers, startExamAttempt, submitExamAttempt } from '../../api/learning'
-import { syncLocalProgress } from '../../lib/learningProgress'
+import { getExamAttempt, isAttemptLost, pingExamAttempt, saveExamAnswers, startExamAttempt, submitExamAttempt } from '../../api/learning'
+import { isAlreadyPassedError } from '../../lib/courseCertificates'
+import { forgetMyCertificates, loadExamView } from '../../lib/myCertificates'
 import { NotFoundState } from '../../components/states/StateViews'
 import { ThemeToggleButton } from '../../components/coding/IdeButtons'
 import { useIdeFocus } from '../../hooks/useIdeShell'
@@ -47,21 +48,29 @@ export default function CourseExam() {
 
   useSeo({ title: course ? `${course.title} final exam` : 'Final exam', path: `/learn/${courseSlug}/exam`, noindex: true })
 
-  const load = useCallback(async (noticeArg) => {
+  // The server refused a start because the course is already passed. Remembered for this
+  // course and learner while the page is open, so a stale exam view or certificate list can't
+  // bring Start back in a loop.
+  const refusedKey = `${courseSlug}|${userKey ?? ''}`
+  const refusedRef = useRef(null)
+
+  // `force` (Try again) also refreshes the learner's certificates instead of using the cache.
+  const load = useCallback(async (noticeArg, { force = false } = {}) => {
     // Only a string is a notice; anything else (e.g. a click event) is ignored.
     const notice = typeof noticeArg === 'string' ? noticeArg : undefined
     setState({ phase: 'loading' })
     try {
-      // Send lessons completed in this browser first, so the server counts them. If some could
-      // not be sent, the locked message says so and offers a retry.
-      const synced = isAuthenticated ? await syncLocalProgress(userKey, bulkUpdateProgress) : true
-      const syncFailed = !synced
+      // Sends this browser's completed lessons first (so the server counts them), then loads
+      // the exam view with the learner's certificates applied: a passed course is not offered
+      // again, while an attempt the server already started still opens so it can be finished.
       const NOT_AVAILABLE = { enabled: false, eligible: false, reasons: ['exam_disabled'] }
-      const exam = (await getCourseExam(courseSlug).catch((err) => {
-        // The course isn't on the server yet: show "not available" rather than an error.
-        if (err.response?.status === 404) return NOT_AVAILABLE
-        throw err
-      })) || NOT_AVAILABLE
+      const loaded = await loadExamView(courseSlug, { userKey, isAuthenticated, force })
+      const syncFailed = loaded.syncFailed
+      // The course isn't on the server yet: show "not available" rather than an error.
+      let exam = loaded.exam ?? NOT_AVAILABLE
+      if (refusedRef.current === refusedKey && !exam.passed) {
+        exam = { ...exam, passed: true, eligible: false, reasons: [...(exam.reasons ?? []), 'already_passed'] }
+      }
       if (exam?.active_attempt_id) {
         const attempt = await getExamAttempt(exam.active_attempt_id).catch((err) => {
           // The attempt record is gone (404/410): fall back to the intro, which can start fresh.
@@ -88,10 +97,15 @@ export default function CourseExam() {
       }
       setState({ phase: 'error', message: getErrorDetail(err, 'Could not load the final exam.') })
     }
-  }, [courseSlug, isAuthenticated, userKey])
+  }, [courseSlug, isAuthenticated, userKey, refusedKey])
 
   useEffect(() => { load() }, [load])
   const handleLost = useCallback(() => load(LOST_NOTICE), [load])
+  const handleAlreadyPassed = useCallback(() => {
+    refusedRef.current = refusedKey
+    forgetMyCertificates()
+    load(undefined, { force: true })
+  }, [load, refusedKey])
 
   if (!course) return <NotFoundState title="Course not found" backTo="/learn" backLabel="Back to courses" />
 
@@ -105,7 +119,7 @@ export default function CourseExam() {
       {state.phase === 'error' && (
         <div role="alert" className="mt-6 rounded-xl border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
           <p>{state.message}</p>
-          <button type="button" onClick={() => load()} className={`${SECONDARY} mt-3`}>Try again</button>
+          <button type="button" onClick={() => load(undefined, { force: true })} className={`${SECONDARY} mt-3`}>Try again</button>
         </div>
       )}
       {state.phase === 'intro' && state.notice && (
@@ -114,13 +128,17 @@ export default function CourseExam() {
         </div>
       )}
       {state.phase === 'intro' && (
-        <ExamIntro course={course} exam={state.exam} syncFailed={state.syncFailed} onRetry={() => load()} onStarted={(attempt) => setState({ phase: 'running', exam: state.exam, attempt })} />
+        <ExamIntro course={course} exam={state.exam} syncFailed={state.syncFailed} onRetry={() => load(undefined, { force: true })} onAlreadyPassed={handleAlreadyPassed} onStarted={(attempt) => setState({ phase: 'running', exam: state.exam, attempt })} />
       )}
       {state.phase === 'running' && (
         <ExamRunner
           course={course}
           attempt={state.attempt}
-          onFinished={(result) => setState({ phase: 'result', exam: state.exam, result })}
+          onFinished={(result) => {
+            // A pass issued a certificate: the cached list is out of date.
+            if (result?.passed) forgetMyCertificates()
+            setState({ phase: 'result', exam: state.exam, result })
+          }}
           onLost={handleLost}
         />
       )}
@@ -129,18 +147,32 @@ export default function CourseExam() {
   )
 }
 
-function ExamIntro({ course, exam, syncFailed, onRetry, onStarted }) {
+function ExamIntro({ course, exam, syncFailed, onRetry, onAlreadyPassed, onStarted }) {
   const { user } = useAuth()
   const toast = useToast()
   const [name, setName] = useState(user?.full_name || user?.name || '')
   const [agreed, setAgreed] = useState(false)
   const [starting, setStarting] = useState(false)
 
+  // Passed once means passed for good: one certificate per course, no retakes.
   if (exam.passed && exam.certificate_id) {
     return (
       <Panel>
-        <p className="text-ink-700 dark:text-ink-200">You have already passed this exam.</p>
+        <p className="text-ink-700 dark:text-ink-200">You have already passed this exam. Each course has one certificate, so there is nothing more to take.</p>
         <Link to={`/certificates/${exam.certificate_id}`} className={`${PRIMARY} mt-4`}><FiAward /> View certificate</Link>
+      </Panel>
+    )
+  }
+  // Passed, but the certificate could not be found yet (still being issued, or the list did
+  // not load): say so honestly and offer a retry instead of a dead-end link.
+  if (exam.passed) {
+    return (
+      <Panel>
+        <p className="text-ink-700 dark:text-ink-200">You have already passed this exam, so it can't be taken again. Your certificate isn't showing yet. Try again in a moment.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" onClick={onRetry} className={PRIMARY}><FiRefreshCw /> Try again</button>
+          <Link to={`/learn/${course.slug}`} className={SECONDARY}>Back to course</Link>
+        </div>
       </Panel>
     )
   }
@@ -174,8 +206,15 @@ function ExamIntro({ course, exam, syncFailed, onRetry, onStarted }) {
       trackEvent('course_exam_started', { course_slug: course.slug })
       onStarted({ ...attempt, status: 'active', answers: attempt.answers ?? [] })
     } catch (err) {
-      toast.error(getErrorDetail(err, 'Could not start the exam. Please try again.'))
       setStarting(false)
+      // Passed meanwhile (another tab or device): remember the refusal and reload, which shows
+      // the certificate (or "already passed") instead of Start.
+      if (isAlreadyPassedError(err)) {
+        toast.info('You have already passed this exam.')
+        onAlreadyPassed?.()
+        return
+      }
+      toast.error(getErrorDetail(err, 'Could not start the exam. Please try again.'))
     }
   }
 

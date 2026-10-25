@@ -129,19 +129,27 @@ export function getCourseProgress(progress, course) {
   return { total, completed, bookmarked, percent }
 }
 
-// One entry per course the user has touched (completed or bookmarked at
-// least one lesson), for the "My Learning" dashboard summary.
-export function getStartedCoursesProgress(progress) {
+// One entry per course the user has touched (completed or bookmarked at least one lesson),
+// or holds a certificate for, for the "My Learning" dashboard summary. Lesson ticks live in
+// this browser, so a certified course (`certified`: a Set of course slugs) is shown as done
+// even when this browser has fewer ticks, e.g. after studying elsewhere or new lessons.
+export function getStartedCoursesProgress(progress, certified = new Set()) {
   return SAMPLE_COURSES
-    .map((course) => ({ course, ...getCourseProgress(progress, course) }))
-    .filter((entry) => entry.completed > 0 || entry.bookmarked > 0)
-    .sort((a, b) => b.percent - a.percent)
+    .map((course) => ({ course, ...certifiedProgress(getCourseProgress(progress, course), certified.has(course.slug)), certified: certified.has(course.slug) }))
+    .filter((entry) => entry.completed > 0 || entry.bookmarked > 0 || entry.certified)
+    .sort((a, b) => Number(b.certified) - Number(a.certified) || b.percent - a.percent)
 }
 
-export function getLearningTotals(progress) {
+// A certificate needs every lesson completed on the server, so a certified course counts all
+// its lessons as done, keeping lesson and course totals consistent.
+function certifiedProgress(stats, isCertified) {
+  return isCertified ? { ...stats, completed: stats.total, percent: stats.total ? 100 : stats.percent } : stats
+}
+
+export function getLearningTotals(progress, certified = new Set()) {
   return SAMPLE_COURSES.reduce((totals, course) => {
-    const stats = getCourseProgress(progress, course)
-    const isComplete = stats.total > 0 && stats.completed === stats.total
+    const stats = certifiedProgress(getCourseProgress(progress, course), certified.has(course.slug))
+    const isComplete = certified.has(course.slug) || (stats.total > 0 && stats.completed === stats.total)
     const isInProgress = stats.completed > 0 && !isComplete
     return {
       lessonsTotal: totals.lessonsTotal + stats.total,

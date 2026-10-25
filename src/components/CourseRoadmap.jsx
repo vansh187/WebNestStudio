@@ -42,8 +42,9 @@ function lessonStatus(progress, lessonId) {
 }
 
 // `examEnabled` is the server's exam flag: until it is true the finish line never mentions an
-// exam, matching the exam card, which stays hidden.
-export default function CourseRoadmap({ course, progress, nextLessonId, examEnabled = false }) {
+// exam, matching the exam card, which stays hidden. `examPassed` (with `certificateId` when
+// known) turns the finish line into the certificate link, so a passed exam is never offered again.
+export default function CourseRoadmap({ course, progress, nextLessonId, examEnabled = false, examPassed = false, certificateId = null }) {
   const modules = useMemo(() => course.modules.map((module, index) => ({
     ...module,
     key: module.id || module.title,
@@ -205,9 +206,16 @@ export default function CourseRoadmap({ course, progress, nextLessonId, examEnab
           {!term && (
             <div className="relative flex items-center gap-3 md:justify-center">
               <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 ${allDone ? 'border-gold-300 bg-gold-400 text-ink-950 shadow-[0_0_26px_rgba(230,172,62,0.7)]' : 'border-gold-400/40 bg-ink-950 text-gold-300'}`}>
-                {allDone ? <FiAward className="h-5 w-5" /> : examEnabled ? <FiLock className="h-5 w-5" /> : <FiFlag className="h-5 w-5" />}
+                {allDone || examPassed ? <FiAward className="h-5 w-5" /> : examEnabled ? <FiLock className="h-5 w-5" /> : <FiFlag className="h-5 w-5" />}
               </span>
-              {!examEnabled ? (
+              {examPassed ? (
+                <Link
+                  to={certificateId ? `/certificates/${certificateId}` : `/learn/${course.slug}/exam`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gold-400 px-5 py-2.5 text-sm font-bold text-ink-950 shadow-[0_0_24px_rgba(230,172,62,0.5)] hover:bg-gold-300 md:absolute md:left-1/2 md:ml-10"
+                >
+                  <FiAward className="h-4 w-4" /> Certificate earned · View certificate
+                </Link>
+              ) : !examEnabled ? (
                 <span className="rounded-full border border-gold-400/40 bg-ink-950/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-gold-300 md:absolute md:left-1/2 md:ml-10">
                   {allDone ? 'Course complete' : 'Finish line'}
                 </span>

@@ -72,6 +72,46 @@ export function requirementName(spec) {
   return /^\s*([A-Za-z0-9][A-Za-z0-9._-]*)/.exec(String(spec ?? ''))?.[1] ?? ''
 }
 
+// Packages that install (or fail to) but cannot reach their server from the browser yet, with
+// what to use instead. Printed after `pip install`. Keys are normalised names (normalizeName).
+const POSTGRES_HINT = "Postgres (Supabase, Neon) can't be reached directly from the browser yet. Use the playground database (SQLite), or Supabase's REST API with requests. DATABASE_URL connections are coming soon."
+const MYSQL_HINT = "MySQL can't be reached directly from the browser yet. Use the playground database (SQLite) to practise SQL. MYSQL_URL connections are coming soon."
+const MONGO_HINT = "MongoDB can't be reached directly from the browser yet. Practise with mongomock (pip install mongomock). MONGODB_URI (Atlas) connections are coming soon."
+const SERVER_HINT = 'Not needed here: Run (or uvicorn app.main:app) starts your API.'
+const INSTALL_HINTS = {
+  redis: "A Redis server can't be reached from the browser. Practise with fakeredis (pip install fakeredis), or use Upstash Redis over HTTPS.",
+  psycopg2: POSTGRES_HINT,
+  'psycopg2-binary': POSTGRES_HINT,
+  psycopg: POSTGRES_HINT,
+  asyncpg: POSTGRES_HINT,
+  pymysql: MYSQL_HINT,
+  'mysql-connector-python': MYSQL_HINT,
+  mysqlclient: MYSQL_HINT,
+  pymongo: MONGO_HINT,
+  motor: MONGO_HINT,
+  supabase: "Connect with SUPABASE_URL (https://<ref>.supabase.co) and SUPABASE_ANON_KEY from your .env. Use the anon / publishable key only, never the service_role key: anyone on this device can read .env.",
+  celery: "Celery needs a broker and worker processes, which the browser can't run. Use FastAPI's BackgroundTasks instead.",
+  uvicorn: SERVER_HINT,
+  gunicorn: SERVER_HINT,
+  uvloop: SERVER_HINT,
+}
+
+// Server packages are a normal line in a FastAPI requirements.txt, so their hint is only
+// worth showing when the learner installs one by name.
+const SERVER_PACKAGES = new Set(['uvicorn', 'gunicorn', 'uvloop'])
+
+// The hint for an installed or failed package (a requirement like "Redis==5.0"), or ''.
+// `fromFile`: the install came from requirements.txt (pip install -r / npm install).
+export function installHint(spec, { fromFile = false } = {}) {
+  try {
+    const name = normalizeName(requirementName(spec))
+    if (fromFile && SERVER_PACKAGES.has(name)) return ''
+    return INSTALL_HINTS[name] ?? ''
+  } catch {
+    return ''
+  }
+}
+
 // The installable lines of a requirements file: no comments, blank lines or pip options.
 export function parseRequirements(text) {
   return String(text ?? '')

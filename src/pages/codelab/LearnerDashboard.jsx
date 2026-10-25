@@ -8,8 +8,11 @@ import { useSeo } from '../../hooks/useSeo'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, getStartedCoursesProgress, getLearningTotals } from '../../lib/learningProgress'
-import { listMyCertificates } from '../../api/learning'
 import { formatDate } from '../../lib/examTime'
+import { certifiedCourseSlugs } from '../../lib/courseCertificates'
+import { loadMyCertificates } from '../../lib/myCertificates'
+
+const NO_CERTIFICATES = []
 
 const fallback = {
   summary: { problems_total: 0, attempted: 0, solved: 0, completion_percent: 0, xp: 0, current_streak: 0, best_streak: 0 },
@@ -25,9 +28,23 @@ export default function LearnerDashboard() {
   const [dashboard, setDashboard] = useState(fallback)
   const [error, setError] = useState('')
 
+  // Certificates earned by passing course final exams, remembered with the account they were
+  // loaded for: after a logout or a switch to another account they are never shown or counted.
+  const [loadedCertificates, setLoadedCertificates] = useState({ userKey: null, items: [] })
+  const certificates = isAuthenticated && userKey && loadedCertificates.userKey === userKey ? loadedCertificates.items : NO_CERTIFICATES
+  const certified = useMemo(() => certifiedCourseSlugs(certificates), [certificates])
   const learningProgress = useMemo(() => readLearningProgress(userKey), [userKey])
-  const startedCourses = useMemo(() => getStartedCoursesProgress(learningProgress), [learningProgress])
-  const learningTotals = useMemo(() => getLearningTotals(learningProgress), [learningProgress])
+  const startedCourses = useMemo(() => getStartedCoursesProgress(learningProgress, certified), [learningProgress, certified])
+  const learningTotals = useMemo(() => getLearningTotals(learningProgress, certified), [learningProgress, certified])
+
+  useEffect(() => {
+    if (!isAuthenticated || !userKey) return undefined
+    let alive = true
+    loadMyCertificates(userKey)
+      .then((items) => { if (alive) setLoadedCertificates({ userKey, items: items ?? [] }) })
+      .catch(() => { if (alive) setLoadedCertificates({ userKey, items: [] }) })
+    return () => { alive = false }
+  }, [isAuthenticated, userKey])
 
   useEffect(() => {
     let alive = true
@@ -106,42 +123,36 @@ export default function LearnerDashboard() {
             </div>
           </div>
           <div className="mt-4 grid gap-3">
-            {startedCourses.map(({ course, completed, total, percent }) => (
+            {startedCourses.map(({ course, completed, total, percent, certified: done }) => (
               <Link
                 key={course.slug}
                 to={`/learn/${course.slug}`}
                 className="rounded-lg border border-ink-200 bg-white p-4 hover:border-gold-400 dark:border-ink-800 dark:bg-ink-900/40"
               >
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between gap-2 text-sm">
                   <span className="font-semibold text-ink-900 dark:text-white">{course.title}</span>
-                  <span className="text-ink-500 dark:text-ink-300">{completed} / {total} lessons · {percent}%</span>
+                  {done ? (
+                    <span className="inline-flex items-center gap-1 font-semibold text-gold-600 dark:text-gold-400"><FiAward /> Completed · certificate earned</span>
+                  ) : (
+                    <span className="text-ink-500 dark:text-ink-300">{completed} / {total} lessons · {percent}%</span>
+                  )}
                 </div>
                 <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
-                  <div className="h-full rounded-full bg-gold-400" style={{ width: `${percent}%` }} />
+                  <div className="h-full rounded-full bg-gold-400" style={{ width: `${done ? 100 : percent}%` }} />
                 </div>
               </Link>
             ))}
           </div>
         </>
       )}
-      {isAuthenticated && <MyCertificates />}
+      {isAuthenticated && <MyCertificates items={certificates} />}
     </main>
   )
 }
 
-// Certificates earned by passing course final exams. Hidden while there are none, and if the
-// endpoint is not available yet.
-function MyCertificates() {
-  const [items, setItems] = useState([])
-
-  useEffect(() => {
-    let alive = true
-    listMyCertificates()
-      .then((data) => { if (alive) setItems(Array.isArray(data) ? data : (data?.items ?? [])) })
-      .catch(() => { if (alive) setItems([]) })
-    return () => { alive = false }
-  }, [])
-
+// Certificates earned by passing course final exams (loaded by the dashboard). Hidden while
+// there are none, and if the endpoint is not available yet.
+function MyCertificates({ items }) {
   if (!items.length) return null
   return (
     <>
