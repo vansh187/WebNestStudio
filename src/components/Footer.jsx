@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FiMail, FiPhone, FiInstagram } from 'react-icons/fi'
-import { FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
+import { FaLinkedinIn, FaWhatsapp, FaYoutube } from 'react-icons/fa'
 import Logo from './Logo'
 import NewsletterForm from './forms/NewsletterForm'
 import { COMPANY, CONTACT, FOOTER_SECTIONS, TECH_STACK } from '../data/site'
@@ -36,6 +36,15 @@ export default function Footer() {
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 dark:border-ink-700 text-ink-500 dark:text-ink-300 hover:border-gold-400 hover:text-gold-500 transition-colors"
               >
                 <FaLinkedinIn className="h-4 w-4" />
+              </a>
+              <a
+                href={CONTACT.youtubeSubscribeHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Subscribe to WebNest Studio on YouTube"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-200 text-ink-500 transition-colors hover:border-gold-400 hover:text-gold-500 dark:border-ink-700 dark:text-ink-300"
+              >
+                <FaYoutube className="h-4 w-4" />
               </a>
               <a
                 href={CONTACT.whatsappHref}
@@ -107,6 +116,16 @@ export default function Footer() {
             <div className="mt-4 max-w-sm">
               <NewsletterForm source="footer" />
             </div>
+            <a
+              href={CONTACT.youtubeSubscribeHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#FF0000] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              <FaYoutube className="h-4 w-4" />
+              Subscribe on YouTube
+            </a>
+            <p className="mt-2 text-xs text-ink-500 dark:text-ink-400">Free coding videos and lesson walkthroughs.</p>
           </div>
         </div>
 

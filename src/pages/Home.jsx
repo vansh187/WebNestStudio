@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -19,7 +19,7 @@ import { useHomeData } from '../hooks/useHomeData'
 import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
-import { ANDROID_APP, isAndroidDevice } from '../data/androidApp'
+import { ANDROID_APP } from '../data/androidApp'
 import AndroidDownloadButton from '../components/AndroidDownloadButton'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
@@ -46,9 +46,6 @@ const webLink = (value) => (typeof value === 'string' && /^https?:\/\//i.test(va
 
 export default function Home() {
   const { state, reload } = useHomeData()
-  // Only Android visitors get the direct APK link; everyone else goes to the install
-  // page, which explains how to get it onto a phone.
-  const [isAndroid] = useState(isAndroidDevice)
   // Our own client feedback always shows; admin-managed testimonials follow once loaded.
   const apiTestimonials = state.testimonials.status === 'success' ? state.testimonials.data : []
   const testimonials = [
@@ -421,25 +418,16 @@ export default function Home() {
                   Get WebNest Studio on Android
                 </h2>
                 <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-500 dark:text-ink-300">
-                  Install our free app on your phone. Version {ANDROID_APP.version} · {ANDROID_APP.size} · {ANDROID_APP.minAndroid} or later.
+                  Install our free app from Google Play. Works on {ANDROID_APP.minAndroid} or later, and updates automatically.
                 </p>
               </div>
             </div>
-            {isAndroid ? (
-              <div className="flex flex-wrap items-center gap-4">
-                <AndroidDownloadButton />
-                <Link to="/download-app" className="text-sm font-semibold text-ink-600 hover:text-gold-500 dark:text-ink-200 dark:hover:text-gold-400">
-                  Install guide
-                </Link>
-              </div>
-            ) : (
-              <Link
-                to="/download-app"
-                className="group inline-flex items-center gap-2 rounded-full bg-ink-900 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-gold-500/10 transition-transform hover:scale-105 dark:bg-gold-400 dark:text-ink-950"
-              >
-                Get the Android app <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <div className="flex flex-wrap items-center gap-4">
+              <AndroidDownloadButton />
+              <Link to="/download-app" className="text-sm font-semibold text-ink-600 hover:text-gold-500 dark:text-ink-200 dark:hover:text-gold-400">
+                About the app
               </Link>
-            )}
+            </div>
           </div>
         </Reveal>
       </section>

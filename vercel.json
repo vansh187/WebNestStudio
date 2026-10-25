@@ -33,9 +33,9 @@
       "permanent": true
     },
     {
-      "source": "/downloads/WebNestStudio-v1.3.apk",
-      "destination": "https://github.com/vansh187/WebNestStudio/releases/download/v1.3/WebNestStudio-v1.3.apk",
-      "permanent": true
+      "source": "/downloads/:file(WebNestStudio-v[^/]*\\.apk)",
+      "destination": "https://play.google.com/store/apps/details?id=com.webneststudio.app",
+      "permanent": false
     },
     {
       "source": "/playground",

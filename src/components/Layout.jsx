@@ -30,7 +30,7 @@ const ORGANIZATION_SCHEMA = {
   address: { '@type': 'PostalAddress', addressLocality: COMPANY.locality, addressRegion: COMPANY.region, addressCountry: COMPANY.countryCode },
   areaServed: [{ '@type': 'City', name: 'Gurugram' }, { '@type': 'Place', name: 'Delhi NCR' }, { '@type': 'Country', name: 'India' }],
   // Verified official profiles only.
-  sameAs: [CONTACT.instagramHref, CONTACT.linkedinHref],
+  sameAs: [CONTACT.instagramHref, CONTACT.linkedinHref, CONTACT.youtubeHref],
 }
 
 export default function Layout() {

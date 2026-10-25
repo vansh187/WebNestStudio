@@ -41,3 +41,8 @@ __pycache__/
 
 # Hero videos ship as WebM only
 public/media/*.mp4
+
+# Backend team handoff docs: shared directly with the backend team, not kept in this repo.
+CODELAB_API_RELAY_BACKEND.md
+PLAYGROUND_PACKAGES_DAY1_BACKEND.md
+EXAM_RETAKE_AFTER_PASS_BACKEND.md

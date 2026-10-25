@@ -115,6 +115,17 @@ export function newFileTemplate(name) {
 # this device, so use test keys only (rzp_test_..., sk_test_...), never live ones.
 RAZORPAY_KEY_ID=rzp_test_replace_me
 RAZORPAY_KEY_SECRET=replace_me
+
+# Supabase works today through its REST API (requests). Use the anon / publishable key,
+# NEVER the service_role key: it skips Row Level Security and anyone on this device can read it.
+# SUPABASE_URL=https://your-project-ref.supabase.co
+# SUPABASE_ANON_KEY=replace_me
+
+# Databases: connections from the playground are coming soon, through WebNest's database
+# proxy. Use a practice database, never production data.
+# DATABASE_URL=postgresql://postgres.your-ref:password@aws-0-region.pooler.supabase.com:5432/postgres
+# MYSQL_URL=mysql://user:password@your-host:3306/your_db
+# MONGODB_URI=mongodb+srv://user:password@cluster0.example.mongodb.net/your_db
 `
   }
   const layer = layerOfFile(name)

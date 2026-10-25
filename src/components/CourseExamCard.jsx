@@ -10,7 +10,9 @@ import { examLockedMessage } from '../lib/examTime'
 export default function CourseExamCard({ course, isAuthenticated, exam, syncFailed, onRetry }) {
   const [retrying, setRetrying] = useState(false)
 
-  if (!exam?.enabled) return null
+  // Hidden while the exam is off, unless the learner already passed: then the certificate
+  // stays reachable here, matching the roadmap's "Certificate earned".
+  if (!exam?.enabled && !exam?.passed) return null
 
   const examPath = `/learn/${course.slug}/exam`
   const rules = `${exam.question_count ?? 30} questions · ${exam.duration_minutes ?? 60} minutes · pass at ${exam.pass_percent ?? 70}%`
@@ -19,17 +21,24 @@ export default function CourseExamCard({ course, isAuthenticated, exam, syncFail
   let action = null
   let canRetry = false
 
-  if (exam.passed && exam.certificate_id) {
-    icon = FiAward
-    message = 'You passed the final exam. Your certificate is ready to view and share.'
-    action = { to: `/certificates/${exam.certificate_id}`, label: 'View certificate' }
-  } else if (!isAuthenticated) {
-    message = 'Log in and complete every lesson to unlock the final exam.'
-    action = { to: '/login', state: { from: { pathname: `/learn/${course.slug}` } }, label: 'Log in' }
-  } else if (exam.active_attempt_id) {
+  // An attempt the server already started can always be finished. Otherwise passed is final
+  // (useCourseExam also counts a valid certificate in the learner's list), so a passed course
+  // never offers Start again.
+  if (isAuthenticated && exam.active_attempt_id) {
     icon = FiClock
     message = 'Your exam is in progress. The timer keeps running while you are away.'
     action = { to: examPath, label: 'Resume exam' }
+  } else if (exam.passed && exam.certificate_id) {
+    icon = FiAward
+    message = 'You passed the final exam. Your certificate is ready to view and share.'
+    action = { to: `/certificates/${exam.certificate_id}`, label: 'View certificate' }
+  } else if (exam.passed) {
+    icon = FiAward
+    message = "You passed the final exam, so it can't be taken again. Your certificate isn't showing yet. Try again in a moment."
+    canRetry = true
+  } else if (!isAuthenticated) {
+    message = 'Log in and complete every lesson to unlock the final exam.'
+    action = { to: '/login', state: { from: { pathname: `/learn/${course.slug}` } }, label: 'Log in' }
   } else if (exam.eligible) {
     icon = FiPlay
     message = 'You have completed every lesson. Pass the exam to earn your certificate.'

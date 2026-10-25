@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { languageForFile, validateBackendPath } from '../lib/codelab/backendFiles'
 import {
-  MAX_SCRIPT_DEPTH, PACKAGE_FILE, REQUIREMENTS_FILE, addRequirements, listFolder, normalizeName, parseRequirements,
+  MAX_SCRIPT_DEPTH, PACKAGE_FILE, REQUIREMENTS_FILE, addRequirements, installHint, listFolder, normalizeName, parseRequirements,
   removeRequirements, resolveCommand, splitCommand,
 } from '../lib/codelab/terminal'
 import { createRelayMatcher, relayStatusText } from '../lib/codelab/relay'
@@ -71,6 +71,14 @@ export function useBackendTerminal({ api, files, onFilesChange, onRun, onClearRe
         else if (item.already) print(`Requirement already satisfied: ${item.name}${item.version ? ` (${item.version})` : ''}`, 'dim')
         else print(`Successfully installed ${item.name}${item.version ? `-${item.version}` : ''}`, 'ok')
       }
+      // Packages that install (or fail) but can't reach their server from the browser: say
+      // so now, with an alternative, instead of leaving a ConnectionError for later. Only for
+      // packages this command installed or failed; ones already there were explained before.
+      const hints = new Set(results
+        .filter((item) => !item.already)
+        .map((item) => installHint(item.requirement || item.name, { fromFile: !record }))
+        .filter(Boolean))
+      hints.forEach((hint) => print(hint, 'warn'))
       const installed = results.filter((item) => item.ok)
       if (record && installed.length) {
         const { text, added } = addRequirements(fileText(REQUIREMENTS_FILE) ?? '', installed.map((item) => item.requirement))

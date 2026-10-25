@@ -29,8 +29,8 @@ def create_order(amount: int):
 with `.env` in the project root (already supported, never pushed by GitHub sync):
 
 ```
-RAZORPAY_KEY_ID=rzp_test_1DP5mmOlF5G5ag
-RAZORPAY_KEY_SECRET=thisisatestsecret
+RAZORPAY_KEY_ID=rzp_test_KEY_ID
+RAZORPAY_KEY_SECRET=TEST_SECRET
 ```
 
 The terminal then shows real Razorpay test responses:
@@ -187,7 +187,7 @@ Requires `X-WebNest-Authorization`. Request:
 
 ```http
 GET /api/codelab/relay/usage HTTP/1.1
-X-WebNest-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+X-WebNest-Authorization: Bearer <WebNest access token>
 ```
 
 200:
@@ -210,14 +210,14 @@ Request from the playground:
 ```http
 POST /api/codelab/relay/api.razorpay.com/v1/orders HTTP/1.1
 Host: webneststudiobackend-n00h.onrender.com
-X-WebNest-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-Authorization: Basic cnpwX3Rlc3RfMURQNW1tT2xGNUc1YWc6dGhpc2lzYXRlc3RzZWNyZXQ=
+X-WebNest-Authorization: Bearer <WebNest access token>
+Authorization: Basic <base64 of rzp_test_KEY_ID:TEST_SECRET>
 Content-Type: application/json
 
 {"amount": 50000, "currency": "INR", "receipt": "rcpt_1001", "notes": {"course": "fastapi"}}
 ```
 
-(`Authorization` is Basic `rzp_test_1DP5mmOlF5G5ag:thisisatestsecret`.)
+(`Authorization` is Basic `rzp_test_KEY_ID:TEST_SECRET`.)
 
 The relay sends `POST https://api.razorpay.com/v1/orders` with the same `Authorization`, `Content-Type` and body, and `User-Agent: WebNest-CodeLab-Relay/1.0`. Response 200 (Razorpay's body, unchanged):
 
@@ -249,7 +249,7 @@ There is no `X-WebNest-Relay-Error`, so this is Razorpay's answer. The SDK raise
 
 **Sample C: live key (relay refuses)**
 
-Request `Authorization: Basic cnpwX2xpdmVfMURQNW1tT2xGNUc1YWc6dGhpc2lzYWxpdmVzZWNyZXQ=` (`rzp_live_...`):
+Request `Authorization: Basic <base64 of rzp_live_KEY_ID:SECRET>` (`rzp_live_...`):
 
 ```http
 HTTP/1.1 403 Forbidden
@@ -264,8 +264,8 @@ Content-Type: application/json
 
 ```http
 POST /api/codelab/relay/api.stripe.com/v1/payment_intents HTTP/1.1
-X-WebNest-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-Authorization: Bearer sk_test_51PqExampleKey
+X-WebNest-Authorization: Bearer <WebNest access token>
+Authorization: Bearer sk_test_<KEY>
 Content-Type: application/x-www-form-urlencoded
 Idempotency-Key: 6f1c2a9e-1b7d-4c55-9a8e-2f4b0d3c1e77
 
@@ -282,8 +282,8 @@ amount=50000&currency=inr&automatic_payment_methods[enabled]=true
 
 ```http
 POST /api/codelab/relay/api-m.sandbox.paypal.com/v1/oauth2/token HTTP/1.1
-X-WebNest-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-Authorization: Basic QWVBMVFJWlhpZmxyMV8tcjBVMlViV1R6aU9XWDFHUlFlci1oSnVTX2NOb0duRFBNVnZGb0c2Vm9sNExiOkVCMmhoUDd5WnlWYTN4QTFEMnZ0eXFvOWJsaEo4VWJFNUp0WWx5bURvQThIMXhWNnRUQlkxT01kOGpGQVA4dFE=
+X-WebNest-Authorization: Bearer <WebNest access token>
+Authorization: Basic <base64 of SANDBOX_CLIENT_ID:SANDBOX_SECRET>
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials
