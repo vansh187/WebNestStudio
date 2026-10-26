@@ -9,7 +9,8 @@ import { getMyProjectStatus } from '../../api/me'
 import { listProjects } from '../../api/coding'
 import { getCodeLabDashboard } from '../../api/codelab'
 import { getLanguage } from '../../data/codingLanguages'
-import { readLearningProgress, getStartedCoursesProgress } from '../../lib/learningProgress'
+import { getStartedCoursesProgress } from '../../lib/learningProgress'
+import { useLearningProgress } from '../../hooks/useLearningProgress'
 import { getErrorDetail } from '../../lib/apiClient'
 import { useAuth } from '../../context/AuthContext'
 
@@ -145,7 +146,7 @@ function CodingProjectsCard() {
 
 // Courses the user has started, with lesson progress, plus their CodeLab numbers.
 function LearningDashboardCard({ userKey }) {
-  const progress = useMemo(() => readLearningProgress(userKey), [userKey])
+  const progress = useLearningProgress(userKey)
   const startedCourses = useMemo(() => getStartedCoursesProgress(progress), [progress])
   const [summary, setSummary] = useState(null)
 

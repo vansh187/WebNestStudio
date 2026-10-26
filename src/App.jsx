@@ -5,6 +5,7 @@ import { FiLoader, FiAlertTriangle, FiRefreshCw } from 'react-icons/fi'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
+import { ServerProgressSync } from './hooks/useServerProgressSync'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
 import IsolationGuard from './components/IsolationGuard'
@@ -119,6 +120,7 @@ function App() {
       <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
+            <ServerProgressSync />
             <Analytics />
             <SlowRequestBanner />
             <BrowserRouter>

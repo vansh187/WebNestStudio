@@ -18,6 +18,7 @@ import { NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import { readLearningProgress, writeLearningProgress, getLessonProgress, markLessonsSynced } from '../../lib/learningProgress'
 import { updateLessonProgress } from '../../api/learning'
+import { useLearningProgress } from '../../hooks/useLearningProgress'
 import { readUserNotes, readLessonNotes, writeUserNotes, createNoteId, noteDateLabel } from '../../lib/lessonNotes'
 
 // Older ids of a lesson (alias URLs of merged lessons) that notes may have been saved under.
@@ -106,7 +107,8 @@ export default function LessonDetail() {
   // Alias URLs (old ids of merged lessons) open the real lesson; progress is always stored and
   // sent under the id the course outline uses, so it counts on the roadmap and the server.
   const progressId = lesson?.id || lessonId
-  const [courseProgress, setCourseProgress] = useState({})
+  // Re-read on every change (this page's writes, the server pull after login, other tabs).
+  const courseProgress = useLearningProgress(userKey)
   const [notes, setNotes] = useState([])
   const [draftNote, setDraftNote] = useState('')
   const [saving, setSaving] = useState(false)
@@ -176,13 +178,11 @@ export default function LessonDetail() {
   useEffect(() => {
     if (!userKey) {
       setNotes([])
-      setCourseProgress({})
       return
     }
     // Notes use the same canonical id as progress and bookmarks, so the alias URL and the
     // lesson's own URL show the same notes.
     setNotes(readLessonNotes(userKey, progressId, noteAliasKeys(readUserNotes(userKey), progressId)))
-    setCourseProgress(readLearningProgress(userKey))
   }, [userKey, progressId])
 
   // Memoized so typing a note or toggling a bookmark doesn't rewrite the JSON-LD tag.
@@ -212,7 +212,6 @@ export default function LessonDetail() {
       toast.error('Could not save your progress. Your browser storage may be full or unavailable.')
       return
     }
-    setCourseProgress(all)
     trackEvent('lesson_completed', { lesson_id: progressId, course_slug: lesson?.course_slug })
     toast.success('Lesson marked complete.')
     // The final exam checks completion on the server. If this fails (offline, server asleep,
@@ -233,7 +232,6 @@ export default function LessonDetail() {
       toast.error('Could not save your bookmark. Your browser storage may be full or unavailable.')
       return
     }
-    setCourseProgress(all)
   }, [userKey, progressId, progress, toast])
 
   const saveNote = useCallback(() => {

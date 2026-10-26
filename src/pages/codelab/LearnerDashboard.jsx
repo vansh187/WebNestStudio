@@ -7,7 +7,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useSeo } from '../../hooks/useSeo'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
-import { readLearningProgress, getStartedCoursesProgress, getLearningTotals } from '../../lib/learningProgress'
+import { getStartedCoursesProgress, getLearningTotals } from '../../lib/learningProgress'
+import { useLearningProgress } from '../../hooks/useLearningProgress'
 import { formatDate } from '../../lib/examTime'
 import { certifiedCourseSlugs } from '../../lib/courseCertificates'
 import { loadMyCertificates } from '../../lib/myCertificates'
@@ -33,7 +34,7 @@ export default function LearnerDashboard() {
   const [loadedCertificates, setLoadedCertificates] = useState({ userKey: null, items: [] })
   const certificates = isAuthenticated && userKey && loadedCertificates.userKey === userKey ? loadedCertificates.items : NO_CERTIFICATES
   const certified = useMemo(() => certifiedCourseSlugs(certificates), [certificates])
-  const learningProgress = useMemo(() => readLearningProgress(userKey), [userKey])
+  const learningProgress = useLearningProgress(userKey)
   const startedCourses = useMemo(() => getStartedCoursesProgress(learningProgress, certified), [learningProgress, certified])
   const learningTotals = useMemo(() => getLearningTotals(learningProgress, certified), [learningProgress, certified])
 
