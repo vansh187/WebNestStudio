@@ -1,7 +1,6 @@
 import Breadcrumbs from '../../components/Breadcrumbs'
 import { RelatedService } from '../../components/RelatedLinks'
 import { trackEvent } from '../../lib/analytics'
-import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import CourseRoadmap from '../../components/CourseRoadmap'
 import CourseExamCard from '../../components/CourseExamCard'
@@ -11,7 +10,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useSeo, useStructuredData, SITE_NAME, SITE_URL } from '../../hooks/useSeo'
 import { NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
-import { readLearningProgress, getCourseProgress } from '../../lib/learningProgress'
+import { getCourseProgress } from '../../lib/learningProgress'
+import { useLearningProgress } from '../../hooks/useLearningProgress'
 import { useCourseExam } from '../../hooks/useCourseExam'
 
 export default function CourseDetail() {
@@ -22,7 +22,7 @@ export default function CourseDetail() {
   const { user, isAuthenticated } = useAuth()
   const userKey = user?.email || null
 
-  const progress = useMemo(() => readLearningProgress(userKey), [userKey])
+  const progress = useLearningProgress(userKey)
   const courseStats = course ? getCourseProgress(progress, course) : null
   // One exam view for the roadmap's finish line and the exam card, so they always agree.
   const { exam, syncFailed, reload: reloadExam } = useCourseExam(course?.slug ?? null, userKey, isAuthenticated)

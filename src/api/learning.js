@@ -15,6 +15,10 @@ export const getLearningDashboard = () => api.get('/api/learning/dashboard').the
 // Sends lessons completed in this browser so the server can check exam eligibility.
 export const bulkUpdateProgress = (lessons) => api.post('/api/learning/progress/bulk', { lessons }).then((r) => r.data)
 
+// Every lesson this learner has started or completed, so ticks follow the account to any
+// browser (LESSON_PROGRESS_SYNC_FRONTEND.md). `params`: { course_slug?, since? }.
+export const getMyProgress = (params) => api.get('/api/learning/progress', { params }).then((r) => r.data)
+
 // Final exam: eligibility, then one timed attempt that the server draws, times and grades.
 export const getCourseExam = (slug) => api.get(`/api/learning/courses/${slug}/exam`).then((r) => r.data)
 export const startExamAttempt = (slug, body) => api.post(`/api/learning/courses/${slug}/exam/attempts`, body).then((r) => r.data)
