@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiLayers, FiMonitor,
+  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiHelpCircle, FiLayers, FiMonitor,
   FiPlay, FiRotateCw, FiSend, FiSidebar, FiSquare, FiTerminal, FiX,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
@@ -10,6 +10,7 @@ import PreviewPanel from './PreviewPanel'
 import ApiClientPanel from './ApiClientPanel'
 import DatabasePanel from './DatabasePanel'
 import ArchitecturePanel from './ArchitecturePanel'
+import HelpPanel from './HelpPanel'
 import DebugPanel, { DebugControls } from './DebugPanel'
 import ResizeHandle from './ResizeHandle'
 import ErrorBoundary from '../ErrorBoundary'
@@ -33,6 +34,7 @@ const TABS = [
   { id: 'database', label: 'Database', icon: FiDatabase },
   { id: 'architecture', label: 'Architecture', icon: FiLayers },
   { id: 'preview', label: 'Preview', icon: FiMonitor },
+  { id: 'help', label: 'Help', icon: FiHelpCircle },
 ]
 
 const LAYER_LABEL = {
@@ -59,6 +61,12 @@ export default function BackendWorkspace({
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
   const mainRef = useRef(null)
   const [tab, setTab] = useState('output')
+  // The panel tabs scroll sideways when they don't fit; keep the open one in view, also when
+  // it was picked from the side bar.
+  const tabListRef = useRef(null)
+  useEffect(() => {
+    tabListRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+  }, [tab])
   // Arriving on the isolated URL means the learner pressed Debug, which reloaded the page.
   const [debugging, setDebugging] = useState(() => isIsolated() && isIsolationUrl(window.location))
   const [breakpoints, setBreakpoints] = useState(() => {
@@ -513,7 +521,7 @@ export default function BackendWorkspace({
           >
             <div className="flex h-9 shrink-0 items-center border-b border-ink-200 dark:border-ink-800">
               {/* Tabs shrink to fit the panel instead of scrolling, so none is hidden off the edge. */}
-              <div role="tablist" aria-label="Backend panels" className="flex min-w-0 flex-1">
+              <div ref={tabListRef} role="tablist" aria-label="Backend panels" className="flex min-w-0 flex-1 overflow-x-auto [scrollbar-width:thin]">
                 {TABS.map(({ id, label }) => (
                   <button
                     key={id}
@@ -522,7 +530,7 @@ export default function BackendWorkspace({
                     aria-selected={tab === id}
                     onClick={() => setTab(id)}
                     title={label}
-                    className={`inline-flex h-9 min-w-0 flex-auto items-center justify-center gap-1 border-b-2 px-2 text-[11px] font-semibold uppercase ${
+                    className={`inline-flex h-9 shrink-0 flex-auto items-center justify-center gap-1 whitespace-nowrap border-b-2 px-2 text-[11px] font-semibold uppercase ${
                       tab === id ? 'border-gold-500 text-ink-900 dark:text-white' : 'border-transparent text-ink-500 hover:text-ink-800 dark:text-ink-400 dark:hover:text-ink-100'
                     }`}
                   >
@@ -566,6 +574,7 @@ export default function BackendWorkspace({
                 {tab === 'architecture' && (
                   <ArchitecturePanel files={files} schema={api.schema} lastExchange={api.lastExchange} embedded />
                 )}
+                {tab === 'help' && <HelpPanel embedded />}
                 {tab === 'debug' && (
                   <DebugPanel
                     exchange={api.lastExchange}

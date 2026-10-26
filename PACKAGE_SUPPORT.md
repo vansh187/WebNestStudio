@@ -10,7 +10,7 @@ Your FastAPI app runs inside your browser (Pyodide), not on a server. Most Pytho
 |---|---|
 | Doesn't (pure Python, maths, data, validation) | ✅ Works |
 | HTTPS to a service that allows browser calls (Supabase REST, public APIs) | ✅ Works with `requests` and `httpx` |
-| HTTPS to a service that blocks browser calls (Razorpay, Stripe, PayPal sandbox) | ✅ Works through the WebNest relay when you're logged in, with **test keys only**. Type `relay` in the terminal |
+| HTTPS to a service that blocks browser calls (Razorpay, Stripe, PayPal sandbox) | ✅ Works through the WebNest relay when you're logged in, with **test keys only**, from `requests` or `httpx`. Type `relay` in the terminal |
 | A raw database or server connection (Postgres, MySQL, MongoDB, Redis, SMTP) | ❌ Not from a browser yet. The WebNest database proxy for Postgres, MySQL and MongoDB is in progress |
 | Compiled C code without a browser build | ❌ Can't install |
 
@@ -32,8 +32,9 @@ Your FastAPI app runs inside your browser (Pyodide), not on a server. Most Pytho
 | pillow | ✅ Works | |
 | cryptography | ✅ Works | |
 | requests | ✅ Works | Outside calls work when the site allows browser calls |
-| httpx | ✅ Works | Same as requests |
+| httpx | ✅ Works | Same as requests, sync and async. Calls to relay providers (Razorpay, Stripe…) go through the relay too |
 | razorpay, stripe | ✅ Through the relay | Log in, use test keys in `.env`; live keys are refused. Measured separately (relay checks), not in this run |
+| httpx → relay provider | ✅ Through the relay | Checked by `tests/httpx-relay.test.mjs` (real Pyodide httpx and relay bridge, mock relay) on 2026-10-26. The browser row `httpx → razorpay` needs a login |
 | supabase (REST via requests) | ✅ Expected to work | Supabase allows browser calls. Use the **anon** key, never `service_role`. Needs a practice project to measure |
 | supabase (package) | ⚠️ To be measured | httpx works now, so it's likely to work. Needs a practice project |
 | redis | ⚠️ Installs, can't connect | Hint shown. Use `fakeredis`, or Upstash Redis over HTTPS |
