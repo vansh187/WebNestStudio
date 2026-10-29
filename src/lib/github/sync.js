@@ -7,7 +7,7 @@
 // `paths` without a SHA is a local file not on GitHub yet that must go to that path.
 // `unverified` lists files the last pull could not read from GitHub (too large, over a
 // limit), whose GitHub version may be newer than their SHA says.
-import { MAX_BACKEND_BYTES, MAX_BACKEND_FILES, isPrivateFile, languageForFile, validateBackendPath } from '../codelab/backendFiles.js'
+import { MAX_BACKEND_BYTES, MAX_BACKEND_FILES, extensionOf, isPrivateFile, languageForFile, validateBackendPath } from '../codelab/backendFiles.js'
 import { GitHubLocalError } from './errors.js'
 
 export const MODES = ['backend', 'web', 'python', 'java']
@@ -41,7 +41,6 @@ export async function gitBlobSha(text) {
   return sha
 }
 
-const extensionOf = (path) => /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase() ?? ''
 const baseName = (path) => path.split('/').pop()
 
 const MODE_EXTENSIONS = {

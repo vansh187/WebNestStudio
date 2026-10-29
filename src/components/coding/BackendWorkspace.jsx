@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiHelpCircle, FiLayers, FiMonitor,
-  FiPlay, FiRotateCw, FiSend, FiSidebar, FiSquare, FiTerminal, FiX,
+  FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiHelpCircle, FiLayers, FiLoader, FiMonitor,
+  FiPlay, FiRotateCw, FiSave, FiSend, FiSidebar, FiSquare, FiTerminal, FiX,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import BackendConsole from './BackendConsole'
@@ -23,6 +23,8 @@ import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 import { statusTone } from '../../lib/codelab/httpStyles'
 import { canIsolate, isIsolated, isIsolationUrl, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
 import DebugReloadDialog from './DebugReloadDialog'
+import { API_TESTER_PREFIX, BREAKPOINTS_PREFIX } from '../../lib/codelab/storageKeys.js'
+import { useWorkspaceStorage } from '../../hooks/useWorkspaceStorage'
 import { changedPaths, expressionAt, hoverMarkdown, inlineValues, pathKey, resolveExpression } from '../../lib/codelab/debugValues'
 
 const REQUEST_LOG_LIMIT = 200
@@ -48,6 +50,11 @@ const TOOL_BTN = 'inline-flex h-8 w-8 items-center justify-center rounded-md tex
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '')
 const MOD = isMac ? '⌘' : 'Ctrl+'
 
+// Stored breakpoints, checked: anything else in storage is dropped.
+const readBreakpoints = (saved) => (Array.isArray(saved)
+  ? saved.filter((item) => typeof item?.file === 'string' && Number.isInteger(item?.line) && item.line > 0)
+  : [])
+
 // The Python backend workspace, laid out like an IDE: an activity bar, a file explorer
 // drawer, editor tabs, and a resizable panel (right or bottom) for output, the API
 // tester, the database, the architecture view and the frontend preview.
@@ -56,6 +63,8 @@ export default function BackendWorkspace({
   outputRef, onRun, onCancel, running, languages = [], language, onLanguageChange, toolbarExtra,
   // Optional async save before the debugging reload; resolves false when saving failed.
   beforeDebugReload,
+  // Optional "Save project" button (the playground saves the workspace to the account).
+  onSave, saving = false, saveLabel = 'Save project',
 }) {
   const layout = useIdeLayout()
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
@@ -69,12 +78,17 @@ export default function BackendWorkspace({
   }, [tab])
   // Arriving on the isolated URL means the learner pressed Debug, which reloaded the page.
   const [debugging, setDebugging] = useState(() => isIsolated() && isIsolationUrl(window.location))
-  const [breakpoints, setBreakpoints] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(`wns-codelab-breakpoints:${workspaceKey}`) || '[]')
-      return Array.isArray(saved) ? saved.filter((item) => typeof item?.file === 'string' && Number.isInteger(item?.line) && item.line > 0) : []
-    } catch { return [] }
-  })
+  // Per workspace (useWorkspaceStorage): a new project (starter, language switch) loads its
+  // own breakpoints instead of carrying the last one's over. Breakpoints of files that were
+  // deleted or renamed are dropped, also from storage.
+  // Keyed on the names only: typing changes `files` on every keystroke, its names rarely.
+  const nameList = files.map((file) => file.name).join('\n')
+  const fileNames = useMemo(() => new Set(nameList.split('\n')), [nameList])
+  const keepLive = useCallback((items) => items.filter((item) => fileNames.has(item.file)), [fileNames])
+  const [breakpoints, updateBreakpoints] = useWorkspaceStorage(`${BREAKPOINTS_PREFIX}${workspaceKey}`, readBreakpoints, keepLive)
+  const setBreakpoints = useCallback((change) => {
+    updateBreakpoints(`${BREAKPOINTS_PREFIX}${workspaceKey}`, change)
+  }, [updateBreakpoints, workspaceKey])
   const [consoleText, setConsoleText] = useState('')
   const [openFiles, setOpenFiles] = useState(() => (selectedFile ? [selectedFile] : []))
   const [debugLocation, setDebugLocation] = useState(null)
@@ -82,13 +96,7 @@ export default function BackendWorkspace({
   const closeReloadPrompt = useCallback(() => setReloadPrompt(false), [])
   const sectionRef = useRef(null)
 
-  // Breakpoints of files that were deleted or renamed are dropped.
-  const fileNames = useMemo(() => new Set(files.map((file) => file.name)), [files])
-  const liveBreakpoints = useMemo(() => breakpoints.filter((item) => fileNames.has(item.file)), [breakpoints, fileNames])
-
-  useEffect(() => {
-    try { localStorage.setItem(`wns-codelab-breakpoints:${workspaceKey}`, JSON.stringify(liveBreakpoints)) } catch { /* Breakpoints still work for this session. */ }
-  }, [liveBreakpoints, workspaceKey])
+  const liveBreakpoints = useMemo(() => keepLive(breakpoints), [keepLive, breakpoints])
 
   // Every answered request goes into the terminal log, whichever caller sent it.
   const [requests, setRequests] = useState([])
@@ -145,18 +153,18 @@ export default function BackendWorkspace({
   const debuggerConfig = useMemo(() => (debugging ? { breakpoints: liveBreakpoints } : null), [debugging, liveBreakpoints])
   const previewRequest = useCallback((spec) => request(spec, 'preview', debuggerConfig), [request, debuggerConfig])
   const testerRequest = useCallback((spec) => request(spec, 'tester', debuggerConfig), [request, debuggerConfig])
-  const testerSession = useApiTesterSession(`wns-codelab-api:${workspaceKey}`, testerRequest)
+  const testerSession = useApiTesterSession(`${API_TESTER_PREFIX}${workspaceKey}`, testerRequest)
   const clearRequests = useCallback(() => setRequests([]), [])
   const terminal = useBackendTerminal({ api, files, onFilesChange, onRun, onClearRequests: clearRequests, workspaceKey })
   const toggleBreakpoint = useCallback((file, line) => {
     setBreakpoints((current) => current.some((item) => item.file === file && item.line === line)
       ? current.filter((item) => item.file !== file || item.line !== line)
       : [...current, { file, line }])
-  }, [])
+  }, [setBreakpoints])
   // The editor moved this file's breakpoints because lines were added or removed above them.
   const moveBreakpoints = useCallback((file, lines) => {
     setBreakpoints((current) => [...current.filter((item) => item.file !== file), ...lines.map((line) => ({ file, line }))])
-  }, [])
+  }, [setBreakpoints])
 
   // Row counts and columns are only re-read while a panel that shows them is visible.
   useEffect(() => {
@@ -369,6 +377,12 @@ export default function BackendWorkspace({
             screens, so the page header above it is out of view. */}
         {toolbarExtra && <div className="ml-1 flex min-w-0 items-center gap-2 overflow-x-auto">{toolbarExtra}</div>}
         <div className="ml-auto flex shrink-0 items-center gap-1">
+          {onSave && (
+            <button type="button" onClick={onSave} disabled={saving} title={saveLabel} aria-label={saveLabel} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-ink-300 px-2.5 text-xs font-semibold text-ink-700 hover:border-gold-400 hover:text-ink-950 disabled:opacity-60 dark:border-ink-700 dark:text-ink-200 dark:hover:text-white">
+              {saving ? <FiLoader className="h-3.5 w-3.5 animate-spin" /> : <FiSave className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">{saveLabel}</span>
+            </button>
+          )}
           {/* Starting: Stop cancels. API up: Restart reloads your code, Stop shuts it down
               (like a dev server). Otherwise: Run. */}
           {running ? (

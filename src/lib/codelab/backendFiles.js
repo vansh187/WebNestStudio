@@ -21,9 +21,12 @@ export const LAYERS = [
   { id: 'repositories', label: 'Repositories', folder: 'app/repositories/', role: 'Database access: SQL queries only' },
 ]
 
+// The lower-case extension of a file name ('py' for app/Main.PY), or '' when it has none.
+// The one parser for CodeLab and GitHub sync (lib/github/sync.js).
+export const extensionOf = (name) => /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase() ?? ''
+
 export function languageForFile(name) {
-  const extension = /\.([a-z]+)$/i.exec(name)?.[1]?.toLowerCase()
-  return EXTENSION_LANGUAGE[extension] ?? 'plaintext'
+  return EXTENSION_LANGUAGE[extensionOf(name)] ?? 'plaintext'
 }
 
 export function layerOfFile(name) {
@@ -38,15 +41,43 @@ export function layerOfFile(name) {
 
 const SEGMENT = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/
 const PYTHON_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/
+const WINDOWS_DEVICES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i
+// How case-insensitive file systems compare names, as the backend's _tree_key does
+// (schemas/coding_schemas.py). SEGMENT allows ASCII only, so no Unicode normalizing.
+const treeKey = (path) => path.toLowerCase()
+
+// The folders a path sits in: app/api/x.py -> app, app/api.
+function folderPrefixes(path) {
+  const parts = path.split('/').slice(0, -1)
+  return parts.map((_, depth) => parts.slice(0, depth + 1).join('/'))
+}
+
+// Every file and folder of a list by comparison key, in one pass. Built per call: a list
+// holds at most MAX_BACKEND_FILES files, so this is cheap, and a cache keyed on the list
+// would go stale when a caller changes it in place.
+function treeIndex(files) {
+  const names = new Map()
+  const folders = new Map()
+  for (const file of files) {
+    if (!names.has(treeKey(file.name))) names.set(treeKey(file.name), file.name)
+    for (const folder of folderPrefixes(file.name)) {
+      const spellings = folders.get(treeKey(folder)) ?? new Set()
+      spellings.add(folder)
+      folders.set(treeKey(folder), spellings)
+    }
+  }
+  return { names, folders }
+}
 
 // The project's environment variables (see lib/codelab/dotenv.js). Only the root .env is
-// allowed, and it never leaves the browser: GitHub sync skips it.
+// allowed, and it never leaves the browser: GitHub sync, saved projects and share links
+// skip it (api/coding.js toCodePayload, lib/codelab/envStore.js).
 export const ENV_FILE = '.env'
 export const isPrivateFile = (name) => name === ENV_FILE
 
 // Returns an error message, or '' when the path is acceptable.
 export function validateBackendPath(rawName, files = [], current = null) {
-  const name = String(rawName ?? '').trim().replace(/\\/g, '/').replace(/^\/+/, '')
+  const name = normalizeBackendPath(rawName)
   if (!name) return 'Enter a file name, for example app/services/order_service.py.'
   if (name.length > 120) return 'Keep the path under 120 characters.'
   const segments = name.split('/')
@@ -54,20 +85,39 @@ export function validateBackendPath(rawName, files = [], current = null) {
     if (segments[segments.length - 1] === ENV_FILE) return 'The .env file goes in the project root: name it .env'
     return 'Use letters, numbers, _ and - in each folder and file name.'
   }
-  if (name !== ENV_FILE && !EXTENSION_LANGUAGE[/\.([a-z]+)$/i.exec(name)?.[1]?.toLowerCase()]) {
+  // The server refuses these too (schemas/coding_schemas.py), so a project stays saveable
+  // and can be cloned on Windows.
+  if (segments.some((segment) => segment.endsWith('.'))) return 'Folder and file names must not end with a dot.'
+  const device = segments.find((segment) => WINDOWS_DEVICES.test(segment.split('.')[0]))
+  if (device) return `${device} is a reserved name on Windows; choose another name.`
+  const extension = extensionOf(name)
+  if (name !== ENV_FILE && !EXTENSION_LANGUAGE[extension]) {
     return 'Use one of these file types: .py, .sql, .html, .css, .js, .json, .md or .txt (or a root .env).'
   }
-  if (name.endsWith('.py')) {
+  if (extension === 'py') {
     if (!name.startsWith('app/')) return 'Python files go inside the app/ folder so they can be imported as app.….'
-    const modules = name.slice(0, -3).split('/')
+    const modules = name.slice(0, -'.py'.length).split('/')
     if (modules.some((part) => !PYTHON_MODULE.test(part))) {
       return 'Python file and folder names must be valid module names: letters, numbers and _ (no - or spaces), not starting with a number.'
     }
   }
-  const taken = files.some((file) => file.name === name && file.name !== current)
-  if (taken) return `${name} already exists.`
-  const folderClash = files.some((file) => file.name !== current && (file.name.startsWith(`${name}/`) || name.startsWith(`${file.name}/`)))
-  if (folderClash) return 'A file and a folder cannot share the same name.'
+  // Compared the way Windows and macOS do (case-insensitive), like the server, so two
+  // files never overwrite each other when the project is cloned there.
+  // `current` (the file being renamed) does not count against itself; renameEntry passes a
+  // list that already leaves it out, which this handles the same way.
+  const { names, folders } = treeIndex(files.filter((file) => file.name !== current))
+  const key = treeKey(name)
+  const taken = names.get(key)
+  if (taken) return taken === name ? `${name} already exists.` : `${taken} already exists (names differ only in letter case).`
+  if (folders.has(key)) return 'A file and a folder cannot share the same name.'
+  for (const folder of folderPrefixes(name)) {
+    if (names.has(treeKey(folder))) return 'A file and a folder cannot share the same name.'
+    const spellings = folders.get(treeKey(folder))
+    // Any spelling already in use is fine (older projects may have two); a new one is not.
+    if (spellings && !spellings.has(folder)) {
+      return `Use the existing folder ${[...spellings][0]}/ (folder names differ only in letter case).`
+    }
+  }
   if (!current && files.length >= MAX_BACKEND_FILES) return `A project can hold up to ${MAX_BACKEND_FILES} files.`
   return ''
 }
@@ -111,7 +161,8 @@ export function newFileTemplate(name) {
     return `# Environment variables for this project. Run loads them into os.environ:
 #   import os
 #   key_id = os.environ["RAZORPAY_KEY_ID"]
-# This file stays in your browser and GitHub sync never pushes it. It is still readable on
+# This file stays in your browser: Save project, share links and GitHub sync never send it,
+# so a saved project keeps it on this device only, until you log out. It is still readable on
 # this device, so use test keys only (rzp_test_..., sk_test_...), never live ones.
 RAZORPAY_KEY_ID=rzp_test_replace_me
 RAZORPAY_KEY_SECRET=replace_me

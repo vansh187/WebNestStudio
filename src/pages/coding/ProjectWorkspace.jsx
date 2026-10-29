@@ -10,13 +10,20 @@ import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, NotFoundState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import { PROJECT_LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
-import { getProject, updateProject, createShare, toCodePayload } from '../../api/coding'
+import { getProject, updateProject, createShare, sourceFile, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 import { isJavaFile } from '../../lib/codelab/javaProject'
-import { languageForFile } from '../../lib/codelab/backendFiles'
+import { isPrivateFile, languageForFile } from '../../lib/codelab/backendFiles'
+import { projectWorkspaceKey } from '../../lib/codelab/storageKeys.js'
+import { saveEnvContent, withSavedEnv } from '../../lib/codelab/envStore'
+import { trackCodelabEditor } from '../../lib/codelab/idb.js'
 
-// Java and Web projects keep every file; Python stays single-file.
-const isMultiFile = (language) => language === 'java' || language === 'web'
+// Java, Web and FastAPI projects keep every file; Python stays single-file.
+const isMultiFile = (language) => language === 'java' || language === 'web' || language === 'backend'
+
+// A FastAPI project stays one: switching it to another language would drop its folders,
+// and other projects cannot become one (they have no app/main.py).
+const BACKEND_LANGUAGES = [getLanguage('backend')]
 
 // A one-file list for a multi-file language (null for single-file ones), so the file list
 // always exists while such a language is selected.
@@ -28,7 +35,7 @@ function seedFiles(language, content) {
 
 function savedFiles(data) {
   const saved = data.files ?? []
-  const kept = data.language === 'java' ? saved.filter(isJavaFile) : data.language === 'web' ? saved : []
+  const kept = data.language === 'java' ? saved.filter(isJavaFile) : data.language === 'web' || data.language === 'backend' ? saved : []
   return kept.length
     ? kept.map((file) => ({ name: file.name, language: data.language === 'java' ? 'java' : languageForFile(file.name), content: file.content ?? '' }))
     : seedFiles(data.language, data.source ?? '')
@@ -64,7 +71,6 @@ export default function ProjectWorkspace() {
   const toast = useToast()
   const runner = useCodeRunner()
 
-  const [languages] = useState(PROJECT_LANGUAGES)
   const [project, setProject] = useState(undefined) // undefined = loading, null = not found
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -82,6 +88,9 @@ export default function ProjectWorkspace() {
 
   useSeo({ title: title ? `${title} - CodeLab Project` : 'CodeLab Project', noindex: true, path: `/projects/${id}` })
 
+  // An open CodeLab page from the start, also while the project loads (accountData.js).
+  useEffect(() => trackCodelabEditor(), [])
+
   useEffect(() => {
     let cancelled = false
     setProject(undefined)
@@ -95,9 +104,11 @@ export default function ProjectWorkspace() {
         setSource(data.files?.[0]?.content ?? data.source ?? '')
         setStdin(data.stdin ?? '')
         setFileName(data.files?.[0]?.name ?? '')
-        const kept = savedFiles(data)
+        // The server never has the .env; this browser's copy goes back in (envStore.js).
+        const kept = data.language === 'backend' ? withSavedEnv(projectWorkspaceKey(id), savedFiles(data)) : savedFiles(data)
         setProjectFiles(kept)
-        setSelectedFile(kept?.[0]?.name ?? '')
+        const entry = data.language === 'backend' ? kept?.find((file) => file.name === 'app/main.py') : null
+        setSelectedFile((entry ?? kept?.[0])?.name ?? '')
       })
       .catch((err) => {
         if (cancelled) return
@@ -109,6 +120,7 @@ export default function ProjectWorkspace() {
     }
   }, [id, reloadKey])
 
+  const languages = language === 'backend' ? BACKEND_LANGUAGES : PROJECT_LANGUAGES
   const lang = languages.find((l) => l.id === language) ?? getLanguage(language)
   // Keep the backend's original file name only while it still matches the current
   // language; once the user switches language, use that language's canonical name
@@ -118,11 +130,16 @@ export default function ProjectWorkspace() {
     fileName && ext && fileName.toLowerCase().endsWith(ext) ? fileName : mainFileName(lang)
 
   const files = isMultiFile(language) ? projectFiles ?? [] : undefined
-  const activeSource = files ? files[0]?.content ?? '' : source
+  // Never the .env (toCodePayload also refuses it by name): the first file that is not private.
+  const active = files ? sourceFile(files) : null
+  const activeSource = files ? active?.content ?? '' : source
+  const activeName = active?.name
 
+  // toCodePayload drops the .env, so editing only the .env leaves this value's JSON the
+  // same and useAutosave sends nothing.
   const autosaveValue = useMemo(
-    () => ({ title, language, ...toCodePayload({ source: activeSource, fileName: currentFileName, files, extra: { stdin } }) }),
-    [title, language, stdin, activeSource, currentFileName, files],
+    () => ({ title, language, ...toCodePayload({ source: activeSource, sourceName: activeName, fileName: currentFileName, files, extra: { stdin } }) }),
+    [title, language, stdin, activeSource, activeName, currentFileName, files],
   )
 
   const handleFileChange = useCallback((name, value) => {
@@ -147,6 +164,16 @@ export default function ProjectWorkspace() {
     setLanguage(next)
   }, [language, files, source])
 
+  // Autosave leaves the .env out (toCodePayload), so it is kept in this browser instead,
+  // written only when its text changes (not on every keystroke in another file). Only once
+  // this route's project has loaded: right after moving from /projects/1 to /projects/2
+  // the state still holds project 1, whose .env must not land on project 2.
+  const envContent = projectFiles?.find((file) => isPrivateFile(file.name))?.content ?? null
+  const loadedHere = project?.language === 'backend' && Boolean(projectFiles) && String(project.id) === String(id)
+  useEffect(() => {
+    if (loadedHere) saveEnvContent(projectWorkspaceKey(id), envContent)
+  }, [loadedHere, envContent, id])
+
   const { status: saveStatus, flush: saveNow } = useAutosave(autosaveValue, (val) => updateProject(id, val), {
     enabled: Boolean(project),
   })
@@ -160,6 +187,7 @@ export default function ProjectWorkspace() {
         language,
         ...toCodePayload({
           source: activeSource,
+          sourceName: activeName,
           fileName: currentFileName,
           files,
           extra: { stdin, stdout: runner.result?.stdout },
@@ -177,7 +205,7 @@ export default function ProjectWorkspace() {
     } finally {
       setSharing(false)
     }
-  }, [id, title, language, currentFileName, activeSource, files, stdin, runner.result, toast])
+  }, [id, title, language, currentFileName, activeSource, activeName, files, stdin, runner.result, toast])
 
   if (error) {
     return (
@@ -224,6 +252,10 @@ export default function ProjectWorkspace() {
       }
       headerRight={<SaveStatus status={saveStatus} />}
       beforeDebugReload={saveNow}
+      // The loaded project's key, not the route's: right after moving to another project
+      // the files are still this one's, and its breakpoints must stay under its own key.
+      workspaceKey={projectWorkspaceKey(project.id)}
+      backendStorageNote="Your files are saved to your account; the .env and database are kept in this browser until you log out."
       languages={languages}
       language={language}
       onLanguageChange={handleLanguageChange}

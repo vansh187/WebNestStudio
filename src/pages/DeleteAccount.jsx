@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { FiAlertTriangle, FiLoader, FiTrash2 } from 'react-icons/fi'
 import Reveal from '../components/Reveal'
 import BackButton from '../components/coding/BackButton'
 import { useAuth } from '../context/AuthContext'
-import { useToast } from '../context/ToastContext'
+import { toastAfterReload } from '../lib/toastAfterReload'
 import { CONTACT } from '../data/site'
 import { useSeo } from '../hooks/useSeo'
 
@@ -24,8 +23,6 @@ export default function DeleteAccount() {
   })
 
   const { user, deleteAccount } = useAuth()
-  const toast = useToast()
-  const navigate = useNavigate()
   const [confirmed, setConfirmed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -41,8 +38,9 @@ export default function DeleteAccount() {
     const result = await deleteAccount()
     setSubmitting(false)
     if (result.ok) {
-      toast.success('Your account and data have been deleted.')
-      navigate('/', { replace: true })
+      // A full reload ends anything still holding the account's data (see AuthContext).
+      toastAfterReload('success', 'Your account and data have been deleted.')
+      window.location.replace('/')
     } else {
       setError(result.message)
     }

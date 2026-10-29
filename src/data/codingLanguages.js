@@ -38,8 +38,9 @@ export const LANGUAGES = [
   },
 ]
 
-// Saved projects and shares go through the backend API, which does not store backend
-// workspaces yet; those are kept in the browser only.
+// The languages a new or existing project can be switched to. FastAPI workspaces are saved
+// as projects too, but only from the playground's Save project, and stay FastAPI projects
+// (see ProjectWorkspace.jsx).
 export const PROJECT_LANGUAGES = LANGUAGES.filter((l) => l.id !== 'backend')
 
 const BY_ID = Object.fromEntries(LANGUAGES.map((l) => [l.id, l]))

@@ -1,4 +1,5 @@
 import { api } from '../lib/apiClient'
+import { isPrivateFile } from '../lib/codelab/backendFiles'
 
 // Coding platform API — see BACKEND_API_CODING_PLATFORM.md for the full contract.
 // Every wrapper returns the parsed body (`r.data`).
@@ -83,18 +84,46 @@ export const getCodingStats = () => api.get('/api/me/coding-stats').then((r) => 
 // Build the write payload every project/share/execute call expects: `source` is the
 // documented alias the backend accepts everywhere; `files` is sent alongside it so
 // endpoints that key off the files array (e.g. PUT /api/projects/:id) also work.
-export function toCodePayload({ source, fileName, files, extra }) {
-  const normalizedFiles = Array.isArray(files) && files.length
-    ? files.map((file) => ({
+// Private files (.env) never leave the browser: not in shares, saved projects or runs,
+// neither as a file nor as `source`. `sourceName` is the file `source` was read from
+// (pick it with sourceFile below); a private one is replaced by the first shared file.
+// Callers that leave `sourceName` out still get a backstop: a `source` that is a private
+// file's text, and no shared file's, is replaced the same way.
+export function toCodePayload({ source, sourceName, fileName, files, extra }) {
+  const list = Array.isArray(files) ? files : []
+  const shared = list.filter((file) => !isPrivateFile(file?.name))
+  const textOf = (file) => file?.content ?? ''
+  const fromPrivate = sourceName !== undefined
+    ? isPrivateFile(sourceName)
+    : source != null
+      && list.some((file) => isPrivateFile(file?.name) && textOf(file) === source)
+      && !shared.some((file) => textOf(file) === source)
+  const safeSource = fromPrivate ? shared[0]?.content ?? '' : source ?? ''
+  const normalizedFiles = shared.length
+    ? shared.map((file) => ({
       name: file?.name || fileName || 'main.txt',
       language: file?.language,
       content: file?.content ?? '',
     }))
-    : [{ name: fileName || 'main.txt', content: source ?? '' }]
+    : [{ name: fileName || 'main.txt', content: safeSource }]
 
   return {
-    source: source ?? '',
+    source: safeSource,
     files: normalizedFiles,
     ...extra,
   }
+}
+
+// The file a page sends as `source`: the open one (`selectedName`) unless it is private,
+// then the first file that is not; with no `selectedName`, that first file. Null when
+// `selectedName` is not among the files (a stale selection): the page then sends its own
+// `source`, as it did before.
+export function sourceFile(files, selectedName = null) {
+  const list = Array.isArray(files) ? files : []
+  if (selectedName != null) {
+    const open = list.find((file) => file.name === selectedName)
+    if (!open) return null
+    if (!isPrivateFile(open.name)) return open
+  }
+  return list.find((file) => !isPrivateFile(file.name)) ?? null
 }

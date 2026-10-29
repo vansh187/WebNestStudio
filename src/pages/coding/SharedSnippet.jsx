@@ -12,12 +12,17 @@ import ErrorBoundary from '../../components/ErrorBoundary'
 import { getLanguage } from '../../data/codingLanguages'
 import { getShare } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
+import { PLAYGROUND_KEY, newDbId } from '../../lib/codelab/storageKeys.js'
+import { codelabFrozenNotice, codelabLocal } from '../../lib/codelab/idb.js'
+import { loadSession } from '../../lib/codelab/projectStore'
+import { forgetWorkspace } from '../../lib/codelab/accountData'
+import { useToast } from '../../context/ToastContext'
 
-const STORAGE_KEY = 'wns-codelab-playground'
 
 export default function SharedSnippet() {
   const { shareId } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [snapshot, setSnapshot] = useState(undefined)
   const [error, setError] = useState(null)
@@ -82,20 +87,30 @@ export default function SharedSnippet() {
   const activeFile = files.find((file) => file.name === selectedFile) ?? files[0]
   const source = files[0]?.content ?? snapshot.source ?? ''
 
-  const openInCodeLab = () => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          language: snapshot.language,
-          source,
-          ...(files.length ? { files, selectedFile: activeFile?.name } : {}),
-          stdin: snapshot.stdin ?? '',
-        }),
-      )
-    } catch {
-      /* CodeLab opens with its own last session when storage is unavailable. */
+  const openInCodeLab = async () => {
+    // Under the lock (another account's data could not be cleared, lib/codelab/idb.js)
+    // the playground would neither show nor keep it, so say why instead.
+    const paused = codelabFrozenNotice()
+    if (paused) {
+      toast.error(paused.notice)
+      return
     }
+    // The playground session this replaces: its workspace's database, API tester token and
+    // breakpoints go with it, as when the playground loads a starter or an import.
+    const previous = await loadSession(PLAYGROUND_KEY)
+    if (previous) await forgetWorkspace(`${PLAYGROUND_KEY}:${typeof previous.dbId === 'string' ? previous.dbId : 'main'}`)
+    // Through the CodeLab gateway (idb.js). When the write is refused (storage blocked, or a
+    // wipe running in another tab), CodeLab opens with its own last session.
+    codelabLocal.setJSON(PLAYGROUND_KEY, {
+      language: snapshot.language,
+      source,
+      ...(files.length ? { files, selectedFile: activeFile?.name } : {}),
+      stdin: snapshot.stdin ?? '',
+      // Its own workspace: a FastAPI share must not run against the database, API tester
+      // token or breakpoints of an earlier playground project.
+      dbId: newDbId(),
+      edited: true,
+    })
     navigate('/codelab')
   }
 

@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { FiCheckCircle, FiAlertTriangle, FiInfo, FiX } from 'react-icons/fi'
+import { takePendingToast } from '../lib/toastAfterReload'
 
 const ToastContext = createContext(null)
 
@@ -36,7 +37,14 @@ export function ToastProvider({ children }) {
     success: (message, opts) => push('success', message, opts),
     error: (message, opts) => push('error', message, opts),
     info: (message, opts) => push('info', message, opts),
-  }), [push])
+    // Closes a toast early, by the id success/error/info returned.
+    dismiss,
+  }), [push, dismiss])
+
+  useEffect(() => {
+    const pending = takePendingToast()
+    if (pending && ICONS[pending.type]) push(pending.type, pending.message)
+  }, [push])
 
   return (
     <ToastContext.Provider value={toast}>
