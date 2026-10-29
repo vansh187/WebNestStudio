@@ -10,6 +10,8 @@ import BackButton from '../../components/coding/BackButton'
 import { getLanguage } from '../../data/codingLanguages'
 import { listProjects, deleteProject, getCodingStats } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
+import { projectWorkspaceKey } from '../../lib/codelab/storageKeys.js'
+import { forgetWorkspace } from '../../lib/codelab/accountData'
 
 function formatRelative(iso) {
   const then = new Date(iso).getTime()
@@ -41,7 +43,7 @@ function ProjectCard({ project, onDelete, deleting }) {
       </Link>
       <button
         type="button"
-        onClick={() => onDelete(project.id)}
+        onClick={() => onDelete(project.id, project.language)}
         disabled={deleting}
         aria-label={`Delete ${project.title || 'project'}`}
         className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 hover:bg-red-500/10 hover:text-red-500 disabled:opacity-60"
@@ -88,13 +90,17 @@ export default function ProjectsList() {
   }, [reloadKey])
 
   const handleDelete = useCallback(
-    async (projectId) => {
+    async (projectId, language) => {
       if (!window.confirm('Delete this project? This cannot be undone.')) return
       setDeletingId(projectId)
       try {
         await deleteProject(projectId)
         setItems((prev) => (prev ?? []).filter((p) => p.id !== projectId))
-        toast.success('Project deleted.')
+        // A FastAPI project's .env, database, breakpoints and API tester token in this
+        // browser go too; other projects keep nothing here.
+        const forgotten = language !== 'backend' || (await forgetWorkspace(projectWorkspaceKey(projectId)))
+        if (forgotten) toast.success('Project deleted.')
+        else toast.error('Project deleted, but its data in this browser could not be cleared. Logging out clears it.')
       } catch (err) {
         toast.error(getErrorDetail(err, 'Could not delete the project.'))
       } finally {

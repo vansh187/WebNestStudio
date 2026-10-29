@@ -11,18 +11,21 @@ import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
 import { WEB_FILES, PYTHON_FILES, JAVA_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { BACKEND_STARTER_INFO, DEFAULT_BACKEND_STARTER, backendStarterFiles } from '../../data/backendStarters'
-import { deleteWorkspaceDatabase } from '../../hooks/useApiRuntime'
-import { createProject, createShare, toCodePayload } from '../../api/coding'
+import { copyWorkspaceDatabase } from '../../hooks/useApiRuntime'
+import { forgetWorkspace, sessionOwnsCodelabData } from '../../lib/codelab/accountData'
+import { createProject, createShare, sourceFile, toCodePayload } from '../../api/coding'
 import { getErrorDetail } from '../../lib/apiClient'
 import { isValidLink } from '../../lib/github/sync'
 import GitHubSync from '../../components/coding/GitHubSync'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import { Skeleton } from '../../components/states/Skeleton'
-import { loadSession, saveSession } from '../../lib/codelab/projectStore'
+import { loadSession, noteLiveEdit, saveSession } from '../../lib/codelab/projectStore'
+import { saveEnvFile } from '../../lib/codelab/envStore'
+import { trackCodelabEditor } from '../../lib/codelab/idb.js'
+import { PLAYGROUND_KEY, databaseKey, newDbId, projectWorkspaceKey } from '../../lib/codelab/storageKeys.js'
+import { saveDatabase } from '../../lib/codelab/dbStore'
 
-const STORAGE_KEY = 'wns-codelab-playground'
 
-const newDbId = () => Math.random().toString(36).slice(2, 10)
 
 function defaultFiles(language) {
   if (language === 'backend') return backendStarterFiles(DEFAULT_BACKEND_STARTER)
@@ -65,6 +68,9 @@ function parseSession(parsed) {
         stdin: parsed.stdin ?? '',
         dbId: typeof parsed.dbId === 'string' ? parsed.dbId : 'main',
         github: isValidLink(parsed.github) ? parsed.github : null,
+        // Whether the learner changed the code; sessions saved before this flag count as
+        // changed. Logout asks before deleting changed ones (lib/codelab/accountData.js).
+        edited: parsed.edited !== false,
       }
     }
   } catch {
@@ -95,14 +101,24 @@ function PlaygroundLoader() {
   const exampleKey = new URLSearchParams(location.search).get('example') || '0'
   const templateLesson = SAMPLE_LESSONS[templateId]
   const template = useMemo(() => withBackendStarter(lessonWorkspace(templateLesson, exampleKey)), [templateLesson, exampleKey])
-  const storageKey = template ? `${STORAGE_KEY}:lesson:${template.lessonId}:${exampleKey}` : STORAGE_KEY
+  const storageKey = template ? `${PLAYGROUND_KEY}:lesson:${template.lessonId}:${exampleKey}` : PLAYGROUND_KEY
   const [stored, setStored] = useState(undefined)
 
+  // Counted as an open CodeLab page from the start, while the session is still loading, so
+  // a logout meanwhile freezes and reloads this tab (lib/codelab/accountData.js).
+  useEffect(() => trackCodelabEditor(), [])
+
+  // While the login check runs it may clear another account's data (claimCodelabData),
+  // which must not be read meanwhile. Only waited for when the stored data may not be this
+  // session's; normally (its own data) the playground opens at once.
+  const { initializing } = useAuth()
+  const waitForLogin = initializing && !sessionOwnsCodelabData()
   useEffect(() => {
+    if (waitForLogin) return undefined
     let cancelled = false
     loadSession(storageKey).then((value) => { if (!cancelled) setStored(parseSession(value)) })
     return () => { cancelled = true }
-  }, [storageKey])
+  }, [storageKey, waitForLogin])
 
   if (stored === undefined) {
     return (
@@ -141,6 +157,20 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
   const [githubLink, setGithubLink] = useState(session?.github ?? null)
   const workspaceKey = `${storageKey}:${dbId}`
   const [touched, setTouched] = useState(Boolean(session))
+  // A lesson template or starter counts as unchanged until the learner edits it.
+  const [edited, setEdited] = useState(Boolean(session?.edited))
+  // Counts changes, so Save project can tell whether the learner typed while it ran.
+  const changeCount = useRef(0)
+  const markChanged = useCallback(() => {
+    changeCount.current += 1
+    setTouched(true)
+    setEdited(true)
+  }, [])
+  // Logout asks before deleting changed code, also before the debounced save below lands.
+  useEffect(() => {
+    noteLiveEdit(storageKey, edited)
+    return () => noteLiveEdit(storageKey, false)
+  }, [storageKey, edited])
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
 
@@ -161,10 +191,10 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
   }, [toast])
 
   useEffect(() => {
-    pendingSave.current = { key: storageKey, value: { language, source, files, selectedFile, stdin, dbId, github: githubLink } }
+    pendingSave.current = { key: storageKey, value: { language, source, files, selectedFile, stdin, dbId, github: githubLink, edited } }
     const timer = setTimeout(() => flushSave(), 400)
     return () => clearTimeout(timer)
-  }, [language, source, files, selectedFile, stdin, dbId, githubLink, storageKey, flushSave])
+  }, [language, source, files, selectedFile, stdin, dbId, githubLink, edited, storageKey, flushSave])
 
   useEffect(() => {
     // Mobile browsers often never fire pagehide when a tab is closed; hidden is the last
@@ -195,12 +225,15 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
       const nextFiles = cloneFiles(defaults, defaults)
       setFiles(nextFiles)
       setSelectedFile(firstFile(next, nextFiles) ?? 'main.py')
+      // The files are the new language's defaults now: nothing of the learner's to lose.
+      setEdited(false)
       // New default files are a different project; keeping the link would make the next
       // push delete the repo's files.
       setGithubLink(null)
       if (next === 'backend') {
-        // A fresh backend project gets a fresh database; drop the one it replaces.
-        deleteWorkspaceDatabase(workspaceKey)
+        // A fresh backend project gets a fresh database; drop the one it replaces, with its
+        // API tester token and breakpoints.
+        forgetWorkspace(workspaceKey)
         setDbId(newDbId())
       }
     },
@@ -209,12 +242,13 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
 
   const loadStarter = useCallback(() => {
     if (touched && !window.confirm('Replace your current files and database with this starter project?')) return
-    deleteWorkspaceDatabase(workspaceKey)
+    forgetWorkspace(workspaceKey)
     const nextFiles = backendStarterFiles(starter)
     setFiles(nextFiles)
     setSelectedFile(firstFile('backend', nextFiles))
     setDbId(newDbId())
     setTouched(false)
+    setEdited(false)
     setGithubLink(null)
   }, [touched, workspaceKey, starter])
 
@@ -224,34 +258,37 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     const cloned = cloneFiles(nextFiles, nextFiles)
     if (kind === 'import') {
       const mode = nextLanguage ?? language
-      if (mode === 'backend' || language === 'backend') deleteWorkspaceDatabase(workspaceKey)
+      if (mode === 'backend' || language === 'backend') forgetWorkspace(workspaceKey)
       setLanguage(mode)
       setFiles(cloned)
       setSelectedFile(firstFile(mode, cloned) ?? cloned[0]?.name)
       setDbId(newDbId())
       setTouched(false)
+      // Imported code is on GitHub, so it is not lost with this browser's copy.
+      setEdited(false)
     } else {
       setFiles(cloned)
       setSelectedFile((current) => (cloned.some((file) => file.name === current) ? current : firstFile(language, cloned) ?? cloned[0]?.name))
+      // Pulled code is on GitHub; `edited` stays as it was (earlier changes still count).
       setTouched(true)
     }
     setGithubLink(link ?? null)
   }, [language, workspaceKey])
 
   const handleSourceChange = useCallback((value) => {
-    setTouched(true)
+    markChanged()
     setSource(value)
-  }, [])
+  }, [markChanged])
 
   const handleFileChange = useCallback((fileName, value) => {
-    setTouched(true)
+    markChanged()
     setFiles((items) => items.map((file) => (file.name === fileName ? { ...file, content: value } : file)))
-  }, [])
+  }, [markChanged])
 
   const handleFilesChange = useCallback((nextFiles) => {
-    setTouched(true)
+    markChanged()
     setFiles(nextFiles)
-  }, [])
+  }, [markChanged])
 
   const requireLogin = useCallback(
     (message) => {
@@ -263,25 +300,44 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
 
   const currentLang = useCallback(() => getLanguage(language), [language])
 
-  const handleSave = useCallback(async () => {
+  // `databaseSnapshot`: takes the running database, from the backend IDE's Save
+  // (CodingWorkspace.jsx); called only once logged in. Without it (the run bar passes its
+  // click event) the stored copy is used.
+  const handleSave = useCallback(async ({ databaseSnapshot } = {}) => {
     if (!isAuthenticated) {
       requireLogin('Log in to save your CodeLab project.')
       return
     }
     setSaving(true)
+    const changesAtStart = changeCount.current
     try {
+      const databaseBytes = typeof databaseSnapshot === 'function' ? await databaseSnapshot() : undefined
       const lang = currentLang()
-      const activeSource = files.find((file) => file.name === selectedFile)?.content ?? source
+      const active = sourceFile(files, selectedFile)
       const project = await createProject({
-        title: 'Untitled CodeLab project',
+        title: language === 'backend' ? 'Untitled FastAPI project' : 'Untitled CodeLab project',
         language,
         ...toCodePayload({
-          source: activeSource,
+          source: active ? active.content : source,
+          sourceName: active?.name,
           fileName: mainFileName(lang),
           files,
           extra: { stdin },
         }),
       })
+      if (language === 'backend') {
+        // The project on the server has neither; both stay in this browser.
+        if (databaseBytes instanceof Uint8Array) await saveDatabase(databaseKey(projectWorkspaceKey(project.id)), databaseBytes)
+        else await copyWorkspaceDatabase(workspaceKey, projectWorkspaceKey(project.id))
+        saveEnvFile(projectWorkspaceKey(project.id), files)
+      }
+      // The code is in the account now, so logout need not warn about it, unless the
+      // learner kept typing while this ran: those changes are not in the project. Queued
+      // directly, as the editor unmounts on navigate before an effect would queue it.
+      if (changeCount.current === changesAtStart) {
+        setEdited(false)
+        pendingSave.current = { key: storageKey, value: { language, source, files, selectedFile, stdin, dbId, github: githubLink, edited: false } }
+      }
       toast.success('CodeLab project created.')
       navigate(`/projects/${project.id}`)
     } catch (err) {
@@ -289,8 +345,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     } finally {
       setSaving(false)
     }
-  }, [isAuthenticated, requireLogin, currentLang, language, source, files, selectedFile, stdin, toast, navigate])
-
+  }, [isAuthenticated, requireLogin, currentLang, language, source, files, selectedFile, stdin, workspaceKey, storageKey, dbId, githubLink, toast, navigate])
   const handleShare = useCallback(async () => {
     if (!isAuthenticated) {
       requireLogin('Log in to share your CodeLab work.')
@@ -299,11 +354,12 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     setSharing(true)
     try {
       const lang = currentLang()
-      const activeSource = files.find((file) => file.name === selectedFile)?.content ?? source
+      const active = sourceFile(files, selectedFile)
       const { url } = await createShare({
         language,
         ...toCodePayload({
-          source: activeSource,
+          source: active ? active.content : source,
+          sourceName: active?.name,
           fileName: mainFileName(lang),
           files,
           extra: { stdin, stdout: runner.result?.stdout },
@@ -375,6 +431,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
         </div>
       )}
       workspaceKey={workspaceKey}
+      backendStorageNote="Your files and database are kept in this browser. Save project to keep the files in your account."
       languages={LANGUAGES}
       language={language}
       onLanguageChange={handleLanguageChange}

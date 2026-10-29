@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadDatabase, saveDatabase } from '../lib/codelab/dbStore'
+import { databaseKey } from '../lib/codelab/storageKeys.js'
 import { REQUIREMENTS_FILE, parseRequirements } from '../lib/codelab/terminal'
 import { envFromFiles } from '../lib/codelab/dotenv'
 import { API_BASE_URL, api, getErrorDetail, refreshSession } from '../lib/apiClient'
@@ -28,20 +29,19 @@ const SCHEMA_DELAY_MS = 400
 const BOOT_HINT = 'Starting Python and FastAPI in your browser… the first run downloads about 5 MB.'
 const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
-export const DB_STORAGE_PREFIX = 'wns-codelab-db:'
-
-// The IndexedDB key of a workspace's database. Everything that touches a workspace's
-// database goes through this, so the format lives in one place.
-export const databaseKey = (workspaceKey) => `${DB_STORAGE_PREFIX}${workspaceKey}`
-
-// Deletes a workspace's saved database (used when a project is replaced or abandoned).
-export async function deleteWorkspaceDatabase(workspaceKey) {
+// Gives a newly saved project the playground's database, so its data carries over. Best
+// effort: the project's files are already saved, and schema.sql rebuilds the tables.
+export async function copyWorkspaceDatabase(fromKey, toKey) {
   try {
-    return await saveDatabase(databaseKey(workspaceKey), null)
+    const bytes = await loadDatabase(databaseKey(fromKey))
+    if (bytes) await saveDatabase(databaseKey(toKey), bytes)
   } catch {
-    return false
+    /* Storage unavailable: the project starts with an empty database. */
   }
 }
+
+// Deleting a workspace's database goes through forgetWorkspace (lib/codelab/accountData.js),
+// which also drops the workspace's .env, breakpoints and API tester token.
 
 function failure(message, extra = {}) {
   return { status: 'runtime_error', stdout: '', stderr: message, runtime_ms: 0, error: message, truncated: false, ...extra }
@@ -256,17 +256,21 @@ export function useApiRuntime(workspaceKey) {
     return boot
   }, [dbKey, post, spawn, terminate])
 
+  // Resolves with the database bytes it saved (null: no database yet), or undefined when
+  // no worker runs or the snapshot failed.
   const snapshotNow = useCallback(async () => {
     clearTimeout(snapshotTimerRef.current)
     snapshotTimerRef.current = null
-    if (!workerRef.current) return
+    if (!workerRef.current) return undefined
     try {
       const reply = await post('snapshot')
       const bytes = reply.data?.bytes ?? null
       snapshotRef.current = bytes ?? undefined
       await saveDatabase(dbKey, bytes)
+      return bytes
     } catch {
       /* A failed snapshot only means the next reload starts from the previous one. */
+      return undefined
     }
   }, [dbKey, post])
 
@@ -638,6 +642,8 @@ export function useApiRuntime(workspaceKey) {
     debugPause,
     debugRequest,
     resumeDebug,
+    // Writes the running database to IndexedDB now, not after the snapshot delay.
+    snapshotNow,
     ready: Boolean(openapi),
-  }), [runner, run, request, install, pipList, exec, relayStatus, relayNotices, clearRelayNotices, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug])
+  }), [runner, run, request, install, pipList, exec, relayStatus, relayNotices, clearRelayNotices, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug, snapshotNow])
 }

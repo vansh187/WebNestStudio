@@ -14,6 +14,8 @@ import {
 } from '../../lib/codelab/javaProject'
 import { parseJavacDiagnostics } from '../../lib/codelab/javaIntel/diagnostics'
 import { createPreviewHtml } from '../../lib/codelab/webPreview'
+import { FROZEN_EVENT, codelabEditorOpen, codelabFrozenNotice } from '../../lib/codelab/idb.js'
+import { useToast } from '../../context/ToastContext'
 import { useApiRuntime } from '../../hooks/useApiRuntime'
 import BackendWorkspace from './BackendWorkspace'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
@@ -23,6 +25,10 @@ import ErrorBoundary from '../ErrorBoundary'
 // so the editor and panels stretch to fit it instead of setting their own heights.
 const EDITOR_HEIGHT = 'h-[45dvh] min-h-[240px] md:h-[55dvh] lg:h-auto lg:min-h-0 lg:flex-1'
 const PANEL_HEIGHT = 'lg:min-h-0 lg:flex-1 lg:overflow-auto'
+// The lock (idb.js lockSeq) whose paused-saving notice was last shown (see the effect below).
+const shownLock = { seq: null, toastId: null }
+// How long Save project waits for a fresh database snapshot.
+const SAVE_SNAPSHOT_WAIT_MS = 1500
 
 export default function CodingWorkspace({
   eyebrow,
@@ -51,6 +57,8 @@ export default function CodingWorkspace({
   onShare,
   sharing,
   workspaceKey = 'default',
+  // Backend only: where this page keeps the files (the playground's browser copy or a saved project).
+  backendStorageNote = 'Your files and database are saved in this browser only.',
   // Scroll the workspace up under the navbar on open (large screens). Pages with content
   // above the editor that must stay readable, like a problem statement, turn this off.
   scrollIntoViewOnOpen = true,
@@ -75,6 +83,52 @@ export default function CodingWorkspace({
 
   // The backend IDE does the same for itself (see BackendWorkspace).
   useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend })
+  // When saving had to be paused without a reload, say so instead of dropping edits silently;
+  // once per lock, however many editors mount, and only on pages that keep CodeLab data in
+  // this browser (the playground and saved projects; not problem pages). Closed again when
+  // the lock lifts.
+  const toast = useToast()
+  useEffect(() => {
+    const show = (paused) => {
+      if (!paused?.notice) {
+        if (shownLock.toastId != null) toast.dismiss(shownLock.toastId)
+        shownLock.toastId = null
+        return
+      }
+      if (paused.seq === shownLock.seq || !codelabEditorOpen()) return
+      shownLock.seq = paused.seq
+      shownLock.toastId = toast.error(paused.notice, { duration: 0 })
+    }
+    show(codelabFrozenNotice())
+    const onFrozen = (event) => show(event.detail)
+    window.addEventListener(FROZEN_EVENT, onFrozen)
+    return () => window.removeEventListener(FROZEN_EVENT, onFrozen)
+  }, [toast])
+  // Saving copies the stored database, so the running one is written out first; rows
+  // added within the snapshot delay would otherwise be missing from the saved project. Not
+  // while a request is paused at a breakpoint: the worker cannot answer until it resumes.
+  // The button counts as saving from the first click, so a double click saves once.
+  const { snapshotNow, debugPause } = api
+  const [preparingSave, setPreparingSave] = useState(false)
+  const savingRef = useRef(false)
+  const saveBackend = useMemo(() => (onSave ? async () => {
+    if (savingRef.current) return
+    savingRef.current = true
+    setPreparingSave(true)
+    try {
+      // The running database goes to the saved project as is (no second read from storage),
+      // taken by the page when it is really saving (after its login check). At most
+      // SAVE_SNAPSHOT_WAIT_MS: the worker answers one call at a time, so behind a slow
+      // request the snapshot would hold Save up; the stored copy is used then.
+      const databaseSnapshot = () => (debugPause
+        ? Promise.resolve(undefined)
+        : Promise.race([snapshotNow(), new Promise((resolve) => { setTimeout(resolve, SAVE_SNAPSHOT_WAIT_MS) })]))
+      await onSave({ databaseSnapshot })
+    } finally {
+      savingRef.current = false
+      setPreparingSave(false)
+    }
+  } : undefined), [onSave, snapshotNow, debugPause])
   useFullscreen(maximized, setMaximized)
 
   // Java projects can hold several class files; the runner bundles them (see javaProject.js).
@@ -165,6 +219,7 @@ export default function CodingWorkspace({
       language,
       ...toCodePayload({
         source: sourceText,
+        sourceName: activeFile?.name,
         fileName: mainFileName(lang),
         files,
         extra: {
@@ -200,7 +255,7 @@ export default function CodingWorkspace({
       {backend ? (
         <>
           <p className="mt-2 text-xs text-ink-500 dark:text-ink-300">
-            Python, FastAPI and SQLite run inside your browser. Your files and database are saved in this browser only. Shortcuts: Ctrl+Enter runs, Ctrl+B shows files, Ctrl+J shows the panel.
+            Python, FastAPI and SQLite run inside your browser. {backendStorageNote} Shortcuts: Ctrl+Enter runs, Ctrl+B shows files, Ctrl+J shows the panel.
           </p>
           <BackendWorkspace
             api={api}
@@ -220,6 +275,9 @@ export default function CodingWorkspace({
             onLanguageChange={onLanguageChange}
             toolbarExtra={headerRight}
             beforeDebugReload={beforeDebugReload}
+            onSave={saveBackend}
+            saving={saving || preparingSave}
+            saveLabel={saveLabel}
           />
         </>
       ) : (
