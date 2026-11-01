@@ -38,7 +38,7 @@ export default function AdminProjectStatus() {
         client already has a status or not — no need to check first.
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-4 rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-4 rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-4 sm:p-6">
         {banner && <p className="text-sm font-medium text-red-500">{banner}</p>}
 
         <div>

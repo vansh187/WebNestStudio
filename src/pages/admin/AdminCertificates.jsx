@@ -58,7 +58,7 @@ export default function AdminCertificates() {
   return (
     <div>
       <h2 className="font-display text-xl font-bold">Certificates</h2>
-      <form onSubmit={(event) => { event.preventDefault(); load(query.trim()) }} className="mt-4 flex gap-2">
+      <form onSubmit={(event) => { event.preventDefault(); load(query.trim()) }} className="mt-4 flex flex-wrap gap-2 sm:flex-nowrap">
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by ID, name, email or course" aria-label="Search certificates" className="w-full max-w-md rounded-lg border border-ink-200 bg-transparent px-3 py-2 text-sm dark:border-ink-700" />
         <button type="submit" className={BTN}><FiSearch className="inline" /> Search</button>
       </form>
@@ -68,7 +68,28 @@ export default function AdminCertificates() {
       ) : items.length === 0 ? (
         <p className="mt-6 text-sm text-ink-500">No certificates found.</p>
       ) : (
-        <div className="mt-4 overflow-x-auto">
+        <>
+        <ul className="mt-4 space-y-3 md:hidden">
+          {items.map((cert) => (
+            <li key={cert.certificate_id} className="rounded-xl border border-ink-200 p-4 dark:border-ink-800">
+              <div className="flex items-start justify-between gap-2">
+                <p className="min-w-0 break-words font-semibold">{cert.recipient_name}</p>
+                <span className={`shrink-0 text-xs font-semibold ${cert.status === 'revoked' ? 'text-red-600' : 'text-emerald-600'}`} title={cert.revoked_reason || undefined}>{cert.status}</span>
+              </div>
+              <p className="mt-0.5 break-all text-sm text-ink-500">{cert.user_email}</p>
+              <p className="mt-2 text-sm">{cert.course_title}</p>
+              <p className="mt-1 text-xs text-ink-500"><span className="tabular-nums">{cert.score}/{cert.total ?? 30}</span> · {formatDate(cert.issued_at)}</p>
+              <Link to={`/certificates/${cert.certificate_id}`} className="mt-2 block break-all font-mono text-xs hover:text-gold-600">{cert.certificate_id}</Link>
+              {cert.status === 'valid' && (
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={() => reissue(cert)} className={BTN}>Reissue</button>
+                  <button type="button" onClick={() => revoke(cert)} className={`${BTN} text-red-600`}>Revoke</button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="w-full text-left text-sm">
             <thead><tr className="text-xs text-ink-500"><th className="py-2">Certificate ID</th><th>Name</th><th>Email</th><th>Course</th><th>Score</th><th>Issued</th><th>Status</th><th /></tr></thead>
             <tbody>
@@ -94,6 +115,7 @@ export default function AdminCertificates() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   )

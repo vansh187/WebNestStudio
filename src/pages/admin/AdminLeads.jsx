@@ -52,14 +52,16 @@ export default function AdminLeads() {
         <select
           value={source}
           onChange={(e) => { setSource(e.target.value); setOffset(0) }}
-          className="rounded-lg border border-ink-200 dark:border-ink-700 bg-transparent px-3 py-2 text-sm text-ink-900 dark:text-white"
+          aria-label="Filter by source"
+          className="min-w-0 flex-1 rounded-lg sm:flex-none border border-ink-200 dark:border-ink-700 bg-transparent px-3 py-2 text-sm text-ink-900 dark:text-white"
         >
           {SOURCES.map((s) => <option key={s} value={s}>{s || 'All Sources'}</option>)}
         </select>
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setOffset(0) }}
-          className="rounded-lg border border-ink-200 dark:border-ink-700 bg-transparent px-3 py-2 text-sm text-ink-900 dark:text-white"
+          aria-label="Filter by status"
+          className="min-w-0 flex-1 rounded-lg sm:flex-none border border-ink-200 dark:border-ink-700 bg-transparent px-3 py-2 text-sm text-ink-900 dark:text-white"
         >
           <option value="">All Statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -75,7 +77,24 @@ export default function AdminLeads() {
       {result && result.items.length === 0 && <EmptyState title="No leads match these filters" />}
       {result && result.items.length > 0 && (
         <>
-          <div className="overflow-x-auto rounded-2xl border border-ink-200 dark:border-ink-800">
+          <ul className="space-y-3 md:hidden">
+            {result.items.map((lead) => (
+              <li key={lead.id} className="rounded-xl border border-ink-200 p-4 dark:border-ink-800">
+                <p className="break-words font-semibold text-ink-900 dark:text-white">{lead.full_name}</p>
+                <a href={`mailto:${lead.email}`} className="mt-0.5 block break-all text-sm text-gold-700 dark:text-gold-300">{lead.email}</a>
+                <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">{lead.source} · {new Date(lead.created_at).toLocaleDateString()}</p>
+                <select
+                  value={lead.status}
+                  onChange={(e) => handleStatusChange(lead, e.target.value)}
+                  aria-label={`Status of ${lead.full_name}`}
+                  className="mt-3 w-full rounded-lg border border-ink-200 dark:border-ink-700 bg-transparent px-3 py-2 text-sm font-semibold text-ink-900 dark:text-white"
+                >
+                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto rounded-2xl border border-ink-200 dark:border-ink-800 md:block">
             <table className="w-full text-left text-sm">
               <thead className="bg-ink-50 dark:bg-ink-900/60 text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400">
                 <tr>
@@ -110,7 +129,7 @@ export default function AdminLeads() {
             </table>
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-sm text-ink-500 dark:text-ink-400">
+          <div className="mt-4 flex items-center justify-between gap-3 text-sm text-ink-500 dark:text-ink-400">
             <span>Page {page} of {pageCount} ({total} total)</span>
             <div className="flex gap-2">
               <button
