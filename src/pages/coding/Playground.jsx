@@ -397,8 +397,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
       title="Browser coding playground"
       subtitle="Run web projects and Python in your browser, build multi-class Java 17 programs, or write a layered FastAPI backend with a SQLite database."
       headerRight={(
-        // In Backend mode these sit in the IDE's one-line toolbar, so they must not wrap.
-        <div className={`flex items-center gap-2 ${language === 'backend' ? 'flex-nowrap' : 'flex-wrap'}`}>
+        <div className="flex flex-wrap items-center gap-2">
           <ErrorBoundary fallback={(retry) => (
             <button type="button" onClick={retry} className="rounded-lg border border-red-400/50 px-3 py-2 text-xs font-semibold text-red-600">GitHub unavailable · retry</button>
           )}>
@@ -413,9 +412,10 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
           </ErrorBoundary>
           {language === 'backend' && (
         <div className="flex flex-wrap items-center gap-2">
-          <label htmlFor="backend-starter" className="text-xs font-semibold text-ink-500 dark:text-ink-300">Starter</label>
+          <label htmlFor="backend-starter" className="hidden text-xs font-semibold text-ink-500 dark:text-ink-300 min-[1400px]:inline">Starter</label>
           <select
             id="backend-starter"
+            aria-label="Starter"
             value={starter}
             onChange={(event) => setStarter(event.target.value)}
             title={BACKEND_STARTER_INFO.find((item) => item.id === starter)?.description}
@@ -423,8 +423,8 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
           >
             {BACKEND_STARTER_INFO.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
           </select>
-          <button type="button" onClick={loadStarter} className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:border-gold-400 hover:text-gold-600 dark:border-ink-700 dark:text-ink-200">
-            Load starter
+          <button type="button" onClick={loadStarter} aria-label="Load starter" title="Load starter" className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:border-gold-400 hover:text-gold-600 dark:border-ink-700 dark:text-ink-200">
+            Load<span className="hidden min-[1400px]:inline"> starter</span>
           </button>
         </div>
           )}

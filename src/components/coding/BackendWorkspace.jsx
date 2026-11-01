@@ -373,7 +373,9 @@ export default function BackendWorkspace({
       }`}
     >
       {/* Toolbar */}
-      <div className="flex h-11 shrink-0 items-center gap-1 border-b border-ink-200 bg-ink-50 px-2 dark:border-ink-800 dark:bg-ink-900">
+      {/* One row from lg up: labels shorten below 1400px so it still fits. Smaller screens
+          wrap onto left-aligned rows, so no control gets cut off. */}
+      <div className="flex min-h-11 shrink-0 flex-wrap items-center gap-1 border-b border-ink-200 bg-ink-50 px-2 py-1 dark:border-ink-800 dark:bg-ink-900">
         <button type="button" onClick={layout.toggleExplorer} aria-pressed={layout.explorerOpen} className={TOOL_BTN} title={`Explorer (${MOD}B)`} aria-label="Toggle file explorer">
           <FiSidebar className="h-4 w-4" />
         </button>
@@ -383,7 +385,7 @@ export default function BackendWorkspace({
             value={language}
             disabled={running}
             onChange={(event) => onLanguageChange?.(event.target.value)}
-            className="ml-1 h-8 max-w-[14rem] truncate rounded-md border border-ink-200 bg-white px-2 text-xs font-semibold text-ink-700 disabled:opacity-60 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-200"
+            className="ml-1 h-8 max-w-[9rem] truncate rounded-md min-[1400px]:max-w-[16rem] border border-ink-200 bg-white px-2 text-xs font-semibold text-ink-700 disabled:opacity-60 dark:border-ink-700 dark:bg-ink-950 dark:text-ink-200"
           >
             {languages.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
           </select>
@@ -392,8 +394,8 @@ export default function BackendWorkspace({
         )}
         {/* Page-level controls (GitHub, starter picker). The IDE fills the window on large
             screens, so the page header above it is out of view. */}
-        {toolbarExtra && <div className="ml-1 flex min-w-0 items-center gap-2 overflow-x-auto">{toolbarExtra}</div>}
-        <div className="ml-auto flex shrink-0 items-center gap-1">
+        {toolbarExtra && <div className="ml-1 flex min-w-0 max-w-full items-center gap-2 [&_button]:h-8 [&_button]:py-0 [&_select]:h-8 [&_select]:py-0">{toolbarExtra}</div>}
+        <div className="flex w-full flex-wrap items-center gap-1 lg:ml-auto lg:w-auto">
           <button type="button" onClick={openAssistant} title="Open WebNest AI" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-gradient-to-br from-gold-300 to-gold-500 px-2.5 text-xs font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400">
             <FiZap className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">WebNest AI</span>
@@ -401,7 +403,8 @@ export default function BackendWorkspace({
           {onSave && (
             <button type="button" onClick={onSave} disabled={saving} title={saveLabel} aria-label={saveLabel} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-ink-300 px-2.5 text-xs font-semibold text-ink-700 hover:border-gold-400 hover:text-ink-950 disabled:opacity-60 dark:border-ink-700 dark:text-ink-200 dark:hover:text-white">
               {saving ? <FiLoader className="h-3.5 w-3.5 animate-spin" /> : <FiSave className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{saveLabel}</span>
+              <span className="hidden sm:inline min-[1400px]:hidden">Save</span>
+              <span className="hidden min-[1400px]:inline">{saveLabel}</span>
             </button>
           )}
           {/* Starting: Stop cancels. API up: Restart reloads your code, Stop shuts it down
