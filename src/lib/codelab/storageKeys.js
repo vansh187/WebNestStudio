@@ -10,7 +10,12 @@ export const API_TESTER_PREFIX = 'wns-codelab-api:'
 // Per workspace: a saved project's .env (envStore.js).
 export const ENV_STORAGE_PREFIX = 'wns-codelab-env:'
 
-export const WORKSPACE_PREFIXES = [BREAKPOINTS_PREFIX, API_TESTER_PREFIX, ENV_STORAGE_PREFIX]
+// Per workspace: the AI assistant's chat (useAssistant.js). Also its preferences, under
+// ASSISTANT_PREFS_KEY, so a logout forgets those too.
+export const ASSISTANT_PREFIX = 'wns-codelab-assistant:'
+export const ASSISTANT_PREFS_KEY = `${ASSISTANT_PREFIX}prefs`
+
+export const WORKSPACE_PREFIXES = [BREAKPOINTS_PREFIX, API_TESTER_PREFIX, ENV_STORAGE_PREFIX, ASSISTANT_PREFIX]
 
 // The workspace key of a saved backend project (pages/coding/ProjectWorkspace.jsx).
 export const projectWorkspaceKey = (projectId) => `project:${projectId}`

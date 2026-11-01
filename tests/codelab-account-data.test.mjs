@@ -223,6 +223,19 @@ test('a long wipe keeps its marker fresh, so it is never taken for a stale one',
   assert.equal(wipeMarkers().length, 0, 'removed when done')
 })
 
+test('assistant chats and preferences are cleared with the rest of the CodeLab data', async () => {
+  reset()
+  localStorage.setItem('wns-codelab-assistant:wns-codelab-playground:main', '{"messages":[{"role":"user","content":"private"}]}')
+  localStorage.setItem('wns-codelab-assistant:prefs', '{"mode":"agent"}')
+  assert.equal(await clearCodelabData(), true)
+  assert.deepEqual([...store.keys()].filter((key) => key.startsWith('wns-codelab-assistant')), [])
+  localStorage.setItem('wns-codelab-assistant:project:1', '{}')
+  localStorage.setItem('wns-codelab-assistant:project:2', '{}')
+  assert.equal(await forgetWorkspace('project:1'), true)
+  assert.equal(store.has('wns-codelab-assistant:project:1'), false, 'deleting a project deletes its chat')
+  assert.equal(store.has('wns-codelab-assistant:project:2'), true)
+})
+
 test('a page load with nobody logged in retries a clear a logout could not do', async () => {
   reset()
   localStorage.setItem('wns-codelab-locked', '1')

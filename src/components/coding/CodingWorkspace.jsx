@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FiX } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import FileTabs from './FileTabs'
 import RunBar from './RunBar'
@@ -7,7 +8,7 @@ import OutputPanel from './OutputPanel'
 import PreviewPanel from './PreviewPanel'
 import BackButton from './BackButton'
 import { getLanguage, mainFileName } from '../../data/codingLanguages'
-import { toCodePayload } from '../../api/coding'
+import { sourceFile, toCodePayload } from '../../api/coding'
 import {
   JAVA_FILE_KINDS, JAVA_OOP_EXAMPLE, findJavaMainClasses, isJavaFile, javaClassFromFile, javaFileTemplate, qualifiedJavaClass,
   renameJavaFile, validateJavaClassName,
@@ -29,6 +30,10 @@ const PANEL_HEIGHT = 'lg:min-h-0 lg:flex-1 lg:overflow-auto'
 const shownLock = { seq: null, toastId: null }
 // How long Save project waits for a fresh database snapshot.
 const SAVE_SNAPSHOT_WAIT_MS = 1500
+// How long the assistant's web run waits for the preview's scripts to report errors.
+const WEB_ERRORS_WAIT_MS = 800
+
+const AssistantPanel = lazy(() => import('./AssistantPanel'))
 
 export default function CodingWorkspace({
   eyebrow,
@@ -62,6 +67,9 @@ export default function CodingWorkspace({
   // Scroll the workspace up under the navbar on open (large screens). Pages with content
   // above the editor that must stay readable, like a problem statement, turn this off.
   scrollIntoViewOnOpen = true,
+  // The AI assistant is on for every language. Problem pages turn it off: it would write the
+  // answer to the problem being practised.
+  assistant = true,
 }) {
   const backend = language === 'backend'
   // The backend runtime only starts a worker on the first Run, so other languages pay nothing.
@@ -206,8 +214,29 @@ export default function CodingWorkspace({
     wasRunning.current = activeRunner.running
   }, [activeRunner.running])
 
+  // The assistant, for the languages laid out here (the backend IDE has its own). Hidden, not
+  // unmounted, on the Output tab, so a running task carries on. Null: never opened.
+  const [assistantTab, setAssistantTab] = useState(null)
+  const [assistantShown, setAssistantShown] = useState(false)
+  const assistantVisible = assistantShown && assistantTab === 'ai'
+  const assistantRef = useRef(null)
+  const webErrors = useRef([])
+
+  const toggleAssistant = () => {
+    if (assistantVisible) {
+      setAssistantShown(false)
+      return
+    }
+    setAssistantShown(true)
+    setAssistantTab('ai')
+    // Small screens stack this column below the editor, where opening it would show nothing.
+    if (window.matchMedia('(max-width: 1023px)').matches) requestAnimationFrame(() => assistantRef.current?.scrollIntoView({ block: 'start' }))
+  }
+
   const handleRun = () => {
     setConsoleText('')
+    webErrors.current = []
+    setAssistantTab((tab) => tab && 'output')
     if (backend) {
       api.run(files)
         .then(() => setBackendPreview(createPreviewHtml(files, { folder: 'frontend/', apiBridge: true })))
@@ -230,7 +259,46 @@ export default function CodingWorkspace({
     })
   }
 
+  // Runs the given files for the AI assistant, which edits them faster than this component
+  // re-renders. Resolves to the run's result.
+  const { run: runApi } = api
+  const runProject = useCallback(async (latest) => {
+    const result = await runApi(latest, 'assistant')
+    setBackendPreview(createPreviewHtml(latest, { folder: 'frontend/', apiBridge: true }))
+    return result
+  }, [runApi])
+
+  // A project may be one text (no `files`), such as a saved Python project; to the assistant
+  // it is a project with one file.
+  const assistantFiles = files ?? [{ name: mainFileName(lang), language: lang?.monacoId ?? 'plaintext', content: source ?? '' }]
+  const assistantFilesChange = files ? onFilesChange : (next) => onSourceChange?.(next[0]?.content ?? '')
+
+  const withWebErrors = (result) => (result && webErrors.current.length
+    ? { ...result, status: 'runtime_error', stderr: webErrors.current.join('\n') }
+    : result)
+  const assistantLastResult = () => withWebErrors(runner.result ?? (runner.error ? { status: 'internal_error', error: runner.error } : null))
+
+  // The assistant's edits are newer than this render's `files`, so it passes the files to run.
+  const runAssistantFiles = async (latest) => {
+    const active = sourceFile(latest, selectedFile) ?? sourceFile(latest)
+    let extra = { stdin: stdin ?? '' }
+    if (language === 'java') {
+      const mains = findJavaMainClasses(latest)
+      const current = javaClassName.split('.').at(-1)
+      extra = { ...extra, className: qualifiedJavaClass(latest, mains.includes(current) ? current : mains[0] ?? current) }
+    }
+    webErrors.current = []
+    setConsoleText('')
+    const { result, error } = await runner.run({
+      language,
+      ...toCodePayload({ source: active?.content ?? '', sourceName: active?.name, fileName: mainFileName(lang), files: files ? latest : undefined, extra }),
+    })
+    if (language === 'web' && result) await new Promise((resolve) => { setTimeout(resolve, WEB_ERRORS_WAIT_MS) })
+    return withWebErrors(result) ?? { status: 'stopped', error: error ?? 'The run was stopped.' }
+  }
+
   const handleConsole = ({ type, text }) => {
+    if (type === 'error') webErrors.current.push(text)
     setConsoleText((prev) => `${prev}${prev ? '\n' : ''}[${type}] ${text}`.slice(0, 64000))
   }
 
@@ -275,6 +343,7 @@ export default function CodingWorkspace({
             onLanguageChange={onLanguageChange}
             toolbarExtra={headerRight}
             beforeDebugReload={beforeDebugReload}
+            runProject={runProject}
             onSave={saveBackend}
             saving={saving || preparingSave}
             saveLabel={saveLabel}
@@ -308,6 +377,8 @@ export default function CodingWorkspace({
             maximized={maximized}
             onToggleMaximize={() => setMaximized((v) => !v)}
             extra={headerRight}
+            onAssistant={assistant ? toggleAssistant : undefined}
+            assistantOpen={assistantVisible}
           />
         </ErrorBoundary>
       <div className="mt-3 grid gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
@@ -368,9 +439,42 @@ export default function CodingWorkspace({
             />
           </ErrorBoundary>
         </div>
+        <div className="flex min-w-0 flex-col lg:min-h-0">
+        {assistantShown && (
+          <div ref={assistantRef} role="tablist" aria-label="Assistant and output" className="mb-2 flex shrink-0 scroll-mt-[calc(var(--nav-h)+8px)] items-center gap-1 rounded-xl border border-ink-200 p-1 dark:border-ink-800">
+            {[['ai', 'WebNest AI'], ['output', language === 'web' ? 'Output and preview' : 'Output']].map(([id, label]) => (
+              <button key={id} type="button" role="tab" aria-selected={assistantTab === id} onClick={() => setAssistantTab(id)} className={`h-8 rounded-lg px-3 text-xs font-semibold ${assistantTab === id ? 'bg-ink-900 text-white dark:bg-gold-400 dark:text-ink-950' : 'text-ink-500 hover:text-ink-900 dark:text-ink-300 dark:hover:text-white'}`}>
+                {label}
+              </button>
+            ))}
+            <button type="button" onClick={() => setAssistantShown(false)} aria-label="Hide WebNest AI" title="Hide WebNest AI" className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:text-ink-900 dark:text-ink-300 dark:hover:text-white">
+              <FiX className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        {assistantTab && (
+          <div className={assistantVisible ? 'h-[75dvh] min-h-[420px] overflow-hidden rounded-xl border border-ink-200 dark:border-ink-800 lg:h-auto lg:min-h-0 lg:flex-1' : 'hidden'}>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="grid h-full place-items-center text-xs text-ink-400">Loading WebNest AI…</div>}>
+                {/* Keyed: a pending approval or undo must not carry over to another project. */}
+                <AssistantPanel
+                  key={`${workspaceKey}:${language}`}
+                  workspaceKey={workspaceKey}
+                  language={language}
+                  files={assistantFiles}
+                  selectedFile={activeFile?.name ?? assistantFiles[0]?.name}
+                  lastResult={assistantLastResult}
+                  onFilesChange={assistantFilesChange}
+                  runProject={runAssistantFiles}
+                  onOpenFile={onSelectFile}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
         <div
           ref={outputRef}
-          className={`grid scroll-mt-[calc(var(--nav-h)+8px)] gap-3 ${stdinOpen ? 'md:grid-cols-2' : ''} lg:flex lg:min-h-0 lg:flex-col`}
+          className={assistantVisible ? 'hidden' : `grid scroll-mt-[calc(var(--nav-h)+8px)] gap-3 ${stdinOpen ? 'md:grid-cols-2' : ''} lg:flex lg:min-h-0 lg:flex-1 lg:flex-col`}
         >
           <ErrorBoundary>
             <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
@@ -400,6 +504,7 @@ export default function CodingWorkspace({
               {consoleText}
             </pre>
           )}
+        </div>
         </div>
       </div>
       </section>

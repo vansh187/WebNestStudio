@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   FiChevronRight, FiCode, FiColumns, FiDatabase, FiFileText, FiFolder, FiHelpCircle, FiLayers, FiLoader, FiMonitor,
-  FiPlay, FiRotateCw, FiSave, FiSend, FiSidebar, FiSquare, FiTerminal, FiX,
+  FiPlay, FiRotateCw, FiSave, FiSend, FiSidebar, FiSquare, FiTerminal, FiX, FiZap,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import BackendConsole from './BackendConsole'
@@ -27,9 +27,13 @@ import { API_TESTER_PREFIX, BREAKPOINTS_PREFIX } from '../../lib/codelab/storage
 import { useWorkspaceStorage } from '../../hooks/useWorkspaceStorage'
 import { changedPaths, expressionAt, hoverMarkdown, inlineValues, pathKey, resolveExpression } from '../../lib/codelab/debugValues'
 
+// Loaded the first time it is opened, so the IDE pays nothing for it until then.
+const AssistantPanel = lazy(() => import('./AssistantPanel'))
+
 const REQUEST_LOG_LIMIT = 200
 
 const TABS = [
+  { id: 'assistant', label: 'AI', icon: FiZap },
   { id: 'output', label: 'Output', icon: FiTerminal },
   { id: 'api', label: 'API', icon: FiSend },
   { id: 'debug', label: 'Debug', icon: FiCode },
@@ -65,11 +69,16 @@ export default function BackendWorkspace({
   beforeDebugReload,
   // Optional "Save project" button (the playground saves the workspace to the account).
   onSave, saving = false, saveLabel = 'Save project',
+  // Runs given files for the AI assistant; resolves to the run's result (CodingWorkspace).
+  runProject,
 }) {
   const layout = useIdeLayout()
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
   const mainRef = useRef(null)
   const [tab, setTab] = useState('output')
+  // Once opened the assistant stays mounted, so a running task survives switching tabs.
+  const [assistantOpened, setAssistantOpened] = useState(false)
+  if (tab === 'assistant' && panelOpen && !assistantOpened) setAssistantOpened(true)
   // The panel tabs scroll sideways when they don't fit; keep the open one in view, also when
   // it was picked from the side bar.
   const tabListRef = useRef(null)
@@ -124,7 +133,8 @@ export default function BackendWorkspace({
   const [shownResult, setShownResult] = useState(null)
   if (api.runner.result !== shownResult) {
     setShownResult(api.runner.result)
-    if (api.runner.result && api.runner.result.status !== 'success') {
+    // The assistant reports its own failed runs, and its task carries on in its tab.
+    if (api.runner.result && api.runner.result.status !== 'success' && api.runOrigin !== 'assistant') {
       setTab('output')
       if (!panelOpen) setPanelOpen(true)
     }
@@ -194,6 +204,13 @@ export default function BackendWorkspace({
       setTab(id)
       setPanelOpen(true)
     }
+  }
+
+  // Small screens stack the panel below the editor, where opening it would show nothing.
+  const openAssistant = () => {
+    const opening = !(panelOpen && tab === 'assistant')
+    showPanel('assistant')
+    if (opening && !large) requestAnimationFrame(() => outputRef.current?.scrollIntoView({ block: 'start' }))
   }
 
   const openDebug = () => {
@@ -377,6 +394,10 @@ export default function BackendWorkspace({
             screens, so the page header above it is out of view. */}
         {toolbarExtra && <div className="ml-1 flex min-w-0 items-center gap-2 overflow-x-auto">{toolbarExtra}</div>}
         <div className="ml-auto flex shrink-0 items-center gap-1">
+          <button type="button" onClick={openAssistant} title="Open WebNest AI" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-gradient-to-br from-gold-300 to-gold-500 px-2.5 text-xs font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400">
+            <FiZap className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">WebNest AI</span>
+          </button>
           {onSave && (
             <button type="button" onClick={onSave} disabled={saving} title={saveLabel} aria-label={saveLabel} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-ink-300 px-2.5 text-xs font-semibold text-ink-700 hover:border-gold-400 hover:text-ink-950 disabled:opacity-60 dark:border-ink-700 dark:text-ink-200 dark:hover:text-white">
               {saving ? <FiLoader className="h-3.5 w-3.5 animate-spin" /> : <FiSave className="h-3.5 w-3.5" />}
@@ -558,7 +579,29 @@ export default function BackendWorkspace({
               </button>
             </div>
 
-            <div className={`flex flex-col gap-3 p-3 ${large ? 'min-h-0 flex-1 overflow-auto' : ''}`}>
+            {assistantOpened && (
+              <div className={tab === 'assistant' ? (large ? 'min-h-0 flex-1' : 'h-[75dvh] min-h-[420px]') : 'hidden'}>
+                <ErrorBoundary>
+                  <Suspense fallback={<div className="grid h-full place-items-center text-xs text-ink-400">Loading WebNest AI…</div>}>
+                    {/* Keyed: a pending approval or undo must not carry over to another project. */}
+                    <AssistantPanel
+                      key={workspaceKey}
+                      workspaceKey={workspaceKey}
+                      language="backend"
+                      files={files}
+                      selectedFile={selectedFile}
+                      api={api}
+                      lastResult={() => api.runner.result}
+                      onFilesChange={onFilesChange}
+                      runProject={runProject}
+                      onOpenFile={openFile}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+
+            <div className={tab === 'assistant' ? 'hidden' : `flex flex-col gap-3 p-3 ${large ? 'min-h-0 flex-1 overflow-auto' : ''}`}>
               <ErrorBoundary>
                 {tab === 'output' && (
                   <BackendConsole runner={api.runner} requests={requests} onClearRequests={clearRequests} terminal={terminal} onStop={api.runner.stop} />

@@ -36,6 +36,13 @@ export function useCodeRunner() {
   const slowUnsubRef = useRef(null)
   const runIdRef = useRef(0)
   const mountedRef = useRef(true)
+  const settleRef = useRef(null)
+
+  // Answers whoever is awaiting the current run (run returns a promise of { result, error }).
+  const settle = useCallback((result, error) => {
+    settleRef.current?.({ result, error })
+    settleRef.current = null
+  }, [])
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -62,10 +69,12 @@ export function useCodeRunner() {
       clearTimer()
       stopSlowWatch()
       terminateWorker()
+      settle(null, null)
     }
-  }, [clearTimer, stopSlowWatch, terminateWorker])
+  }, [clearTimer, settle, stopSlowWatch, terminateWorker])
 
   const finish = useCallback((nextResult, nextError = null) => {
+    settle(nextResult, nextError)
     if (!mountedRef.current) return
     clearTimer()
     stopSlowWatch()
@@ -73,7 +82,7 @@ export function useCodeRunner() {
     setError(nextError)
     setRunning(false)
     setRunningSince(null)
-  }, [clearTimer, stopSlowWatch])
+  }, [clearTimer, settle, stopSlowWatch])
 
   const runPython = useCallback((payload, runId) => {
     terminateWorker()
@@ -124,6 +133,8 @@ export function useCodeRunner() {
   const run = useCallback((payload) => {
     const runId = runIdRef.current + 1
     runIdRef.current = runId
+    settle(null, null)
+    const settled = new Promise((resolve) => { settleRef.current = resolve })
     clearTimer()
     stopSlowWatch()
     terminateWorker()
@@ -136,11 +147,11 @@ export function useCodeRunner() {
     try {
       if (payload.language === 'web') {
         finish(runWebPreview(payload))
-        return
+        return settled
       }
       if (payload.language === 'python') {
         runPython(payload, runId)
-        return
+        return settled
       }
       if (payload.language === 'java') {
         const controller = new AbortController()
@@ -164,7 +175,7 @@ export function useCodeRunner() {
             if (runIdRef.current === runId && !controller.signal.aborted) finish(null, describeJavaError(err))
           })
           .finally(() => { if (requestRef.current === controller) requestRef.current = null })
-        return
+        return settled
       }
       finish({
         status: 'internal_error',
@@ -177,7 +188,8 @@ export function useCodeRunner() {
     } catch (err) {
       finish(null, describeLocalError(err))
     }
-  }, [clearTimer, finish, runPython, stopSlowWatch, terminateWorker])
+    return settled
+  }, [clearTimer, finish, runPython, settle, stopSlowWatch, terminateWorker])
 
   const cancel = useCallback(() => {
     runIdRef.current += 1
@@ -187,7 +199,8 @@ export function useCodeRunner() {
     setRunning(false)
     setRunningSince(null)
     setStopped(true)
-  }, [clearTimer, stopSlowWatch, terminateWorker])
+    settle(null, null)
+  }, [clearTimer, settle, stopSlowWatch, terminateWorker])
 
   const reset = useCallback(() => {
     setResult(null)

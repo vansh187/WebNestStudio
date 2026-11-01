@@ -1,4 +1,4 @@
-import { FiPlay, FiLoader, FiShare2, FiTerminal, FiSave, FiSquare } from 'react-icons/fi'
+import { FiPlay, FiLoader, FiShare2, FiTerminal, FiSave, FiSquare, FiZap } from 'react-icons/fi'
 import LanguageSelect from './LanguageSelect'
 import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 
@@ -26,6 +26,8 @@ export default function RunBar({
   // Page-level controls (GitHub, save status). The workspace fills the window on large
   // screens, so the page header above it is out of view.
   extra,
+  onAssistant,
+  assistantOpen = false,
 }) {
   return (
     // Full screen covers the navbar, so the bar no longer needs to stick under it.
@@ -56,6 +58,11 @@ export default function RunBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {onAssistant && (
+          <button type="button" onClick={onAssistant} aria-pressed={assistantOpen} title="Open WebNest AI" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-gradient-to-br from-gold-300 to-gold-500 px-3 py-2 text-sm font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400">
+            <FiZap className="h-4 w-4" /> WebNest AI
+          </button>
+        )}
         {extra}
         {onSave && (
           <button type="button" onClick={onSave} disabled={saving} className={GHOST_BTN}>
