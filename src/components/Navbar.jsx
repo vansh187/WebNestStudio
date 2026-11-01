@@ -161,13 +161,24 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-3 xl:hidden">
+        <div className="flex items-center gap-2 sm:gap-3 xl:hidden">
+          {account && (
+            <Link
+              to={account.to}
+              aria-label={account.label}
+              title={account.label}
+              onClick={() => setOpen(false)}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-400/60 text-gold-300"
+            >
+              <FiUser className="h-5 w-5" />
+            </Link>
+          )}
           <Link
             to={APP_PATH}
             aria-label="Get the Android app"
             title="Get the Android app"
             onClick={() => setOpen(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-400 text-ink-950 transition-colors hover:bg-gold-300"
+            className={`${account ? 'hidden sm:flex' : 'flex'} h-10 w-10 items-center justify-center rounded-full bg-gold-400 text-ink-950 transition-colors hover:bg-gold-300`}
           >
             <FiSmartphone className="h-5 w-5" />
           </Link>
@@ -183,7 +194,32 @@ export default function Navbar() {
       </nav>
 
       {open && (
-        <div className="xl:hidden border-t border-gold-400/20 px-6 py-4">
+        <div className="xl:hidden max-h-[calc(100dvh-6rem)] overflow-y-auto border-t border-gold-400/20 px-6 py-4">
+          {account && (
+            <div className="mb-4 rounded-xl border border-gold-400/30 p-3">
+              <p className="flex items-center gap-2 text-sm font-semibold text-gold-300">
+                <FiUser className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 truncate">{user?.full_name || 'My account'}</span>
+              </p>
+              {user?.email && <p className="mt-0.5 truncate text-xs text-ink-300">{user.email}</p>}
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Link
+                  to={account.to}
+                  onClick={() => setOpen(false)}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gold-400 text-sm font-semibold text-ink-950"
+                >
+                  <FiUser className="h-4 w-4" /> {account.label}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { logout(); setOpen(false) }}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-gold-400/40 text-sm font-semibold text-ink-100"
+                >
+                  <FiLogOut className="h-4 w-4" /> Log out
+                </button>
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) =>
               link.to === CARD_PATH ? (
@@ -229,24 +265,7 @@ export default function Navbar() {
             >
               <FiSmartphone className="h-4 w-4 text-gold-400" /> Get App
             </NavLink>
-            {account ? (
-              <>
-                <Link
-                  to={account.to}
-                  onClick={() => setOpen(false)}
-                  className="text-base font-medium text-ink-700 dark:text-ink-100"
-                >
-                  {account.label}
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => { logout(); setOpen(false) }}
-                  className="text-left text-base font-medium text-ink-700 dark:text-ink-100"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
+            {!account && (
               <Link
                 to="/login"
                 onClick={() => setOpen(false)}

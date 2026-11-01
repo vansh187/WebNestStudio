@@ -30,6 +30,7 @@ const STATIC_ROUTES = [
   { path: '/privacy-policy', changefreq: 'yearly', priority: '0.3' },
   { path: '/account-deletion', changefreq: 'yearly', priority: '0.3' },
   { path: '/terms-and-conditions', changefreq: 'yearly', priority: '0.3' },
+  { path: '/refund-policy', changefreq: 'yearly', priority: '0.3' },
   { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
   { path: '/download-app', changefreq: 'monthly', priority: '0.6' },
   // Index the CodeLab overview; keep interactive tools and problem utilities out.

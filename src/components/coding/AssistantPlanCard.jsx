@@ -1,0 +1,77 @@
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { FiLoader } from 'react-icons/fi'
+import { useAuth } from '../../context/AuthContext'
+import { useAssistantPayment } from '../../hooks/useAssistantPayment'
+import { fetchAssistantUsage } from '../../lib/codelab/assistantClient'
+import { expiryDate, formatTokens, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
+import { AssistantPaywall, Spark } from './AssistantPaywall'
+
+const CARD = 'rounded-2xl border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-900'
+const OPEN_LINK = 'inline-flex h-9 items-center rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 px-4 text-sm font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400'
+
+// WebNest AI on the profile page: the user's plan, or the same payment card as the panel.
+export default function AssistantPlanCard() {
+  const { user, isAuthenticated } = useAuth()
+  const [usage, setUsage] = useState(undefined) // undefined: loading, null: could not be read
+
+  const refreshUsage = useCallback(async () => {
+    const next = await fetchAssistantUsage()
+    setUsage((current) => next ?? current ?? null)
+    return next
+  }, [])
+  useEffect(() => { refreshUsage() }, [refreshUsage])
+  const payment = useAssistantPayment({ user, enabled: isAuthenticated, refreshUsage })
+
+  if (usage === undefined) {
+    return (
+      <div role="status" className={`${CARD} flex items-center gap-2 text-sm text-ink-500 dark:text-ink-400`}>
+        <FiLoader className="h-4 w-4 animate-spin text-gold-500" /> Checking your WebNest AI plan…
+      </div>
+    )
+  }
+  if (usage === null) {
+    return (
+      <div className={`${CARD} flex flex-wrap items-center justify-between gap-3 text-sm text-ink-600 dark:text-ink-300`}>
+        <p>We couldn't load your WebNest AI plan.</p>
+        <button type="button" onClick={refreshUsage} className="rounded-lg border border-ink-300 px-3 py-1.5 text-xs font-semibold hover:border-gold-400 dark:border-ink-700">Try again</button>
+      </div>
+    )
+  }
+  if (usage.enabled === false) return <div className={`${CARD} text-sm text-ink-600 dark:text-ink-300`}>WebNest AI is not available right now. Please try again later.</div>
+  if (needsPayment(usage)) return <div className="flex"><AssistantPaywall access={usage.access} payment={payment} /></div>
+
+  const { access } = usage
+  const left = tokensLeft(usage)
+  const until = expiryDate(access.expires_at)
+  const usedShare = left !== null ? Math.min(100, Math.round(((access.tokens_limit - left) / access.tokens_limit) * 100)) : 0
+  return (
+    <div className={CARD}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Spark className="h-9 w-9" />
+          <div>
+            <p className="font-display font-semibold text-ink-900 dark:text-white">
+              WebNest AI <span className="ml-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
+            </p>
+            <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">
+              {until ? `Your plan runs until ${until}.` : 'Your plan is active.'}
+            </p>
+          </div>
+        </div>
+        <Link to="/codelab/playground" className={OPEN_LINK}>Open the playground</Link>
+      </div>
+      {left !== null && (
+        <div className="mt-4">
+          <div className="mb-1 flex justify-between text-xs font-medium text-ink-600 dark:text-ink-300">
+            <span>{formatTokens(left)} tokens left</span>
+            <span>of {formatTokens(access.tokens_limit)}</span>
+          </div>
+          <div role="progressbar" aria-label="AI tokens used" aria-valuenow={usedShare} aria-valuemin={0} aria-valuemax={100} className="h-2 overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
+            <div className="h-full rounded-full bg-gold-500" style={{ width: `${usedShare}%` }} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

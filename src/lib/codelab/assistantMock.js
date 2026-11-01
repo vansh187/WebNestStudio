@@ -110,4 +110,4 @@ export async function mockStreamChat({ mode, messages, context, signal, onEvent 
   onEvent({ type: 'done', data: { finish_reason: call ? 'tool_calls' : 'stop' } })
 }
 
-export const mockUsage = async () => ({ enabled: true, calls_used_today: 3, calls_limit: 40 })
+export const mockUsage = async () => ({ enabled: true, calls_used_today: 3, calls_limit: 40, access: { active: true } })

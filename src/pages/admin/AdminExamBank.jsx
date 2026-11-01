@@ -196,8 +196,8 @@ export default function AdminExamBank() {
       <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">Turning the exam on builds a fixed pool of {POOL_TARGET} checked questions; each learner gets 30 of them. Learners see the exam only once every module has its share.</p>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
-        <label className="text-xs font-semibold">Course
-          <select value={courseSlug} onChange={(event) => { setCourseSlug(event.target.value); setModuleFilter('') }} className={`${INPUT} mt-1 w-56`}>
+        <label className="w-full text-xs font-semibold sm:w-auto">Course
+          <select value={courseSlug} onChange={(event) => { setCourseSlug(event.target.value); setModuleFilter('') }} className={`${INPUT} mt-1 w-full sm:w-56`}>
             {SAMPLE_COURSES.map((item) => <option key={item.slug} value={item.slug}>{item.title}</option>)}
           </select>
         </label>
@@ -210,7 +210,8 @@ export default function AdminExamBank() {
         </button>
       </div>
 
-      <table className="mt-4 w-full text-left text-sm">
+      <div className="mt-4 overflow-x-auto">
+      <table className="w-full min-w-[460px] text-left text-sm">
         <thead><tr className="text-xs text-ink-500"><th className="py-1">Module</th><th>Lessons</th><th>Live / target</th><th>Quarantined</th><th>Rejected</th></tr></thead>
         <tbody>
           {course.modules.map((module) => {
@@ -228,6 +229,7 @@ export default function AdminExamBank() {
           })}
         </tbody>
       </table>
+      </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-ink-200 p-3 dark:border-ink-800">
         <p className="text-sm text-ink-500 dark:text-ink-300">The backend tops the pool up automatically. Refill replaces removed questions now.</p>
@@ -246,7 +248,7 @@ export default function AdminExamBank() {
         {STATUSES.map((item) => (
           <button key={item} type="button" onClick={() => setStatus(item)} aria-pressed={status === item} className={status === item ? PRIMARY : SECONDARY}>{item}</button>
         ))}
-        <select value={moduleFilter} onChange={(event) => setModuleFilter(event.target.value)} aria-label="Module filter" className={`${INPUT} w-64`}>
+        <select value={moduleFilter} onChange={(event) => setModuleFilter(event.target.value)} aria-label="Module filter" className={`${INPUT} w-full sm:w-64`}>
           <option value="">All modules</option>
           {course.modules.map((module) => <option key={module.id} value={module.id}>{module.title}</option>)}
         </select>
@@ -344,17 +346,17 @@ function QuestionEditor({ course, question, onSave, onVoid, onCancel }) {
   return (
     <div className="mt-4 rounded-xl border border-ink-200 p-4 dark:border-ink-800">
       <div className="flex flex-wrap gap-2 text-xs">
-        <select value={draft.module_id} onChange={(event) => { const next = course.modules.find((item) => item.id === event.target.value); set({ module_id: event.target.value, lesson_id: next?.lessons[0]?.id ?? '' }) }} aria-label="Module" className={`${INPUT} w-56`}>
+        <select value={draft.module_id} onChange={(event) => { const next = course.modules.find((item) => item.id === event.target.value); set({ module_id: event.target.value, lesson_id: next?.lessons[0]?.id ?? '' }) }} aria-label="Module" className={`${INPUT} w-full sm:w-56`}>
           {course.modules.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
         </select>
-        <select value={draft.lesson_id} onChange={(event) => set({ lesson_id: event.target.value })} aria-label="Lesson" className={`${INPUT} w-56`}>
+        <select value={draft.lesson_id} onChange={(event) => set({ lesson_id: event.target.value })} aria-label="Lesson" className={`${INPUT} w-full sm:w-56`}>
           {!module.lessons.some((lesson) => lesson.id === draft.lesson_id) && <option value={draft.lesson_id}>{draft.lesson_id || 'Pick a lesson'}</option>}
           {module.lessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
         </select>
-        <select value={draft.kind} onChange={(event) => set({ kind: event.target.value })} aria-label="Kind" className={`${INPUT} w-36`}>
+        <select value={draft.kind} onChange={(event) => set({ kind: event.target.value })} aria-label="Kind" className={`${INPUT} min-w-0 flex-1 sm:w-36 sm:flex-none`}>
           {KINDS.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
-        <select value={draft.difficulty} onChange={(event) => set({ difficulty: event.target.value })} aria-label="Difficulty" className={`${INPUT} w-28`}>
+        <select value={draft.difficulty} onChange={(event) => set({ difficulty: event.target.value })} aria-label="Difficulty" className={`${INPUT} min-w-0 flex-1 sm:w-28 sm:flex-none`}>
           {DIFFICULTIES.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
         {question.source && <span className="self-center text-ink-400">source: {question.source}</span>}
@@ -366,7 +368,7 @@ function QuestionEditor({ course, question, onSave, onVoid, onCancel }) {
         {draft.options.map((option, index) => (
           <label key={index} className="flex items-center gap-2">
             <input type="radio" name={`correct-${question.id ?? 'new'}`} checked={draft.correct_index === index} onChange={() => set({ correct_index: index })} aria-label={`Option ${index + 1} is correct`} />
-            <input value={option} onChange={(event) => setOption(index, event.target.value)} aria-label={`Option ${index + 1}`} className={INPUT} />
+            <input value={option} onChange={(event) => setOption(index, event.target.value)} aria-label={`Option ${index + 1}`} className={`${INPUT} min-w-0`} />
           </label>
         ))}
       </div>

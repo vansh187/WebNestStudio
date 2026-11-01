@@ -149,7 +149,7 @@ function ResourceForm({ config, editingItem, onDone, onCancel }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/40 p-4 sm:p-6">
       {banner && <p className="text-sm font-medium text-red-500">{banner}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         {config.fields.map((f) => (
@@ -174,6 +174,8 @@ function ResourceForm({ config, editingItem, onDone, onCancel }) {
     </form>
   )
 }
+
+const cellText = (item, column) => (typeof item[column] === 'boolean' ? (item[column] ? 'Yes' : 'No') : String(item[column] ?? '—'))
 
 export default function AdminResourceCrud() {
   const { resource } = useParams()
@@ -225,8 +227,8 @@ export default function AdminResourceCrud() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold text-ink-900 dark:text-white">{config.title}</h2>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="min-w-0 font-display text-xl font-bold text-ink-900 dark:text-white">{config.title}</h2>
         {!formOpen && (
           <button
             type="button"
@@ -257,7 +259,36 @@ export default function AdminResourceCrud() {
       {error && <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />}
       {items && items.length === 0 && <EmptyState title="Nothing here yet" description={`Add your first ${config.title.toLowerCase().slice(0, -1)}.`} />}
       {items && items.length > 0 && (
-        <div className="overflow-x-auto rounded-2xl border border-ink-200 dark:border-ink-800">
+        <ul className="space-y-3 md:hidden">
+          {items.map((item) => (
+            <li key={item.id} className="rounded-xl border border-ink-200 p-4 dark:border-ink-800">
+              <div className="flex items-start justify-between gap-2">
+                <p className="min-w-0 break-words font-semibold text-ink-900 dark:text-white">{cellText(item, config.columns[0])}</p>
+                <div className="-mr-2 -mt-1 flex shrink-0">
+                  <button type="button" onClick={() => { setEditingItem(item); setFormOpen(true) }} className="rounded-lg p-2.5 text-ink-500 hover:text-gold-500" aria-label="Edit">
+                    <FiEdit2 className="h-4 w-4" />
+                  </button>
+                  <button type="button" onClick={() => handleDelete(item)} className="rounded-lg p-2.5 text-ink-500 hover:text-red-500" aria-label="Delete">
+                    <FiTrash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              {config.columns.length > 1 && (
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  {config.columns.slice(1).map((c) => (
+                    <div key={c}>
+                      <dt className="text-xs font-medium capitalize text-ink-500 dark:text-ink-400">{c.replace(/_/g, ' ')}</dt>
+                      <dd className="line-clamp-2 break-words text-ink-700 dark:text-ink-200">{cellText(item, c)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {items && items.length > 0 && (
+        <div className="hidden overflow-x-auto rounded-2xl border border-ink-200 dark:border-ink-800 md:block">
           <table className="w-full text-left text-sm">
             <thead className="bg-ink-50 dark:bg-ink-900/60 text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400">
               <tr>
@@ -270,7 +301,7 @@ export default function AdminResourceCrud() {
                 <tr key={item.id} className="border-t border-ink-100 dark:border-ink-800">
                   {config.columns.map((c) => (
                     <td key={c} className="px-4 py-3 text-ink-700 dark:text-ink-200">
-                      {typeof item[c] === 'boolean' ? (item[c] ? 'Yes' : 'No') : String(item[c] ?? '—')}
+                      {cellText(item, c)}
                     </td>
                   ))}
                   <td className="px-4 py-3">

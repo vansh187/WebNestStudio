@@ -71,6 +71,7 @@ export const FOOTER_SECTIONS = [
     links: [
       { label: 'Privacy Policy', to: '/privacy-policy' },
       { label: 'Terms & Conditions', to: '/terms-and-conditions' },
+      { label: 'Refund Policy', to: '/refund-policy' },
       { label: 'Disclaimer', to: '/disclaimer' },
     ],
   },
