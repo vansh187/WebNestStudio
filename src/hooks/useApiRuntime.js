@@ -75,6 +75,8 @@ export function useApiRuntime(workspaceKey) {
   const [running, setRunning] = useState(false)
   const [runningSince, setRunningSince] = useState(null)
   const [runningHint, setRunningHint] = useState(null)
+  // Who started the latest run: 'user', or 'assistant'.
+  const [runOrigin, setRunOrigin] = useState('user')
   const [stopped, setStopped] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -427,8 +429,9 @@ export function useApiRuntime(workspaceKey) {
     terminate()
   }, [dbKey, terminate])
 
-  const run = useCallback(async (files) => {
+  const run = useCallback(async (files, origin = 'user') => {
     const started = Date.now()
+    setRunOrigin(origin)
     setRunning(true)
     setRunningSince(started)
     setStopped(false)
@@ -463,23 +466,28 @@ export function useApiRuntime(workspaceKey) {
       await snapshotNow()
       const stdout = [notes.join('\n'), reply.stdout].filter(Boolean).join('\n')
       if (!loaded.ok) {
+        const failed = failure(loaded.error, { stdout, stderr: [reply.stderr, loaded.error].filter(Boolean).join('\n'), runtime_ms: Date.now() - started })
         setOpenapi(null)
-        setResult(failure(loaded.error, { stdout, stderr: [reply.stderr, loaded.error].filter(Boolean).join('\n'), runtime_ms: Date.now() - started }))
-        return
+        setResult(failed)
+        return failed
       }
       setOpenapi(loaded.openapi)
       const routes = Object.values(loaded.openapi?.paths ?? {}).reduce((sum, ops) => sum + Object.keys(ops).length, 0)
-      setResult({
+      const succeeded = {
         status: 'success',
         stdout: [stdout, `API ready: ${routes} route${routes === 1 ? '' : 's'}. Open the API tab to send requests, or Preview to use your frontend.`].filter(Boolean).join('\n'),
         stderr: reply.stderr,
         runtime_ms: Date.now() - started,
         error: null,
         truncated: false,
-      })
+      }
+      setResult(succeeded)
+      return succeeded
     } catch (err) {
-      setResult(failure(messageOf(err, 'The backend runtime failed.'), { stdout: err?.stdout || '', runtime_ms: Date.now() - started }))
+      const failed = failure(messageOf(err, 'The backend runtime failed.'), { stdout: err?.stdout || '', runtime_ms: Date.now() - started })
+      setResult(failed)
       if (err?.timeout) recover(err.type)
+      return failed
     } finally {
       if (mountedRef.current) {
         setRunning(false)
@@ -645,5 +653,6 @@ export function useApiRuntime(workspaceKey) {
     // Writes the running database to IndexedDB now, not after the snapshot delay.
     snapshotNow,
     ready: Boolean(openapi),
-  }), [runner, run, request, install, pipList, exec, relayStatus, relayNotices, clearRelayNotices, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug, snapshotNow])
+    runOrigin,
+  }), [runOrigin, runner, run, request, install, pipList, exec, relayStatus, relayNotices, clearRelayNotices, sql, applySchema, resetDatabase, exportDatabase, loadSchema, watchSchema, openapi, schema, lastExchange, debugPause, debugRequest, resumeDebug, snapshotNow])
 }

@@ -17,6 +17,9 @@ export default function PreviewPanel({ previewHtml = '', onConsole, onApiRequest
       const data = event.data
       if (!data) return
       if (data.source === 'webnest-codelab-preview') {
+        // Only this panel's iframe: another window must not write to the console, which the
+        // AI assistant reads as the page's errors.
+        if (event.source !== frameRef.current?.contentWindow) return
         const args = Array.isArray(data.args) ? data.args : []
         onConsole?.({ type: data.type || 'log', text: args.join(' ') })
         return

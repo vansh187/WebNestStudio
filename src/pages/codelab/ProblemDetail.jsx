@@ -216,6 +216,7 @@ export default function ProblemDetail() {
         saving={submitting}
         saveLabel="Submit"
         scrollIntoViewOnOpen={false}
+        assistant={false}
       />
       {runner.result?.status === 'success' && (
         <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6 lg:px-8">
