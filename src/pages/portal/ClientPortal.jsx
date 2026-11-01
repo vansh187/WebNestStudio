@@ -5,6 +5,7 @@ import Reveal from '../../components/Reveal'
 import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
+import AssistantPlanCard from '../../components/coding/AssistantPlanCard'
 import { getMyProjectStatus } from '../../api/me'
 import { listProjects } from '../../api/coding'
 import { getCodeLabDashboard } from '../../api/codelab'
@@ -208,6 +209,13 @@ function LearningDashboardCard({ userKey }) {
 export default function ClientPortal() {
   const { user } = useAuth()
 
+  // Always opens at the top, also on a reload, where the browser would restore the old position.
+  useEffect(() => {
+    window.history.scrollRestoration = 'manual'
+    window.scrollTo(0, 0)
+    return () => { window.history.scrollRestoration = 'auto' }
+  }, [])
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
       <BackButton fallback="/" className="mb-6" />
@@ -229,6 +237,11 @@ export default function ClientPortal() {
             <CodingProjectsCard />
           </section>
         </div>
+
+        <section className="mt-10">
+          <h2 className="mb-4 font-display text-lg font-semibold text-ink-900 dark:text-white">WebNest AI</h2>
+          <AssistantPlanCard />
+        </section>
 
         <section className="mt-10">
           <h2 className="mb-4 font-display text-lg font-semibold text-ink-900 dark:text-white">My Learning</h2>

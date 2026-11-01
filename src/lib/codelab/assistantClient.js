@@ -8,9 +8,12 @@ import { AssistantError } from './assistantAgent.js'
 const MOCK = import.meta.env.VITE_ASSISTANT_MOCK === '1'
 const CHAT_URL = `${API_BASE_URL}/api/assistant/chat`
 const USAGE_URL = `${API_BASE_URL}/api/assistant/usage`
+const ORDER_URL = `${API_BASE_URL}/api/assistant/payments/order`
+const VERIFY_URL = `${API_BASE_URL}/api/assistant/payments/verify`
 
 const FRIENDLY = {
   401: 'Your session has ended. Please log in again.',
+  402: 'Unlock WebNest AI to continue.',
   404: 'WebNest AI is not available yet.',
   413: 'This conversation has grown too long. Start a new chat to continue.',
   429: "You've reached the limit for now. Please try again later.",
@@ -78,7 +81,32 @@ export async function streamChat({ mode, messages, context, signal, onEvent }) {
   return undefined
 }
 
-// { enabled, calls_used_today, calls_limit }, or null when it could not be read.
+async function postPayment(url, body) {
+  let response
+  try {
+    response = await withLogin(() => fetch(url, {
+      method: 'POST',
+      headers: authorized({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+    }))
+  } catch {
+    throw new AssistantError('Could not reach WebNest. Check your connection and try again.')
+  }
+  if (!response.ok) throw await failure(response)
+  return response.json()
+}
+
+// A new Razorpay order for this attempt. The server sets the price and gives its public key.
+export const createPaymentOrder = () => postPayment(ORDER_URL, {})
+
+// `checkout` is what Razorpay's handler received. The server checks its signature.
+export const verifyPayment = (checkout) => postPayment(VERIFY_URL, {
+  razorpay_order_id: checkout?.razorpay_order_id,
+  razorpay_payment_id: checkout?.razorpay_payment_id,
+  razorpay_signature: checkout?.razorpay_signature,
+})
+
+// { enabled, calls_used_today, calls_limit, access? }, or null when it could not be read.
 export async function fetchAssistantUsage(signal) {
   if (MOCK) {
     const { mockUsage } = await import('./assistantMock.js')

@@ -8,6 +8,8 @@ import { getAccessToken } from '../lib/tokenStore'
 import { codelabLocal } from '../lib/codelab/idb'
 import { ASSISTANT_PREFIX, ASSISTANT_PREFS_KEY } from '../lib/codelab/storageKeys'
 
+const PLAN_CHECK_WAIT_MS = 15000
+
 const readPrefs = () => codelabLocal.getJSON(ASSISTANT_PREFS_KEY) ?? {}
 
 // The assistant's conversation and task state for one workspace. Everything the model may
@@ -29,6 +31,7 @@ export function useAssistant({ workspaceKey, project, enabled }) {
   const [error, setError] = useState(null)
   const [outcome, setOutcome] = useState(null) // the last task: step_limit, cut_off or stopped
   const [usage, setUsage] = useState(null)
+  const [planChecked, setPlanChecked] = useState(false)
   const [undoLog, setUndoLog] = useState(null)
 
   // Always the latest, for the task running across many renders.
@@ -67,12 +70,22 @@ export function useAssistant({ workspaceKey, project, enabled }) {
   const refreshUsage = useCallback(async (signal) => {
     const next = await fetchAssistantUsage(signal)
     if (next && !signal?.aborted) setUsage(next)
+    return next
   }, [])
   useEffect(() => {
     if (!enabled) return undefined
     const controller = new AbortController()
-    refreshUsage(controller.signal)
-    return () => controller.abort()
+    // A slow or failed read must not hold the panel closed: the server still refuses a chat
+    // from anyone who hasn't paid (402), which brings the payment card up.
+    const giveUp = setTimeout(() => setPlanChecked(true), PLAN_CHECK_WAIT_MS)
+    refreshUsage(controller.signal).finally(() => {
+      clearTimeout(giveUp)
+      if (!controller.signal.aborted) setPlanChecked(true)
+    })
+    return () => {
+      clearTimeout(giveUp)
+      controller.abort()
+    }
   }, [enabled, refreshUsage])
 
   const addMessage = useCallback((message) => {
@@ -174,13 +187,13 @@ export function useAssistant({ workspaceKey, project, enabled }) {
         onUsage: (next) => {
           setStatus('working')
           setActiveTool(null)
-          setUsage((current) => ({ enabled: true, ...current, calls_used_today: next.calls_used_today, calls_limit: next.calls_limit }))
+          setUsage((current) => ({ enabled: true, ...current, calls_used_today: next.calls_used_today, calls_limit: next.calls_limit, ...(next.access ? { access: next.access } : {}) }))
         },
       })
       if (result.status !== 'done') setOutcome(result.status)
     } catch (failure) {
       setError({ message: failure?.message || 'WebNest AI could not answer. Please try again.', status: failure?.status ?? 0, retryAfter: failure?.retryAfter ?? null })
-      if (failure?.status === 404 || failure?.status === 503) refreshUsage()
+      if (failure?.status === 402 || failure?.status === 404 || failure?.status === 503) refreshUsage()
     } finally {
       abortRef.current = null
       taskRun.current = null
@@ -282,6 +295,8 @@ export function useAssistant({ workspaceKey, project, enabled }) {
     error,
     outcome,
     usage,
+    refreshUsage,
+    planChecked,
     canUndo: Boolean(undoLog) && !busy,
     send,
     resume,

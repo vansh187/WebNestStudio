@@ -7,6 +7,7 @@ import {
   READ_LIMIT, buildContext, codeBlockTarget, describeToolCall, errorsOf, planApply, planFileChange, rebaseApply, recordChange, runTool, scrubSecrets, undoChanges,
 } from '../src/lib/codelab/assistantTools.js'
 import { mockStreamChat } from '../src/lib/codelab/assistantMock.js'
+import { TERMS_VERSION, checkoutOptions, formatTokens, needsPayment, tokensLeft } from '../src/lib/codelab/assistantCheckout.js'
 
 const FILES = [
   { name: 'app/main.py', language: 'python', content: 'from fastapi import FastAPI\napp = FastAPI()\n' },
@@ -571,4 +572,53 @@ test('the preview replaces images that fail to load with a dummy, and reports th
   assert.match(html, /image\.src = 'data:image\/svg\+xml/)
   const body = html.slice(html.indexOf('<body>'))
   assert.ok(body.includes('<img src="images/a.jpg" alt="Bread">'), 'the page itself is untouched')
+})
+
+// ---- payment ---------------------------------------------------------------------------
+
+test('WebNest AI is paid: only an active plan from the server opens it', () => {
+  assert.equal(needsPayment(null), false, 'usage not read: the server decides, with a 402')
+  assert.equal(needsPayment({ enabled: true, calls_limit: 40 }), true, 'no plan sent: ask for payment')
+  assert.equal(needsPayment({ access: { active: true } }), false)
+  assert.equal(needsPayment({ access: { active: false } }), true)
+  assert.equal(needsPayment({ access: {} }), true, 'anything but a clear yes stays locked')
+})
+
+test('checkout uses only what the server sent for the key, price and order', () => {
+  const onPaid = () => {}
+  const onClose = () => {}
+  const order = { order_id: 'order_placeholder', amount: 29900, currency: 'INR', key_id: 'placeholder-key-id', name: 'WebNest Studio' }
+  const options = checkoutOptions(order, { full_name: 'Test Learner', email: 'tester@example.com' }, { onPaid, onClose })
+  assert.equal(options.key, 'placeholder-key-id')
+  assert.equal(options.amount, 29900)
+  assert.equal(options.order_id, 'order_placeholder')
+  assert.equal(options.handler, onPaid)
+  assert.equal(options.modal.ondismiss, onClose)
+  assert.equal(options.callback_url, undefined, 'a redirect would skip the handler')
+  assert.equal(options.prefill.email, 'tester@example.com')
+  assert.deepEqual(checkoutOptions(order, null, { onPaid, onClose }).prefill, { name: '', email: '' })
+})
+
+test('token allowance: what is left, and how it reads', () => {
+  assert.equal(tokensLeft({ access: { tokens_limit: 2000000, tokens_used: 500000 } }), 1500000)
+  assert.equal(tokensLeft({ access: { tokens_limit: 2000000 } }), 2000000)
+  assert.equal(tokensLeft({ access: { tokens_limit: 100, tokens_used: 150 } }), 0, 'a last call can overshoot')
+  assert.equal(tokensLeft({ access: { active: true } }), null)
+  assert.equal(tokensLeft(null), null)
+  assert.equal(formatTokens(2000000), '2M')
+  assert.equal(formatTokens(1500000), '1.5M')
+  assert.equal(formatTokens(850000), '850K')
+  assert.equal(formatTokens(2000000, { long: true }), '2 million')
+})
+
+test('plan end date: reads a date, and shows nothing for a bad one', async () => {
+  const { expiryDate } = await import('../src/lib/codelab/assistantCheckout.js')
+  assert.match(expiryDate('2026-12-01T12:00:00Z'), /1 Dec 2026/)
+  assert.equal(expiryDate(null), '')
+  assert.equal(expiryDate('not a date'), '')
+})
+
+test('the payment records which terms were accepted, and when', () => {
+  const options = checkoutOptions({ order_id: 'order_placeholder' }, null, { onPaid() {}, onClose() {}, termsAcceptedAt: '2026-11-01T10:00:00.000Z' })
+  assert.deepEqual(options.notes, { terms_version: TERMS_VERSION, terms_accepted_at: '2026-11-01T10:00:00.000Z' })
 })
