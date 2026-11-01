@@ -562,3 +562,13 @@ test('names from the model cannot reach object internals', () => {
   assert.equal(first.toString.before, 'old')
   assert.equal(planFileChange('create_file', { path: '__proto__', content: '' }, [], 'go').kind, 'create')
 })
+
+test('the preview replaces images that fail to load with a dummy, and reports them', async () => {
+  const { createPreviewHtml } = await import('../src/lib/codelab/webPreview.js')
+  const html = createPreviewHtml([{ name: 'index.html', content: '<img src="images/a.jpg" alt="Bread">' }])
+  assert.match(html, /Image could not load/)
+  assert.match(html, /picsum\.photos\/seed/)
+  assert.match(html, /image\.src = 'data:image\/svg\+xml/)
+  const body = html.slice(html.indexOf('<body>'))
+  assert.ok(body.includes('<img src="images/a.jpg" alt="Bread">'), 'the page itself is untouched')
+})
