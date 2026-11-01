@@ -18,6 +18,12 @@ export function expiryDate(value) {
   return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
 }
 
+// The same date in the user's own format.
+export function localDate(value) {
+  const date = value ? new Date(value) : null
+  return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString() : ''
+}
+
 // Tokens left this month, or null when the server gives no allowance.
 export function tokensLeft(usage) {
   const limit = usage?.access?.tokens_limit
@@ -30,6 +36,12 @@ export const formatTokens = (tokens, { long = false } = {}) => new Intl.NumberFo
   compactDisplay: long ? 'long' : 'short',
   maximumFractionDigits: 1,
 }).format(tokens)
+
+// After a confirmed payment. `verified` is the verify response, when the browser got one.
+export function paidMessage(verified) {
+  const left = verified?.tokens_limit ? Math.max(verified.tokens_limit - (verified.tokens_used ?? 0), 0) : null
+  return `Payment confirmed. Welcome to WebNest Prime!${left !== null ? ` You have ${formatTokens(left)} AI tokens to use.` : ''}`
+}
 
 // Loaded on the first click to pay, so the workspace runs no third-party script until then.
 let loading = null

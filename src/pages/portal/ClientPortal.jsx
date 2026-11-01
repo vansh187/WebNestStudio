@@ -6,6 +6,9 @@ import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import AssistantPlanCard from '../../components/coding/AssistantPlanCard'
+import PrimeBadge from '../../components/PrimeBadge'
+import { usePrime } from '../../hooks/usePrime'
+import { localDate } from '../../lib/codelab/assistantCheckout'
 import { getMyProjectStatus } from '../../api/me'
 import { listProjects } from '../../api/coding'
 import { getCodeLabDashboard } from '../../api/codelab'
@@ -208,6 +211,7 @@ function LearningDashboardCard({ userKey }) {
 
 export default function ClientPortal() {
   const { user } = useAuth()
+  const prime = usePrime()
 
   // Always opens at the top, also on a reload, where the browser would restore the old position.
   useEffect(() => {
@@ -222,9 +226,13 @@ export default function ClientPortal() {
       <Reveal>
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Client Portal</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">
-            Welcome back, {user?.full_name?.split(' ')[0]}
-          </h1>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h1 className="font-display text-3xl font-bold text-ink-900 dark:text-white">
+              Welcome back, {user?.full_name?.split(' ')[0]}
+            </h1>
+            {prime.isPrime && <PrimeBadge label={prime.label} />}
+          </div>
+          {prime.isPrime && localDate(prime.expiresAt) && <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">Valid until {localDate(prime.expiresAt)}</p>}
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">

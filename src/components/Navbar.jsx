@@ -2,9 +2,12 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { lazyWithReload } from '../lib/chunkReload'
 import { NavLink, Link } from 'react-router-dom'
 import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiSmartphone } from 'react-icons/fi'
+import { FaCrown } from 'react-icons/fa'
 import Logo from './Logo'
 import { NAV_LINKS } from '../data/site'
 import { useAuth } from '../context/AuthContext'
+import { usePrime } from '../hooks/usePrime'
+import PrimeBadge from './PrimeBadge'
 
 // Pulls in the card UI + newsletter form - only loaded once a visitor opens it.
 const VisitingCardModal = lazyWithReload(() => import('./VisitingCardModal'))
@@ -40,6 +43,7 @@ export default function Navbar() {
   const openCard = () => { setCardMounted(true); setCardOpen(true) }
   const { isAuthenticated, user, logout } = useAuth()
   const account = isAuthenticated ? accountHome(user?.role) : null
+  const prime = usePrime()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -77,7 +81,7 @@ export default function Navbar() {
       >
       <nav className="flex items-center justify-between px-5 py-3 lg:px-7">
         <Link to="/" onClick={() => setOpen(false)}>
-          <Logo size="md" />
+          <Logo size="md" prime={prime.isPrime} />
         </Link>
 
         <div className="hidden items-center gap-6 xl:flex 2xl:gap-8">
@@ -126,12 +130,14 @@ export default function Navbar() {
                 aria-expanded={menuOpen}
                 className="flex items-center gap-2 rounded-full border border-gold-400/60 px-4 py-2 text-sm font-semibold text-gold-300 hover:border-gold-400 transition-colors"
               >
-                <FiUser className="h-4 w-4" />
+                {/* The bar has no room for the full label, which the menu below shows. */}
+                {prime.isPrime ? <FaCrown className="h-4 w-4" title={prime.label} /> : <FiUser className="h-4 w-4" />}
                 <span className="max-w-[9rem] truncate">{user?.full_name?.split(' ')[0] || 'Account'}</span>
                 <FiChevronDown className={`h-4 w-4 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
               </button>
               {menuOpen && (
                 <div role="menu" className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-ink-200 bg-white py-1 shadow-lg dark:border-ink-800 dark:bg-ink-950">
+                  {prime.isPrime && <div className="px-4 py-2"><PrimeBadge label={prime.label} /></div>}
                   <Link
                     to={account.to}
                     role="menuitem"
@@ -170,7 +176,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-400/60 text-gold-300"
             >
-              <FiUser className="h-5 w-5" />
+              {prime.isPrime ? <FaCrown className="h-5 w-5" title={prime.label} /> : <FiUser className="h-5 w-5" />}
             </Link>
           )}
           <Link
@@ -202,6 +208,7 @@ export default function Navbar() {
                 <span className="min-w-0 truncate">{user?.full_name || 'My account'}</span>
               </p>
               {user?.email && <p className="mt-0.5 truncate text-xs text-ink-300">{user.email}</p>}
+              {prime.isPrime && <PrimeBadge label={prime.label} className="mt-2" />}
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
                   to={account.to}

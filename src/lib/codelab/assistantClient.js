@@ -1,13 +1,15 @@
 // Talks to the assistant endpoints (the API contract in the assistant plan documents).
 // Uses fetch rather than the axios client because the reply is a stream.
 import { API_BASE_URL, refreshSession } from '../apiClient'
-import { getAccessToken } from '../tokenStore'
+import { getAccessToken, getUser } from '../tokenStore'
 import { createSseParser } from './assistantStream.js'
 import { AssistantError } from './assistantAgent.js'
+import { noteMembership, notePassActive } from './assistantPlan.js'
 
 const MOCK = import.meta.env.VITE_ASSISTANT_MOCK === '1'
 const CHAT_URL = `${API_BASE_URL}/api/assistant/chat`
 const USAGE_URL = `${API_BASE_URL}/api/assistant/usage`
+const MEMBERSHIP_URL = `${API_BASE_URL}/api/assistant/membership`
 const ORDER_URL = `${API_BASE_URL}/api/assistant/payments/order`
 const VERIFY_URL = `${API_BASE_URL}/api/assistant/payments/verify`
 
@@ -108,6 +110,34 @@ export const verifyPayment = (checkout) => postPayment(VERIFY_URL, {
 
 // { enabled, calls_used_today, calls_limit, access? }, or null when it could not be read.
 export async function fetchAssistantUsage(signal) {
+  const account = getUser()?.email
+  const usage = await readUsage(signal)
+  // An answer that arrives after logging out belongs to the earlier account.
+  if (getUser()?.email === account) notePassActive(usage)
+  return usage
+}
+
+// { is_prime, member_label, expires_at }, or null when it could not be read.
+export async function fetchMembership() {
+  const account = getUser()?.email
+  let membership = null
+  if (MOCK) {
+    const { mockMembership } = await import('./assistantMock.js')
+    membership = mockMembership()
+  } else {
+    try {
+      const response = await withLogin(() => fetch(MEMBERSHIP_URL, { headers: authorized() }))
+      membership = response.ok ? await response.json() : null
+    } catch {
+      membership = null
+    }
+  }
+  if (getUser()?.email !== account) return null
+  noteMembership(membership)
+  return membership
+}
+
+async function readUsage(signal) {
   if (MOCK) {
     const { mockUsage } = await import('./assistantMock.js')
     return mockUsage()

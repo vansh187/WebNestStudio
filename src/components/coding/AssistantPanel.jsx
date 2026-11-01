@@ -7,8 +7,10 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useAssistant } from '../../hooks/useAssistant'
 import { useAssistantPayment } from '../../hooks/useAssistantPayment'
-import { expiryDate, formatTokens, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
+import { expiryDate, formatTokens, needsPayment, paidMessage, tokensLeft } from '../../lib/codelab/assistantCheckout'
 import { AssistantPaywall, Spark } from './AssistantPaywall'
+import PrimeBadge from '../PrimeBadge'
+import { usePrime } from '../../hooks/usePrime'
 import { AssistantMessages, StreamingReply } from './AssistantMessages'
 
 const AssistantDiff = lazy(() => import('./AssistantDiff'))
@@ -178,6 +180,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
   const assistant = useAssistant({ workspaceKey, project, enabled: isAuthenticated })
   const { messages, mode, busy, streamText, status, usage, error, outcome, approval, send, setMode, refreshUsage } = assistant
   const payment = useAssistantPayment({ user, enabled: isAuthenticated, refreshUsage })
+  const prime = usePrime()
 
   const [draft, setDraft] = useState('')
   const [applyPlan, setApplyPlan] = useState(null)
@@ -262,6 +265,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
       <header className="flex h-11 shrink-0 items-center gap-2 border-b border-ink-200 px-3 dark:border-ink-800">
         <Spark />
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-900 dark:text-white">WebNest AI</h2>
+        {prime.isPrime && <PrimeBadge short label={prime.label} />}
         {tokens !== null && !locked && (
           <span title={`${tokens.toLocaleString('en-IN')} of ${usage.access.tokens_limit.toLocaleString('en-IN')} AI tokens left${usage.access.expires_at ? `, until ${expiryDate(usage.access.expires_at)}` : ''}`} className="shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-semibold text-ink-600 dark:bg-ink-800 dark:text-ink-300">
             {formatTokens(tokens)} tokens left
@@ -286,7 +290,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
           </Banner>
         )}
         {payment.status === 'paid' && !locked && (
-          <Banner>WebNest AI is unlocked{usage?.access?.expires_at ? ` until ${expiryDate(usage.access.expires_at)}` : ''}. Thank you!</Banner>
+          <Banner>{paidMessage(payment.verified)}</Banner>
         )}
         {checking && !visibleMessages && (
           <p role="status" className="m-auto flex items-center gap-2 text-xs font-medium text-ink-500 dark:text-ink-400">
