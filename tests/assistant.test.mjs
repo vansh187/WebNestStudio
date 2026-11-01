@@ -8,6 +8,9 @@ import {
 } from '../src/lib/codelab/assistantTools.js'
 import { mockStreamChat } from '../src/lib/codelab/assistantMock.js'
 import { TERMS_VERSION, checkoutOptions, formatTokens, needsPayment, tokensLeft } from '../src/lib/codelab/assistantCheckout.js'
+import {
+  claimMembershipLoad, clearPaymentPending, getMembership, isPaymentPending, markPaymentPending, noteMembership, notePassActive, paymentConfirmed, resetMembership,
+} from '../src/lib/codelab/assistantPlan.js'
 
 const FILES = [
   { name: 'app/main.py', language: 'python', content: 'from fastapi import FastAPI\napp = FastAPI()\n' },
@@ -621,4 +624,69 @@ test('plan end date: reads a date, and shows nothing for a bad one', async () =>
 test('the payment records which terms were accepted, and when', () => {
   const options = checkoutOptions({ order_id: 'order_placeholder' }, null, { onPaid() {}, onClose() {}, termsAcceptedAt: '2026-11-01T10:00:00.000Z' })
   assert.deepEqual(options.notes, { terms_version: TERMS_VERSION, terms_accepted_at: '2026-11-01T10:00:00.000Z' })
+})
+
+test('WebNest Prime comes only from the membership answer', () => {
+  resetMembership()
+  assert.equal(getMembership().is_prime, false)
+  noteMembership({ is_prime: true, member_label: 'WebNest Prime Member', expires_at: '2026-12-01T00:00:00Z' })
+  assert.deepEqual(getMembership(), { is_prime: true, member_label: 'WebNest Prime Member', expires_at: '2026-12-01T00:00:00Z' })
+  noteMembership(null) // A failed read changes nothing.
+  assert.equal(getMembership().is_prime, true)
+  noteMembership({ is_prime: 'yes' })
+  assert.equal(getMembership().is_prime, false)
+  noteMembership({ is_prime: true })
+  noteMembership({ is_prime: false, member_label: 'WebNest Prime Member', expires_at: '2026-12-01T00:00:00Z' })
+  assert.deepEqual(getMembership(), { is_prime: false, member_label: null, expires_at: null })
+})
+
+test('WebNest Prime does not carry over to the next account', () => {
+  resetMembership()
+  assert.equal(claimMembershipLoad('a'), true)
+  assert.equal(claimMembershipLoad('a'), false)
+  noteMembership({ is_prime: true })
+  markPaymentPending()
+  assert.equal(claimMembershipLoad('b'), true)
+  assert.equal(getMembership().is_prime, false)
+  assert.equal(isPaymentPending(), false)
+  noteMembership({ is_prime: true })
+  resetMembership()
+  assert.equal(getMembership().is_prime, false)
+  assert.equal(claimMembershipLoad('b'), true)
+  resetMembership()
+})
+
+test('a pending payment blocks paying until the server confirms it', () => {
+  resetMembership()
+  claimMembershipLoad('a')
+  markPaymentPending()
+  noteMembership({ is_prime: false })
+  assert.equal(isPaymentPending(), true)
+  noteMembership({ is_prime: true })
+  assert.equal(isPaymentPending(), false)
+  resetMembership()
+})
+
+test('a member buying again waits for the pass, as they are already Prime', () => {
+  resetMembership()
+  claimMembershipLoad('a')
+  noteMembership({ is_prime: true })
+  markPaymentPending({ renewal: true })
+  noteMembership({ is_prime: true })
+  assert.equal(isPaymentPending(), true)
+  notePassActive({ access: { active: false } })
+  assert.equal(isPaymentPending(), true)
+  notePassActive({ access: { active: true } })
+  assert.equal(isPaymentPending(), false)
+  clearPaymentPending()
+  resetMembership()
+})
+
+test('a verify response confirms a payment only when the server says so', () => {
+  assert.equal(paymentConfirmed({ is_prime: true, active: true }, false), true)
+  assert.equal(paymentConfirmed({ is_prime: true, active: false }, false), true)
+  assert.equal(paymentConfirmed({ is_prime: false, active: true }, false), false)
+  assert.equal(paymentConfirmed(undefined, false), false)
+  assert.equal(paymentConfirmed({ is_prime: true, active: false }, true), false)
+  assert.equal(paymentConfirmed({ is_prime: true, active: true }, true), true)
 })

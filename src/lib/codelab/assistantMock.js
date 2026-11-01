@@ -1,6 +1,8 @@
 // A stand-in for POST /api/assistant/chat, used with VITE_ASSISTANT_MOCK=1 until the backend
 // is deployed. It follows the API contract (same events, same order) with scripted replies,
 // so the panel, tools and approvals can be built and tested without spending AI quota.
+export const mockMembership = () => ({ is_prime: true, member_label: 'WebNest Prime Member', expires_at: null })
+
 const wait = (ms, signal) => new Promise((resolve, reject) => {
   if (signal?.aborted) {
     reject(new DOMException('Aborted', 'AbortError'))

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiCheck, FiLoader, FiZap } from 'react-icons/fi'
 import { DEFAULT_PLAN, formatTokens } from '../../lib/codelab/assistantCheckout'
+import { usePrime } from '../../hooks/usePrime'
 
 export function Spark({ className = 'h-7 w-7' }) {
   return (
@@ -13,18 +14,19 @@ export function Spark({ className = 'h-7 w-7' }) {
 
 const LEGAL_LINK = 'font-semibold underline hover:text-gold-600 dark:hover:text-gold-300'
 
-const PAY_LABELS = { starting: 'Opening…', open: 'Payment page open…', confirming: 'Confirming your payment…' }
+const PAY_LABELS = { starting: 'Opening…', open: 'Payment page open…', verifying: 'Verifying your payment...', confirming: 'Confirming your payment...' }
 
 // Shown when the server says this user needs access. The price comes from the server.
 export function AssistantPaywall({ access: serverAccess, payment }) {
   const access = { ...DEFAULT_PLAN, ...serverAccess }
   const rupees = Math.round(access.price_paise / 100)
   const { status, error, paymentId, pay, checkAgain } = payment
+  const { isPrime } = usePrime()
   const [acceptedAt, setAcceptedAt] = useState(null)
-  const working = status === 'starting' || status === 'open' || status === 'confirming'
+  const working = Boolean(PAY_LABELS[status])
   const period = access.pass_days === 30 ? 'per month' : access.pass_days ? `for ${access.pass_days} days` : ''
-  // Used up within the month, as opposed to never paid or expired.
-  const usedUp = Boolean(access.tokens_limit) && (access.tokens_used ?? 0) >= access.tokens_limit && Boolean(access.expires_at)
+  // Still a member, but out of tokens: as opposed to never paid or expired.
+  const usedUp = isPrime && Boolean(access.tokens_limit) && (access.tokens_used ?? 0) >= access.tokens_limit
   const included = [
     ...(access.tokens_limit ? [`${formatTokens(access.tokens_limit, { long: true })} AI tokens`] : []),
     'Ask questions about your code',
@@ -35,6 +37,7 @@ export function AssistantPaywall({ access: serverAccess, payment }) {
     <section aria-label="Unlock WebNest AI" className="m-auto w-full max-w-sm rounded-xl border border-gold-400/60 bg-gold-50/40 p-4 text-center dark:bg-gold-400/5">
       <Spark className="h-10 w-10" />
       <h3 className="mt-3 font-display text-lg font-bold text-ink-900 dark:text-white">{usedUp ? "You've used all your tokens" : 'Unlock WebNest AI'}</h3>
+      {usedUp && <p className="mt-1 text-xs text-ink-600 dark:text-ink-300">{formatTokens(access.tokens_used)} of {formatTokens(access.tokens_limit)} tokens used. Buy again to keep going.</p>}
       <p className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">
         ₹{rupees}
         {period ? <span className="ml-1 text-sm font-medium text-ink-500 dark:text-ink-400">{period}</span> : null}
@@ -46,7 +49,8 @@ export function AssistantPaywall({ access: serverAccess, payment }) {
       </ul>
       {status === 'pending' ? (
         <div role="status" className="mt-4 text-xs leading-relaxed text-ink-700 dark:text-ink-200">
-          <p>We're still confirming your payment, so <strong>please don't pay again</strong>. If WebNest AI doesn't unlock in a few minutes, <Link to="/contact" className="font-semibold underline">contact us</Link>{paymentId ? <> with payment ID <code className="font-mono">{paymentId}</code></> : null}.</p>
+          <p>Your payment is being confirmed. Your membership will appear shortly, and there's no need to pay again.</p>
+          <p className="mt-2">Taking too long? <Link to="/contact" className="font-semibold underline">Contact us</Link>{paymentId ? <> with payment ID <code className="font-mono">{paymentId}</code></> : null}.</p>
           <button type="button" onClick={checkAgain} className="mt-3 inline-flex h-9 items-center rounded-lg border border-ink-300 px-4 text-xs font-semibold text-ink-800 hover:border-gold-400 dark:border-ink-700 dark:text-ink-100">Check again</button>
         </div>
       ) : (
@@ -71,11 +75,11 @@ export function AssistantPaywall({ access: serverAccess, payment }) {
         </label>
         <button type="button" onClick={() => pay(acceptedAt)} disabled={working || !acceptedAt} title={acceptedAt ? undefined : 'Tick the box above to continue'} className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 text-sm font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400 disabled:cursor-not-allowed disabled:opacity-50">
           {working && <FiLoader className="h-4 w-4 animate-spin" />}
-          {PAY_LABELS[status] ?? `Pay ₹${rupees}`}
+          {PAY_LABELS[status] ?? `${usedUp ? 'Buy again' : 'Pay'} ₹${rupees}`}
         </button>
         </>
       )}
-      {error && <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">{error}{status === 'rejected' && <> <Link to="/contact" className="font-semibold underline">Contact support</Link>{paymentId ? <> with payment ID <code className="font-mono">{paymentId}</code></> : null}.</>}</p>}
       <p className="mt-3 text-[11px] text-ink-500 dark:text-ink-400">
         Secure payment by Razorpay.
       </p>

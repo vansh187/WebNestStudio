@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { FiLoader } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { useAssistantPayment } from '../../hooks/useAssistantPayment'
+import { usePrime } from '../../hooks/usePrime'
 import { fetchAssistantUsage } from '../../lib/codelab/assistantClient'
-import { expiryDate, formatTokens, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
+import { expiryDate, formatTokens, needsPayment, paidMessage, tokensLeft } from '../../lib/codelab/assistantCheckout'
 import { AssistantPaywall, Spark } from './AssistantPaywall'
 
 const CARD = 'rounded-2xl border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-900'
@@ -13,6 +14,7 @@ const OPEN_LINK = 'inline-flex h-9 items-center rounded-lg bg-gradient-to-br fro
 // WebNest AI on the profile page: the user's plan, or the same payment card as the panel.
 export default function AssistantPlanCard() {
   const { user, isAuthenticated } = useAuth()
+  const prime = usePrime()
   const [usage, setUsage] = useState(undefined) // undefined: loading, null: could not be read
 
   const refreshUsage = useCallback(async () => {
@@ -47,15 +49,16 @@ export default function AssistantPlanCard() {
   const usedShare = left !== null ? Math.min(100, Math.round(((access.tokens_limit - left) / access.tokens_limit) * 100)) : 0
   return (
     <div className={CARD}>
+      {payment.status === 'paid' && <p role="status" className="mb-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">{paidMessage(payment.verified)}</p>}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <Spark className="h-9 w-9" />
           <div>
             <p className="font-display font-semibold text-ink-900 dark:text-white">
-              WebNest AI <span className="ml-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
+              {prime.isPrime ? prime.label : 'WebNest AI'} <span className="ml-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
             </p>
             <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">
-              {until ? `Your plan runs until ${until}.` : 'Your plan is active.'}
+              You have WebNest AI. {until ? `Your plan runs until ${until}.` : 'Your plan is active.'}
             </p>
           </div>
         </div>
