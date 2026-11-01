@@ -70,6 +70,9 @@ export default function CodingWorkspace({
   // The AI assistant is on for every language. Problem pages turn it off: it would write the
   // answer to the problem being practised.
   assistant = true,
+  // A web Run opens its preview in full screen. Problem pages turn it off: it would cover
+  // the problem statement.
+  previewFullScreenOnRun = true,
 }) {
   const backend = language === 'backend'
   // The backend runtime only starts a worker on the first Run, so other languages pay nothing.
@@ -221,6 +224,7 @@ export default function CodingWorkspace({
   const assistantVisible = assistantShown && assistantTab === 'ai'
   const assistantRef = useRef(null)
   const webErrors = useRef([])
+  const [previewOpens, setPreviewOpens] = useState(0)
 
   const toggleAssistant = () => {
     if (assistantVisible) {
@@ -237,6 +241,7 @@ export default function CodingWorkspace({
     setConsoleText('')
     webErrors.current = []
     setAssistantTab((tab) => tab && 'output')
+    if (language === 'web' && previewFullScreenOnRun) setPreviewOpens((count) => count + 1)
     if (backend) {
       api.run(files)
         .then(() => setBackendPreview(createPreviewHtml(files, { folder: 'frontend/', apiBridge: true })))
@@ -476,6 +481,17 @@ export default function CodingWorkspace({
           ref={outputRef}
           className={assistantVisible ? 'hidden' : `grid scroll-mt-[calc(var(--nav-h)+8px)] gap-3 ${stdinOpen ? 'md:grid-cols-2' : ''} lg:flex lg:min-h-0 lg:flex-1 lg:flex-col`}
         >
+          {/* First for web, so the page shows without scrolling past the output. */}
+          {language === 'web' && (
+            <ErrorBoundary>
+              <PreviewPanel
+                previewHtml={runner.result?.previewHtml}
+                onConsole={handleConsole}
+                openRequest={previewOpens}
+                className="lg:min-h-0 lg:flex-[1.5]"
+              />
+            </ErrorBoundary>
+          )}
           <ErrorBoundary>
             <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
           </ErrorBoundary>
@@ -490,15 +506,6 @@ export default function CodingWorkspace({
               className={PANEL_HEIGHT}
             />
           </ErrorBoundary>
-          {language === 'web' && (
-            <ErrorBoundary>
-              <PreviewPanel
-                previewHtml={runner.result?.previewHtml}
-                onConsole={handleConsole}
-                className="lg:min-h-0 lg:flex-[1.5]"
-              />
-            </ErrorBoundary>
-          )}
           {consoleText && (
             <pre className="max-h-48 shrink-0 overflow-auto lg:max-h-32 rounded-xl border border-ink-200 bg-ink-950 p-3 font-mono text-xs text-ink-100 dark:border-ink-800">
               {consoleText}

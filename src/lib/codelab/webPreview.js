@@ -44,6 +44,23 @@ export function createPreviewHtml(input, { folder = '', apiBridge = false } = {}
         window.addEventListener('error', (event) => {
           send('error', [event.message || 'Runtime error']);
         });
+        // Projects hold text files only, so an image path usually points at nothing. Show a
+        // dummy photo instead of a broken icon, and report it (the AI assistant reads this).
+        // The same description always gets the same photo. If that fails too, a labelled box.
+        window.addEventListener('error', (event) => {
+          const image = event.target;
+          if (image?.tagName !== 'IMG' || image.dataset.webnestMissing === 'box') return;
+          image.removeAttribute('srcset');
+          if (!image.dataset.webnestMissing) {
+            image.dataset.webnestMissing = 'dummy';
+            send('error', ['Image could not load: ' + (image.getAttribute('src') || '') + '. Project files can only be text, so a dummy image is shown. Use a working https:// image address.']);
+            image.src = 'https://picsum.photos/seed/' + encodeURIComponent(image.alt || 'image') + '/600/400';
+            return;
+          }
+          image.dataset.webnestMissing = 'box';
+          const label = (image.alt || 'Image not found').replace(/[<>&"']/g, '');
+          image.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="100%" height="100%" fill="#e5e7eb"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#6b7280">' + label + '</text></svg>');
+        }, true);
       })();
     </script>
   `
