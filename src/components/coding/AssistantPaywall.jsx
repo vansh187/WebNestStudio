@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiCheck, FiLoader, FiZap } from 'react-icons/fi'
-import { DEFAULT_PLAN, formatTokens } from '../../lib/codelab/assistantCheckout'
+import { DEFAULT_PLAN } from '../../lib/codelab/assistantCheckout'
 import { usePrime } from '../../hooks/usePrime'
 import PaymentTerms from '../PaymentTerms'
 
@@ -35,7 +35,7 @@ export function AssistantPaywall({ access: serverAccess, payment }) {
     <section aria-label="Unlock WebNest AI" className="m-auto w-full max-w-sm rounded-xl border border-gold-400/60 bg-gold-50/40 p-4 text-center dark:bg-gold-400/5">
       <Spark className="h-10 w-10" />
       <h3 className="mt-3 font-display text-lg font-bold text-ink-900 dark:text-white">{usedUp ? "You've used all your tokens" : 'Unlock WebNest AI'}</h3>
-      {usedUp && <p className="mt-1 text-xs text-ink-600 dark:text-ink-300">{formatTokens(access.tokens_used)} of {formatTokens(access.tokens_limit)} tokens used. Buy again to keep going.</p>}
+      {usedUp && <p className="mt-1 text-xs text-ink-600 dark:text-ink-300">Buy again to keep going.</p>}
       <p className="mt-1 font-display text-3xl font-bold text-ink-900 dark:text-white">
         ₹{rupees}
         {period ? <span className="ml-1 text-sm font-medium text-ink-500 dark:text-ink-400">{period}</span> : null}

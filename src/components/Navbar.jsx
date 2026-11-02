@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { lazyWithReload } from '../lib/chunkReload'
 import { NavLink, Link } from 'react-router-dom'
-import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiSmartphone } from 'react-icons/fi'
+import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiSmartphone, FiZap } from 'react-icons/fi'
 import { FaCrown } from 'react-icons/fa'
 import Logo from './Logo'
 import { NAV_LINKS } from '../data/site'
@@ -138,6 +138,16 @@ export default function Navbar() {
               {menuOpen && (
                 <div role="menu" className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-ink-200 bg-white py-1 shadow-lg dark:border-ink-800 dark:bg-ink-950">
                   {prime.isPrime && <div className="px-4 py-2"><PrimeBadge label={prime.label} /></div>}
+                  {prime.isPrime && (
+                    <Link
+                      to="/ai-agent"
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-ink-700 hover:bg-ink-50 hover:text-gold-500 dark:text-ink-100 dark:hover:bg-ink-900"
+                    >
+                      <FiZap className="h-4 w-4" /> AI Agent
+                    </Link>
+                  )}
                   <Link
                     to={account.to}
                     role="menuitem"
@@ -209,6 +219,15 @@ export default function Navbar() {
               </p>
               {user?.email && <p className="mt-0.5 truncate text-xs text-ink-300">{user.email}</p>}
               {prime.isPrime && <PrimeBadge label={prime.label} className="mt-2" />}
+              {prime.isPrime && (
+                <Link
+                  to="/ai-agent"
+                  onClick={() => setOpen(false)}
+                  className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gold-400/40 text-sm font-semibold text-gold-300"
+                >
+                  <FiZap className="h-4 w-4" /> Open AI Agent
+                </Link>
+              )}
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
                   to={account.to}

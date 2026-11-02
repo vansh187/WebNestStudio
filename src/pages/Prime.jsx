@@ -12,6 +12,7 @@ const INCLUDED = [
   'Ask questions about the code in your playground',
   'Let the agent write, run and fix your project',
   'Works with Web, Python, Java and FastAPI',
+  'A separate AI Agent screen, with voice',
   'The WebNest Prime Member badge on your account',
 ]
 
@@ -67,7 +68,7 @@ export default function Prime() {
             ))}
           </ul>
           <p className="mx-auto mt-6 max-w-md text-xs leading-relaxed text-ink-400 lg:mx-0">
-            One payment gives {PLAN_DAYS} days and does not renew automatically. Usage limits apply. Your code is sent to our AI provider to answer you, and your <code className="font-mono">.env</code> file is never sent.
+            One payment gives {PLAN_DAYS} days and does not renew automatically. Usage limits apply.
           </p>
         </div>
 

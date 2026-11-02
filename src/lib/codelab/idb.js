@@ -71,10 +71,10 @@ export const LOCK_NOTICE = 'CodeLab could not clear data from an earlier session
 export const codelabDataLocked = () => Boolean(rawLocal.get(LOCK_KEY))
 
 // Counts the times the lock was set in this page load, so a notice is shown once per lock
-// (CodingWorkspace.jsx), and again if it is lifted and set again.
+// (useCodelabFrozenNotice.js), and again if it is lifted and set again.
 let lockSeq = 0
 
-// Sets or lifts the lock. Setting it tells open editors (CodingWorkspace.jsx) to show it.
+// Sets or lifts the lock. Setting it tells open editors (useCodelabFrozenNotice.js) to show it.
 export function setCodelabLock(locked) {
   const wasLocked = codelabDataLocked()
   if (!(locked ? rawLocal.set(LOCK_KEY, '1') : rawLocal.remove(LOCK_KEY))) return

@@ -73,6 +73,8 @@ function mockChange(context) {
       : { name: 'create_file', arguments: target }
   }
   const open = context?.open_file
+  // No project yet, as on the Agent screen's Anything: nothing to edit, so it makes a file.
+  if (!open && !context?.files?.length) return { name: 'create_file', arguments: { path: 'notes.txt', content: 'mock\n' } }
   const firstLine = open?.content?.split('\n')[0] ?? ''
   return { name: 'edit_file', arguments: { path: open?.name ?? context?.files?.[0], old_text: firstLine, new_text: `# Added by the mock\n${firstLine}` } }
 }

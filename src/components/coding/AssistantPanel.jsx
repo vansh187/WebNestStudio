@@ -7,11 +7,15 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useAssistant } from '../../hooks/useAssistant'
 import { useAssistantPayment } from '../../hooks/useAssistantPayment'
-import { PAID_MESSAGE, expiryDate, formatTokens, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
+import { PAID_MESSAGE, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
 import { AssistantPaywall, Spark } from './AssistantPaywall'
 import PrimeBadge from '../PrimeBadge'
 import { usePrime } from '../../hooks/usePrime'
 import { AssistantMessages, StreamingReply } from './AssistantMessages'
+import ErrorBoundary from '../ErrorBoundary'
+import { useVoice } from '../../hooks/useVoice'
+import { DEFAULT_VOICE_LANGUAGE, isVoiceLanguage } from '../../lib/codelab/assistantVoice'
+import { VoiceButtons, VoiceLanguage } from './AssistantVoice'
 
 const AssistantDiff = lazy(() => import('./AssistantDiff'))
 
@@ -40,6 +44,13 @@ const MODES = [
 const MODE_BY_ID = Object.fromEntries(MODES.map((mode) => [mode.id, mode]))
 
 // Ways to start, per language. A language not listed uses the general ones.
+// The separate Agent screen, where any question is welcome.
+const AGENT_SCREEN = {
+  title: 'Ask me anything',
+  description: 'Ask a question, or describe something to build. I can write, run and fix code, and you approve each change.',
+  placeholder: 'Ask anything, or describe what to build…',
+}
+const ANYTHING_STARTERS = ['Explain how the internet works, simply', 'Write a polite leave application', 'Plan a 30-day study timetable for placements']
 const GENERAL_STARTERS = {
   ask: ['Explain the open file', 'Why might my code be failing?', 'How can I improve this code?'],
   agent: ['Add error handling to my code', 'Clean up the open file', 'Run my code and fix any errors'],
@@ -91,9 +102,9 @@ function ModeSwitch({ mode, onChange, disabled, attention }) {
 }
 
 // First screen of a chat: pick how to work, then a few ways to start.
-function Welcome({ language, mode, onChoose, onStart, disabled }) {
-  const chosen = MODE_BY_ID[mode]
-  const starters = chosen ? (STARTERS[language] ?? GENERAL_STARTERS)[mode] : []
+function Welcome({ language, mode, onChoose, onStart, disabled, agentOnly }) {
+  const chosen = agentOnly ? { ...MODE_BY_ID.agent, ...AGENT_SCREEN } : MODE_BY_ID[mode]
+  const starters = agentOnly && language === 'general' ? ANYTHING_STARTERS : chosen ? (STARTERS[language] ?? GENERAL_STARTERS)[mode] : []
   return (
     <div className="m-auto w-full max-w-md py-4">
       <div className="text-center">
@@ -173,11 +184,19 @@ function Banner({ tone = 'info', children, action }) {
 
 const BANNER_BUTTON = 'shrink-0 rounded-md border border-current/30 px-2 py-0.5 font-semibold hover:bg-ink-900/5 dark:hover:bg-white/10'
 
-export default function AssistantPanel({ workspaceKey, language, files, selectedFile, api, lastResult, onFilesChange, runProject, onOpenFile }) {
+// `agentOnly` is the separate Agent screen: Agent mode alone, with no Ask mode to switch to.
+// `voice` adds the microphone and reading replies aloud. `onLockedChange` tells the page
+// whether the plan card is showing, so it can leave room for it. `onBusyChange` tells it
+// whether a task is running, `onApproval` that one is waiting for the user, and `onShowFile`
+// that the user pressed a file in the chat (`onOpenFile` also hears the agent's own edits).
+// See useAssistant for `remembered` and `onRemember`.
+export default function AssistantPanel({ workspaceKey, language, files, selectedFile, api, lastResult, onFilesChange, runProject, onOpenFile, agentOnly = false, voice: voiceOn = false, onLockedChange, onBusyChange, onApproval, onShowFile, remembered, onRemember }) {
   const { isAuthenticated, initializing, user } = useAuth()
   const location = useLocation()
   const project = useMemo(() => ({ language, files, selectedFile, api, lastResult, onFilesChange, runProject, onOpenFile }), [language, files, selectedFile, api, lastResult, onFilesChange, runProject, onOpenFile])
-  const assistant = useAssistant({ workspaceKey, project, enabled: isAuthenticated })
+  const replyHeard = useRef(null)
+  const onReply = useCallback((text) => replyHeard.current?.(text), [])
+  const assistant = useAssistant({ workspaceKey, project, enabled: isAuthenticated, fixedMode: agentOnly ? 'agent' : undefined, onReply, remembered, onRemember })
   const { messages, mode, busy, streamText, status, usage, error, outcome, approval, send, setMode, refreshUsage } = assistant
   const payment = useAssistantPayment({ user, enabled: isAuthenticated, refreshUsage })
   const prime = usePrime()
@@ -188,15 +207,31 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
   const inputRef = useRef(null)
   const scrollRef = useRef(null)
   const stickToBottom = useRef(true)
+  const draftRef = useRef(draft)
+  draftRef.current = draft
+  const getDraft = useCallback(() => draftRef.current, [])
+
+  const voiceLanguage = isVoiceLanguage(assistant.voiceLanguage) ? assistant.voiceLanguage : DEFAULT_VOICE_LANGUAGE
+  const voice = useVoice({ language: voiceLanguage, maxLength: MAX_PROMPT_LENGTH, getDraft, setDraft })
+  const { speak, stopSpeaking, stopListening, cancelListening } = voice
+  replyHeard.current = voiceOn && assistant.readAloud ? speak : null
+  // Logging out ends anything still being read or heard.
+  useEffect(() => {
+    if (isAuthenticated) return
+    stopSpeaking()
+    stopListening()
+  }, [isAuthenticated, stopListening, stopSpeaking])
 
   const unavailable = usage?.enabled === false
   const locked = !unavailable && needsPayment(usage)
   // Nothing is offered until we know whether this user has paid.
   const checking = !assistant.planChecked && !usage
-  const tokens = tokensLeft(usage)
   const remaining = usage?.calls_limit ? Math.max(usage.calls_limit - (usage.calls_used_today ?? 0), 0) : null
   const canSend = isAuthenticated && !unavailable && !locked && !checking && Boolean(mode) && !busy && Boolean(draft.trim())
   const visibleMessages = messages.length > 0
+  useEffect(() => { onLockedChange?.(locked || checking) }, [checking, locked, onLockedChange])
+  useEffect(() => { onBusyChange?.(busy) }, [busy, onBusyChange])
+  useEffect(() => { if (approval) onApproval?.() }, [approval, onApproval])
 
   // Follows new text, unless the reader has scrolled up to read something earlier.
   const onScroll = () => {
@@ -219,6 +254,8 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
   const submit = (text = draft) => {
     if (!text.trim() || busy || !mode || unavailable || locked || checking) return
     stickToBottom.current = true
+    cancelListening()
+    stopSpeaking()
     send(text)
     setDraft('')
   }
@@ -257,7 +294,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
     )
   }
 
-  const placeholder = checking ? 'Checking your plan…' : locked ? 'Unlock WebNest AI to start' : !mode ? 'Choose Ask or Agent to start' : MODE_BY_ID[mode].placeholder
+  const placeholder = checking ? 'Checking your plan…' : locked ? 'Unlock WebNest AI to start' : !mode ? 'Choose Ask or Agent to start' : agentOnly ? AGENT_SCREEN.placeholder : MODE_BY_ID[mode].placeholder
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white dark:bg-ink-950">
@@ -266,17 +303,12 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
         <Spark />
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-900 dark:text-white">WebNest AI</h2>
         {prime.isPrime && <PrimeBadge short label={prime.label} />}
-        {tokens !== null && !locked && (
-          <span title={`${tokens.toLocaleString('en-IN')} of ${usage.access.tokens_limit.toLocaleString('en-IN')} AI tokens left${usage.access.expires_at ? `, until ${expiryDate(usage.access.expires_at)}` : ''}`} className="shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-semibold text-ink-600 dark:bg-ink-800 dark:text-ink-300">
-            {formatTokens(tokens)} tokens left
-          </span>
-        )}
-        {tokens === null && remaining !== null && (
+        {tokensLeft(usage) === null && remaining !== null && (
           <span title={`${remaining} of ${usage.calls_limit} AI calls left today`} className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${remaining === 0 ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300'}`}>
             {remaining} left today
           </span>
         )}
-        <button type="button" onClick={assistant.newChat} disabled={busy || !visibleMessages} title="New chat" aria-label="New chat" className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-500 hover:bg-ink-100 hover:text-ink-900 disabled:opacity-40 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white">
+        <button type="button" onClick={() => { stopSpeaking(); assistant.newChat() }} disabled={busy || !visibleMessages} title="New chat" aria-label="New chat" className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-500 hover:bg-ink-100 hover:text-ink-900 disabled:opacity-40 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white">
           <FiPlus className="h-4 w-4" />
         </button>
       </header>
@@ -284,11 +316,6 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
       {/* Conversation */}
       <div ref={scrollRef} onScroll={onScroll} role="log" aria-label="Conversation" aria-live="polite" aria-busy={busy} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
         {unavailable && <Banner>WebNest AI is not available right now. Please try again later.</Banner>}
-        {!assistant.noticeSeen && !unavailable && !locked && !checking && (
-          <Banner action={<button type="button" onClick={assistant.acknowledgeNotice} className={BANNER_BUTTON}>Got it</button>}>
-            Your code is sent to our AI provider{usage?.provider_name ? ` (${usage.provider_name})` : ''} to answer you. Your <code className="font-mono">.env</code> file is never sent.
-          </Banner>
-        )}
         {payment.status === 'paid' && !locked && (
           <Banner>{PAID_MESSAGE}</Banner>
         )}
@@ -298,9 +325,9 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
           </p>
         )}
         {!visibleMessages && !busy ? (
-          !locked && !checking && <Welcome language={language} mode={mode} onChoose={chooseMode} onStart={submit} disabled={unavailable} />
+          !locked && !checking && <Welcome language={language} mode={mode} onChoose={chooseMode} onStart={submit} disabled={unavailable} agentOnly={agentOnly} />
         ) : (
-          <AssistantMessages messages={messages} busy={busy} onApply={onApply} onOpenFile={onOpenFile} />
+          <AssistantMessages messages={messages} busy={busy} onApply={agentOnly ? undefined : onApply} onOpenFile={onShowFile ?? onOpenFile} />
         )}
         {locked && <AssistantPaywall access={usage.access} payment={payment} />}
         {streamText && <StreamingReply text={streamText} />}
@@ -381,6 +408,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
       {/* Composer */}
       <div className="shrink-0 border-t border-ink-200 p-2.5 dark:border-ink-800">
         {applyError && <div className="mb-2"><Banner tone="error" action={<button type="button" onClick={() => setApplyError('')} className={BANNER_BUTTON}>Dismiss</button>}>{applyError}</Banner></div>}
+        {voiceOn && voice.micError && <div className="mb-2"><Banner tone="error" action={<button type="button" onClick={voice.clearMicError} className={BANNER_BUTTON}>Dismiss</button>}>{voice.micError}</Banner></div>}
         <div className={`rounded-xl border bg-white transition-colors focus-within:border-gold-400 dark:bg-ink-900 ${mode ? 'border-ink-200 dark:border-ink-700' : 'border-ink-200/70 dark:border-ink-800'}`}>
           <textarea
             ref={inputRef}
@@ -395,13 +423,23 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
             className="block max-h-40 w-full resize-none bg-transparent px-3 pt-2.5 text-sm text-ink-900 outline-none placeholder:text-ink-400 disabled:cursor-not-allowed dark:text-white"
           />
           <div className="flex items-center gap-2 px-2 pb-2 pt-1">
-            <ModeSwitch mode={mode} onChange={chooseMode} disabled={busy || locked || checking} attention={!mode && !locked && !checking} />
+            {!agentOnly && <ModeSwitch mode={mode} onChange={chooseMode} disabled={busy || locked || checking} attention={!mode && !locked && !checking} />}
+            {voiceOn && (
+              <ErrorBoundary fallback={() => null}>
+                <VoiceLanguage voice={voice} language={voiceLanguage} onChange={assistant.setVoiceLanguage} disabled={locked || checking} />
+              </ErrorBoundary>
+            )}
             <span className="min-w-0 flex-1 truncate text-[11px] text-ink-400">{mode === 'agent' && assistant.autoApply ? 'Auto-apply is on' : ''}</span>
             {draft.length >= SHOW_COUNT_FROM && (
               <span className={`shrink-0 text-[11px] tabular-nums ${draft.length >= MAX_PROMPT_LENGTH ? 'font-semibold text-red-600 dark:text-red-400' : 'text-ink-400'}`}>{draft.length}/{MAX_PROMPT_LENGTH}</span>
             )}
+            {voiceOn && (
+              <ErrorBoundary fallback={() => null}>
+                <VoiceButtons voice={voice} readAloud={assistant.readAloud} onReadAloud={assistant.setReadAloud} disabled={unavailable || locked || checking} />
+              </ErrorBoundary>
+            )}
             {busy ? (
-              <button type="button" onClick={assistant.stop} title="Stop" aria-label="Stop" className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-500 text-white hover:bg-red-600">
+              <button type="button" onClick={() => { stopSpeaking(); assistant.stop() }} title="Stop" aria-label="Stop" className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-500 text-white hover:bg-red-600">
                 <FiSquare className="h-3.5 w-3.5" />
               </button>
             ) : (
@@ -411,7 +449,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
             )}
           </div>
         </div>
-        <p className="mt-1.5 text-center text-[10px] text-ink-400">AI can make mistakes. Check its changes before you rely on them.</p>
+        <p className="mt-1.5 text-center text-[10px] text-ink-400">AI can make mistakes. Check its changes before you rely on them.{voiceOn && voice.canListen ? " Your browser's speech service turns your voice into text." : ''}</p>
       </div>
     </div>
   )

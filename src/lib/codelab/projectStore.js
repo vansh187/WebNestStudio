@@ -109,7 +109,7 @@ const syncWrites = new Map()
 // `now` (page being hidden or closed) also writes a localStorage copy synchronously,
 // because the async IndexedDB write may not finish before the page goes away; the next
 // load prefers that copy and moves it over. While writes are refused (a wipe, a freeze,
-// the lock) nothing is written; the lock's notice tells the learner (CodingWorkspace.jsx).
+// the lock) nothing is written; the lock's notice tells the learner (useCodelabFrozenNotice.js).
 export function saveSession(key, value, { now = false } = {}) {
   if (!canWriteCodelab()) return Promise.resolve(true)
   if (now && codelabLocal.setJSON(key, value)) syncWrites.set(key, (syncWrites.get(key) ?? 0) + 1)
