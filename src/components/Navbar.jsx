@@ -1,6 +1,6 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { lazyWithReload } from '../lib/chunkReload'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiSmartphone, FiZap } from 'react-icons/fi'
 import { FaCrown } from 'react-icons/fa'
 import Logo from './Logo'
@@ -31,12 +31,106 @@ function accountHome(role) {
   return { to: '/portal', label: 'Profile' }
 }
 
+// Closes a menu on a click outside it or on Escape.
+function useDismiss(ref, open, close) {
+  useEffect(() => {
+    if (!open) return undefined
+    const onPointer = (event) => { if (!ref.current?.contains(event.target)) close() }
+    const onKey = (event) => { if (event.key === 'Escape') close() }
+    document.addEventListener('mousedown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [ref, open, close])
+}
+
+function useGroupActive(items) {
+  const { pathname } = useLocation()
+  return items.some(({ to }) => pathname === to || pathname.startsWith(`${to}/`))
+}
+
+function NewBadge({ label }) {
+  return <span className="rounded-full bg-gold-400 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wide text-ink-950">{label}</span>
+}
+
+// Hidden with CSS rather than left out, so the links stay in the HTML for search engines.
+function DesktopGroup({ label, items }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const close = useCallback(() => setOpen(false), [])
+  useDismiss(ref, open, close)
+  const active = useGroupActive(items)
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={`${DESKTOP_LINK} inline-flex items-center gap-1 ${active ? DESKTOP_LINK_ACTIVE : DESKTOP_LINK_IDLE}`}
+      >
+        {label}
+        <FiChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <div role="menu" className={`${open ? '' : 'hidden'} absolute left-0 mt-2 w-40 overflow-hidden rounded-xl border border-ink-800 bg-ink-950 py-1 shadow-lg`}>
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            role="menuitem"
+            onClick={close}
+            className={({ isActive }) => `block px-4 py-2.5 text-sm font-medium hover:bg-ink-900 ${isActive ? 'text-gold-400' : 'text-ink-100 hover:text-gold-300'}`}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MobileGroup({ label, items, onNavigate }) {
+  const active = useGroupActive(items)
+  const [open, setOpen] = useState(active)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`flex w-full items-center justify-between text-left text-base font-medium ${active ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'}`}
+      >
+        {label}
+        <FiChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="mt-3 flex flex-col gap-3 border-l border-gold-400/30 pl-4">
+          {items.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={onNavigate}
+              className={({ isActive }) => `text-base font-medium ${isActive ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'}`}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+  useDismiss(menuRef, menuOpen, closeMenu)
   // Latch: mount the modal on first open and keep it mounted so its
   // close animation can play out instead of being cut off by unmount.
   const [cardMounted, setCardMounted] = useState(false)
@@ -56,19 +150,6 @@ export default function Navbar() {
     setOpen(false)
   }, [])
 
-  // Close the account menu on a click outside it or on Escape.
-  useEffect(() => {
-    if (!menuOpen) return undefined
-    const onPointer = (event) => { if (!menuRef.current?.contains(event.target)) setMenuOpen(false) }
-    const onKey = (event) => { if (event.key === 'Escape') setMenuOpen(false) }
-    document.addEventListener('mousedown', onPointer)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onPointer)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [menuOpen])
-
   return (
     // A floating capsule. The header keeps a fixed height (h-22) so a page can pull its
     // hero up underneath with -mt-22; the open mobile menu overlays the page instead.
@@ -84,9 +165,11 @@ export default function Navbar() {
           <Logo size="md" prime={prime.isPrime} />
         </Link>
 
-        <div className="hidden items-center gap-6 xl:flex 2xl:gap-8">
+        <div className="hidden items-center gap-5 xl:flex">
           {NAV_LINKS.map((link) =>
-            link.to === CARD_PATH ? (
+            link.children ? (
+              <DesktopGroup key={link.label} label={link.label} items={link.children} />
+            ) : link.to === CARD_PATH ? (
               <button
                 key={link.to}
                 type="button"
@@ -100,9 +183,10 @@ export default function Navbar() {
                 key={link.to}
                 to={link.to}
                 end={link.to === '/'}
-                className={({ isActive }) => `${DESKTOP_LINK} ${isActive ? DESKTOP_LINK_ACTIVE : DESKTOP_LINK_IDLE}`}
+                className={({ isActive }) => `${DESKTOP_LINK} inline-flex items-center gap-1.5 ${isActive ? DESKTOP_LINK_ACTIVE : DESKTOP_LINK_IDLE}`}
               >
                 {link.label}
+                {link.badge && <NewBadge label={link.badge} />}
               </NavLink>
             ),
           )}
@@ -132,7 +216,7 @@ export default function Navbar() {
               >
                 {/* The bar has no room for the full label, which the menu below shows. */}
                 {prime.isPrime ? <FaCrown className="h-4 w-4" title={prime.label} /> : <FiUser className="h-4 w-4" />}
-                <span className="max-w-[9rem] truncate">{user?.full_name?.split(' ')[0] || 'Account'}</span>
+                <span className="max-w-[5rem] truncate">{user?.full_name?.split(' ')[0] || 'Account'}</span>
                 <FiChevronDown className={`h-4 w-4 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
               </button>
               {menuOpen && (
@@ -248,7 +332,9 @@ export default function Navbar() {
           )}
           <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) =>
-              link.to === CARD_PATH ? (
+              link.children ? (
+                <MobileGroup key={link.label} label={link.label} items={link.children} onNavigate={() => setOpen(false)} />
+              ) : link.to === CARD_PATH ? (
                 <button
                   key={link.to}
                   type="button"
@@ -264,12 +350,13 @@ export default function Navbar() {
                   end={link.to === '/'}
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
-                    `text-base font-medium ${
+                    `inline-flex items-center gap-2 text-base font-medium ${
                       isActive ? 'text-gold-500' : 'text-ink-700 dark:text-ink-100'
                     }`
                   }
                 >
                   {link.label}
+                  {link.badge && <NewBadge label={link.badge} />}
                 </NavLink>
               ),
             )}

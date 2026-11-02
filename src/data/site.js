@@ -30,8 +30,8 @@ export const NAV_LINKS = [
   { label: 'Services', to: '/services' },
   { label: 'Work', to: '/portfolio' },
   { label: 'Blog', to: '/blog' },
-  { label: 'Webnest CodeLab', to: '/codelab' },
-  { label: 'Learn', to: '/learn' },
+  { label: 'Learn', children: [{ label: 'Courses', to: '/learn' }, { label: 'CodeLab', to: '/codelab' }] },
+  { label: 'WebNest AI', to: '/prime', badge: 'New' },
   { label: 'Visiting Card', to: '/card' },
 ]
 
