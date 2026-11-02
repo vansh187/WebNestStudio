@@ -7,7 +7,7 @@ import Logo from '../components/Logo'
 import Reveal from '../components/Reveal'
 import HeroVideo from '../components/HeroVideo'
 import NeuralBackdrop from '../components/NeuralBackdrop'
-import PrimeOption from '../components/PrimeOption'
+import PrimeOption, { PrimeAdvert } from '../components/PrimeOption'
 import ErrorBoundary from '../components/ErrorBoundary'
 import BackButton from '../components/coding/BackButton'
 import { useAuth } from '../context/AuthContext'
@@ -82,7 +82,7 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword, pr
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-3 lg:space-y-3">
       <Banner message={banner} />
       <div>
         <label htmlFor="email" className="text-sm font-medium text-ink-700 dark:text-ink-200">
@@ -109,9 +109,7 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword, pr
         </button>
       </div>
 
-      <div className="lg:hidden">
-        <ErrorBoundary fallback={() => null}><PrimeOption acceptedAt={primeAt} onChange={onPrimeChange} disabled={isSubmitting} /></ErrorBoundary>
-      </div>
+      <ErrorBoundary fallback={() => null}><PrimeOption acceptedAt={primeAt} onChange={onPrimeChange} disabled={isSubmitting} /></ErrorBoundary>
 
       <button
         type="submit"
@@ -192,9 +190,9 @@ function SignupForm({ onSwitchToLogin, onSignedUp, primeAt, onPrimeChange }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-3 lg:space-y-3">
       <Banner message={banner} />
-      <div className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+      <div className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
       <div>
         <label htmlFor="full_name" className="text-sm font-medium text-ink-700 dark:text-ink-200">
           Full Name
@@ -255,9 +253,7 @@ function SignupForm({ onSwitchToLogin, onSignedUp, primeAt, onPrimeChange }) {
       </div>
       <p className="-mt-3 text-xs text-ink-400">Must be 8–72 characters.</p>
 
-      <div className="lg:hidden">
-        <ErrorBoundary fallback={() => null}><PrimeOption acceptedAt={primeAt} onChange={onPrimeChange} disabled={isSubmitting} /></ErrorBoundary>
-      </div>
+      <ErrorBoundary fallback={() => null}><PrimeOption acceptedAt={primeAt} onChange={onPrimeChange} disabled={isSubmitting} /></ErrorBoundary>
 
       <button
         type="submit"
@@ -325,7 +321,7 @@ function OtpForm({ email, purpose, onVerified, onSwitchToLogin, primeAt }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-3 lg:space-y-3">
       <Banner message={banner} />
       <p className="text-sm text-ink-500 dark:text-ink-300">
         We sent a 6-digit code to <span className="font-semibold text-ink-900 dark:text-white">{email}</span>.
@@ -425,7 +421,7 @@ function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
 
   if (step === 'email') {
     return (
-      <form onSubmit={emailForm.handleSubmit(onSendCode)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
+      <form onSubmit={emailForm.handleSubmit(onSendCode)} className="mt-8 space-y-5 lg:mt-3 lg:space-y-3">
         <Banner message={banner} />
         <p className="text-sm text-ink-500 dark:text-ink-300">
           Enter your account email and we'll send you a verification code to reset your password.
@@ -465,7 +461,7 @@ function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
   }
 
   return (
-    <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
+    <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="mt-8 space-y-5 lg:mt-3 lg:space-y-3">
       <Banner message={banner} />
       <p className="text-sm text-ink-500 dark:text-ink-300">
         Enter the 6-digit code sent to <span className="font-semibold text-ink-900 dark:text-white">{email}</span>{' '}
@@ -568,7 +564,7 @@ export default function Login() {
 
   return (
     // Always dark: the "dark" class switches the forms below to their dark styling.
-    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-night px-6 py-20 text-ink-100 lg:px-8 lg:py-4">
+    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-night px-6 py-20 text-ink-100 lg:px-8 lg:py-2">
       <HeroVideo dim={false}><NeuralBackdrop /></HeroVideo>
       {/* Warm light from the top right, so the page reads as lit, not flat black. */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
@@ -578,7 +574,7 @@ export default function Login() {
       />
 
       <div className="relative mx-auto grid w-full max-w-6xl items-start gap-14 lg:grid-cols-2 lg:items-center">
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:self-start">
         <div className="flex items-center justify-between gap-4">
           <Logo size="md" />
           <BackButton fallback="/" className={BACK_BUTTON} />
@@ -586,15 +582,16 @@ export default function Login() {
 
         {/* The WebNest AI launch, for people about to sign in or sign up. */}
         <div className="mt-5">
-          <ErrorBoundary fallback={() => null}><PrimeOption featured acceptedAt={primeAt} onChange={setPrimeAt} disabled={view === 'otp'} /></ErrorBoundary>
+          <ErrorBoundary fallback={() => null}><PrimeAdvert /></ErrorBoundary>
         </div>
 
-        {/* Only on screens tall enough to show it all without scrolling. */}
-        <div className="hidden [@media(min-height:860px)]:block">
-        <p className="mt-8 font-display text-3xl font-extrabold leading-[1.25] tracking-tight text-white xl:text-4xl">
+        <p className="mt-5 font-display text-2xl font-extrabold leading-[1.25] tracking-tight text-white xl:text-3xl">
           <span className="block whitespace-nowrap">Where brands go digital</span>
           <span className="block whitespace-nowrap">and developers <span className="text-gradient-gold">are born.</span></span>
         </p>
+
+        {/* Only on screens tall enough to show it all without scrolling. */}
+        <div className="hidden [@media(min-height:860px)]:block">
         <ul className="mt-8 space-y-4">
           {PERKS.map((perk) => (
             <li key={perk} className="flex items-center gap-3 text-ink-200">
@@ -606,17 +603,18 @@ export default function Login() {
         </div>
       </div>
 
-      <Reveal className="relative mx-auto w-full max-w-md">
-        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#3a362f]/90 to-[#1f1d1a]/95 [&_input]:border-white/20 [&_input]:bg-black/25 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10 lg:p-7">
+      {/* On wide screens the card is wider and tighter, so the form and the Prime terms fit without scrolling. */}
+      <Reveal className="relative mx-auto w-full max-w-md lg:max-w-lg">
+        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#3a362f]/90 to-[#1f1d1a]/95 [&_input]:border-white/20 [&_input]:bg-black/25 lg:[&_input]:py-2 lg:[&_button[type=submit]]:py-2.5 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10 lg:p-5">
           <div className="flex justify-center lg:hidden">
             <Logo size="lg" />
           </div>
 
           <div className="mt-8 text-center lg:mt-0">
-            <h1 className="font-display text-2xl font-bold text-ink-900 dark:text-white">
+            <h1 className="font-display text-2xl font-bold text-ink-900 lg:text-xl dark:text-white">
               {titles[view].title}
             </h1>
-            <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">{titles[view].subtitle}</p>
+            <p className="mt-2 text-sm text-ink-500 lg:mt-1 dark:text-ink-300">{titles[view].subtitle}</p>
           </div>
 
           {view === 'login' && (
@@ -657,7 +655,7 @@ export default function Login() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-ink-400 lg:mt-3">
+        <p className="mt-6 text-center text-sm text-ink-400 lg:mt-2">
           <Link to="/" className="hover:text-gold-400">← Back to homepage</Link>
         </p>
       </Reveal>
