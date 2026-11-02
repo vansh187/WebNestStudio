@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiAlertTriangle, FiLoader, FiCheck } from 'react-icons/fi'
@@ -7,10 +7,13 @@ import Logo from '../components/Logo'
 import Reveal from '../components/Reveal'
 import HeroVideo from '../components/HeroVideo'
 import NeuralBackdrop from '../components/NeuralBackdrop'
+import PrimeOption from '../components/PrimeOption'
+import ErrorBoundary from '../components/ErrorBoundary'
 import BackButton from '../components/coding/BackButton'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { signup as signupApi, resendOtp, resetPassword } from '../api/auth'
+import { PLAN_RUPEES } from '../lib/codelab/assistantCheckout'
 import { getErrorDetail, applyFieldErrors } from '../lib/apiClient'
 import {
   signupSchema, loginSchema, otpSchema, forgotPasswordEmailSchema, resetPasswordSchema,
@@ -23,6 +26,10 @@ const PERKS = [
   'Save your coding projects and pick them up anywhere',
   'Follow your progress through every course',
 ]
+
+const PRIME_PATH = '/prime'
+
+const BACK_BUTTON = 'rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950!'
 
 function roleHome(role) {
   if (role === 'admin') return '/admin'
@@ -45,7 +52,7 @@ function Banner({ message, tone = 'error', action }) {
   )
 }
 
-function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword }) {
+function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword, primeAt, onPrimeChange, joinPrime }) {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -58,19 +65,24 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword }) 
     setBanner(null)
     const result = await login(values)
     if (result.ok) {
-      const from = location.state?.from?.pathname
+      if (primeAt) {
+        navigate(PRIME_PATH, { replace: true, state: { payAcceptedAt: primeAt } })
+        return
+      }
+      // Came from the Prime page without ticking the box: back there, with nothing charged.
+      const from = joinPrime ? PRIME_PATH : location.state?.from?.pathname
       navigate(from || roleHome(result.user.role), { replace: true })
       return
     }
     if (result.message?.toLowerCase().includes('verify')) {
-      onNeedsVerification(getValues('email'))
+      onNeedsVerification(getValues('email'), getValues('password'))
       return
     }
     setBanner('Invalid email or password.')
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
       <Banner message={banner} />
       <div>
         <label htmlFor="email" className="text-sm font-medium text-ink-700 dark:text-ink-200">
@@ -97,6 +109,10 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword }) 
         </button>
       </div>
 
+      <div className="lg:hidden">
+        <ErrorBoundary fallback={() => null}><PrimeOption acceptedAt={primeAt} onChange={onPrimeChange} disabled={isSubmitting} /></ErrorBoundary>
+      </div>
+
       <button
         type="submit"
         disabled={isSubmitting}
@@ -104,7 +120,7 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword }) 
       >
         {isSubmitting ? <FiLoader className="h-4 w-4 animate-spin" /> : (
           <>
-            Sign In
+            {primeAt ? `Sign In and Pay ₹${PLAN_RUPEES}` : 'Sign In'}
             <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </>
         )}
@@ -150,7 +166,7 @@ function PasswordField({ register, error, name = 'password', label = 'Password' 
   )
 }
 
-function SignupForm({ onSwitchToLogin, onSignedUp }) {
+function SignupForm({ onSwitchToLogin, onSignedUp, primeAt, onPrimeChange }) {
   const [banner, setBanner] = useState(null)
   const [duplicateEmail, setDuplicateEmail] = useState(false)
   const {
@@ -163,7 +179,7 @@ function SignupForm({ onSwitchToLogin, onSignedUp }) {
     try {
       const payload = { ...values, phone_number: values.phone_number || undefined }
       await signupApi(payload)
-      onSignedUp(values.email)
+      onSignedUp(values.email, values.password)
     } catch (error) {
       if (error.response?.status === 409) {
         setDuplicateEmail(true)
@@ -176,8 +192,9 @@ function SignupForm({ onSwitchToLogin, onSignedUp }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
       <Banner message={banner} />
+      <div className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
       <div>
         <label htmlFor="full_name" className="text-sm font-medium text-ink-700 dark:text-ink-200">
           Full Name
@@ -235,7 +252,12 @@ function SignupForm({ onSwitchToLogin, onSignedUp }) {
       </div>
 
       <PasswordField register={register} error={errors.password} />
+      </div>
       <p className="-mt-3 text-xs text-ink-400">Must be 8–72 characters.</p>
+
+      <div className="lg:hidden">
+        <ErrorBoundary fallback={() => null}><PrimeOption acceptedAt={primeAt} onChange={onPrimeChange} disabled={isSubmitting} /></ErrorBoundary>
+      </div>
 
       <button
         type="submit"
@@ -244,7 +266,7 @@ function SignupForm({ onSwitchToLogin, onSignedUp }) {
       >
         {isSubmitting ? <FiLoader className="h-4 w-4 animate-spin" /> : (
           <>
-            Create Account
+            {primeAt ? `Create Account and Pay ₹${PLAN_RUPEES}` : 'Create Account'}
             <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </>
         )}
@@ -260,7 +282,7 @@ function SignupForm({ onSwitchToLogin, onSignedUp }) {
   )
 }
 
-function OtpForm({ email, purpose, onVerified, onSwitchToLogin }) {
+function OtpForm({ email, purpose, onVerified, onSwitchToLogin, primeAt }) {
   const { verifyOtp } = useAuth()
   const toast = useToast()
   const [banner, setBanner] = useState(null)
@@ -273,7 +295,7 @@ function OtpForm({ email, purpose, onVerified, onSwitchToLogin }) {
     setBanner(null)
     const result = await verifyOtp({ email, otp_code, purpose })
     if (result.ok) {
-      onVerified()
+      await onVerified()
       return
     }
     setBanner(result.message)
@@ -303,10 +325,11 @@ function OtpForm({ email, purpose, onVerified, onSwitchToLogin }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
       <Banner message={banner} />
       <p className="text-sm text-ink-500 dark:text-ink-300">
         We sent a 6-digit code to <span className="font-semibold text-ink-900 dark:text-white">{email}</span>.
+        {primeAt && ' Once it is verified, the secure Razorpay payment opens for your Prime membership.'}
       </p>
       <div>
         <label htmlFor="otp_code" className="text-sm font-medium text-ink-700 dark:text-ink-200">
@@ -328,7 +351,7 @@ function OtpForm({ email, purpose, onVerified, onSwitchToLogin }) {
         disabled={isSubmitting}
         className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink-900 dark:bg-gold-400 px-6 py-3.5 text-sm font-semibold text-white dark:text-ink-950 transition-transform hover:scale-[1.02] disabled:opacity-60"
       >
-        {isSubmitting ? <FiLoader className="h-4 w-4 animate-spin" /> : 'Verify & Continue'}
+        {isSubmitting ? <FiLoader className="h-4 w-4 animate-spin" /> : primeAt ? `Verify and Pay ₹${PLAN_RUPEES}` : 'Verify & Continue'}
       </button>
       <div className="flex items-center justify-between text-sm">
         <button
@@ -402,7 +425,7 @@ function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
 
   if (step === 'email') {
     return (
-      <form onSubmit={emailForm.handleSubmit(onSendCode)} className="mt-8 space-y-5">
+      <form onSubmit={emailForm.handleSubmit(onSendCode)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
         <Banner message={banner} />
         <p className="text-sm text-ink-500 dark:text-ink-300">
           Enter your account email and we'll send you a verification code to reset your password.
@@ -442,7 +465,7 @@ function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
   }
 
   return (
-    <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="mt-8 space-y-5">
+    <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="mt-8 space-y-5 lg:mt-5 lg:space-y-4">
       <Banner message={banner} />
       <p className="text-sm text-ink-500 dark:text-ink-300">
         Enter the 6-digit code sent to <span className="font-semibold text-ink-900 dark:text-white">{email}</span>{' '}
@@ -496,9 +519,45 @@ function ForgotPasswordForm({ onDone, onSwitchToLogin }) {
 export default function Login() {
   useSeo({ title: 'Login', noindex: true, path: '/login' })
 
-  const [view, setView] = useState('login')
+  const { login } = useAuth()
+  const toast = useToast()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const joinPrime = searchParams.get('join') === 'prime'
+  // /login?join=prime comes from the WebNest Prime page. The box is still theirs to tick.
+  const [view, setView] = useState(joinPrime && searchParams.get('mode') !== 'login' ? 'signup' : 'login')
   const [pendingEmail, setPendingEmail] = useState('')
   const [purpose, setPurpose] = useState('signup')
+  const [primeAt, setPrimeAt] = useState(null)
+  // Only when Prime was chosen, so nobody has to sign in again before paying. In memory, and
+  // dropped as soon as it is used or the user leaves the code step.
+  const signupLogin = useRef(null)
+
+  const goToCode = (email, password, nextPurpose) => {
+    signupLogin.current = primeAt ? { email, password } : null
+    setPendingEmail(email)
+    setPurpose(nextPurpose)
+    setView('otp')
+  }
+
+  const onVerified = async () => {
+    const credentials = signupLogin.current
+    signupLogin.current = null
+    if (primeAt && credentials) {
+      const result = await login(credentials)
+      if (result.ok) {
+        navigate(PRIME_PATH, { replace: true, state: { payAcceptedAt: primeAt } })
+        return
+      }
+      toast.info('Your email is verified. Please sign in to continue to your Prime membership.')
+    }
+    setView('login')
+  }
+
+  const backToLogin = () => {
+    signupLogin.current = null
+    setView('login')
+  }
 
   const titles = {
     login: { title: 'Welcome back', subtitle: 'Sign in to track your project and collaborate with our team.' },
@@ -509,19 +568,30 @@ export default function Login() {
 
   return (
     // Always dark: the "dark" class switches the forms below to their dark styling.
-    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-night px-6 py-20 text-ink-100 lg:px-8">
+    <div className="dark relative flex min-h-screen items-center overflow-hidden bg-night px-6 py-20 text-ink-100 lg:px-8 lg:py-4">
       <HeroVideo dim={false}><NeuralBackdrop /></HeroVideo>
       {/* Warm light from the top right, so the page reads as lit, not flat black. */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
       <BackButton
         fallback="/"
-        className="absolute left-6 top-6 z-10 rounded-full border border-gold-400/50 bg-ink-950/50 px-4 font-semibold text-gold-400! backdrop-blur hover:border-gold-400 hover:bg-gold-400 hover:text-ink-950!"
+        className={`absolute left-6 top-6 z-10 lg:hidden ${BACK_BUTTON}`}
       />
 
-      <div className="relative mx-auto grid w-full max-w-6xl items-start gap-14 lg:grid-cols-2">
+      <div className="relative mx-auto grid w-full max-w-6xl items-start gap-14 lg:grid-cols-2 lg:items-center">
       <div className="hidden lg:block">
-        <Logo size="lg" />
-        <p className="mt-10 font-display text-3xl font-extrabold leading-[1.25] tracking-tight text-white xl:text-4xl">
+        <div className="flex items-center justify-between gap-4">
+          <Logo size="md" />
+          <BackButton fallback="/" className={BACK_BUTTON} />
+        </div>
+
+        {/* The WebNest AI launch, for people about to sign in or sign up. */}
+        <div className="mt-5">
+          <ErrorBoundary fallback={() => null}><PrimeOption featured acceptedAt={primeAt} onChange={setPrimeAt} disabled={view === 'otp'} /></ErrorBoundary>
+        </div>
+
+        {/* Only on screens tall enough to show it all without scrolling. */}
+        <div className="hidden [@media(min-height:860px)]:block">
+        <p className="mt-8 font-display text-3xl font-extrabold leading-[1.25] tracking-tight text-white xl:text-4xl">
           <span className="block whitespace-nowrap">Where brands go digital</span>
           <span className="block whitespace-nowrap">and developers <span className="text-gradient-gold">are born.</span></span>
         </p>
@@ -533,10 +603,11 @@ export default function Login() {
             </li>
           ))}
         </ul>
+        </div>
       </div>
 
       <Reveal className="relative mx-auto w-full max-w-md">
-        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#3a362f]/90 to-[#1f1d1a]/95 [&_input]:border-white/20 [&_input]:bg-black/25 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10">
+        <div className="rounded-3xl border border-gold-400/40 bg-gradient-to-b from-[#3a362f]/90 to-[#1f1d1a]/95 [&_input]:border-white/20 [&_input]:bg-black/25 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-10 lg:p-7">
           <div className="flex justify-center lg:hidden">
             <Logo size="lg" />
           </div>
@@ -551,15 +622,20 @@ export default function Login() {
           {view === 'login' && (
             <LoginForm
               onSwitchToSignup={() => setView('signup')}
-              onNeedsVerification={(email) => { setPendingEmail(email); setPurpose('login'); setView('otp') }}
+              onNeedsVerification={(email, password) => goToCode(email, password, 'login')}
               onForgotPassword={() => setView('forgot')}
+              joinPrime={joinPrime}
+              primeAt={primeAt}
+              onPrimeChange={setPrimeAt}
             />
           )}
 
           {view === 'signup' && (
             <SignupForm
               onSwitchToLogin={() => setView('login')}
-              onSignedUp={(email) => { setPendingEmail(email); setPurpose('signup'); setView('otp') }}
+              onSignedUp={(email, password) => goToCode(email, password, 'signup')}
+              primeAt={primeAt}
+              onPrimeChange={setPrimeAt}
             />
           )}
 
@@ -567,8 +643,9 @@ export default function Login() {
             <OtpForm
               email={pendingEmail}
               purpose={purpose}
-              onVerified={() => setView('login')}
-              onSwitchToLogin={() => setView('login')}
+              onVerified={onVerified}
+              onSwitchToLogin={backToLogin}
+              primeAt={primeAt}
             />
           )}
 
@@ -580,7 +657,7 @@ export default function Login() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-ink-400">
+        <p className="mt-6 text-center text-sm text-ink-400 lg:mt-3">
           <Link to="/" className="hover:text-gold-400">← Back to homepage</Link>
         </p>
       </Reveal>

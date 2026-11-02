@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FiCheck, FiLoader, FiZap } from 'react-icons/fi'
 import { DEFAULT_PLAN, formatTokens } from '../../lib/codelab/assistantCheckout'
 import { usePrime } from '../../hooks/usePrime'
+import PaymentTerms from '../PaymentTerms'
 
 export function Spark({ className = 'h-7 w-7' }) {
   return (
@@ -11,8 +12,6 @@ export function Spark({ className = 'h-7 w-7' }) {
     </span>
   )
 }
-
-const LEGAL_LINK = 'font-semibold underline hover:text-gold-600 dark:hover:text-gold-300'
 
 const PAY_LABELS = { starting: 'Opening…', open: 'Payment page open…', verifying: 'Verifying your payment...', confirming: 'Confirming your payment...' }
 
@@ -28,7 +27,6 @@ export function AssistantPaywall({ access: serverAccess, payment }) {
   // Still a member, but out of tokens: as opposed to never paid or expired.
   const usedUp = isPrime && Boolean(access.tokens_limit) && (access.tokens_used ?? 0) >= access.tokens_limit
   const included = [
-    ...(access.tokens_limit ? [`${formatTokens(access.tokens_limit, { long: true })} AI tokens`] : []),
     'Ask questions about your code',
     'Let the agent build, run and fix your project',
     'Web, Python, Java and FastAPI',
@@ -55,24 +53,7 @@ export function AssistantPaywall({ access: serverAccess, payment }) {
         </div>
       ) : (
         <>
-        <p className="mt-4 text-left text-xs font-semibold text-ink-800 dark:text-ink-100">All payments are final and non-refundable, except as set out in our Refund Policy.</p>
-        {period === 'per month' && <p className="mt-1 text-left text-xs text-ink-600 dark:text-ink-300">One payment gives {access.pass_days} days. It does not renew automatically.</p>}
-        <label className="mt-3 flex cursor-pointer items-start gap-2 text-left text-xs leading-relaxed text-ink-700 dark:text-ink-200">
-          <input
-            type="checkbox"
-            checked={Boolean(acceptedAt)}
-            disabled={working}
-            onChange={(event) => setAcceptedAt(event.target.checked ? new Date().toISOString() : null)}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-gold-500"
-          />
-          <span>
-            I agree to the{' '}
-            <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className={LEGAL_LINK}>Terms &amp; Conditions</a>
-            {' '}and{' '}
-            <a href="/refund-policy" target="_blank" rel="noopener noreferrer" className={LEGAL_LINK}>Refund Policy</a>
-            , and I want WebNest AI to start as soon as I pay.
-          </span>
-        </label>
+        <div className="mt-4"><PaymentTerms acceptedAt={acceptedAt} onChange={setAcceptedAt} disabled={working} days={access.pass_days} /></div>
         <button type="button" onClick={() => pay(acceptedAt)} disabled={working || !acceptedAt} title={acceptedAt ? undefined : 'Tick the box above to continue'} className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 text-sm font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400 disabled:cursor-not-allowed disabled:opacity-50">
           {working && <FiLoader className="h-4 w-4 animate-spin" />}
           {PAY_LABELS[status] ?? `${usedUp ? 'Buy again' : 'Pay'} ₹${rupees}`}

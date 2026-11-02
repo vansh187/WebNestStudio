@@ -7,9 +7,9 @@ import {
   READ_LIMIT, buildContext, codeBlockTarget, describeToolCall, errorsOf, planApply, planFileChange, rebaseApply, recordChange, runTool, scrubSecrets, undoChanges,
 } from '../src/lib/codelab/assistantTools.js'
 import { mockStreamChat } from '../src/lib/codelab/assistantMock.js'
-import { TERMS_VERSION, checkoutOptions, formatTokens, needsPayment, tokensLeft } from '../src/lib/codelab/assistantCheckout.js'
+import { DEFAULT_PLAN, PLAN_DAYS, PLAN_RUPEES, TERMS_VERSION, checkoutOptions, formatTokens, needsPayment, tokensLeft } from '../src/lib/codelab/assistantCheckout.js'
 import {
-  claimMembershipLoad, clearPaymentPending, getMembership, isPaymentPending, markPaymentPending, noteMembership, notePassActive, paymentConfirmed, resetMembership,
+  claimMembershipLoad, clearPaymentPending, getMembership, isCurrentAccount, isMembershipAnswered, isPaymentPending, markPaymentPending, noteMembership, notePassActive, paymentConfirmed, resetMembership,
 } from '../src/lib/codelab/assistantPlan.js'
 
 const FILES = [
@@ -654,6 +654,29 @@ test('WebNest Prime does not carry over to the next account', () => {
   assert.equal(getMembership().is_prime, false)
   assert.equal(claimMembershipLoad('b'), true)
   resetMembership()
+})
+
+test('a failed membership read is not an answer, so nobody is treated as a non-member', () => {
+  resetMembership()
+  claimMembershipLoad('a')
+  assert.equal(isCurrentAccount('a'), true)
+  assert.equal(isMembershipAnswered(), false)
+  noteMembership(null)
+  assert.equal(isMembershipAnswered(), false)
+  noteMembership({ is_prime: false })
+  assert.equal(isMembershipAnswered(), true)
+  claimMembershipLoad('b')
+  assert.equal(isCurrentAccount('a'), false)
+  assert.equal(isMembershipAnswered(), false)
+  noteMembership({ is_prime: true })
+  assert.equal(isMembershipAnswered(), true)
+  resetMembership()
+  assert.equal(isMembershipAnswered(), false)
+})
+
+test('adverts take the price and period from the plan', () => {
+  assert.equal(PLAN_RUPEES, DEFAULT_PLAN.price_paise / 100)
+  assert.equal(PLAN_DAYS, DEFAULT_PLAN.pass_days)
 })
 
 test('a pending payment blocks paying until the server confirms it', () => {

@@ -33,6 +33,7 @@ const STATIC_ROUTES = [
   { path: '/refund-policy', changefreq: 'yearly', priority: '0.3' },
   { path: '/disclaimer', changefreq: 'yearly', priority: '0.3' },
   { path: '/download-app', changefreq: 'monthly', priority: '0.6' },
+  { path: '/prime', changefreq: 'monthly', priority: '0.8' },
   // Index the CodeLab overview; keep interactive tools and problem utilities out.
   { path: '/codelab', changefreq: 'monthly', priority: '0.8' },
   // Still prerendered so the QR link works, but kept out of the sitemap.

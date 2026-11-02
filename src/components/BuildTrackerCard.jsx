@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AnimatePresence, animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform,
 } from 'framer-motion'
-import { FiCheck } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
+import { FiArrowRight, FiCheck, FiZap } from 'react-icons/fi'
+import { usePrime } from '../hooks/usePrime'
+import { PLAN_RUPEES } from '../lib/codelab/assistantCheckout'
 
 const CHIPS = ['React', 'Python', 'Java']
 // Which tech chips light up while each stage (by row index) is being worked on.
@@ -107,6 +110,7 @@ function TypeLine({ text, reduced }) {
  */
 export default function BuildTrackerCard({ projectName, devLabel, devPercent }) {
   const reduced = useReducedMotion()
+  const { isPrime, showOffer } = usePrime()
   const labels = useMemo(() => ['Discovery', 'Design', devLabel ?? 'Development', 'AI Integration'], [devLabel])
   const hasRealDev = typeof devPercent === 'number' && Number.isFinite(devPercent)
   const targets = useMemo(
@@ -306,6 +310,20 @@ export default function BuildTrackerCard({ projectName, devLabel, devPercent }) 
             </span>
             {!reduced && <span aria-hidden className="h-3 w-1.5 shrink-0 animate-blink bg-gold-400/80" />}
           </div>
+
+          {(isPrime || showOffer) && (
+          <Link
+            to={isPrime ? '/codelab/playground' : '/prime'}
+            className="group relative mt-3 flex items-center gap-3 rounded-xl border border-gold-400/60 bg-gold-400/10 px-3 py-2.5 transition-colors hover:border-gold-400 hover:bg-gold-400/20"
+          >
+            <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-gold-300 to-gold-600 text-ink-950"><FiZap className="h-4 w-4" /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-ink-900 dark:text-white">{isPrime ? 'Open WebNest AI' : 'WebNest AI is here'}</span>
+              <span className="block truncate text-xs text-ink-600 dark:text-ink-300">{isPrime ? 'Build and run with your AI partner' : `Your AI coding partner at ₹${PLAN_RUPEES} a month`}</span>
+            </span>
+            <FiArrowRight className="h-4 w-4 shrink-0 text-gold-500 transition-transform group-hover:translate-x-1" />
+          </Link>
+          )}
         </div>
       </motion.div>
     </div>

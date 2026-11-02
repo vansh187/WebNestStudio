@@ -1,18 +1,21 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiLoader } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { useAssistantPayment } from '../../hooks/useAssistantPayment'
 import { usePrime } from '../../hooks/usePrime'
 import { fetchAssistantUsage } from '../../lib/codelab/assistantClient'
-import { expiryDate, formatTokens, needsPayment, paidMessage, tokensLeft } from '../../lib/codelab/assistantCheckout'
+import { PAID_MESSAGE, expiryDate, formatTokens, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
 import { AssistantPaywall, Spark } from './AssistantPaywall'
 
 const CARD = 'rounded-2xl border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-900'
 const OPEN_LINK = 'inline-flex h-9 items-center rounded-lg bg-gradient-to-br from-gold-300 to-gold-500 px-4 text-sm font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400'
 
 // WebNest AI on the profile page: the user's plan, or the same payment card as the panel.
-export default function AssistantPlanCard() {
+// `autoPayAt`: when the user already agreed to the terms and chose to pay, so Razorpay opens
+// once the server confirms that they are not a member and need to pay. A member, including
+// one out of tokens, or someone the server can't answer about, chooses on the card instead.
+export default function AssistantPlanCard({ autoPayAt = null }) {
   const { user, isAuthenticated } = useAuth()
   const prime = usePrime()
   const [usage, setUsage] = useState(undefined) // undefined: loading, null: could not be read
@@ -24,6 +27,15 @@ export default function AssistantPlanCard() {
   }, [])
   useEffect(() => { refreshUsage() }, [refreshUsage])
   const payment = useAssistantPayment({ user, enabled: isAuthenticated, refreshUsage })
+  const { pay } = payment
+  const autoPaidRef = useRef(false)
+
+  useEffect(() => {
+    if (!autoPayAt || autoPaidRef.current || !usage || usage.enabled === false || !needsPayment(usage)) return
+    if (!prime.answered || prime.isPrime) return
+    autoPaidRef.current = true
+    pay(autoPayAt)
+  }, [autoPayAt, pay, prime.answered, prime.isPrime, usage])
 
   if (usage === undefined) {
     return (
@@ -49,7 +61,7 @@ export default function AssistantPlanCard() {
   const usedShare = left !== null ? Math.min(100, Math.round(((access.tokens_limit - left) / access.tokens_limit) * 100)) : 0
   return (
     <div className={CARD}>
-      {payment.status === 'paid' && <p role="status" className="mb-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">{paidMessage(payment.verified)}</p>}
+      {payment.status === 'paid' && <p role="status" className="mb-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">{PAID_MESSAGE}</p>}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <Spark className="h-9 w-9" />

@@ -11,6 +11,8 @@ import { ONGOING_PROJECTS } from '../data/ongoingProjects'
 import BuildTrackerCard from '../components/BuildTrackerCard'
 import Reveal from '../components/Reveal'
 import LaunchAnnouncementModal from '../components/LaunchAnnouncementModal'
+import WebNestAiLaunch from '../components/WebNestAiLaunch'
+import ErrorBoundary from '../components/ErrorBoundary'
 import SectionHeading from '../components/SectionHeading'
 import CaseStudiesSection from '../components/caseStudies/CaseStudiesSection'
 import { SkeletonGrid } from '../components/states/Skeleton'
@@ -24,6 +26,8 @@ import AndroidDownloadButton from '../components/AndroidDownloadButton'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
 import { useSeo } from '../hooks/useSeo'
+import { usePrime } from '../hooks/usePrime'
+import { PLAN_RUPEES } from '../lib/codelab/assistantCheckout'
 
 // Course totals shown on the landing page. vite.config.js counts them from the course
 // data at build time, the same way the Learn page does, so the two always match.
@@ -46,6 +50,7 @@ const webLink = (value) => (typeof value === 'string' && /^https?:\/\//i.test(va
 
 export default function Home() {
   const { state, reload } = useHomeData()
+  const { showOffer } = usePrime()
   // Our own client feedback always shows; admin-managed testimonials follow once loaded.
   const apiTestimonials = state.testimonials.status === 'success' ? state.testimonials.data : []
   const testimonials = [
@@ -80,17 +85,35 @@ export default function Home() {
 
   return (
     <div className="-mt-22 overflow-hidden">
-      <LaunchAnnouncementModal />
+      <ErrorBoundary fallback={() => null}><LaunchAnnouncementModal /></ErrorBoundary>
 
       {/* HERO — always dark ("dark" switches the card and buttons inside). The page wrapper's
           -mt-22 pulls it up under the floating navbar (see Navbar). */}
-      <section className={`relative flex min-h-[min(88vh,820px)] items-center overflow-hidden text-ink-900 dark:text-white ${CREAM ? 'bg-cream' : 'dark bg-night'}`}>
+      <section className={`relative overflow-hidden text-ink-900 dark:text-white ${CREAM ? 'bg-cream' : 'dark bg-night'}`}>
         <HeroVideo dim={false}><NeuralBackdrop fade="left" /></HeroVideo>
         <div className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gold-400/20 blur-[120px]" />
 
-        <div className="relative mx-auto w-full max-w-7xl px-6 pb-16 pt-40 lg:px-8 lg:pb-20">
-          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="relative mx-auto w-full max-w-7xl px-6 pb-14 pt-28 lg:px-8 lg:pb-16">
+          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
             <div>
+              {showOffer && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="mb-3"
+              >
+                <Link
+                  to="/prime"
+                  className="group inline-flex max-w-full items-center gap-2 rounded-full bg-gradient-to-r from-gold-300 to-gold-500 py-1.5 pl-1.5 pr-4 text-xs font-semibold text-ink-950 shadow-lg shadow-gold-500/20 transition-transform hover:scale-[1.02]"
+                >
+                  <span className="rounded-full bg-ink-950 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-gold-300">New</span>
+                  WebNest AI is here at ₹{PLAN_RUPEES} a month
+                  <FiArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </motion.div>
+              )}
+
               <motion.span
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -120,7 +143,7 @@ export default function Home() {
                 WebNest Studio designs and engineers websites, AI-powered products, and
                 enterprise software that make your brand impossible to ignore — built on
                 React, Java, Python, Spring Boot, and more. We also train new developers
-                through our courses and a hands-on CodeLab.
+                through our courses, a hands-on CodeLab, and now WebNest AI, our AI coding partner.
               </motion.p>
 
               <motion.div
@@ -179,6 +202,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* An advert: if it ever fails, the rest of the home page carries on without it. */}
+      <ErrorBoundary fallback={() => null}><WebNestAiLaunch /></ErrorBoundary>
 
       {/* MARQUEE */}
       <section className="border-y border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40 py-6">

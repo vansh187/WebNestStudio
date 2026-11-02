@@ -78,6 +78,7 @@ export const FOOTER_SECTIONS = [
   {
     title: 'Platform',
     links: [
+      { label: 'WebNest AI', to: '/prime' },
       { label: 'Webnest CodeLab', to: '/codelab' },
       { label: 'Learn programming', to: '/learn' },
       { label: 'Coding practice', to: '/codelab/problems' },
