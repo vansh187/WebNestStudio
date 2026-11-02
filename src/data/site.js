@@ -28,10 +28,10 @@ export const NAV_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Our Story', to: '/our-story' },
   { label: 'Services', to: '/services' },
+  { label: 'WebNest AI', to: '/prime', badge: 'New' },
+  { label: 'Learn', children: [{ label: 'Courses', to: '/learn' }, { label: 'CodeLab', to: '/codelab' }] },
   { label: 'Work', to: '/portfolio' },
   { label: 'Blog', to: '/blog' },
-  { label: 'Learn', children: [{ label: 'Courses', to: '/learn' }, { label: 'CodeLab', to: '/codelab' }] },
-  { label: 'WebNest AI', to: '/prime', badge: 'New' },
   { label: 'Visiting Card', to: '/card' },
 ]
 
