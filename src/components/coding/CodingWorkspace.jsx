@@ -15,8 +15,7 @@ import {
 } from '../../lib/codelab/javaProject'
 import { parseJavacDiagnostics } from '../../lib/codelab/javaIntel/diagnostics'
 import { createPreviewHtml } from '../../lib/codelab/webPreview'
-import { FROZEN_EVENT, codelabEditorOpen, codelabFrozenNotice } from '../../lib/codelab/idb.js'
-import { useToast } from '../../context/ToastContext'
+import { useCodelabFrozenNotice } from '../../hooks/useCodelabFrozenNotice'
 import { useApiRuntime } from '../../hooks/useApiRuntime'
 import BackendWorkspace from './BackendWorkspace'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
@@ -26,8 +25,6 @@ import ErrorBoundary from '../ErrorBoundary'
 // so the editor and panels stretch to fit it instead of setting their own heights.
 const EDITOR_HEIGHT = 'h-[45dvh] min-h-[240px] md:h-[55dvh] lg:h-auto lg:min-h-0 lg:flex-1'
 const PANEL_HEIGHT = 'lg:min-h-0 lg:flex-1 lg:overflow-auto'
-// The lock (idb.js lockSeq) whose paused-saving notice was last shown (see the effect below).
-const shownLock = { seq: null, toastId: null }
 // How long Save project waits for a fresh database snapshot.
 const SAVE_SNAPSHOT_WAIT_MS = 1500
 // How long the assistant's web run waits for the preview's scripts to report errors.
@@ -94,27 +91,7 @@ export default function CodingWorkspace({
 
   // The backend IDE does the same for itself (see BackendWorkspace).
   useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend })
-  // When saving had to be paused without a reload, say so instead of dropping edits silently;
-  // once per lock, however many editors mount, and only on pages that keep CodeLab data in
-  // this browser (the playground and saved projects; not problem pages). Closed again when
-  // the lock lifts.
-  const toast = useToast()
-  useEffect(() => {
-    const show = (paused) => {
-      if (!paused?.notice) {
-        if (shownLock.toastId != null) toast.dismiss(shownLock.toastId)
-        shownLock.toastId = null
-        return
-      }
-      if (paused.seq === shownLock.seq || !codelabEditorOpen()) return
-      shownLock.seq = paused.seq
-      shownLock.toastId = toast.error(paused.notice, { duration: 0 })
-    }
-    show(codelabFrozenNotice())
-    const onFrozen = (event) => show(event.detail)
-    window.addEventListener(FROZEN_EVENT, onFrozen)
-    return () => window.removeEventListener(FROZEN_EVENT, onFrozen)
-  }, [toast])
+  useCodelabFrozenNotice()
   // Saving copies the stored database, so the running one is written out first; rows
   // added within the snapshot delay would otherwise be missing from the saved project. Not
   // while a request is paused at a breakpoint: the worker cannot answer until it resumes.

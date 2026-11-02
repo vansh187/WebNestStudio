@@ -17,22 +17,33 @@ const readPrefs = () => codelabLocal.getJSON(ASSISTANT_PREFS_KEY) ?? {}
 // `project` holds the workspace's current { language, files, selectedFile, onFilesChange,
 // runProject, lastResult, onOpenFile }, plus `api` for a FastAPI project.
 // A workspace keeps one chat: switching language replaces its files, so it starts a new one.
-export function useAssistant({ workspaceKey, project, enabled }) {
+// `fixedMode` holds the chat to one mode without touching the user's saved choice, and
+// `onReply` hears each finished reply that has text. A page that remounts the panel can keep
+// the plan and the undo log across it: `remembered` starts from what `onRemember` was last told.
+export function useAssistant({ workspaceKey, project, enabled, fixedMode, onReply, remembered, onRemember }) {
   const storageKey = `${ASSISTANT_PREFIX}${workspaceKey}`
   const { language } = project
   const readChat = useCallback((saved) => ({ messages: saved?.language === language && Array.isArray(saved.messages) ? repairHistory(saved.messages) : [] }), [language])
   const toSavedChat = useCallback(({ messages }) => ({ language, messages: trimHistory(messages, STORED_MESSAGES) }), [language])
   const [chat, updateChat] = useWorkspaceStorage(storageKey, readChat, toSavedChat)
   const [prefs, setPrefs] = useState(readPrefs)
+  const activeMode = fixedMode ?? prefs.mode ?? null
+  const onReplyRef = useRef(onReply)
+  onReplyRef.current = onReply
   const [status, setStatus] = useState('idle') // idle, working, or tool (a tool is running)
   const [streamText, setStreamText] = useState('')
   const [activeTool, setActiveTool] = useState(null)
   const [approval, setApproval] = useState(null)
   const [error, setError] = useState(null)
   const [outcome, setOutcome] = useState(null) // the last task: step_limit, cut_off or stopped
-  const [usage, setUsage] = useState(null)
-  const [planChecked, setPlanChecked] = useState(false)
-  const [undoLog, setUndoLog] = useState(null)
+  const [usage, setUsage] = useState(remembered?.usage ?? null)
+  const [planChecked, setPlanChecked] = useState(Boolean(remembered?.planChecked))
+  const [undoLog, setUndoLog] = useState(remembered?.undoLog ?? null)
+  const onRememberRef = useRef(onRemember)
+  onRememberRef.current = onRemember
+  useEffect(() => {
+    onRememberRef.current?.({ usage, planChecked, undoLog })
+  }, [usage, planChecked, undoLog])
 
   // Always the latest, for the task running across many renders.
   const projectRef = useRef(project)
@@ -64,7 +75,8 @@ export function useAssistant({ workspaceKey, project, enabled }) {
 
   const setMode = useCallback((mode) => updatePrefs({ mode }), [updatePrefs])
   const setAutoApply = useCallback((value) => updatePrefs({ autoApply: value }), [updatePrefs])
-  const acknowledgeNotice = useCallback(() => updatePrefs({ noticeSeen: true }), [updatePrefs])
+  const setReadAloud = useCallback((value) => updatePrefs({ readAloud: value }), [updatePrefs])
+  const setVoiceLanguage = useCallback((value) => updatePrefs({ voiceLanguage: value }), [updatePrefs])
 
   // Remaining calls, and whether the assistant is available at all.
   const refreshUsage = useCallback(async (signal) => {
@@ -179,6 +191,7 @@ export function useAssistant({ workspaceKey, project, enabled }) {
           latestText.current = ''
           setStreamText('')
           addMessage(message)
+          if (message.role === 'assistant' && message.content) onReplyRef.current?.(message.content)
         },
         onToolStart: (call) => {
           setStatus('tool')
@@ -210,17 +223,17 @@ export function useAssistant({ workspaceKey, project, enabled }) {
 
   const send = useCallback((text) => {
     const content = text.trim()
-    if (!content || busy || !prefs.mode) return
+    if (!content || busy || !activeMode) return
     setUndoLog(null)
     addMessage({ role: 'user', content })
-    runTask(prefs.mode)
-  }, [addMessage, busy, prefs.mode, runTask])
+    runTask(activeMode)
+  }, [activeMode, addMessage, busy, runTask])
 
   // Tries the failed call again, or carries on after the step limit.
   const resume = useCallback(() => {
-    if (busy || !prefs.mode) return
-    runTask(prefs.mode)
-  }, [busy, prefs.mode, runTask])
+    if (busy || !activeMode) return
+    runTask(activeMode)
+  }, [activeMode, busy, runTask])
 
   const stop = useCallback(() => {
     abortRef.current?.abort()
@@ -280,12 +293,14 @@ export function useAssistant({ workspaceKey, project, enabled }) {
 
   return {
     messages: chat.messages,
-    mode: prefs.mode ?? null,
+    mode: activeMode,
     setMode,
+    readAloud: Boolean(prefs.readAloud),
+    setReadAloud,
+    voiceLanguage: prefs.voiceLanguage,
+    setVoiceLanguage,
     autoApply: Boolean(prefs.autoApply),
     setAutoApply,
-    noticeSeen: Boolean(prefs.noticeSeen),
-    acknowledgeNotice,
     status,
     busy,
     streamText,

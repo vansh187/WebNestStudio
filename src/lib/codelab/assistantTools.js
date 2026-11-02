@@ -57,6 +57,14 @@ export function errorsOf(result) {
   return [result.error, result.compile?.stderr, result.stderr, result.notice].filter(Boolean).filter((part, index, all) => all.indexOf(part) === index).join('\n')
 }
 
+const OUT_OF_INPUT = 'The program asked for input and none was left, so the code is not at fault. Do not change it for this. Tell the user to type the input in the Standard input box on the Output tab, then run again.'
+
+// A run that failed only because stdin ran out, marked so the agent doesn't try to fix the code.
+export function noteMissingInput(result) {
+  if (!result || result.status === 'success' || !/\bEOFError\b|\bNoSuchElementException\b/.test(result.stderr ?? '')) return result
+  return { ...result, notice: [result.notice, OUT_OF_INPUT].filter(Boolean).join('\n') }
+}
+
 const refused = (message) => ({ content: message, isError: true })
 const done = (content, extra = {}) => ({ content, isError: false, ...extra })
 const PRIVATE_REFUSAL = 'That file is private and cannot be read or changed by the assistant. Ask the user to add any variable or key themselves, by name.'

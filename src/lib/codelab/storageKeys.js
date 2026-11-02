@@ -3,6 +3,8 @@
 
 // The playground's session copies (pages/coding/Playground.jsx, SharedSnippet.jsx).
 export const PLAYGROUND_KEY = 'wns-codelab-playground'
+// The AI Agent screen's files (pages/AgentScreen.jsx). Under PLAYGROUND_KEY, so the same wipe covers it.
+export const AGENT_SCREEN_KEY = `${PLAYGROUND_KEY}:ai-agent`
 // Per workspace: debugger breakpoints (BackendWorkspace.jsx).
 export const BREAKPOINTS_PREFIX = 'wns-codelab-breakpoints:'
 // Per workspace: the API tester's Bearer token and history (useApiTesterSession.js).

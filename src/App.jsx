@@ -30,6 +30,7 @@ const PrivacyPolicy = lazyWithReload(() => import('./pages/PrivacyPolicy'))
 const TermsConditions = lazyWithReload(() => import('./pages/TermsConditions'))
 const RefundPolicy = lazyWithReload(() => import('./pages/RefundPolicy'))
 const Prime = lazyWithReload(() => import('./pages/Prime'))
+const AgentScreen = lazyWithReload(() => import('./pages/AgentScreen'))
 const Disclaimer = lazyWithReload(() => import('./pages/Disclaimer'))
 const DeleteAccount = lazyWithReload(() => import('./pages/DeleteAccount'))
 const AccountDeletion = lazyWithReload(() => import('./pages/AccountDeletion'))
@@ -156,6 +157,7 @@ function App() {
                     <Route path="terms-and-conditions" element={<TermsConditions />} />
                     <Route path="refund-policy" element={<RefundPolicy />} />
                     <Route path="prime" element={<ErrorBoundary><Prime /></ErrorBoundary>} />
+                    <Route path="ai-agent" element={<ErrorBoundary><AgentScreen /></ErrorBoundary>} />
                     <Route path="disclaimer" element={<Disclaimer />} />
                     <Route path="account-deletion" element={<AccountDeletion />} />
                     <Route path="download-app" element={<DownloadApp />} />

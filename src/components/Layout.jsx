@@ -1,5 +1,5 @@
 import ConversionTracking from './ConversionTracking'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import FloatingThemeToggle from './FloatingThemeToggle'
@@ -33,7 +33,11 @@ const ORGANIZATION_SCHEMA = {
   sameAs: [CONTACT.instagramHref, CONTACT.linkedinHref, CONTACT.youtubeHref],
 }
 
+// Full-screen tools with their own controls where the floating buttons would sit.
+const FOCUS_ROUTES = new Set(['/ai-agent'])
+
 export default function Layout() {
+  const focused = FOCUS_ROUTES.has(useLocation().pathname.replace(/\/+$/, ''))
   useStructuredData(ORGANIZATION_SCHEMA)
   useStructuredData({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${SITE_URL}/#website`, name: SITE_NAME, url: SITE_URL, publisher: { '@id': `${SITE_URL}/#organization` } })
 
@@ -47,13 +51,15 @@ export default function Layout() {
           <Outlet />
         </ErrorBoundary>
       </main>
-      <Footer />
-      <FloatingThemeToggle />
+      {!focused && <Footer />}
+      {!focused && <FloatingThemeToggle />}
       {/* Isolated boundary: if the chat widget crashes, the rest of the site keeps
           working normally - it just quietly disappears instead of taking the page down. */}
-      <ErrorBoundary fallback={() => null}>
-        <ChatWidget />
-      </ErrorBoundary>
+      {!focused && (
+        <ErrorBoundary fallback={() => null}>
+          <ChatWidget />
+        </ErrorBoundary>
+      )}
     </div>
   )
 }

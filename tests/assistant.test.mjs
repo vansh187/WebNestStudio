@@ -713,3 +713,53 @@ test('a verify response confirms a payment only when the server says so', () => 
   assert.equal(paymentConfirmed({ is_prime: true, active: false }, true), false)
   assert.equal(paymentConfirmed({ is_prime: true, active: true }, true), true)
 })
+
+test('a reply read aloud leaves out code and Markdown symbols', async () => {
+  const { speakableText } = await import('../src/lib/codelab/assistantVoice.js')
+  const spoken = speakableText('# Title\n\n**Use** `print` and [the docs](https://example.com):\n\n```python\nprint(1)\n```\n\n- See https://example.com/a')
+  assert.equal(spoken, 'Title Use print and the docs: The code is on your screen. See link')
+  assert.equal(speakableText('```python\nnever closed'), 'The code is on your screen.')
+  assert.equal(speakableText(null), '')
+})
+
+test('a long reply is read in pieces, and no words are lost', async () => {
+  const { speechChunks } = await import('../src/lib/codelab/assistantVoice.js')
+  const text = `${'One two three. '.repeat(40)}${'x'.repeat(450)} आखिरी वाक्य।`
+  const chunks = speechChunks(text, 200)
+  assert.ok(chunks.length > 1)
+  assert.ok(chunks.every((chunk) => chunk.length <= 200))
+  assert.equal(chunks.join('').replace(/\s/g, ''), text.replace(/\s/g, ''))
+  assert.deepEqual(speechChunks(''), [])
+})
+
+test('what is heard joins what was typed, within the message limit', async () => {
+  const { joinDictation } = await import('../src/lib/codelab/assistantVoice.js')
+  assert.equal(joinDictation('Build ', ' a notes app ', 500), 'Build a notes app')
+  assert.equal(joinDictation('', 'hello', 500), 'hello')
+  assert.equal(joinDictation('abc', 'defgh', 6), 'abc de')
+})
+
+test('a run that ran out of input tells the agent to leave the code alone', async () => {
+  const { errorsOf, noteMissingInput } = await import('../src/lib/codelab/assistantTools.js')
+  const python = { status: 'runtime_error', stderr: 'EOFError: EOF when reading a line' }
+  assert.match(errorsOf(noteMissingInput(python)), /EOFError[\s\S]*Standard input box/)
+  const java = { status: 'runtime_error', stderr: 'java.util.NoSuchElementException: No line found', notice: 'Earlier note' }
+  assert.equal(noteMissingInput(java).notice.startsWith('Earlier note\n'), true)
+  const other = { status: 'runtime_error', stderr: 'ValueError: bad' }
+  assert.equal(noteMissingInput(other), other)
+  const fine = { status: 'success', stderr: 'EOFError handled' }
+  assert.equal(noteMissingInput(fine), fine)
+  assert.equal(noteMissingInput(null), null)
+})
+
+test('the voice follows the language, and microphone errors stay plain', async () => {
+  const { micErrorMessage, pickVoice } = await import('../src/lib/codelab/assistantVoice.js')
+  const voices = [{ lang: 'en-US' }, { lang: 'hi_IN' }]
+  assert.equal(pickVoice(voices, 'hi-IN'), voices[1])
+  assert.equal(pickVoice(voices, 'en-IN'), voices[0])
+  assert.equal(pickVoice(voices, 'ta-IN'), null)
+  assert.equal(pickVoice(undefined, 'en-IN'), null)
+  assert.equal(micErrorMessage('aborted'), '')
+  assert.match(micErrorMessage('not-allowed'), /blocked/)
+  assert.match(micErrorMessage('constructor'), /type instead/)
+})
