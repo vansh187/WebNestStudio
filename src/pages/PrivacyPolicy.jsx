@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'October 11, 2026'
+const EFFECTIVE_DATE = 'November 3, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -89,9 +89,25 @@ export default function PrivacyPolicy() {
           </p>
           <p>
             <strong className="text-ink-900 dark:text-white">f) Local storage.</strong> We use your browser&rsquo;s
-            local storage to keep you signed in between visits (storing a refresh token) and to remember your
-            display theme preference. This data stays on your device and is not a tracking cookie shared with
+            local storage and similar browser storage to keep you signed in between visits (storing a refresh
+            token), to remember your display theme preference, and to keep your CodeLab work and your WebNest AI
+            chats and settings. This stored data stays on your device and is not a tracking cookie shared with
             third parties.
+          </p>
+          <p>
+            <strong className="text-ink-900 dark:text-white">g) WebNest AI.</strong> When you use WebNest AI,
+            including the AI Agent screen, we process your messages together with the project details needed to
+            answer you: your file names, the open file, the last error, and any files the AI reads or changes. We
+            do not send environment (.env) files or private key files, and we remove their values from what is
+            sent. Please do not put passwords or other secrets in your messages or code. Your WebNest AI chats are
+            kept in your browser. Our servers keep usage records, such as token counts, the model used, and
+            timing, but not the text of your messages or your code. If you use voice input, your browser may send
+            your audio to its own speech service to turn it into text; we do not receive the audio.
+          </p>
+          <p>
+            <strong className="text-ink-900 dark:text-white">h) Payments.</strong> Payments for WebNest AI are
+            handled by Razorpay. We do not receive or store your card, UPI, or bank details. We keep records of
+            your order, including the order and payment IDs, amount, status, and your plan&rsquo;s dates and usage.
           </p>
         </Section>
 
@@ -101,6 +117,7 @@ export default function PrivacyPolicy() {
             <li>Provide, operate, and maintain our Services, including your account and saved projects;</li>
             <li>Respond to inquiries, quote requests, and support messages you send us;</li>
             <li>Generate AI-assisted project plans and send them to you by email when you request it;</li>
+            <li>Answer your questions and carry out the tasks you ask for through WebNest AI, and process payments for it;</li>
             <li>Send service-related communications, and, where you have opted in, our newsletter;</li>
             <li>Monitor, secure, and improve the performance and reliability of our Services;</li>
             <li>Detect, prevent, and address fraud, abuse, or security issues; and</li>
@@ -124,6 +141,17 @@ export default function PrivacyPolicy() {
               infrastructure and communication providers (such as our hosting provider, analytics provider, and
               email delivery provider) solely to operate our Services on our behalf, under obligations to
               protect your data.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Third-party AI services.</strong> Messages you send
+              to WebNest AI or our AI project-planning chat, along with the details described in Section 1, are
+              sent to third-party AI services so they can generate replies. These services handle that information
+              under their own terms and may process it outside India.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Payment processor.</strong> When you pay for WebNest
+              AI, Razorpay receives your payment details directly, along with your name, email address, and the
+              time you accepted our terms, so it can process and record the payment.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Google AdSense.</strong> We are applying to Google
