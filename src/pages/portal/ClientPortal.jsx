@@ -6,6 +6,7 @@ import { Skeleton } from '../../components/states/Skeleton'
 import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import AssistantPlanCard from '../../components/coding/AssistantPlanCard'
+import ErrorBoundary from '../../components/ErrorBoundary'
 import PrimeBadge from '../../components/PrimeBadge'
 import { usePrime } from '../../hooks/usePrime'
 import { localDate } from '../../lib/codelab/assistantCheckout'
@@ -248,7 +249,7 @@ export default function ClientPortal() {
 
         <section className="mt-10">
           <h2 className="mb-4 font-display text-lg font-semibold text-ink-900 dark:text-white">WebNest AI</h2>
-          <AssistantPlanCard />
+          <ErrorBoundary><AssistantPlanCard /></ErrorBoundary>
         </section>
 
         <section className="mt-10">

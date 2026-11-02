@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPaymentOrder, fetchMembership, verifyPayment } from '../lib/codelab/assistantClient'
 import { checkoutOptions, loadCheckout } from '../lib/codelab/assistantCheckout'
 import {
-  clearPaymentPending, getMembership, isPaymentPending, isPendingRenewal, markPaymentPending, noteMembership, paymentConfirmed,
+  clearPaymentPending, isPaymentPending, isPendingRenewal, markPaymentPending, noteMembership, paymentConfirmed,
 } from '../lib/codelab/assistantPlan.js'
 import { getUser } from '../lib/tokenStore'
 import { usePrime } from './usePrime'
@@ -21,7 +21,6 @@ export function useAssistantPayment({ user, enabled, refreshUsage }) {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
   const [paymentId, setPaymentId] = useState('')
-  const [verified, setVerified] = useState(null)
   const checkoutRef = useRef(null)
   const startedRef = useRef(false)
   const renewalRef = useRef(false)
@@ -35,7 +34,6 @@ export function useAssistantPayment({ user, enabled, refreshUsage }) {
     startedRef.current = false
     setStatus('idle')
     setError('')
-    setVerified(null)
   }, [enabled])
 
   // Confirmed from another screen, or on load: this screen's plan is out of date.
@@ -81,7 +79,6 @@ export function useAssistantPayment({ user, enabled, refreshUsage }) {
       const result = await verifyPayment(response)
       if (paymentConfirmed(result, renewal)) {
         noteMembership(result)
-        setVerified(result)
         await finish()
         return
       }
@@ -102,11 +99,13 @@ export function useAssistantPayment({ user, enabled, refreshUsage }) {
   const pay = useCallback(async (termsAcceptedAt) => {
     if (startedRef.current || !termsAcceptedAt || isPaymentPending()) return
     startedRef.current = true
-    renewalRef.current = getMembership().is_prime
     setStatus('starting')
     setError('')
     try {
-      const [order] = await Promise.all([createPaymentOrder(), loadCheckout()])
+      const [order, membership] = await Promise.all([createPaymentOrder(), fetchMembership(), loadCheckout()])
+      // Asked now, as this may run before the first answer arrives. With no answer, this could
+      // be a member buying again, so the payment only counts once the pass itself is active.
+      renewalRef.current = membership ? membership.is_prime === true : true
       const checkout = new window.Razorpay(checkoutOptions(order, user, {
         onPaid,
         termsAcceptedAt,
@@ -142,7 +141,6 @@ export function useAssistantPayment({ user, enabled, refreshUsage }) {
     status: status === 'idle' && paymentPending ? 'pending' : status,
     error,
     paymentId,
-    verified,
     pay,
     checkAgain,
   }

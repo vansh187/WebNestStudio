@@ -9,6 +9,7 @@ const PENDING_KEY = 'wns_ai_payment_pending'
 let membership = NOT_A_MEMBER
 let pending = null // { account, renewal }
 let account = null
+let answered = false // The server has said whether this account is a member.
 const listeners = new Set()
 
 const notify = () => listeners.forEach((listener) => listener())
@@ -32,6 +33,8 @@ function savePending(value) {
 }
 
 export const getMembership = () => membership
+export const isMembershipAnswered = () => answered
+export const isCurrentAccount = (userId) => account === userId
 export const isPaymentPending = () => Boolean(pending)
 export const isPendingRenewal = () => Boolean(pending?.renewal)
 
@@ -57,6 +60,7 @@ export function clearPaymentPending() {
 // says nothing about that payment: only the pass becoming active clears their lock.
 export function noteMembership(data) {
   if (!data) return
+  answered = true
   membership = data.is_prime === true
     ? { is_prime: true, member_label: data.member_label ?? null, expires_at: data.expires_at ?? null }
     : NOT_A_MEMBER
@@ -75,6 +79,7 @@ export const paymentConfirmed = (result, renewal) => result?.is_prime === true &
 export function claimMembershipLoad(userId) {
   if (account === userId) return false
   account = userId
+  answered = false
   membership = NOT_A_MEMBER
   pending = readPending(userId)
   notify()
@@ -82,8 +87,9 @@ export function claimMembershipLoad(userId) {
 }
 
 export function resetMembership() {
-  if (account === null && membership === NOT_A_MEMBER && !pending) return
+  if (account === null && membership === NOT_A_MEMBER && !pending && !answered) return
   account = null
+  answered = false
   membership = NOT_A_MEMBER
   pending = null
   notify()

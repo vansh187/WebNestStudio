@@ -7,6 +7,9 @@ export const TERMS_VERSION = '2026-11-01'
 
 // Shown until the server sends its own plan. The server's order sets what is really charged.
 export const DEFAULT_PLAN = { price_paise: 29900, pass_days: 30, tokens_limit: 2000000 }
+// For adverts and buttons, which show before the server is asked. Change the price in one place.
+export const PLAN_RUPEES = Math.round(DEFAULT_PLAN.price_paise / 100)
+export const PLAN_DAYS = DEFAULT_PLAN.pass_days
 
 // WebNest AI is paid: only a plan the server says is active opens it. With no answer at all
 // (`usage` not read), nothing is decided here; the server refuses an unpaid chat with a 402.
@@ -37,11 +40,7 @@ export const formatTokens = (tokens, { long = false } = {}) => new Intl.NumberFo
   maximumFractionDigits: 1,
 }).format(tokens)
 
-// After a confirmed payment. `verified` is the verify response, when the browser got one.
-export function paidMessage(verified) {
-  const left = verified?.tokens_limit ? Math.max(verified.tokens_limit - (verified.tokens_used ?? 0), 0) : null
-  return `Payment confirmed. Welcome to WebNest Prime!${left !== null ? ` You have ${formatTokens(left)} AI tokens to use.` : ''}`
-}
+export const PAID_MESSAGE = 'Payment confirmed. Welcome to WebNest Prime!'
 
 // Loaded on the first click to pay, so the workspace runs no third-party script until then.
 let loading = null

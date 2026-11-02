@@ -7,7 +7,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useAssistant } from '../../hooks/useAssistant'
 import { useAssistantPayment } from '../../hooks/useAssistantPayment'
-import { expiryDate, formatTokens, needsPayment, paidMessage, tokensLeft } from '../../lib/codelab/assistantCheckout'
+import { PAID_MESSAGE, expiryDate, formatTokens, needsPayment, tokensLeft } from '../../lib/codelab/assistantCheckout'
 import { AssistantPaywall, Spark } from './AssistantPaywall'
 import PrimeBadge from '../PrimeBadge'
 import { usePrime } from '../../hooks/usePrime'
@@ -290,7 +290,7 @@ export default function AssistantPanel({ workspaceKey, language, files, selected
           </Banner>
         )}
         {payment.status === 'paid' && !locked && (
-          <Banner>{paidMessage(payment.verified)}</Banner>
+          <Banner>{PAID_MESSAGE}</Banner>
         )}
         {checking && !visibleMessages && (
           <p role="status" className="m-auto flex items-center gap-2 text-xs font-medium text-ink-500 dark:text-ink-400">
