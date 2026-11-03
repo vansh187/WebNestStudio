@@ -3,6 +3,7 @@
 // side lives in python/webnest_runtime.py.
 import { loadPyodide, version as pyodideVersion } from 'pyodide'
 import runtimeSource from './python/webnest_runtime.py?raw'
+import debugSource from './python/webnest_debug.py?raw'
 import extraWheels from '../../scripts/extra-wheels.json'
 import { PYODIDE_INDEX_URL, cap, createSink, flushStreams } from './pyodideShared'
 import { ENV_FILE } from '../lib/codelab/backendFiles'
@@ -60,6 +61,8 @@ async function boot() {
   if (failed.length) throw new Error(`Could not load the Python packages for the backend playground. ${failed[0]}`)
   pyodide.FS.mkdirTree('/opt/webnest')
   pyodide.FS.writeFile('/opt/webnest/webnest_runtime.py', runtimeSource)
+  // How values are shown in the Variables view; shared with the Python playground.
+  pyodide.FS.writeFile('/opt/webnest/webnest_debug.py', debugSource)
   pyodide.runPython('import sys\nsys.path.insert(0, "/opt/webnest")')
   runtime = pyodide.pyimport('webnest_runtime')
   runtime.setup()

@@ -7,6 +7,8 @@ import StdinPanel from './StdinPanel'
 import OutputPanel from './OutputPanel'
 import PreviewPanel from './PreviewPanel'
 import BackButton from './BackButton'
+import ProgramDebugPanel from './ProgramDebugPanel'
+import DebugReloadDialog from './DebugReloadDialog'
 import { getLanguage, mainFileName } from '../../data/codingLanguages'
 import { sourceFile, toCodePayload } from '../../api/coding'
 import {
@@ -20,6 +22,10 @@ import { useApiRuntime } from '../../hooks/useApiRuntime'
 import BackendWorkspace from './BackendWorkspace'
 import SpringWorkspace from './SpringWorkspace'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
+import { useWorkspaceStorage } from '../../hooks/useWorkspaceStorage'
+import { canIsolate, isIsolated, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
+import { BREAKPOINTS_PREFIX } from '../../lib/codelab/storageKeys.js'
+import { changedPaths, expressionAt, hoverMarkdown, inlineValues, pathKey, resolveExpression } from '../../lib/codelab/debugValues'
 import ErrorBoundary from '../ErrorBoundary'
 
 // On large screens the workspace fills the window under the navbar (like the backend IDE),
@@ -32,6 +38,16 @@ const SAVE_SNAPSHOT_WAIT_MS = 1500
 const WEB_ERRORS_WAIT_MS = 800
 
 const AssistantPanel = lazy(() => import('./AssistantPanel'))
+
+// Stored breakpoints, checked: anything else in storage is dropped.
+const readBreakpoints = (saved) => (Array.isArray(saved)
+  ? saved.filter((item) => typeof item?.file === 'string' && Number.isInteger(item?.line) && item.line > 0)
+  : [])
+const DEBUG_RELOAD_POINTS = [
+  'Your code is kept in this browser and comes back after the reload.',
+  'Your breakpoints stay where you set them.',
+  'Press Debug again once the editor is back.',
+]
 
 export default function CodingWorkspace({
   eyebrow,
@@ -217,7 +233,88 @@ export default function CodingWorkspace({
     if (window.matchMedia('(max-width: 1023px)').matches) requestAnimationFrame(() => assistantRef.current?.scrollIntoView({ block: 'start' }))
   }
 
+  // ---- Python debugging: pauses live at breakpoints, like the FastAPI debugger. It needs the
+  // one reload into an isolated page (lib/codelab/isolation.js), so only where that is possible.
+  const pythonDebug = language === 'python' && (isIsolated() || canIsolate())
+  const debugFile = activeFile?.name ?? mainFileName(lang)
+  const debugNames = useMemo(() => new Set(files?.length ? files.map((file) => file.name) : [debugFile]), [files, debugFile])
+  const keepLiveBreakpoints = useCallback((items) => items.filter((item) => debugNames.has(item.file)), [debugNames])
+  const breakpointKey = `${BREAKPOINTS_PREFIX}${workspaceKey}`
+  const [storedBreakpoints, updateBreakpoints] = useWorkspaceStorage(breakpointKey, readBreakpoints, keepLiveBreakpoints)
+  const breakpoints = useMemo(() => keepLiveBreakpoints(storedBreakpoints), [keepLiveBreakpoints, storedBreakpoints])
+  const setBreakpoints = useCallback((change) => updateBreakpoints(breakpointKey, change), [updateBreakpoints, breakpointKey])
+  const toggleBreakpoint = useCallback((line) => {
+    setBreakpoints((current) => (current.some((item) => item.file === debugFile && item.line === line)
+      ? current.filter((item) => item.file !== debugFile || item.line !== line)
+      : [...current, { file: debugFile, line }]))
+  }, [setBreakpoints, debugFile])
+  const moveBreakpoints = useCallback((lines) => {
+    setBreakpoints((current) => [...current.filter((item) => item.file !== debugFile), ...lines.map((line) => ({ file: debugFile, line }))])
+  }, [setBreakpoints, debugFile])
+  const [reloadPrompt, setReloadPrompt] = useState(false)
+  const [debugRun, setDebugRun] = useState(null) // the run id while a debugged run is the latest
+  const pyPause = pythonDebug ? runner.debugPause : null
+  const [frameChoice, setFrameChoice] = useState({ pause: null, index: 0 })
+  const selectedFrame = frameChoice.pause === pyPause ? frameChoice.index : 0
+  const selectFrame = useCallback((index) => setFrameChoice({ pause: pyPause, index }), [pyPause])
+  const changed = useMemo(() => changedPaths(pyPause?.frames, pyPause?.previous), [pyPause])
+  const frames = pyPause?.frames ?? []
+  const editorFrameIndex = frames[selectedFrame]?.file === debugFile ? selectedFrame : frames.findIndex((frame) => frame.file === debugFile)
+  const editorFrame = editorFrameIndex >= 0 ? frames[editorFrameIndex] : null
+  const debugText = activeFile?.content ?? source ?? ''
+  const debugHover = useMemo(() => {
+    if (!editorFrame) return undefined
+    return (lineText, column) => {
+      const found = expressionAt(lineText, column)
+      const value = found && resolveExpression(editorFrame, found.expression)
+      if (!value) return null
+      return { markdown: hoverMarkdown(found.expression, value, changed[editorFrameIndex]?.has(pathKey(value.path))), startColumn: found.startColumn, endColumn: found.endColumn }
+    }
+  }, [editorFrame, editorFrameIndex, changed])
+  const editorInlineValues = useMemo(
+    () => (editorFrame ? inlineValues(editorFrame, debugText, changed[editorFrameIndex]) : undefined),
+    [editorFrame, editorFrameIndex, debugText, changed],
+  )
+  // Every Continue or step sends the current breakpoints, so changes made while paused count.
+  const runnerResume = runner.resumeDebug
+  const resumeDebug = useCallback((mode) => runnerResume?.(mode, breakpoints), [runnerResume, breakpoints])
+  // VS Code's keys while paused: F5 continue, F11 into, F10 over, Shift+F11 out.
+  useEffect(() => {
+    if (!pyPause) return undefined
+    const onKey = (event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      const mode = event.key === 'F5' && !event.shiftKey ? 0
+        : event.key === 'F11' && !event.shiftKey ? 1
+          : event.key === 'F10' && !event.shiftKey ? 2
+            : event.key === 'F11' && event.shiftKey ? 3
+              : null
+      if (mode === null) return
+      event.preventDefault()
+      event.stopPropagation()
+      resumeDebug(mode)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [pyPause, resumeDebug])
+  const lastDebugTrace = debugRun && debugRun === runner.result && runner.result?.trace ? runner.result.trace : null
+  const debugActive = Boolean(pyPause) || (debugRun === 'running' && runner.running)
+
+  const handleDebug = () => {
+    if (!isIsolated()) {
+      if (canIsolate() && !isolationUnsupported()) setReloadPrompt(true)
+      return
+    }
+    setConsoleText('')
+    setAssistantTab((tab) => tab && 'output')
+    setDebugRun('running')
+    runner.run({
+      language,
+      ...toCodePayload({ source: debugText, sourceName: debugFile, fileName: mainFileName(lang), files, extra: { stdin: stdin ?? '' } }),
+    }, { breakpoints }).then(({ result }) => setDebugRun(result ?? null))
+  }
+
   const handleRun = () => {
+    setDebugRun(null)
     setConsoleText('')
     webErrors.current = []
     setAssistantTab((tab) => tab && 'output')
@@ -383,8 +480,19 @@ export default function CodingWorkspace({
             extra={headerRight}
             onAssistant={assistant ? toggleAssistant : undefined}
             assistantOpen={assistantVisible}
+            onDebug={pythonDebug ? handleDebug : undefined}
           />
         </ErrorBoundary>
+        {reloadPrompt && (
+          <DebugReloadDialog
+            points={DEBUG_RELOAD_POINTS}
+            onClose={() => setReloadPrompt(false)}
+            onConfirm={async () => {
+              reloadIsolated()
+              return new Promise(() => {})
+            }}
+          />
+        )}
       <div className="mt-3 grid gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:grid-cols-[minmax(0,1fr)_460px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
         <div className="flex min-w-0 flex-col lg:min-h-0">
           {language === 'java' && (
@@ -440,6 +548,16 @@ export default function CodingWorkspace({
               roundedTop={!files}
               javaProject={editorProject}
               markers={editorMarkers}
+              {...(pythonDebug ? {
+                path: `${workspaceKey}/${debugFile}`,
+                breakpoints: breakpoints.filter((item) => item.file === debugFile).map((item) => item.line),
+                onToggleBreakpoint: toggleBreakpoint,
+                onBreakpointsChange: moveBreakpoints,
+                pausedLine: pyPause?.file === debugFile ? pyPause.line : undefined,
+                revealLine: pyPause?.file === debugFile ? pyPause.line : undefined,
+                debugHover,
+                inlineValues: editorInlineValues,
+              } : {})}
             />
           </ErrorBoundary>
         </div>
@@ -494,6 +612,26 @@ export default function CodingWorkspace({
           <ErrorBoundary>
             <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
           </ErrorBoundary>
+          {pythonDebug && (debugActive || lastDebugTrace || breakpoints.length > 0 || isolationUnsupported()) && (
+            <ErrorBoundary>
+              <div className="lg:max-h-[55%] lg:shrink-0 lg:overflow-auto">
+                <ProgramDebugPanel
+                  paused={pyPause}
+                  running={debugActive && !pyPause}
+                  armed={isIsolated()}
+                  trace={lastDebugTrace}
+                  breakpoints={breakpoints}
+                  isolationUnsupported={isolationUnsupported()}
+                  onResume={resumeDebug}
+                  onStop={runner.cancel}
+                  onOpenLocation={(file) => { if (debugNames.has(file)) onSelectFile?.(file) }}
+                  selectedFrame={selectedFrame}
+                  onSelectFrame={selectFrame}
+                  changed={changed}
+                />
+              </div>
+            </ErrorBoundary>
+          )}
           <ErrorBoundary>
             <OutputPanel
               running={runner.running}

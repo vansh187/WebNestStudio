@@ -17,7 +17,7 @@ const CONTROLS = [
 
 // Continue / step / stop buttons. `compact` is the icon-only toolbar shown above the editor
 // while paused, so stepping works from any panel tab (the Preview stays visible).
-export function DebugControls({ onResume, onStop, compact = false, className = '' }) {
+export function DebugControls({ onResume, onStop, compact = false, className = '', stopLabel = 'Stop API' }) {
   if (compact) {
     return (
       <div role="toolbar" aria-label="Debugger controls" className={`flex items-center gap-0.5 ${className}`}>
@@ -26,7 +26,7 @@ export function DebugControls({ onResume, onStop, compact = false, className = '
             <Icon className="h-3.5 w-3.5" />
           </button>
         ))}
-        <button type="button" onClick={onStop} aria-label="Stop API" title="Stop API" className="inline-flex h-6 w-6 items-center justify-center rounded text-red-600 hover:bg-ink-200 dark:text-red-300 dark:hover:bg-ink-800">
+        <button type="button" onClick={onStop} aria-label={stopLabel} title={stopLabel} className="inline-flex h-6 w-6 items-center justify-center rounded text-red-600 hover:bg-ink-200 dark:text-red-300 dark:hover:bg-ink-800">
           <FiSquare className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -39,7 +39,7 @@ export function DebugControls({ onResume, onStop, compact = false, className = '
           <Icon /> {label} <kbd className="opacity-60">{key}</kbd>
         </button>
       ))}
-      <button type="button" onClick={onStop} className="inline-flex items-center gap-1 rounded border border-red-400/50 px-2 py-1 text-[11px] font-semibold text-red-600 dark:text-red-300"><FiSquare /> Stop API</button>
+      <button type="button" onClick={onStop} className="inline-flex items-center gap-1 rounded border border-red-400/50 px-2 py-1 text-[11px] font-semibold text-red-600 dark:text-red-300"><FiSquare /> {stopLabel}</button>
     </div>
   )
 }
@@ -80,6 +80,48 @@ function ValueRow({ node, path, scope, expanded, onToggle, changed, depth }) {
   )
 }
 
+// The Variables view and the Call stack of a pause. `expanded` and `onToggle` keep opened
+// values open across steps; the pick of frame is the parent's (selectedFrame).
+export function FrameView({ frames = [], selectedFrame = 0, onSelectFrame, changed, expanded, onToggle }) {
+  if (!frames.length) return null
+  const frameIndex = Math.min(selectedFrame, Math.max(frames.length - 1, 0))
+  const frame = frames[frameIndex]
+  const changedHere = changed?.[frameIndex] ?? EMPTY
+  // Opened values stay open across steps, per function, as in VS Code.
+  const scope = frame ? `${frame.file}:${frame.fn}` : ''
+  const toggle = onToggle
+  return (
+    <>
+      <section aria-label="Variables" className="rounded-lg border border-ink-200 dark:border-ink-800">
+        <h3 className="flex items-center justify-between border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">
+          <span>Variables</span>
+          <code className="truncate pl-2 text-[10px] font-normal text-ink-400">{frame.fn}()</code>
+        </h3>
+        {frame.vars?.length ? (
+          <ul role="tree" className="max-h-80 overflow-auto py-1 font-mono text-[11px]">
+            {frame.vars.map((node) => (
+              <ValueRow key={node.k} node={node} path={[node.k]} scope={scope} expanded={expanded} onToggle={toggle} changed={changedHere} depth={0} />
+            ))}
+          </ul>
+        ) : <p className="px-3 py-2 text-[11px] text-ink-500">No local variables yet.</p>}
+      </section>
+      <section aria-label="Call stack" className="rounded-lg border border-ink-200 dark:border-ink-800">
+        <h3 className="border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">Call stack</h3>
+        <ol className="py-1">
+          {frames.map((item, index) => (
+            <li key={`${item.file}:${item.fn}:${index}`}>
+              <button type="button" onClick={() => onSelectFrame?.(index)} aria-current={index === frameIndex} className={`flex w-full items-center gap-2 px-3 py-1 text-left text-[11px] ${index === frameIndex ? 'bg-gold-400/15 text-ink-900 dark:text-white' : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800'}`}>
+                <code className="font-semibold">{item.fn}</code>
+                <span className="ml-auto truncate text-[10px] text-ink-400">{item.file}:{item.line}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </>
+  )
+}
+
 // `running` is the debugged request still in flight ({ spec }), if any; `exchange` is the
 // last one that finished, so its results are only shown while nothing newer is live.
 export default function DebugPanel({ exchange, paused, running, armed, breakpoints = [], isolationUnsupported = false, onResume, onStop, onOpenLocation, selectedFrame = 0, onSelectFrame, changed }) {
@@ -114,11 +156,6 @@ export default function DebugPanel({ exchange, paused, running, armed, breakpoin
     if (file && Number.isInteger(line)) onOpenLocation?.(file, line)
   }
   const frames = paused?.frames ?? []
-  const frameIndex = Math.min(selectedFrame, Math.max(frames.length - 1, 0))
-  const frame = frames[frameIndex]
-  const changedHere = changed?.[frameIndex] ?? EMPTY
-  // Opened values stay open across steps, per function, as in VS Code.
-  const scope = frame ? `${frame.file}:${frame.fn}` : ''
   const toggle = (key) => setExpanded((current) => {
     const next = new Set(current)
     if (next.has(key)) next.delete(key)
@@ -153,36 +190,7 @@ export default function DebugPanel({ exchange, paused, running, armed, breakpoin
         )}
       </div>
       {isolationUnsupported && <p className="rounded bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300">{UNSUPPORTED}</p>}
-      {frames.length > 0 && (
-        <>
-          <section aria-label="Variables" className="rounded-lg border border-ink-200 dark:border-ink-800">
-            <h3 className="flex items-center justify-between border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">
-              <span>Variables</span>
-              <code className="truncate pl-2 text-[10px] font-normal text-ink-400">{frame.fn}()</code>
-            </h3>
-            {frame.vars?.length ? (
-              <ul role="tree" className="max-h-80 overflow-auto py-1 font-mono text-[11px]">
-                {frame.vars.map((node) => (
-                  <ValueRow key={node.k} node={node} path={[node.k]} scope={scope} expanded={expanded} onToggle={toggle} changed={changedHere} depth={0} />
-                ))}
-              </ul>
-            ) : <p className="px-3 py-2 text-[11px] text-ink-500">No local variables yet.</p>}
-          </section>
-          <section aria-label="Call stack" className="rounded-lg border border-ink-200 dark:border-ink-800">
-            <h3 className="border-b border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-800 dark:border-ink-800 dark:text-ink-100">Call stack</h3>
-            <ol className="py-1">
-              {frames.map((item, index) => (
-                <li key={`${item.file}:${item.fn}:${index}`}>
-                  <button type="button" onClick={() => onSelectFrame?.(index)} aria-current={index === frameIndex} className={`flex w-full items-center gap-2 px-3 py-1 text-left text-[11px] ${index === frameIndex ? 'bg-gold-400/15 text-ink-900 dark:text-white' : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800'}`}>
-                    <code className="font-semibold">{item.fn}</code>
-                    <span className="ml-auto truncate text-[10px] text-ink-400">{item.file}:{item.line}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </section>
-        </>
-      )}
+      <FrameView frames={frames} selectedFrame={selectedFrame} onSelectFrame={onSelectFrame} changed={changed} expanded={expanded} onToggle={toggle} />
       {(exchange || live) && <header className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 p-3 dark:border-ink-800">
         <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${METHOD_STYLES[shown.method] ?? ''}`}>{shown.method ?? 'REQUEST'}</span>
         <code className="min-w-0 flex-1 truncate text-xs text-ink-800 dark:text-ink-100">{shown.path ?? '/'}</code>
