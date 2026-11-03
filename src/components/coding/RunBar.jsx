@@ -1,4 +1,4 @@
-import { FiPlay, FiLoader, FiShare2, FiTerminal, FiSave, FiSquare, FiZap } from 'react-icons/fi'
+import { FiCode, FiPlay, FiLoader, FiShare2, FiTerminal, FiSave, FiSquare, FiZap } from 'react-icons/fi'
 import LanguageSelect from './LanguageSelect'
 import { FullscreenButton, ThemeToggleButton } from './IdeButtons'
 
@@ -28,6 +28,8 @@ export default function RunBar({
   extra,
   onAssistant,
   assistantOpen = false,
+  // Runs under the debugger (Python); shown only when given.
+  onDebug,
 }) {
   return (
     // Full screen covers the navbar, so the bar no longer needs to stick under it.
@@ -95,6 +97,17 @@ export default function RunBar({
             <FiSquare className="h-4 w-4" /> Stop
           </button>
         ) : (
+          <>
+          {onDebug && (
+            <button
+              type="button"
+              onClick={onDebug}
+              title="Run under the debugger: it stops at your breakpoints"
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-ink-300 px-4 py-2.5 text-sm font-semibold text-ink-700 transition-colors hover:border-red-400 hover:text-red-600 dark:border-ink-700 dark:text-ink-200 dark:hover:text-red-300"
+            >
+              <FiCode className="h-4 w-4" /> Debug
+            </button>
+          )}
           <button
             type="button"
             onClick={onRun}
@@ -102,6 +115,7 @@ export default function RunBar({
           >
             <FiPlay className="h-4 w-4" /> Run
           </button>
+          </>
         )}
       </div>
     </div>

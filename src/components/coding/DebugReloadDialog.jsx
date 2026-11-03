@@ -10,7 +10,7 @@ const POINTS = [
 
 // Asks before the one reload that turns on breakpoint debugging (see lib/codelab/isolation.js).
 // `onConfirm` saves and reloads; it resolves only when the reload could not start.
-export default function DebugReloadDialog({ onConfirm, onClose }) {
+export default function DebugReloadDialog({ onConfirm, onClose, points = POINTS }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -60,7 +60,7 @@ export default function DebugReloadDialog({ onConfirm, onClose }) {
           </p>
 
           <ul className="mt-4 flex flex-col gap-2">
-            {POINTS.map((point) => (
+            {points.map((point) => (
               <li key={point} className="flex items-start gap-2 text-sm text-ink-700 dark:text-ink-200">
                 <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                   <FiCheck className="h-3 w-3" />
