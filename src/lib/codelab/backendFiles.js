@@ -237,7 +237,8 @@ export function renamePath(files, from, to) {
 // Renames a file or folder. Returns { files } or { error }. Every new path is checked
 // against the files that are not moving, so renaming onto an existing file or folder is
 // rejected instead of creating two files with the same name.
-export function renameEntry(files, target, rawName, isFolder) {
+// `validate` checks each moved file's new path; the Spring Boot workspace passes its own rules.
+export function renameEntry(files, target, rawName, isFolder, validate = validateBackendPath) {
   const name = normalizeBackendPath(rawName)
   if (!name) return { error: 'Enter a name.' }
   if (name === target) return { files }
@@ -247,7 +248,7 @@ export function renameEntry(files, target, rawName, isFolder) {
   const moved = renamePath(files.filter(isMoving), target, name)
   for (const file of moved) {
     if (staying.some((other) => other.name === file.name)) return { error: `${file.name} already exists.` }
-    const message = validateBackendPath(file.name, staying, file.name)
+    const message = validate(file.name, staying, file.name)
     if (message) return { error: message }
   }
   return { files: renamePath(files, target, name) }

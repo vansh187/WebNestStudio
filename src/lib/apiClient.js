@@ -37,6 +37,11 @@ const COMPILER_TIMEOUT = 60000
 const JAVA_PATHS = ['/api/java']
 const JAVA_TIMEOUT = 90000
 
+// Spring Boot playground: a run compiles a project, starts it as a web server and sends its
+// requests on Cloud Run (up to ~115s), possibly after a Render cold start.
+const SPRING_PATHS = ['/api/spring']
+const SPRING_TIMEOUT = 180000
+
 // GitHub sync: the backend reads or writes a whole repository through GitHub's API
 // (up to 300 files), possibly after a Render cold start.
 const GITHUB_PATHS = ['/api/github']
@@ -106,6 +111,8 @@ api.interceptors.request.use((config) => {
     config.timeout = COMPILER_TIMEOUT
   } else if (JAVA_PATHS.some((p) => url.includes(p))) {
     config.timeout = JAVA_TIMEOUT
+  } else if (SPRING_PATHS.some((p) => url.includes(p))) {
+    config.timeout = SPRING_TIMEOUT
   } else if (GITHUB_PATHS.some((p) => url.includes(p))) {
     config.timeout = GITHUB_TIMEOUT
   } else if (ADMIN_LEARNING_PATHS.some((p) => url.includes(p)) && !['get', 'head'].includes(String(config.method || 'get').toLowerCase())) {
