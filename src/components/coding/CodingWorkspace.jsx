@@ -18,6 +18,7 @@ import { createPreviewHtml } from '../../lib/codelab/webPreview'
 import { useCodelabFrozenNotice } from '../../hooks/useCodelabFrozenNotice'
 import { useApiRuntime } from '../../hooks/useApiRuntime'
 import BackendWorkspace from './BackendWorkspace'
+import SpringWorkspace from './SpringWorkspace'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
 import ErrorBoundary from '../ErrorBoundary'
 
@@ -72,6 +73,8 @@ export default function CodingWorkspace({
   previewFullScreenOnRun = true,
 }) {
   const backend = language === 'backend'
+  // Spring Boot has its own IDE too; its app runs on the server (SpringWorkspace.jsx).
+  const spring = language === 'spring'
   // The backend runtime only starts a worker on the first Run, so other languages pay nothing.
   const api = useApiRuntime(workspaceKey)
   const [backendPreview, setBackendPreview] = useState('')
@@ -87,10 +90,10 @@ export default function CodingWorkspace({
   const [maximized, setMaximized] = useState(false)
   // The backend IDE keeps its own full-screen state, so leaving this layout for it must not
   // leave this one maximized (its scroll lock would outlive the hidden section).
-  if (backend && maximized) setMaximized(false)
+  if ((backend || spring) && maximized) setMaximized(false)
 
   // The backend IDE does the same for itself (see BackendWorkspace).
-  useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend })
+  useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend && !spring })
   useCodelabFrozenNotice()
   // Saving copies the stored database, so the running one is written out first; rows
   // added within the snapshot delay would otherwise be missing from the saved project. Not
@@ -329,6 +332,25 @@ export default function CodingWorkspace({
             onSave={saveBackend}
             saving={saving || preparingSave}
             saveLabel={saveLabel}
+          />
+        </>
+      ) : spring ? (
+        <>
+          <p className="mt-2 text-xs text-ink-500 dark:text-ink-300">
+            Spring Boot runs on WebNest&rsquo;s server: each Run or API request compiles and starts your app with an H2 database. Your files are kept in this browser. Shortcuts: Ctrl+Enter runs, Ctrl+B shows files, Ctrl+J shows the panel.
+          </p>
+          <SpringWorkspace
+            files={files ?? []}
+            selectedFile={selectedFile}
+            onSelectFile={onSelectFile}
+            onFileChange={onFileChange}
+            onFilesChange={onFilesChange}
+            workspaceKey={workspaceKey}
+            outputRef={outputRef}
+            languages={languages}
+            language={language}
+            onLanguageChange={onLanguageChange}
+            toolbarExtra={headerRight}
           />
         </>
       ) : (

@@ -14,12 +14,27 @@ const LAYER_DOT = {
   client: 'bg-pink-500',
 }
 
+// What the tree allows and how it labels files. The FastAPI workspace uses these; the Spring
+// Boot workspace passes its own (SpringWorkspace.jsx).
+const BACKEND_TREE_RULES = {
+  normalize: normalizeBackendPath,
+  validate: validateBackendPath,
+  template: newFileTemplate,
+  languageFor: languageForFile,
+  layerOf: layerOfFile,
+  size: projectSize,
+  maxBytes: MAX_BACKEND_BYTES,
+  newRoot: 'app/',
+  placeholder: 'app/services/order_service.py',
+  help: 'Folders are created from the path. Python files go in app/.',
+}
+
 const ICON_BTN = 'inline-flex h-6 w-6 items-center justify-center rounded text-ink-400 hover:bg-ink-100 hover:text-gold-600 disabled:opacity-40 dark:hover:bg-ink-800'
 
 // Folder-aware file list for the backend workspace. Folders exist only through the files
 // inside them, so creating "app/services/order_service.py" creates both folders.
 // `bare` drops the card frame so the tree can fill a drawer.
-export default function FileTree({ files, selectedFile, onSelectFile, onFilesChange, disabled = false, hintFiles = new Set(), bare = false, className = '' }) {
+export default function FileTree({ files, selectedFile, onSelectFile, onFilesChange, disabled = false, hintFiles = new Set(), bare = false, className = '', rules = BACKEND_TREE_RULES }) {
   const tree = useMemo(() => buildFileTree(files), [files])
   const [collapsed, setCollapsed] = useState(() => new Set())
   const [form, setForm] = useState(null) // { mode: 'create' | 'rename', target?, isFolder?, name }
@@ -40,7 +55,7 @@ export default function FileTree({ files, selectedFile, onSelectFile, onFilesCha
 
   const openCreate = (folder = '') => {
     setError('')
-    setForm({ mode: 'create', name: folder ? `${folder}/` : 'app/' })
+    setForm({ mode: 'create', name: folder ? `${folder}/` : rules.newRoot })
   }
 
   const openRename = (target, isFolder) => {
@@ -55,19 +70,19 @@ export default function FileTree({ files, selectedFile, onSelectFile, onFilesCha
 
   const submit = (event) => {
     event.preventDefault()
-    const name = normalizeBackendPath(form.name)
+    const name = rules.normalize(form.name)
     if (form.mode === 'create') {
-      const message = validateBackendPath(name, files)
+      const message = rules.validate(name, files)
       if (message) return setError(message)
-      const content = newFileTemplate(name)
-      if (projectSize(files) + content.length > MAX_BACKEND_BYTES) return setError('The project is at its size limit.')
-      onFilesChange([...files, { name, language: languageForFile(name), content }])
+      const content = rules.template(name)
+      if (rules.size(files) + content.length > rules.maxBytes) return setError('The project is at its size limit.')
+      onFilesChange([...files, { name, language: rules.languageFor(name), content }])
       onSelectFile(name)
       setCollapsed((current) => new Set([...current].filter((path) => !name.startsWith(`${path}/`))))
       return close()
     }
     if (name === form.target) return close()
-    const { files: renamed, error: problem } = renameEntry(files, form.target, name, form.isFolder)
+    const { files: renamed, error: problem } = renameEntry(files, form.target, name, form.isFolder, rules.validate)
     if (problem) return setError(problem)
     onFilesChange(renamed)
     if (form.isFolder ? selectedFile?.startsWith(`${form.target}/`) : selectedFile === form.target) {
@@ -92,7 +107,7 @@ export default function FileTree({ files, selectedFile, onSelectFile, onFilesCha
   const renderFile = (file, depth) => {
     const active = file.name === selectedFile
     const leaf = file.name.split('/').pop()
-    const layer = layerOfFile(file.name)
+    const layer = rules.layerOf(file.name)
     return (
       <li key={file.name} className="group">
         <div className={`flex items-center rounded-md pr-1 ${active ? 'bg-white shadow-sm dark:bg-ink-900' : 'hover:bg-white/70 dark:hover:bg-ink-900/60'}`}>
@@ -175,7 +190,7 @@ export default function FileTree({ files, selectedFile, onSelectFile, onFilesCha
             ref={inputRef}
             value={form.name}
             onChange={(event) => { setForm({ ...form, name: event.target.value }); setError('') }}
-            placeholder="app/services/order_service.py"
+            placeholder={rules.placeholder}
             spellCheck={false}
             autoComplete="off"
             aria-invalid={Boolean(error)}
@@ -184,7 +199,7 @@ export default function FileTree({ files, selectedFile, onSelectFile, onFilesCha
           />
           {error
             ? <p id="file-tree-error" role="alert" className="text-xs text-red-500">{error}</p>
-            : form.mode === 'create' && <p id="file-tree-help" className="text-[11px] text-ink-400">Folders are created from the path. Python files go in app/.</p>}
+            : form.mode === 'create' && <p id="file-tree-help" className="text-[11px] text-ink-400">{rules.help}</p>}
           <div className="flex gap-2">
             <button type="submit" className="rounded-md bg-ink-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-500 dark:text-ink-950 dark:hover:bg-gold-400">
               {form.mode === 'create' ? 'Create' : 'Rename'}

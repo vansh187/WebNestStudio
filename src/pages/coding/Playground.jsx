@@ -11,6 +11,7 @@ import CodingWorkspace from '../../components/coding/CodingWorkspace'
 import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
 import { WEB_FILES, PYTHON_FILES, JAVA_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
 import { BACKEND_STARTER_INFO, DEFAULT_BACKEND_STARTER, backendStarterFiles } from '../../data/backendStarters'
+import { DEFAULT_SPRING_STARTER, SPRING_STARTER_INFO, springStarterFiles } from '../../data/springStarters'
 import { copyWorkspaceDatabase } from '../../hooks/useApiRuntime'
 import { forgetWorkspace, sessionOwnsCodelabData } from '../../lib/codelab/accountData'
 import { createProject, createShare, sourceFile, toCodePayload } from '../../api/coding'
@@ -29,6 +30,7 @@ import { saveDatabase } from '../../lib/codelab/dbStore'
 
 function defaultFiles(language) {
   if (language === 'backend') return backendStarterFiles(DEFAULT_BACKEND_STARTER)
+  if (language === 'spring') return springStarterFiles(DEFAULT_SPRING_STARTER)
   if (language === 'web') return WEB_FILES
   if (language === 'java') return JAVA_FILES
   return PYTHON_FILES
@@ -50,6 +52,8 @@ function withBackendStarter(template) {
 
 function firstFile(language, files) {
   if (language === 'backend') return files.find((file) => file.name === 'app/main.py')?.name ?? files[0]?.name
+  // The sample's explanation of the request flow is in its main class.
+  if (language === 'spring') return files.find((file) => file.name.endsWith('/DemoApplication.java'))?.name ?? files[0]?.name
   return files[0]?.name
 }
 
@@ -153,6 +157,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
   // Each backend project has its own database; loading a starter starts a new one.
   const [dbId, setDbId] = useState(session?.dbId ?? 'main')
   const [starter, setStarter] = useState(DEFAULT_BACKEND_STARTER)
+  const [springStarter, setSpringStarter] = useState(DEFAULT_SPRING_STARTER)
   // The GitHub repo this project is linked to (see lib/github/sync.js), or null.
   const [githubLink, setGithubLink] = useState(session?.github ?? null)
   const workspaceKey = `${storageKey}:${dbId}`
@@ -230,9 +235,10 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
       // New default files are a different project; keeping the link would make the next
       // push delete the repo's files.
       setGithubLink(null)
-      if (next === 'backend') {
+      if (next === 'backend' || next === 'spring') {
         // A fresh backend project gets a fresh database; drop the one it replaces, with its
-        // API tester token and breakpoints.
+        // API tester token and breakpoints. For Spring Boot, the writes replayed before each
+        // request belong to the old code, so they go too.
         forgetWorkspace(workspaceKey)
         setDbId(newDbId())
       }
@@ -251,6 +257,18 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     setEdited(false)
     setGithubLink(null)
   }, [touched, workspaceKey, starter])
+
+  const loadSpringStarter = useCallback(() => {
+    if (touched && !window.confirm('Replace your current files with this sample project?')) return
+    forgetWorkspace(workspaceKey)
+    const nextFiles = springStarterFiles(springStarter)
+    setFiles(nextFiles)
+    setSelectedFile(firstFile('spring', nextFiles))
+    setDbId(newDbId())
+    setTouched(false)
+    setEdited(false)
+    setGithubLink(null)
+  }, [touched, workspaceKey, springStarter])
 
   // Files coming from GitHub. An import replaces the project (and its database, for a
   // backend); a pull updates files in place and keeps the database.
@@ -395,9 +413,27 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     <CodingWorkspace
       eyebrow="Webnest CodeLab"
       title="Browser coding playground"
-      subtitle="Run web projects and Python in your browser, build multi-class Java 17 programs, or write a layered FastAPI backend with a SQLite database."
+      subtitle="Run web projects and Python in your browser, build multi-class Java 17 programs, or write a layered backend: FastAPI with SQLite, or Spring Boot with H2."
       headerRight={(
         <div className="flex flex-wrap items-center gap-2">
+          {language === 'spring' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="spring-starter" className="hidden text-xs font-semibold text-ink-500 dark:text-ink-300 min-[1400px]:inline">Sample</label>
+              <select
+                id="spring-starter"
+                aria-label="Sample project"
+                value={springStarter}
+                onChange={(event) => setSpringStarter(event.target.value)}
+                title={SPRING_STARTER_INFO.find((item) => item.id === springStarter)?.description}
+                className="max-w-[14rem] rounded-lg border border-ink-200 bg-white px-2 py-2 text-xs dark:border-ink-700 dark:bg-ink-900"
+              >
+                {SPRING_STARTER_INFO.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+              </select>
+              <button type="button" onClick={loadSpringStarter} aria-label="Load sample" title={SPRING_STARTER_INFO.find((item) => item.id === springStarter)?.description} className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:border-gold-400 dark:border-ink-700 dark:text-ink-200">
+                Load<span className="hidden min-[1400px]:inline"> sample</span>
+              </button>
+            </div>
+          ) : (
           <ErrorBoundary fallback={(retry) => (
             <button type="button" onClick={retry} className="rounded-lg border border-red-400/50 px-3 py-2 text-xs font-semibold text-red-600">GitHub unavailable · retry</button>
           )}>
@@ -410,6 +446,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
               touched={touched}
             />
           </ErrorBoundary>
+          )}
           {language === 'backend' && (
         <div className="flex flex-wrap items-center gap-2">
           <label htmlFor="backend-starter" className="hidden text-xs font-semibold text-ink-500 dark:text-ink-300 min-[1400px]:inline">Starter</label>

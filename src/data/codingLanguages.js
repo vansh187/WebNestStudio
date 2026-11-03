@@ -36,12 +36,23 @@ export const LANGUAGES = [
     runner: 'pyodide-asgi',
     defaultSnippet: null,
   },
+  {
+    // A multi-file Spring Boot project with an H2 database, started on Cloud Run for each run
+    // or request (useSpringRuntime.js). Playground only for now: not saved to the account.
+    id: 'spring',
+    label: 'Java Backend (Spring Boot + H2)',
+    monacoId: 'java',
+    fileExtension: 'java',
+    mainFile: 'src/main/java/com/example/demo/DemoApplication.java',
+    runner: 'spring-cloud',
+    defaultSnippet: null,
+  },
 ]
 
 // The languages a new or existing project can be switched to. FastAPI workspaces are saved
 // as projects too, but only from the playground's Save project, and stay FastAPI projects
-// (see ProjectWorkspace.jsx).
-export const PROJECT_LANGUAGES = LANGUAGES.filter((l) => l.id !== 'backend')
+// (see ProjectWorkspace.jsx). Spring Boot projects are not saved to the account yet.
+export const PROJECT_LANGUAGES = LANGUAGES.filter((l) => l.id !== 'backend' && l.id !== 'spring')
 
 const BY_ID = Object.fromEntries(LANGUAGES.map((l) => [l.id, l]))
 
