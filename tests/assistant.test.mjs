@@ -389,12 +389,59 @@ test('the run message fits the language', async () => {
 })
 
 test('the mock works for every language', async () => {
-  for (const [language, files, expected] of [['web', ['index.html'], 'create_file'], ['java', ['Main.java'], 'create_file'], ['python', ['main.py'], 'edit_file']]) {
+  for (const [language, files, expected] of [['web', ['index.html'], 'create_file'], ['java', ['Main.java'], 'create_file'], ['python', ['main.py'], 'edit_file'], ['spring', ['src/main/java/com/example/demo/DemoApplication.java'], 'create_file']]) {
     const events = []
     const messages = [{ role: 'user', content: 'go' }, ...[1, 2].map((id) => ({ role: 'tool', tool_call_id: String(id), content: '' }))]
     await mockStreamChat({ mode: 'agent', messages, context: { language, files, open_file: { name: files[0], content: 'first\n' } }, onEvent: (event) => events.push(event) })
     assert.equal(events.find((event) => event.type === 'tool_call').data.name, expected, language)
   }
+})
+
+// ---- Spring Boot -----------------------------------------------------------------------
+
+const SPRING_FILES = [
+  { name: 'pom.xml', language: 'xml', content: '<project/>\n' },
+  { name: 'src/main/java/com/example/demo/DemoApplication.java', language: 'java', content: 'package com.example.demo;\n' },
+  { name: 'src/main/resources/data.sql', language: 'sql', content: '' },
+]
+
+test('Spring Boot files follow the runner layout', () => {
+  const ok = planFileChange('create_file', { path: 'src/main/java/com/example/demo/task/TaskService.java', content: 'x' }, SPRING_FILES, 'spring')
+  assert.equal(ok.isError, undefined)
+  assert.equal(ok.files.at(-1).language, 'java')
+  for (const path of ['TaskService.java', 'src/main/java/Top.java', 'src/main/java/com/example/class/Bad.java', 'notes.txt']) {
+    assert.equal(planFileChange('create_file', { path, content: 'x' }, SPRING_FILES, 'spring').isError, true, path)
+  }
+  assert.equal(planApply('src/main/resources/schema.sql', 'CREATE TABLE t (id INT);', SPRING_FILES, 'spring').kind, 'create')
+  assert.match(planFileChange('create_file', { path: 'src/main/resources/.env', content: 'x' }, SPRING_FILES, 'spring').content, /private/)
+})
+
+test('Spring Boot projects use the Spring size limit', () => {
+  const big = 'x'.repeat(220 * 1024)
+  // Over the FastAPI limit, under the Spring one.
+  const edit = planFileChange('edit_file', { path: 'src/main/resources/data.sql', old_text: '-- rows', new_text: big }, [...SPRING_FILES.slice(0, 2), { ...SPRING_FILES[2], content: '-- rows' }], 'spring')
+  assert.equal(edit.isError, undefined)
+  assert.equal(planFileChange('edit_file', { path: 'app/main.py', old_text: 'app = FastAPI()', new_text: big }, FILES, 'backend').isError, true)
+  const plan = planApply('src/main/resources/data.sql', big, SPRING_FILES, 'spring')
+  assert.equal(rebaseApply(plan, SPRING_FILES, 'spring').isError, undefined)
+  assert.equal(rebaseApply(plan, SPRING_FILES).isError, true)
+})
+
+test('Spring Boot projects take API requests, and a run reports the cause before the log', async () => {
+  const sent = []
+  const tools = env({ language: 'spring', getFiles: () => SPRING_FILES, request: async (spec) => { sent.push(spec); return { status: 201, body: '{"id":1}' } } })
+  const reply = await runTool('send_api_request', { method: 'POST', path: '/tasks', body: { title: 'a' } }, tools)
+  assert.match(reply.content, /Status 201/)
+  assert.equal(sent[0].method, 'POST')
+  assert.equal(sent[0].body, '{"title":"a"}')
+  const log = `${'banner line\n'.repeat(1000)}APPLICATION FAILED TO START\nPort in use`
+  const failed = env({ language: 'spring', getFiles: () => SPRING_FILES, run: async () => ({ status: 'compile_error', stdout: log, compile: { stderr: 'TaskService.java:3: error: ; expected' } }) })
+  const result = await runTool('run_project', {}, failed)
+  assert.equal(result.isError, true)
+  assert.match(result.content, /^The app failed to compile or start\.\nTaskService\.java:3: error/)
+  assert.match(result.content, /APPLICATION FAILED TO START\nPort in use/)
+  const started = await runTool('run_project', {}, env({ language: 'spring', getFiles: () => SPRING_FILES, run: async () => ({ status: 'success', stdout: 'Started DemoApplication' }) }))
+  assert.match(started.content, /^The app compiled and started\./)
 })
 
 // ---- review fixes ----------------------------------------------------------------------

@@ -56,6 +56,20 @@ public class MockNotes {
     }
 }
 ${FENCE}`,
+  spring: `${FENCE}java src/main/java/com/example/demo/HealthController.java
+package com.example.demo;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HealthController {
+    @GetMapping("/health")
+    public String health() {
+        return "ok";
+    }
+}
+${FENCE}`,
 }
 
 // What the scripted agent adds, per language. Python has one file, so it edits that instead.
@@ -63,6 +77,7 @@ const AGENT_FILES = {
   backend: { path: 'app/mock_notes.py', content: 'NOTES = ["mock"]\n\n\ndef all_notes():\n    return NOTES\n' },
   web: { path: 'mock_notes.js', content: 'console.log("mock");\n' },
   java: { path: 'MockNotes.java', content: 'public class MockNotes {\n    public String title() {\n        return "mock";\n    }\n}\n' },
+  spring: { path: 'src/main/java/com/example/demo/MockNotes.java', content: 'package com.example.demo;\n\npublic class MockNotes {\n    public String title() {\n        return "mock";\n    }\n}\n' },
 }
 
 function mockChange(context) {

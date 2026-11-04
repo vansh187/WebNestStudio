@@ -4,6 +4,7 @@
 import { ENV_FILE, MAX_BACKEND_BYTES, extensionOf, languageForFile, normalizeBackendPath, projectSize, validateBackendPath } from './backendFiles.js'
 import { envFromFiles } from './dotenv.js'
 import { isJavaFile, validateJavaClassName } from './javaProject.js'
+import { SPRING_MAX_BYTES, validateSpringPath } from './springProject.js'
 
 export const READ_LIMIT = 16000
 export const OUTPUT_LIMIT = 8000
@@ -94,8 +95,13 @@ const PATH_RULES = {
     : validateJavaClassName(path, files)),
   python: () => 'Python programs here run from one file. Put this code in the existing file instead.',
   web: (path, files) => (WEB_EXTENSIONS.has(extensionOf(path)) ? generalPathProblem(path, files) : 'Web projects use .html, .css and .js files.'),
+  spring: (path, files) => validateSpringPath(path, files),
 }
 const pathProblem = (language, path, files) => (PATH_RULES[language] ?? generalPathProblem)(path, files)
+// The runner's own size limit; the others use the FastAPI one.
+const SIZE_LIMITS = { spring: SPRING_MAX_BYTES }
+// Languages whose project is an API the assistant can send requests to.
+const API_LANGUAGES = new Set(['backend', 'spring'])
 
 // Each tool's plan: either a refusal, or the new file list and a description to show the
 // user for approval. Nothing changes until the caller applies it.
@@ -113,14 +119,14 @@ export function planFileChange(name, args, files, language = 'backend') {
     if (matches === 0) return refused(`old_text was not found in ${path}. The file may have changed: read it again.`)
     if (matches > 1) return refused(`old_text matches ${matches} places in ${path}. Include more surrounding lines so it matches once.`)
     const content = existing.content.replace(oldText, () => String(args?.new_text ?? ''))
-    return replaceFile(files, path, existing.content, content)
+    return replaceFile(files, path, existing.content, content, language)
   }
 
   if (name === 'create_file') {
     if (existing) return refused(`${path} already exists. Use edit_file to change it.`)
     const problem = pathProblem(language, path, files)
     if (problem) return refused(problem)
-    return addFile(files, path, String(args?.content ?? ''))
+    return addFile(files, path, String(args?.content ?? ''), language)
   }
 
   if (name === 'delete_file') {
@@ -137,19 +143,19 @@ export function planFileChange(name, args, files, language = 'backend') {
   return refused(`Unknown file action: ${name}`)
 }
 
-function checkSize(files) {
-  return projectSize(files) > MAX_BACKEND_BYTES ? refused('That would make the project larger than its size limit.') : null
+function checkSize(files, language) {
+  return projectSize(files) > (SIZE_LIMITS[language] ?? MAX_BACKEND_BYTES) ? refused('That would make the project larger than its size limit.') : null
 }
 
 // Replaces one file's whole text (edit_file, and Apply on a code block).
-export function replaceFile(files, path, before, after) {
+export function replaceFile(files, path, before, after, language = 'backend') {
   const next = files.map((file) => (file.name === path ? { ...file, content: after } : file))
-  return checkSize(next) ?? { path, kind: 'edit', before, after, files: next }
+  return checkSize(next, language) ?? { path, kind: 'edit', before, after, files: next }
 }
 
-function addFile(files, path, content) {
+function addFile(files, path, content, language = 'backend') {
   const next = [...files, { name: path, language: fileLanguage(path), content }]
-  return checkSize(next) ?? { path, kind: 'create', before: '', after: content, files: next }
+  return checkSize(next, language) ?? { path, kind: 'create', before: '', after: content, files: next }
 }
 
 // Apply on a code block in Ask mode: replaces the file's text, or creates the file.
@@ -160,18 +166,18 @@ export function planApply(rawPath, code, files, language = 'backend') {
   if (!path) return refused('No file chosen for this code.')
   if (isSecretFile(path)) return refused(PRIVATE_REFUSAL)
   const existing = fileInProject(files, path)
-  if (existing) return replaceFile(files, path, existing.content, code)
+  if (existing) return replaceFile(files, path, existing.content, code, language)
   const problem = pathProblem(language, path, files)
-  return problem ? refused(problem) : addFile(files, path, code)
+  return problem ? refused(problem) : addFile(files, path, code, language)
 }
 
 // Apply replaces a whole file, so a preview is only good while that file is as it was shown.
 // Other files may have changed: the result is built from `files`, the latest ones.
-export function rebaseApply(plan, files) {
+export function rebaseApply(plan, files, language = 'backend') {
   const existing = fileInProject(files, plan.path)
   const unchanged = plan.kind === 'create' ? !existing : existing?.content === plan.before
   if (!unchanged) return refused(`${plan.path} changed after this preview. Press Apply again to see the new change.`)
-  return plan.kind === 'create' ? addFile(files, plan.path, plan.after) : replaceFile(files, plan.path, plan.before, plan.after)
+  return plan.kind === 'create' ? addFile(files, plan.path, plan.after, language) : replaceFile(files, plan.path, plan.before, plan.after, language)
 }
 
 // What one task changed, per file: its text before the task (null: the task created it) and
@@ -202,6 +208,7 @@ export function undoChanges(log, files) {
 }
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+const SPRING_LOG_TAIL = 4000
 const FILE_TOOLS = new Set(['edit_file', 'create_file', 'delete_file'])
 
 // A one-line description of a tool call, for the activity log. `pending`: it hasn't finished.
@@ -247,6 +254,7 @@ export async function runTool(name, args, env) {
     const files = env.getFiles()
     const language = env.language ?? 'backend'
     const backend = language === 'backend'
+    const spring = language === 'spring'
     const safe = (text) => scrubSecrets(text, files, env.secrets?.())
 
     if (name === 'list_files') {
@@ -274,17 +282,20 @@ export async function runTool(name, args, env) {
       if (env.debugPaused()) return refused('A request is paused at a breakpoint, so the project cannot run. Ask the user to resume or stop debugging.')
       if (!(await env.approve({ type: 'run' }))) return refused('The user chose not to run the project.')
       const result = await env.run()
-      const output = [result?.stdout, errorsOf(result)].filter(Boolean).join('\n')
+      // A Spring Boot log is long and its cause is near the end: errors first, then the log's tail.
+      const output = spring
+        ? [errorsOf(result), String(result?.stdout ?? '').slice(-SPRING_LOG_TAIL)].filter(Boolean).join('\n')
+        : [result?.stdout, errorsOf(result)].filter(Boolean).join('\n')
       const status = result?.status === 'success'
-        ? (backend ? 'The project is running.' : 'The program ran.')
-        : (backend ? 'The project failed to start.' : 'The run failed.')
+        ? (spring ? 'The app compiled and started. It stops after each run; send_api_request starts it again for each request.' : backend ? 'The project is running.' : 'The program ran.')
+        : (spring ? 'The app failed to compile or start.' : backend ? 'The project failed to start.' : 'The run failed.')
       return { content: cut(safe(`${status}\n${output}`), OUTPUT_LIMIT, '[Output cut short.]'), isError: result?.status !== 'success' }
     }
     if (name === 'get_errors') {
       return done(cut(safe(errorsOf(env.lastResult()) || 'none'), OUTPUT_LIMIT, '[Output cut short.]'))
     }
     if (name === 'send_api_request') {
-      if (!backend) return refused('Only FastAPI projects have an API to call. Use run_project to run this code.')
+      if (!API_LANGUAGES.has(language)) return refused('Only FastAPI and Spring Boot projects have an API to call. Use run_project to run this code.')
       if (env.debugPaused()) return refused('A request is paused at a breakpoint. Ask the user to resume or stop debugging.')
       if (!env.apiReady()) return refused('The API is not running. Use run_project first.')
       const path = String(args?.path ?? '')

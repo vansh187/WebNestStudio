@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   FiChevronRight, FiColumns, FiFileText, FiFolder, FiHelpCircle, FiPlay, FiRotateCcw, FiSend, FiSidebar, FiSquare,
-  FiTerminal, FiX,
+  FiTerminal, FiX, FiZap,
 } from 'react-icons/fi'
 import CodeEditor from './CodeEditor'
 import FileTree from './FileTree'
@@ -24,9 +24,12 @@ import {
   SPRING_MAX_WRITES,
 } from '../../lib/codelab/springProject.js'
 
+const AssistantPanel = lazy(() => import('./AssistantPanel'))
+
 const TABS = [
   { id: 'output', label: 'Output', icon: FiTerminal },
   { id: 'api', label: 'API', icon: FiSend },
+  { id: 'assistant', label: 'AI', icon: FiZap },
   { id: 'help', label: 'Help', icon: FiHelpCircle },
 ]
 const REQUEST_LOG_LIMIT = 50
@@ -74,7 +77,8 @@ function HelpText() {
       <h4 className="font-semibold text-ink-900 dark:text-white">What you can use</h4>
       <p>Spring Boot 4.1 on Java 17: Spring Web MVC, Bean Validation, Spring Data JPA with Hibernate, and H2. Files go under <code className="font-mono text-xs">src/main/java/</code>; <code className="font-mono text-xs">pom.xml</code> is shown for learning, and the runner provides these libraries itself. The app has no internet access.</p>
       <p>Limits per run: 30 seconds to compile, 45 seconds to start, 10 seconds per request. You need to be logged in, and there is a daily run limit.</p>
-      <p className="text-xs text-ink-400">Coming later: WebNest AI, saving Spring Boot projects to your account, and GitHub sync.</p>
+      <p><strong>WebNest AI</strong> (the AI tab) can read and change these files, run the app and send it requests. Each of its runs and requests counts toward your daily runs too.</p>
+      <p className="text-xs text-ink-400">Coming later: saving Spring Boot projects to your account, and GitHub sync.</p>
     </div>
   )
 }
@@ -93,6 +97,8 @@ export default function SpringWorkspace({
   const sectionRef = useRef(null)
   const mainRef = useRef(null)
   const [tab, setTab] = useState('output')
+  // Once opened the assistant stays mounted, so a running task survives switching tabs.
+  const [assistantOpened, setAssistantOpened] = useState(false)
   const spring = useSpringRuntime(workspaceKey, files)
   const { runner } = spring
   const running = runner.running
@@ -122,11 +128,12 @@ export default function SpringWorkspace({
     }].slice(-REQUEST_LOG_LIMIT))
   }
 
-  // A failed run is only visible in Output, so bring it forward.
+  // A failed run is only visible in Output, so bring it forward. The assistant reports its own
+  // failed runs, and its task carries on in its tab.
   const [shownResult, setShownResult] = useState(null)
   if (runner.result !== shownResult) {
     setShownResult(runner.result)
-    if (runner.result && runner.result.status !== 'success' && tab !== 'output') {
+    if (runner.result && runner.result.status !== 'success' && runner.result.origin !== 'assistant' && tab !== 'output') {
       setTab('output')
       if (!panelOpen) setPanelOpen(true)
     }
@@ -168,6 +175,14 @@ export default function SpringWorkspace({
       setPanelOpen(true)
     }
   }
+  if (tab === 'assistant' && panelOpen && !assistantOpened) setAssistantOpened(true)
+
+  // Small screens stack the panel below the editor, where opening it would show nothing.
+  const openAssistant = () => {
+    const opening = !(panelOpen && tab === 'assistant')
+    showPanel('assistant')
+    if (opening && !large) requestAnimationFrame(() => outputRef?.current?.scrollIntoView({ block: 'start' }))
+  }
 
   const { run } = runner
   const startRun = useCallback(() => {
@@ -175,6 +190,15 @@ export default function SpringWorkspace({
     setPanelOpen(true)
     run()
   }, [run, setPanelOpen])
+
+  // What the AI assistant reaches. Every request starts the app on the server, so it counts as
+  // ready once a run has started fine; there is no live debugger to pause it.
+  const { request: springRequest } = spring
+  const ready = runner.result?.status === 'success'
+  const assistantApi = useMemo(() => ({ request: springRequest, ready, debugPause: null }), [springRequest, ready])
+  // The assistant's edits are newer than this render's files, so it passes the files to run.
+  const runAssistantFiles = useCallback((latest) => run(latest, 'assistant'), [run])
+  const assistantLastResult = () => runner.result ?? (runner.error ? { status: 'internal_error', error: runner.error } : null)
 
   // Ctrl/Cmd+Enter runs, +B files, +J panel, as in the FastAPI workspace.
   useEffect(() => {
@@ -240,6 +264,10 @@ export default function SpringWorkspace({
         )}
         {toolbarExtra && <div className="ml-1 flex min-w-0 max-w-full items-center gap-2 [&_button]:h-8 [&_button]:py-0 [&_select]:h-8 [&_select]:py-0">{toolbarExtra}</div>}
         <div className="flex w-full flex-wrap items-center gap-1 lg:ml-auto lg:w-auto">
+          <button type="button" onClick={openAssistant} title="Open WebNest AI" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-gradient-to-br from-gold-300 to-gold-500 px-2.5 text-xs font-semibold text-ink-950 shadow-sm hover:from-gold-200 hover:to-gold-400">
+            <FiZap className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">WebNest AI</span>
+          </button>
           {writeCount > 0 && (
             <button type="button" onClick={spring.resetData} disabled={running} title={`Forget the ${writeCount} saved write${writeCount === 1 ? '' : 's'} replayed before each request`} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-ink-300 px-2.5 text-xs font-semibold text-ink-700 hover:border-gold-400 disabled:opacity-60 dark:border-ink-700 dark:text-ink-200">
               <FiRotateCcw className="h-3.5 w-3.5" /> Reset data <span className="rounded-full bg-ink-200/70 px-1.5 text-[10px] dark:bg-ink-800">{writeCount}</span>
@@ -381,7 +409,29 @@ export default function SpringWorkspace({
               </button>
             </div>
 
-            <div className={`flex flex-col gap-3 p-3 ${large ? 'min-h-0 flex-1 overflow-auto' : ''}`}>
+            {assistantOpened && (
+              <div className={tab === 'assistant' ? (large ? 'min-h-0 flex-1' : 'h-[75dvh] min-h-[420px]') : 'hidden'}>
+                <ErrorBoundary>
+                  <Suspense fallback={<div className="grid h-full place-items-center text-xs text-ink-400">Loading WebNest AI…</div>}>
+                    {/* Keyed: a pending approval or undo must not carry over to another project. */}
+                    <AssistantPanel
+                      key={workspaceKey}
+                      workspaceKey={workspaceKey}
+                      language="spring"
+                      files={files}
+                      selectedFile={activeFile?.name ?? selectedFile}
+                      api={assistantApi}
+                      lastResult={assistantLastResult}
+                      onFilesChange={changeFiles}
+                      runProject={runAssistantFiles}
+                      onOpenFile={openFile}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+
+            <div className={tab === 'assistant' ? 'hidden' : `flex flex-col gap-3 p-3 ${large ? 'min-h-0 flex-1 overflow-auto' : ''}`}>
               {!isAuthenticated && tab !== 'help' && (
                 <p className="rounded-lg border border-gold-400/50 bg-gold-50 px-3 py-2 text-xs text-ink-700 dark:bg-gold-400/10 dark:text-ink-200">
                   Spring Boot projects run on WebNest&rsquo;s server, so you need to be logged in.{' '}
