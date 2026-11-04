@@ -23,6 +23,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@monaco-editor/react": "^4.7.0",
     "@vercel/analytics": "^2.0.1",
+    "acorn": "^8.19.0",
     "axios": "^1.18.1",
     "framer-motion": "^12.42.2",
     "monaco-editor": "^0.56.0",

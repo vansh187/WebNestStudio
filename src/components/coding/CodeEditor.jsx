@@ -26,9 +26,13 @@ function useIsLargeScreen() {
 const debugHovers = new Map()
 let debugHoverProvider = null
 
+// The languages the debuggers stop in: Python (FastAPI and the Python playground) and the Web
+// debugger's JavaScript, in .js files and in index.html's inline scripts.
+const DEBUG_LANGUAGES = ['python', 'javascript', 'html']
+
 function registerDebugHover(monaco) {
   if (debugHoverProvider) return
-  debugHoverProvider = monaco.languages.registerHoverProvider('python', {
+  debugHoverProvider = monaco.languages.registerHoverProvider(DEBUG_LANGUAGES, {
     provideHover(model, position) {
       const hover = debugHovers.get(model.uri.toString())
       if (!hover) return null
@@ -187,7 +191,7 @@ export default function CodeEditor({
   // @monaco-editor/react has no onMouseDown prop, so listen on the editor instance. The ref
   // keeps the listener current without re-subscribing on every render.
   const toggleRef = useRef(null)
-  toggleRef.current = language === 'python' ? onToggleBreakpoint : null
+  toggleRef.current = DEBUG_LANGUAGES.includes(language) ? onToggleBreakpoint : null
 
   useEffect(() => {
     if (!editorState) return undefined
@@ -215,7 +219,8 @@ export default function CodeEditor({
     fontSize: isLarge ? 14 : 13,
     wordWrap: isLarge ? 'off' : 'on',
     folding: isLarge,
-    glyphMargin: language === 'python',
+    // Python always had the breakpoint gutter; JavaScript and HTML only where breakpoints can be set.
+    glyphMargin: language === 'python' || (DEBUG_LANGUAGES.includes(language) && Boolean(onToggleBreakpoint)),
     lineNumbersMinChars: 3,
     scrollBeyondLastLine: false,
     tabSize: 2,

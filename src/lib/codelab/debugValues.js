@@ -13,13 +13,23 @@ function pyRepr(text) {
 
 // One line with the text of its strings and its comment blanked out (same length), so
 // a word inside "..." or after # is never taken for a variable. A string still open at the
-// end of the line (the start of a docstring) is blanked to the end.
-export function maskNonCode(line) {
+// end of the line (the start of a docstring) is blanked to the end. `language` 'javascript'
+// reads // and /* */ comments and `template` strings instead of #.
+export function maskNonCode(line, language = 'python') {
+  const js = language === 'javascript'
   let out = ''
   let quote = null
   for (let i = 0; i < line.length; i += 1) {
     const char = line[i]
-    if (quote) {
+    if (quote === '*/') {
+      if (line.startsWith('*/', i)) {
+        out += '  '
+        i += 1
+        quote = null
+      } else {
+        out += ' '
+      }
+    } else if (quote) {
       if (char === '\\') {
         out += line[i + 1] === undefined ? ' ' : '  '
         i += 1
@@ -30,10 +40,14 @@ export function maskNonCode(line) {
       } else {
         out += ' '
       }
-    } else if (char === '#') {
+    } else if (js ? line.startsWith('//', i) : char === '#') {
       return out + ' '.repeat(line.length - i)
-    } else if (char === '"' || char === "'") {
-      quote = line.startsWith(char.repeat(3), i) ? char.repeat(3) : char
+    } else if (js && line.startsWith('/*', i)) {
+      out += '  '
+      i += 1
+      quote = '*/'
+    } else if (char === '"' || char === "'" || (js && char === '`')) {
+      quote = !js && line.startsWith(char.repeat(3), i) ? char.repeat(3) : char
       out += quote
       i += quote.length - 1
     } else {
@@ -75,11 +89,11 @@ export function changedPaths(frames = [], previous = null) {
 const CHAIN = /[A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*|\[\s*(?:-?\d+|'[^'\\]*'|"[^"\\]*"|[A-Za-z_]\w*)\s*\])*/g
 const SEGMENT = /^(?:[A-Za-z_]\w*|\s*\.\s*[A-Za-z_]\w*|\[[^\]]*\])/
 
-export function expressionAt(lineText, column) {
+export function expressionAt(lineText, column, language = 'python') {
   const index = column - 1
-  const masked = maskNonCode(lineText)
+  const masked = maskNonCode(lineText, language)
   // Inside a string or comment: no value, even if the word matches a variable.
-  if (index < 0 || index >= lineText.length || masked[index] !== lineText[index] || masked[index] === '"' || masked[index] === "'") return null
+  if (index < 0 || index >= lineText.length || masked[index] !== lineText[index] || masked[index] === '"' || masked[index] === "'" || masked[index] === '`') return null
   for (const match of lineText.matchAll(CHAIN)) {
     const start = match.index
     const end = start + match[0].length
@@ -178,24 +192,24 @@ export function formatTree(node, { depth = 2, lines = 40 } = {}) {
   return out.join('\n')
 }
 
-export function hoverMarkdown(expression, { node }, changed) {
+export function hoverMarkdown(expression, { node }, changed, language = 'python') {
   const fence = '```'
   return [
     `**${expression}**: \`${describeType(node)}\`${changed ? ' · _changed by the last step_' : ''}`,
-    `${fence}python\n${formatTree(node)}\n${fence}`,
+    `${fence}${language}\n${formatTree(node)}\n${fence}`,
   ].join('\n\n')
 }
 
 // VS Code style inline values: after each line of the paused function, up to the paused
 // line, the current values of the variables that line uses.
-export function inlineValues(frame, source, changed = new Set()) {
+export function inlineValues(frame, source, changed = new Set(), language = 'python') {
   if (!frame?.vars?.length || !source) return []
   const byName = new Map(frame.vars.map((item) => [item.k, item]))
   const lines = source.split('\n')
   const from = Math.max(frame.first ?? 1, frame.line - 60)
   const result = []
   for (let line = from; line <= Math.min(frame.line, lines.length); line += 1) {
-    const code = maskNonCode(lines[line - 1])
+    const code = maskNonCode(lines[line - 1], language)
     const names = [...new Set([...code.matchAll(/(?<![.\w])[A-Za-z_]\w*/g)].map((match) => match[0]))]
       .filter((name) => byName.has(name))
     if (!names.length) continue
