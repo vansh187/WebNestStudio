@@ -282,7 +282,7 @@ export function useAssistant({ workspaceKey, project, enabled, fixedMode, onRepl
   const previewApply = useCallback((path, code) => planApply(path, code, filesRef.current, projectRef.current.language), [])
   // Returns why it could not be applied, or ''.
   const confirmApply = useCallback((plan) => {
-    const latest = rebaseApply(plan, filesRef.current)
+    const latest = rebaseApply(plan, filesRef.current, projectRef.current.language)
     if (latest.isError) return latest.content
     setUndoLog((current) => recordChange(current, latest))
     filesRef.current = latest.files

@@ -47,9 +47,10 @@ export function useSpringRuntime(workspaceKey, files) {
   const controller = useRef(null)
   const busy = useRef(false)
 
-  // One call at a time; resolves to the runner's JSON, or throws the request error.
-  const call = useCallback(async (requests) => {
-    const project = filesRef.current ?? []
+  // One call at a time; resolves to the runner's JSON, or throws the request error. `latest`:
+  // files newer than this render's, such as the AI assistant's edits.
+  const call = useCallback(async (requests, latest) => {
+    const project = latest ?? filesRef.current ?? []
     const body = {
       files: project.filter((file) => isSpringRunnable(file.name)).map((file) => ({ path: file.name, content: file.content ?? '' })),
       mainClass: findSpringMainClass(project),
@@ -86,16 +87,17 @@ export function useSpringRuntime(workspaceKey, files) {
     return message
   }, [])
 
-  // Run: compile and start the app with no requests, to check it starts.
-  const run = useCallback(async () => {
-    if (busy.current) return null
+  // Run: compile and start the app with no requests, to check it starts. Resolves to the
+  // result shown in Output, or to a failed one (never throws), for the AI assistant. `origin`
+  // marks the result, so the workspace can tell the assistant's runs from the learner's.
+  const run = useCallback(async (latest, origin = 'run') => {
+    if (busy.current) return { status: 'internal_error', error: 'Another run is still going. Wait for it to finish, then run again.' }
     try {
-      const data = await call([])
-      setResult(toOutputResult(data))
-      return data
+      const output = { ...toOutputResult(await call([], Array.isArray(latest) ? latest : undefined)), origin }
+      setResult(output)
+      return output
     } catch (failure) {
-      showFailure(failure)
-      return null
+      return { status: 'internal_error', error: showFailure(failure) }
     }
   }, [call, showFailure])
 
@@ -110,7 +112,7 @@ export function useSpringRuntime(workspaceKey, files) {
     let response
     try {
       const data = await call([...replayed, next])
-      setResult(toOutputResult(data))
+      setResult({ ...toOutputResult(data), origin: source })
       const answer = Array.isArray(data?.responses) ? data.responses[replayed.length] : undefined
       const notes = []
       const failedReplays = (data?.responses ?? []).slice(0, replayed.length).filter((item) => item.status < 200 || item.status >= 300)
