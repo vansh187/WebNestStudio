@@ -8,6 +8,7 @@ import OutputPanel from './OutputPanel'
 import PreviewPanel from './PreviewPanel'
 import BackButton from './BackButton'
 import ProgramDebugPanel from './ProgramDebugPanel'
+import WebDebugPanel from './WebDebugPanel'
 import DebugReloadDialog from './DebugReloadDialog'
 import { getLanguage, mainFileName } from '../../data/codingLanguages'
 import { sourceFile, toCodePayload } from '../../api/coding'
@@ -26,6 +27,7 @@ import { useWorkspaceStorage } from '../../hooks/useWorkspaceStorage'
 import { canIsolate, isIsolated, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
 import { BREAKPOINTS_PREFIX } from '../../lib/codelab/storageKeys.js'
 import { changedPaths, expressionAt, hoverMarkdown, inlineValues, pathKey, resolveExpression } from '../../lib/codelab/debugValues'
+import { pauseAt, startIndex, target as stepTarget } from '../../lib/codelab/tracePlayer'
 import ErrorBoundary from '../ErrorBoundary'
 
 // On large screens the workspace fills the window under the navbar (like the backend IDE),
@@ -254,27 +256,93 @@ export default function CodingWorkspace({
   const [reloadPrompt, setReloadPrompt] = useState(false)
   const [debugRun, setDebugRun] = useState(null) // the run id while a debugged run is the latest
   const pyPause = pythonDebug ? runner.debugPause : null
+
+  // ---- Web debugging: the page's JavaScript is recorded while it runs (jsInstrument.js,
+  // webDebugRuntime.js), then stepped through forwards and backwards (tracePlayer.js). It runs
+  // in the preview, so no reload is needed. Until the learner moves, the view follows the
+  // recording to the first breakpoint hit.
+  const webDebuggable = language === 'web' && Array.isArray(files)
+  const [webRecording, setWebRecording] = useState(null)
+  const [webMove, setWebMove] = useState(null) // { index, previous } once the learner has moved
+  const webSteps = webRecording?.steps
+  const webIndex = webSteps?.length ? Math.min(webMove?.index ?? startIndex(webSteps, breakpoints), webSteps.length - 1) : null
+  const webPause = useMemo(() => {
+    if (webIndex === null) return null
+    const pause = pauseAt(webSteps, webIndex)
+    const previous = webMove?.previous != null ? pauseAt(webSteps, webMove.previous) : null
+    return { ...pause, previous: previous?.frames ?? null }
+  }, [webSteps, webIndex, webMove])
+  const goWeb = useCallback((command) => {
+    if (!webSteps?.length) return
+    setWebMove({ index: stepTarget(webSteps, webIndex, command, breakpoints), previous: webIndex })
+  }, [webSteps, webIndex, breakpoints])
+  const seekWeb = useCallback((index) => setWebMove({ index, previous: webIndex }), [webIndex])
+  const onWebDebug = useCallback((batch) => {
+    setWebRecording((current) => (current ? {
+      ...current,
+      steps: batch.steps?.length ? [...current.steps, ...batch.steps] : current.steps,
+      calls: batch.calls?.length ? [...current.calls, ...batch.calls] : current.calls,
+      ends: batch.ends?.length ? new Map([...current.ends, ...batch.ends.map((end) => [end.id, end])]) : current.ends,
+      truncated: current.truncated || Boolean(batch.truncated),
+    } : current))
+  }, [])
+  const stopWebDebug = useCallback(() => {
+    setWebRecording(null)
+    setWebMove(null)
+  }, [])
+
+  // Moving to a step in another file opens that file, as VS Code does. Only when the step
+  // changes, so the learner can still switch tabs while looking at one.
+  const webStepFile = webPause?.file
+  const selectWebFile = useRef(onSelectFile)
+  selectWebFile.current = onSelectFile
+  const webFileNames = useRef(debugNames)
+  webFileNames.current = debugNames
+  useEffect(() => {
+    if (webStepFile && webFileNames.current.has(webStepFile)) selectWebFile.current?.(webStepFile)
+  }, [webIndex, webStepFile])
+
+  // The pause the editor and the panels show: Python's live one or the Web recording's step.
+  const activePause = pyPause ?? webPause
+  const debugLanguage = language === 'web' ? 'javascript' : 'python'
   const [frameChoice, setFrameChoice] = useState({ pause: null, index: 0 })
-  const selectedFrame = frameChoice.pause === pyPause ? frameChoice.index : 0
-  const selectFrame = useCallback((index) => setFrameChoice({ pause: pyPause, index }), [pyPause])
-  const changed = useMemo(() => changedPaths(pyPause?.frames, pyPause?.previous), [pyPause])
-  const frames = pyPause?.frames ?? []
+  const selectedFrame = frameChoice.pause === activePause ? frameChoice.index : 0
+  const selectFrame = useCallback((index) => setFrameChoice({ pause: activePause, index }), [activePause])
+  const changed = useMemo(() => changedPaths(activePause?.frames, activePause?.previous), [activePause])
+  const frames = activePause?.frames ?? []
   const editorFrameIndex = frames[selectedFrame]?.file === debugFile ? selectedFrame : frames.findIndex((frame) => frame.file === debugFile)
   const editorFrame = editorFrameIndex >= 0 ? frames[editorFrameIndex] : null
   const debugText = activeFile?.content ?? source ?? ''
   const debugHover = useMemo(() => {
     if (!editorFrame) return undefined
     return (lineText, column) => {
-      const found = expressionAt(lineText, column)
+      const found = expressionAt(lineText, column, debugLanguage)
       const value = found && resolveExpression(editorFrame, found.expression)
       if (!value) return null
-      return { markdown: hoverMarkdown(found.expression, value, changed[editorFrameIndex]?.has(pathKey(value.path))), startColumn: found.startColumn, endColumn: found.endColumn }
+      return { markdown: hoverMarkdown(found.expression, value, changed[editorFrameIndex]?.has(pathKey(value.path)), debugLanguage), startColumn: found.startColumn, endColumn: found.endColumn }
     }
-  }, [editorFrame, editorFrameIndex, changed])
+  }, [editorFrame, editorFrameIndex, changed, debugLanguage])
   const editorInlineValues = useMemo(
-    () => (editorFrame ? inlineValues(editorFrame, debugText, changed[editorFrameIndex]) : undefined),
-    [editorFrame, editorFrameIndex, debugText, changed],
+    () => (editorFrame ? inlineValues(editorFrame, debugText, changed[editorFrameIndex], debugLanguage) : undefined),
+    [editorFrame, editorFrameIndex, debugText, changed, debugLanguage],
   )
+  // The same keys for a Web recording, plus Shift+F5 and Shift+F10 to go back.
+  useEffect(() => {
+    if (!webSteps?.length) return undefined
+    const onKey = (event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      const command = event.key === 'F5' ? (event.shiftKey ? 'reverse' : 'continue')
+        : event.key === 'F10' ? (event.shiftKey ? 'back' : 'over')
+          : event.key === 'F11' ? (event.shiftKey ? 'out' : 'into')
+            : null
+      if (!command) return
+      event.preventDefault()
+      event.stopPropagation()
+      goWeb(command)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [webSteps, goWeb])
   // Every Continue or step sends the current breakpoints, so changes made while paused count.
   const runnerResume = runner.resumeDebug
   const resumeDebug = useCallback((mode) => runnerResume?.(mode, breakpoints), [runnerResume, breakpoints])
@@ -299,7 +367,33 @@ export default function CodingWorkspace({
   const lastDebugTrace = debugRun && debugRun === runner.result && runner.result?.trace ? runner.result.trace : null
   const debugActive = Boolean(pyPause) || (debugRun === 'running' && runner.running)
 
+  const handleWebDebug = async () => {
+    setConsoleText('')
+    webErrors.current = []
+    setAssistantTab((tab) => tab && 'output')
+    runner.cancel?.()
+    // Loaded only when debugging, so the parser costs nothing otherwise.
+    const [{ instrumentWebFiles }, { webDebugScript }] = await Promise.all([
+      import('../../lib/codelab/jsInstrument'),
+      import('../../lib/codelab/webDebugRuntime'),
+    ])
+    const { files: recorded, scriptFiles, problems } = instrumentWebFiles(files)
+    setWebMove(null)
+    setWebRecording({
+      previewHtml: createPreviewHtml(recorded, { debugScript: webDebugScript(scriptFiles) }),
+      steps: [],
+      calls: [],
+      ends: new Map(),
+      truncated: false,
+      problems,
+    })
+  }
+
   const handleDebug = () => {
+    if (language === 'web') {
+      handleWebDebug().catch((error) => console.error('Could not start the Web debugger:', error))
+      return
+    }
     if (!isIsolated()) {
       if (canIsolate() && !isolationUnsupported()) setReloadPrompt(true)
       return
@@ -315,6 +409,7 @@ export default function CodingWorkspace({
 
   const handleRun = () => {
     setDebugRun(null)
+    stopWebDebug()
     setConsoleText('')
     webErrors.current = []
     setAssistantTab((tab) => tab && 'output')
@@ -480,7 +575,7 @@ export default function CodingWorkspace({
             extra={headerRight}
             onAssistant={assistant ? toggleAssistant : undefined}
             assistantOpen={assistantVisible}
-            onDebug={pythonDebug ? handleDebug : undefined}
+            onDebug={pythonDebug || webDebuggable ? handleDebug : undefined}
           />
         </ErrorBoundary>
         {reloadPrompt && (
@@ -548,13 +643,13 @@ export default function CodingWorkspace({
               roundedTop={!files}
               javaProject={editorProject}
               markers={editorMarkers}
-              {...(pythonDebug ? {
+              {...(pythonDebug || webDebuggable ? {
                 path: `${workspaceKey}/${debugFile}`,
                 breakpoints: breakpoints.filter((item) => item.file === debugFile).map((item) => item.line),
                 onToggleBreakpoint: toggleBreakpoint,
                 onBreakpointsChange: moveBreakpoints,
-                pausedLine: pyPause?.file === debugFile ? pyPause.line : undefined,
-                revealLine: pyPause?.file === debugFile ? pyPause.line : undefined,
+                pausedLine: activePause?.file === debugFile ? activePause.line : undefined,
+                revealLine: activePause?.file === debugFile ? activePause.line : undefined,
                 debugHover,
                 inlineValues: editorInlineValues,
               } : {})}
@@ -602,8 +697,9 @@ export default function CodingWorkspace({
           {language === 'web' && (
             <ErrorBoundary>
               <PreviewPanel
-                previewHtml={runner.result?.previewHtml}
+                previewHtml={webRecording?.previewHtml ?? runner.result?.previewHtml}
                 onConsole={handleConsole}
+                onDebug={webRecording ? onWebDebug : undefined}
                 openRequest={previewOpens}
                 className="lg:min-h-0 lg:flex-[1.5]"
               />
@@ -612,6 +708,24 @@ export default function CodingWorkspace({
           <ErrorBoundary>
             <StdinPanel value={stdin} onChange={onStdinChange} open={stdinOpen} />
           </ErrorBoundary>
+          {webRecording && (
+            <ErrorBoundary>
+              <div className="lg:max-h-[55%] lg:shrink-0 lg:overflow-auto">
+                <WebDebugPanel
+                  recording={webRecording}
+                  paused={webPause}
+                  breakpoints={breakpoints}
+                  onGo={goWeb}
+                  onSeek={seekWeb}
+                  onStop={stopWebDebug}
+                  onOpenLocation={(file) => { if (debugNames.has(file)) onSelectFile?.(file) }}
+                  selectedFrame={selectedFrame}
+                  onSelectFrame={selectFrame}
+                  changed={changed}
+                />
+              </div>
+            </ErrorBoundary>
+          )}
           {pythonDebug && (debugActive || lastDebugTrace || breakpoints.length > 0 || isolationUnsupported()) && (
             <ErrorBoundary>
               <div className="lg:max-h-[55%] lg:shrink-0 lg:overflow-auto">

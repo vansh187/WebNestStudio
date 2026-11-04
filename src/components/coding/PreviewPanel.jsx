@@ -6,8 +6,8 @@ import { FullscreenButton } from './IdeButtons'
 
 // `onApiRequest(spec)` answers fetch('/api/...') calls from the preview (backend
 // workspace only; see lib/codelab/apiBridge.js). `openRequest`: a count; each increase opens
-// the preview in full screen.
-export default function PreviewPanel({ previewHtml = '', onConsole, onApiRequest, emptyText = 'Run web files to render the sandbox.', className = '', openRequest = 0 }) {
+// the preview in full screen. `onDebug(batch)` receives the Web debugger's recorded steps.
+export default function PreviewPanel({ previewHtml = '', onConsole, onApiRequest, onDebug, emptyText = 'Run web files to render the sandbox.', className = '', openRequest = 0 }) {
   const [key, setKey] = useState(0)
   const frameRef = useRef(null)
   const [expanded, setExpanded] = useState(false)
@@ -30,6 +30,10 @@ export default function PreviewPanel({ previewHtml = '', onConsole, onApiRequest
         // Only this panel's iframe: another window must not write to the console, which the
         // AI assistant reads as the page's errors.
         if (event.source !== frameRef.current?.contentWindow) return
+        if (data.type === 'wn-debug') {
+          if (data.batch && typeof data.batch === 'object') onDebug?.(data.batch)
+          return
+        }
         const args = Array.isArray(data.args) ? data.args : []
         onConsole?.({ type: data.type || 'log', text: args.join(' ') })
         return
@@ -61,7 +65,7 @@ export default function PreviewPanel({ previewHtml = '', onConsole, onApiRequest
     } catch {
       return undefined
     }
-  }, [onConsole, onApiRequest])
+  }, [onConsole, onApiRequest, onDebug])
 
   return (
     // Only the classes change, so going full screen does not reload the page inside.

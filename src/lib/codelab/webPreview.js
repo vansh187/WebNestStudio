@@ -14,8 +14,9 @@ function fileContent(files, name, folder = '') {
 
 // `folder` reads index.html, style.css and script.js from a subfolder (the backend
 // workspace keeps them in frontend/). `apiBridge` routes fetch('/api/...') to the
-// in-browser API (see apiBridge.js).
-export function createPreviewHtml(input, { folder = '', apiBridge = false } = {}) {
+// in-browser API (see apiBridge.js). `debugScript` is the Web debugger's recorder
+// (webDebugRuntime.js), placed before any of the page's own scripts.
+export function createPreviewHtml(input, { folder = '', apiBridge = false, debugScript = '' } = {}) {
   // The bridge goes in the head so that scripts written inside index.html are captured too.
   const bridge = `
     <script>
@@ -76,6 +77,7 @@ export function createPreviewHtml(input, { folder = '', apiBridge = false } = {}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>${css}</style>
     ${bridge}
+    ${debugScript}
     ${apiBridge ? `<script>${API_BRIDGE_SCRIPT}</script>` : ''}
   </head>
   <body>
