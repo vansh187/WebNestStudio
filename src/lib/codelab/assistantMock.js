@@ -72,8 +72,24 @@ public class HealthController {
 ${FENCE}`,
 }
 
+ASK_SAMPLES.node = `${FENCE}javascript main.js
+console.log("Hello from the mock!");
+${FENCE}`
+ASK_SAMPLES.express = `${FENCE}javascript routes/health.js
+const express = require('express');
+
+const router = express.Router();
+
+router.get('/', (req, res) => res.json({ status: 'ok' }));
+
+module.exports = router;
+${FENCE}
+
+Then mount it in \`server.js\` with \`app.use('/health', require('./routes/health'))\`.`
+
 // What the scripted agent adds, per language. Python has one file, so it edits that instead.
 const AGENT_FILES = {
+  express: { path: 'routes/mock_notes.js', content: "module.exports = ['mock'];\n" },
   backend: { path: 'app/mock_notes.py', content: 'NOTES = ["mock"]\n\n\ndef all_notes():\n    return NOTES\n' },
   web: { path: 'mock_notes.js', content: 'console.log("mock");\n' },
   java: { path: 'MockNotes.java', content: 'public class MockNotes {\n    public String title() {\n        return "mock";\n    }\n}\n' },
@@ -81,6 +97,12 @@ const AGENT_FILES = {
 }
 
 function mockChange(context) {
+  if (context?.language === 'node') {
+    // Node scripts have one file, so the mock agent edits that file instead of creating one.
+    const open = context?.open_file
+    const firstLine = open?.content?.split('\n')[0] ?? ''
+    return { name: 'edit_file', arguments: { path: open?.name ?? 'main.js', old_text: firstLine, new_text: `${firstLine}\nconsole.log("Added by the mock agent");` } }
+  }
   const target = AGENT_FILES[context?.language ?? 'backend']
   if (target) {
     return context?.files?.includes(target.path)

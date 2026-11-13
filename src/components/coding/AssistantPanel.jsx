@@ -72,6 +72,14 @@ const STARTERS = {
     ask: ['Explain the open file', "Why won't my code compile?", 'What is the difference between an interface and an abstract class?'],
     agent: ['Build a bank account example with classes', 'Add input validation to my code', 'Run my code and fix any errors'],
   },
+  node: {
+    ask: ['Explain the open file', 'How do I read input in Node.js?', 'Which packages can I use here?'],
+    agent: ['Build a command line program that reads input', 'Add input validation to my program', 'Run my code and fix any errors'],
+  },
+  express: {
+    ask: ['Explain the request flow', 'How do I add a route?', 'How do I validate a JSON request?'],
+    agent: ['Add a health check route', 'Add validation to my API', 'Run the API and fix any errors'],
+  },
 }
 
 function ModeSwitch({ mode, onChange, disabled, attention }) {

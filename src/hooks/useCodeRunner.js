@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { runWebPreview } from '../lib/codelab/webPreview'
 import { executeJava, JAVA_PLAYGROUND_ENDPOINT } from '../lib/codelab/javaRunner'
 import { api, subscribeSlowRequest } from '../lib/apiClient'
+import { NODE_SCRIPT_ENTRY, isNodeEntry, toNodeFiles, toNodeScriptResult } from '../lib/codelab/nodeProject.js'
 
 const RUN_TIMEOUT_MS = 10000
 // A debugged run's shared buffer: three Int32 slots, then the current breakpoints as JSON
@@ -12,6 +13,30 @@ const DEBUG_BUFFER_BYTES = DEBUG_HEADER_BYTES + 16384
 const JAVA_TIMEOUT_MS = 95000
 const JAVA_TIMEOUT_MESSAGE = 'The Java service did not respond in time. Please try again.'
 const JAVA_SLOW_HINT = 'Starting the Java runner… the first run can take up to a minute.'
+
+const NODE_SLOW_HINT = 'Starting the Node.js runner… the first run can take up to a minute.'
+
+function describeNodeError(error) {
+  const status = error?.response?.status
+  if (status === 401) return 'Log in to run Node.js code: it runs on WebNest’s server.'
+  const detail = error?.response?.data?.detail
+  if (typeof detail === 'string' && detail) return detail
+  if (Array.isArray(detail)) return detail.map((item) => item?.msg).filter(Boolean).join(' ') || 'The Node.js runner rejected this code.'
+  if (status) return 'The Node.js runner is unavailable right now. Please try again shortly.'
+  if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') return 'The Node.js runner did not respond in time. Please try again.'
+  if (error?.isAxiosError) return 'Could not reach WebNest Studio. Check your connection and try again.'
+  return error?.message || 'The Node.js runner could not start.'
+}
+
+// The body of POST /api/node/run: the project's files and the one to start from.
+function nodeScriptBody(payload) {
+  const files = toNodeFiles((payload.files ?? []).map((file) => ({ name: file.name, content: file.content })))
+  const names = new Set(files.map((file) => file.path))
+  const preferred = [payload.sourceName, NODE_SCRIPT_ENTRY].find((name) => name && isNodeEntry(name) && names.has(name))
+  const entry = preferred ?? files.find((file) => isNodeEntry(file.path))?.path
+  if (!entry) return { files: [{ path: NODE_SCRIPT_ENTRY, content: payload.source ?? '' }], entry: NODE_SCRIPT_ENTRY, stdin: payload.stdin ?? '' }
+  return { files, entry, stdin: payload.stdin ?? '' }
+}
 
 function describeLocalError(error) {
   if (error?.name === 'DataCloneError') return 'The runner could not read this code payload.'
@@ -207,6 +232,29 @@ export function useCodeRunner() {
           })
           .catch((err) => {
             if (runIdRef.current === runId && !controller.signal.aborted) finish(null, describeJavaError(err))
+          })
+          .finally(() => { if (requestRef.current === controller) requestRef.current = null })
+        return settled
+      }
+      if (payload.language === 'node') {
+        const controller = new AbortController()
+        requestRef.current = controller
+        timerRef.current = setTimeout(() => {
+          if (runIdRef.current !== runId) return
+          runIdRef.current += 1
+          controller.abort()
+          requestRef.current = null
+          finish(null, 'The Node.js runner did not respond in time. Please try again.')
+        }, JAVA_TIMEOUT_MS)
+        slowUnsubRef.current = subscribeSlowRequest((slow) => {
+          if (slow && runIdRef.current === runId && mountedRef.current) setRunningHint(NODE_SLOW_HINT)
+        })
+        api.post('/api/node/run', nodeScriptBody(payload), { signal: controller.signal })
+          .then(({ data }) => {
+            if (runIdRef.current === runId) finish(toNodeScriptResult(data))
+          })
+          .catch((err) => {
+            if (runIdRef.current === runId && !controller.signal.aborted) finish(null, describeNodeError(err))
           })
           .finally(() => { if (requestRef.current === controller) requestRef.current = null })
         return settled

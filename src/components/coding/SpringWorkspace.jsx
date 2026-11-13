@@ -83,12 +83,39 @@ function HelpText() {
   )
 }
 
-// The Spring Boot workspace: a file explorer, editor tabs, and a panel with the run output,
-// the API tester and help. Laid out like the FastAPI workspace (BackendWorkspace.jsx), but
-// the app runs on the server for each Run or request (useSpringRuntime.js).
+// javac errors underlined in the open file, when its name is unique in the project.
+function javacMarkers(result, activeFile, files) {
+  const compileErrors = result?.status === 'compile_error' ? result.compile?.stderr : ''
+  if (!compileErrors || !activeFile) return []
+  const leaf = activeFile.name.split('/').pop()
+  const sameLeaf = files.filter((file) => file.name.split('/').pop() === leaf).length
+  return parseJavacDiagnostics(compileErrors, []).filter((item) => item.file === leaf && sameLeaf === 1)
+}
+
+// What differs between the server-run project workspaces. Spring Boot is the default; the
+// Express workspace (ExpressWorkspace.jsx) passes its own. Module constants, so a kit never
+// changes between renders.
+const SPRING_WORKSPACE = {
+  useRuntime: useSpringRuntime,
+  languageFor: languageForSpringFile,
+  treeRules: SPRING_TREE_RULES,
+  assistantLanguage: 'spring',
+  Help: HelpText,
+  label: 'Spring Boot workspace',
+  panelsLabel: 'Spring Boot panels',
+  loginNote: 'Spring Boot projects run on WebNest’s server, so you need to be logged in.',
+  footer: 'Spring Boot 4.1 · Java 17 · H2',
+  runTitle: 'Compile and start the app',
+  markers: javacMarkers,
+  fileBadge: (name) => (name === 'pom.xml' ? 'For reading: the runner provides the libraries' : ''),
+}
+
+// A server-run project workspace: a file explorer, editor tabs, and a panel with the run
+// output, the API tester and help. Laid out like the FastAPI workspace (BackendWorkspace.jsx),
+// but the app runs on the server for each Run or request (useSpringRuntime.js).
 export default function SpringWorkspace({
   files, selectedFile, onSelectFile, onFileChange, onFilesChange, workspaceKey, outputRef,
-  languages = [], language, onLanguageChange, toolbarExtra,
+  languages = [], language, onLanguageChange, toolbarExtra, kit = SPRING_WORKSPACE,
 }) {
   const layout = useIdeLayout()
   const { large, panelOpen, setPanelOpen, panelPosition, maximized, setMaximized } = layout
@@ -99,14 +126,15 @@ export default function SpringWorkspace({
   const [tab, setTab] = useState('output')
   // Once opened the assistant stays mounted, so a running task survives switching tabs.
   const [assistantOpened, setAssistantOpened] = useState(false)
-  const spring = useSpringRuntime(workspaceKey, files)
+  const spring = kit.useRuntime(workspaceKey, files)
   const { runner } = spring
   const running = runner.running
 
-  // Renaming uses the shared tree code, which names languages the Python way; keep Java's.
+  // Renaming uses the shared tree code, which names languages the Python way; keep this kit's.
+  const { languageFor } = kit
   const changeFiles = useCallback((next) => {
-    onFilesChange(next.map((file) => ({ ...file, language: languageForSpringFile(file.name) })))
-  }, [onFilesChange])
+    onFilesChange(next.map((file) => ({ ...file, language: languageFor(file.name) })))
+  }, [onFilesChange, languageFor])
 
   const nameList = files.map((file) => file.name).join('\n')
   const names = useMemo(() => new Set(nameList.split('\n')), [nameList])
@@ -139,15 +167,8 @@ export default function SpringWorkspace({
     }
   }
 
-  // javac errors underlined in their file until the next run.
-  const compileErrors = runner.result?.status === 'compile_error' ? runner.result.compile?.stderr : ''
-  const markers = useMemo(() => {
-    if (!compileErrors || !activeFile) return []
-    const leaf = activeFile.name.split('/').pop()
-    const sameLeaf = files.filter((file) => file.name.split('/').pop() === leaf).length
-    return parseJavacDiagnostics(compileErrors, [])
-      .filter((item) => item.file === leaf && sameLeaf === 1)
-  }, [compileErrors, activeFile, files])
+  // Compile errors underlined in their file until the next run.
+  const markers = useMemo(() => kit.markers(runner.result, activeFile, files), [kit, runner.result, activeFile, files])
 
   const testerRequest = useCallback((spec) => spring.request(spec, 'tester'), [spring])
   const testerSession = useApiTesterSession(`${API_TESTER_PREFIX}${workspaceKey}`, testerRequest)
@@ -232,14 +253,14 @@ export default function SpringWorkspace({
 
   const explorer = (
     <ErrorBoundary>
-      <FileTree files={files} selectedFile={activeFile?.name} onSelectFile={openFile} onFilesChange={changeFiles} disabled={running} rules={SPRING_TREE_RULES} bare />
+      <FileTree files={files} selectedFile={activeFile?.name} onSelectFile={openFile} onFilesChange={changeFiles} disabled={running} rules={kit.treeRules} bare />
     </ErrorBoundary>
   )
 
   return (
     <section
       ref={sectionRef}
-      aria-label="Spring Boot workspace"
+      aria-label={kit.label}
       className={`flex flex-col overflow-hidden border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-950 ${
         maximized
           ? 'fixed inset-0 z-[70] h-dvh'
@@ -278,7 +299,7 @@ export default function SpringWorkspace({
               <FiSquare className="h-3.5 w-3.5" /> Stop
             </button>
           ) : (
-            <button type="button" onClick={startRun} title={`Compile and start the app (${MOD}Enter)`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-ink-900 px-3 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-400 dark:text-ink-950">
+            <button type="button" onClick={startRun} title={`${kit.runTitle} (${MOD}Enter)`} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-ink-900 px-3 text-xs font-semibold text-white hover:bg-ink-700 dark:bg-gold-400 dark:text-ink-950">
               <FiPlay className="h-3.5 w-3.5" /> Run
             </button>
           )}
@@ -358,14 +379,14 @@ export default function SpringWorkspace({
                       <span className={index === parts.length - 1 ? 'font-semibold text-ink-700 dark:text-ink-200' : ''}>{part}</span>
                     </span>
                   ))}
-                  {activeFile.name === 'pom.xml' && <span className="ml-auto shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-semibold text-ink-500 dark:bg-ink-800 dark:text-ink-300">For reading: the runner provides the libraries</span>}
+                  {kit.fileBadge(activeFile.name) && <span className="ml-auto shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-semibold text-ink-500 dark:bg-ink-800 dark:text-ink-300">{kit.fileBadge(activeFile.name)}</span>}
                 </div>
                 <ErrorBoundary>
                   <CodeEditor
                     path={`${workspaceKey}/${activeFile.name}`}
                     value={activeFile.content ?? ''}
                     onChange={(value) => onFileChange(activeFile.name, value)}
-                    language={activeFile.language ?? languageForSpringFile(activeFile.name)}
+                    language={activeFile.language ?? languageFor(activeFile.name)}
                     markers={markers}
                     className="min-h-0 flex-1"
                     frameless
@@ -396,7 +417,7 @@ export default function SpringWorkspace({
             className={`flex min-h-0 min-w-0 shrink-0 scroll-mt-[calc(var(--nav-h)+8px)] flex-col bg-ink-50/60 dark:bg-ink-900/40 ${large ? '' : 'border-t border-ink-200 dark:border-ink-800'}`}
           >
             <div className="flex h-9 shrink-0 items-center border-b border-ink-200 dark:border-ink-800">
-              <div role="tablist" aria-label="Spring Boot panels" className="flex min-w-0 flex-1 overflow-x-auto">
+              <div role="tablist" aria-label={kit.panelsLabel} className="flex min-w-0 flex-1 overflow-x-auto">
                 {TABS.map(({ id, label }) => (
                   <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`inline-flex h-9 shrink-0 flex-auto items-center justify-center gap-1 whitespace-nowrap border-b-2 px-2 text-[11px] font-semibold uppercase ${tab === id ? 'border-gold-500 text-ink-900 dark:text-white' : 'border-transparent text-ink-500 hover:text-ink-800 dark:text-ink-400 dark:hover:text-ink-100'}`}>
                     {label}
@@ -417,7 +438,7 @@ export default function SpringWorkspace({
                     <AssistantPanel
                       key={workspaceKey}
                       workspaceKey={workspaceKey}
-                      language="spring"
+                      language={kit.assistantLanguage}
                       files={files}
                       selectedFile={activeFile?.name ?? selectedFile}
                       api={assistantApi}
@@ -434,7 +455,7 @@ export default function SpringWorkspace({
             <div className={tab === 'assistant' ? 'hidden' : `flex flex-col gap-3 p-3 ${large ? 'min-h-0 flex-1 overflow-auto' : ''}`}>
               {!isAuthenticated && tab !== 'help' && (
                 <p className="rounded-lg border border-gold-400/50 bg-gold-50 px-3 py-2 text-xs text-ink-700 dark:bg-gold-400/10 dark:text-ink-200">
-                  Spring Boot projects run on WebNest&rsquo;s server, so you need to be logged in.{' '}
+                  {kit.loginNote}{' '}
                   <Link to="/login" state={{ from: location }} className="font-semibold text-gold-600 underline dark:text-gold-300">Log in</Link>
                 </p>
               )}
@@ -472,7 +493,7 @@ export default function SpringWorkspace({
                 {tab === 'api' && (
                   <ApiClientPanel key={workspaceKey} openapi={spring.openapi} ready={routeCount > 0} session={testerSession} embedded />
                 )}
-                {tab === 'help' && <HelpText />}
+                {tab === 'help' && <kit.Help />}
               </ErrorBoundary>
             </div>
           </div>
@@ -492,7 +513,7 @@ export default function SpringWorkspace({
           </button>
         )}
         <span className="ml-auto flex shrink-0 items-center gap-3">
-          <span className="hidden text-ink-400 sm:inline">Spring Boot 4.1 · Java 17 · H2</span>
+          <span className="hidden text-ink-400 sm:inline">{kit.footer}</span>
           <span className="hidden text-ink-400 md:inline">{MOD}Enter Run · {MOD}B Files · {MOD}J Panel</span>
         </span>
       </footer>

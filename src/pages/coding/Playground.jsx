@@ -8,8 +8,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { useCodeRunner } from '../../hooks/useCodeRunner'
 import CodingWorkspace from '../../components/coding/CodingWorkspace'
-import { LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
-import { WEB_FILES, PYTHON_FILES, JAVA_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
+import { LANGUAGES, PLAYGROUND_ONLY_LANGUAGES, getLanguage, mainFileName } from '../../data/codingLanguages'
+import { WEB_FILES, PYTHON_FILES, JAVA_FILES, NODE_FILES, cloneFiles, SAMPLE_LESSONS } from '../../data/codelabDefaults'
+import { DEFAULT_EXPRESS_STARTER, EXPRESS_STARTER_INFO, expressStarterFiles } from '../../data/expressStarters'
 import { BACKEND_STARTER_INFO, DEFAULT_BACKEND_STARTER, backendStarterFiles } from '../../data/backendStarters'
 import { DEFAULT_SPRING_STARTER, SPRING_STARTER_INFO, springStarterFiles } from '../../data/springStarters'
 import { copyWorkspaceDatabase } from '../../hooks/useApiRuntime'
@@ -33,6 +34,8 @@ function defaultFiles(language) {
   if (language === 'spring') return springStarterFiles(DEFAULT_SPRING_STARTER)
   if (language === 'web') return WEB_FILES
   if (language === 'java') return JAVA_FILES
+  if (language === 'node') return NODE_FILES
+  if (language === 'express') return expressStarterFiles(DEFAULT_EXPRESS_STARTER)
   return PYTHON_FILES
 }
 
@@ -54,6 +57,7 @@ function firstFile(language, files) {
   if (language === 'backend') return files.find((file) => file.name === 'app/main.py')?.name ?? files[0]?.name
   // The sample's explanation of the request flow is in its main class.
   if (language === 'spring') return files.find((file) => file.name.endsWith('/DemoApplication.java'))?.name ?? files[0]?.name
+  if (language === 'express') return files.find((file) => file.name === 'server.js')?.name ?? files[0]?.name
   return files[0]?.name
 }
 
@@ -85,9 +89,9 @@ function parseSession(parsed) {
 
 export default function Playground() {
   useSeo({
-    title: 'Java, Python and Web Coding Playground',
+    title: 'Java, Python, Node.js and Web Coding Playground',
     description:
-      'Write and run HTML, CSS, JavaScript and Python in the browser with Webnest CodeLab.',
+      'Write and run HTML, CSS, JavaScript, Node.js and Python with Webnest CodeLab. Build web pages, scripts and Express APIs.',
     path: '/codelab/playground',
     // A tool, not an article: kept out of search until it has real written content.
     noindex: true,
@@ -158,6 +162,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
   const [dbId, setDbId] = useState(session?.dbId ?? 'main')
   const [starter, setStarter] = useState(DEFAULT_BACKEND_STARTER)
   const [springStarter, setSpringStarter] = useState(DEFAULT_SPRING_STARTER)
+  const [expressStarter, setExpressStarter] = useState(DEFAULT_EXPRESS_STARTER)
   // The GitHub repo this project is linked to (see lib/github/sync.js), or null.
   const [githubLink, setGithubLink] = useState(session?.github ?? null)
   const workspaceKey = `${storageKey}:${dbId}`
@@ -221,6 +226,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
 
   const handleLanguageChange = useCallback(
     (next) => {
+      trackEvent('codelab_language_selected', { language: next })
       setLanguage(next)
       if (!touched) {
         const snippet = getLanguage(next).defaultSnippet
@@ -235,7 +241,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
       // New default files are a different project; keeping the link would make the next
       // push delete the repo's files.
       setGithubLink(null)
-      if (next === 'backend' || next === 'spring') {
+      if (next === 'backend' || next === 'spring' || next === 'express') {
         // A fresh backend project gets a fresh database; drop the one it replaces, with its
         // API tester token and breakpoints. For Spring Boot, the writes replayed before each
         // request belong to the old code, so they go too.
@@ -269,6 +275,21 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     setEdited(false)
     setGithubLink(null)
   }, [touched, workspaceKey, springStarter])
+
+  const loadExpressStarter = useCallback(() => {
+    if (touched && !window.confirm('Replace your current files with this sample project?')) return
+    forgetWorkspace(workspaceKey)
+    const nextFiles = expressStarterFiles(expressStarter)
+    setFiles(nextFiles)
+    setSelectedFile(firstFile('express', nextFiles))
+    setDbId(newDbId())
+    setTouched(false)
+    setEdited(false)
+    setGithubLink(null)
+  }, [touched, workspaceKey, expressStarter])
+
+  // Projects in these languages are not saved to the account or GitHub yet.
+  const playgroundOnly = PLAYGROUND_ONLY_LANGUAGES.has(language)
 
   // Files coming from GitHub. An import replaces the project (and its database, for a
   // backend); a pull updates files in place and keeps the database.
@@ -413,7 +434,7 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
     <CodingWorkspace
       eyebrow="Webnest CodeLab"
       title="Browser coding playground"
-      subtitle="Run web projects and Python in your browser, build multi-class Java 17 programs, or write a layered backend: FastAPI with SQLite, or Spring Boot with H2."
+      subtitle="Run web projects and Python in your browser, build multi-class Java 17 programs and Node.js scripts, or write a layered backend: FastAPI with SQLite, Spring Boot with H2, or Express."
       headerRight={(
         <div className="flex flex-wrap items-center gap-2">
           {language === 'spring' ? (
@@ -433,7 +454,24 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
                 Load<span className="hidden min-[1400px]:inline"> sample</span>
               </button>
             </div>
-          ) : (
+          ) : language === 'express' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="express-starter" className="hidden text-xs font-semibold text-ink-500 dark:text-ink-300 min-[1400px]:inline">Sample</label>
+              <select
+                id="express-starter"
+                aria-label="Sample project"
+                value={expressStarter}
+                onChange={(event) => setExpressStarter(event.target.value)}
+                title={EXPRESS_STARTER_INFO.find((item) => item.id === expressStarter)?.description}
+                className="max-w-[14rem] rounded-lg border border-ink-200 bg-white px-2 py-2 text-xs dark:border-ink-700 dark:bg-ink-900"
+              >
+                {EXPRESS_STARTER_INFO.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+              </select>
+              <button type="button" onClick={loadExpressStarter} aria-label="Load sample" title={EXPRESS_STARTER_INFO.find((item) => item.id === expressStarter)?.description} className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 hover:border-gold-400 dark:border-ink-700 dark:text-ink-200">
+                Load<span className="hidden min-[1400px]:inline"> sample</span>
+              </button>
+            </div>
+          ) : playgroundOnly ? null : (
           <ErrorBoundary fallback={(retry) => (
             <button type="button" onClick={retry} className="rounded-lg border border-red-400/50 px-3 py-2 text-xs font-semibold text-red-600">GitHub unavailable · retry</button>
           )}>
@@ -482,10 +520,10 @@ function PlaygroundEditor({ session, template, templateLesson, exampleKey, stora
       stdin={stdin}
       onStdinChange={setStdin}
       runner={runner}
-      onSave={handleSave}
+      onSave={playgroundOnly ? undefined : handleSave}
       saving={saving}
       saveLabel="Save project"
-      onShare={handleShare}
+      onShare={playgroundOnly ? undefined : handleShare}
       sharing={sharing}
     />
     </>

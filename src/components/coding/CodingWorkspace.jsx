@@ -22,6 +22,7 @@ import { useCodelabFrozenNotice } from '../../hooks/useCodelabFrozenNotice'
 import { useApiRuntime } from '../../hooks/useApiRuntime'
 import BackendWorkspace from './BackendWorkspace'
 import SpringWorkspace from './SpringWorkspace'
+import ExpressWorkspace from './ExpressWorkspace'
 import { useFullscreen, useIdeFocus } from '../../hooks/useIdeShell'
 import { useWorkspaceStorage } from '../../hooks/useWorkspaceStorage'
 import { canIsolate, isIsolated, isolationUnsupported, reloadIsolated } from '../../lib/codelab/isolation'
@@ -93,6 +94,8 @@ export default function CodingWorkspace({
   const backend = language === 'backend'
   // Spring Boot has its own IDE too; its app runs on the server (SpringWorkspace.jsx).
   const spring = language === 'spring'
+  // So does Express, laid out like Spring Boot and run on the server too (ExpressWorkspace.jsx).
+  const express = language === 'express'
   // The backend runtime only starts a worker on the first Run, so other languages pay nothing.
   const api = useApiRuntime(workspaceKey)
   const [backendPreview, setBackendPreview] = useState('')
@@ -108,10 +111,10 @@ export default function CodingWorkspace({
   const [maximized, setMaximized] = useState(false)
   // The backend IDE keeps its own full-screen state, so leaving this layout for it must not
   // leave this one maximized (its scroll lock would outlive the hidden section).
-  if ((backend || spring) && maximized) setMaximized(false)
+  if ((backend || spring || express) && maximized) setMaximized(false)
 
   // The backend IDE does the same for itself (see BackendWorkspace).
-  useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend && !spring })
+  useIdeFocus(ideRef, { scroll: scrollIntoViewOnOpen, enabled: !backend && !spring && !express })
   useCodelabFrozenNotice()
   // Saving copies the stored database, so the running one is written out first; rows
   // added within the snapshot delay would otherwise be missing from the saved project. Not
@@ -526,6 +529,25 @@ export default function CodingWorkspace({
             saveLabel={saveLabel}
           />
         </>
+      ) : express ? (
+        <>
+          <p className="mt-2 text-xs text-ink-500 dark:text-ink-300">
+            Express runs on WebNest&rsquo;s server with Node.js 24: each Run or API request starts your app. Your files are kept in this browser. Shortcuts: Ctrl+Enter runs, Ctrl+B shows files, Ctrl+J shows the panel.
+          </p>
+          <ExpressWorkspace
+            files={files ?? []}
+            selectedFile={selectedFile}
+            onSelectFile={onSelectFile}
+            onFileChange={onFileChange}
+            onFilesChange={onFilesChange}
+            workspaceKey={workspaceKey}
+            outputRef={outputRef}
+            languages={languages}
+            language={language}
+            onLanguageChange={onLanguageChange}
+            toolbarExtra={headerRight}
+          />
+        </>
       ) : spring ? (
         <>
           <p className="mt-2 text-xs text-ink-500 dark:text-ink-300">
@@ -611,6 +633,11 @@ export default function CodingWorkspace({
                 </button>
               )}
             </div>
+          )}
+          {language === 'node' && (
+            <p className="mb-3 text-xs text-ink-500 dark:text-ink-300">
+              Node.js 24 on WebNest&rsquo;s server · 10 second runtime · log in to run · no npm install: popular packages such as lodash, dayjs, zod and prompt-sync are already there. For a REST API, pick Node.js Backend (Express).
+            </p>
           )}
           {files && (
             <ErrorBoundary>
