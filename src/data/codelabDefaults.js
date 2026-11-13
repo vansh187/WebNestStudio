@@ -11,6 +11,14 @@ export const PYTHON_FILES = [
   { name: 'main.py', language: 'python', content: 'print("Hello, Webnest!")\n' },
 ]
 
+export const NODE_FILES = [
+  {
+    name: 'main.js',
+    language: 'javascript',
+    content: "// Node.js 24 runs this on WebNest's server. Press Run.\n// To read input, type it in the Input box first and use:\n//   const prompt = require('prompt-sync')();\n//   const name = prompt('Your name? ');\nconst _ = require('lodash');\n\nconst scores = [72, 95, 88];\nconsole.log(`Hello from Node.js ${process.version}!`);\nconsole.log('Best score:', _.max(scores), 'Average:', _.mean(scores).toFixed(1));\n",
+  },
+]
+
 export const CODELAB_TRACKS = [
   { id: 'web', label: 'Web Development', runner: 'iframe' },
   { id: 'python', label: 'Python', runner: 'pyodide' },

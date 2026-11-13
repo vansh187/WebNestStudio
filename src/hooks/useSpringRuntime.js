@@ -7,8 +7,27 @@ import {
 } from '../lib/codelab/springProject.js'
 import { useWorkspaceStorage } from './useWorkspaceStorage'
 
-const RUN_HINT = 'Compiling and starting your Spring Boot app on the server… a first run can take up to a minute.'
 const LOG_TAIL = 8000
+
+// What differs between the server-run project workspaces. Spring Boot is the default; the
+// Express workspace passes EXPRESS_RUNTIME (useExpressRuntime.js). Module constants, so a
+// kit never changes between renders.
+export const SPRING_RUNTIME = {
+  endpoint: '/api/spring/run',
+  body: (project, requests) => ({
+    files: project.filter((file) => isSpringRunnable(file.name)).map((file) => ({ path: file.name, content: file.content ?? '' })),
+    mainClass: findSpringMainClass(project),
+    requests,
+  }),
+  runHint: 'Compiling and starting your Spring Boot app on the server… a first run can take up to a minute.',
+  loginMessage: 'Log in to run Spring Boot projects.',
+  unavailableMessage: 'The Spring Boot runner is unavailable right now. Please try again shortly.',
+  replayNote: 'Reset data to start from data.sql again.',
+  storagePrefix: SPRING_PREFIX,
+  toOutputResult,
+  runProblem,
+  openapi: springOpenApi,
+}
 
 // The writes replayed before each request, kept per workspace. Anything else in storage is dropped.
 const readStored = (saved) => ({
@@ -20,19 +39,19 @@ const toSaved = ({ writes }) => ({ writes })
 
 const logTail = (data) => `${data?.app?.stdout ?? ''}${data?.app?.stderr ?? ''}`.slice(-LOG_TAIL)
 
-function failureMessage(error) {
+function failureMessage(error, kit) {
   const status = error?.response?.status
-  if (status === 401) return 'Log in to run Spring Boot projects.'
+  if (status === 401) return kit.loginMessage
   if (!error?.response) return 'Could not reach WebNest Studio. Check your connection and try again.'
-  return getErrorDetail(error, 'The Spring Boot runner is unavailable right now. Please try again shortly.')
+  return getErrorDetail(error, kit.unavailableMessage)
 }
 
 // Runs a Spring Boot project on the server (POST /api/spring/run). There is no app running
 // between calls: each Run or request compiles and starts the app, sends the requests, and
 // stops it. Earlier successful writes are replayed first, so data added earlier is still there.
 // The shape follows what the workspace needs from useApiRuntime: runner, request, openapi.
-export function useSpringRuntime(workspaceKey, files) {
-  const storageKey = `${SPRING_PREFIX}${workspaceKey}`
+export function useSpringRuntime(workspaceKey, files, kit = SPRING_RUNTIME) {
+  const storageKey = `${kit.storagePrefix}${workspaceKey}`
   const [stored, updateStored] = useWorkspaceStorage(storageKey, readStored, toSaved)
   const [running, setRunning] = useState(false)
   const [runningSince, setRunningSince] = useState(null)
@@ -51,11 +70,7 @@ export function useSpringRuntime(workspaceKey, files) {
   // files newer than this render's, such as the AI assistant's edits.
   const call = useCallback(async (requests, latest) => {
     const project = latest ?? filesRef.current ?? []
-    const body = {
-      files: project.filter((file) => isSpringRunnable(file.name)).map((file) => ({ path: file.name, content: file.content ?? '' })),
-      mainClass: findSpringMainClass(project),
-      requests,
-    }
+    const body = kit.body(project, requests)
     const abort = new AbortController()
     controller.current = abort
     busy.current = true
@@ -64,7 +79,7 @@ export function useSpringRuntime(workspaceKey, files) {
     setStopped(false)
     setError(null)
     try {
-      const { data } = await api.post('/api/spring/run', body, { signal: abort.signal })
+      const { data } = await api.post(kit.endpoint, body, { signal: abort.signal })
       return data
     } finally {
       busy.current = false
@@ -72,7 +87,7 @@ export function useSpringRuntime(workspaceKey, files) {
       setRunning(false)
       setRunningSince(null)
     }
-  }, [])
+  }, [kit])
 
   // Shows a failed call in Output. Returns the message.
   const showFailure = useCallback((failure) => {
@@ -81,11 +96,11 @@ export function useSpringRuntime(workspaceKey, files) {
       setResult(null)
       return 'Stopped.'
     }
-    const message = failureMessage(failure)
+    const message = failureMessage(failure, kit)
     setError(message)
     setResult(null)
     return message
-  }, [])
+  }, [kit])
 
   // Run: compile and start the app with no requests, to check it starts. Resolves to the
   // result shown in Output, or to a failed one (never throws), for the AI assistant. `origin`
@@ -93,13 +108,13 @@ export function useSpringRuntime(workspaceKey, files) {
   const run = useCallback(async (latest, origin = 'run') => {
     if (busy.current) return { status: 'internal_error', error: 'Another run is still going. Wait for it to finish, then run again.' }
     try {
-      const output = { ...toOutputResult(await call([], Array.isArray(latest) ? latest : undefined)), origin }
+      const output = { ...kit.toOutputResult(await call([], Array.isArray(latest) ? latest : undefined)), origin }
       setResult(output)
       return output
     } catch (failure) {
       return { status: 'internal_error', error: showFailure(failure) }
     }
-  }, [call, showFailure])
+  }, [call, showFailure, kit])
 
   // One request from the API tester: replays the saved writes, then sends it.
   const request = useCallback(async (spec, source = 'tester') => {
@@ -112,12 +127,12 @@ export function useSpringRuntime(workspaceKey, files) {
     let response
     try {
       const data = await call([...replayed, next])
-      setResult({ ...toOutputResult(data), origin: source })
+      setResult({ ...kit.toOutputResult(data), origin: source })
       const answer = Array.isArray(data?.responses) ? data.responses[replayed.length] : undefined
       const notes = []
       const failedReplays = (data?.responses ?? []).slice(0, replayed.length).filter((item) => item.status < 200 || item.status >= 300)
-      if (failedReplays.length) notes.push(`${failedReplays.length} of the ${replayed.length} saved write${replayed.length === 1 ? '' : 's'} replayed before this request did not succeed this time. Reset data to start from data.sql again.`)
-      response = answer ? toTesterResponse(answer, logTail(data)) : { status: 0, headers: [], body: '', logs: logTail(data), error: runProblem(data?.status) }
+      if (failedReplays.length) notes.push(`${failedReplays.length} of the ${replayed.length} saved write${replayed.length === 1 ? '' : 's'} replayed before this request did not succeed this time. ${kit.replayNote}`)
+      response = answer ? toTesterResponse(answer, logTail(data)) : { status: 0, headers: [], body: '', logs: logTail(data), error: kit.runProblem(data?.status) }
       if (answer) {
         const writes = nextWrites(replayed, next, answer.status)
         if (writes !== replayed) updateStored(storageKey, () => ({ writes }))
@@ -131,17 +146,17 @@ export function useSpringRuntime(workspaceKey, files) {
     }
     setLastExchange({ spec, response, source, at })
     return response
-  }, [call, showFailure, storageKey, updateStored])
+  }, [call, showFailure, storageKey, updateStored, kit])
 
   const cancel = useCallback(() => controller.current?.abort(), [])
   const resetData = useCallback(() => updateStored(storageKey, () => ({ writes: [] })), [storageKey, updateStored])
   // Read from the code after typing settles, not on every keystroke.
   const settledFiles = useDeferredValue(files)
-  const openapi = useMemo(() => springOpenApi(settledFiles ?? []), [settledFiles])
+  const openapi = useMemo(() => kit.openapi(settledFiles ?? []), [settledFiles, kit])
 
   const runner = useMemo(() => ({
-    run, cancel, running, runningSince, runningHint: running ? RUN_HINT : '', result, error, stopped,
-  }), [run, cancel, running, runningSince, result, error, stopped])
+    run, cancel, running, runningSince, runningHint: running ? kit.runHint : '', result, error, stopped,
+  }), [run, cancel, running, runningSince, result, error, stopped, kit])
 
   return { runner, request, openapi, lastExchange, writes: stored.writes, resetData }
 }

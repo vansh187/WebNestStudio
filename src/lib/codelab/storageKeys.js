@@ -19,8 +19,10 @@ export const ASSISTANT_PREFS_KEY = `${ASSISTANT_PREFIX}prefs`
 
 // Per workspace: the Spring Boot workspace's replayed writes (useSpringRuntime.js).
 export const SPRING_PREFIX = 'wns-codelab-spring:'
+// Per workspace: the Express workspace's replayed writes (useExpressRuntime.js).
+export const EXPRESS_PREFIX = 'wns-codelab-express:'
 
-export const WORKSPACE_PREFIXES = [BREAKPOINTS_PREFIX, API_TESTER_PREFIX, ENV_STORAGE_PREFIX, ASSISTANT_PREFIX, SPRING_PREFIX]
+export const WORKSPACE_PREFIXES = [BREAKPOINTS_PREFIX, API_TESTER_PREFIX, ENV_STORAGE_PREFIX, ASSISTANT_PREFIX, SPRING_PREFIX, EXPRESS_PREFIX]
 
 // The workspace key of a saved backend project (pages/coding/ProjectWorkspace.jsx).
 export const projectWorkspaceKey = (projectId) => `project:${projectId}`

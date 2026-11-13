@@ -5,6 +5,7 @@ import { ENV_FILE, MAX_BACKEND_BYTES, extensionOf, languageForFile, normalizeBac
 import { envFromFiles } from './dotenv.js'
 import { isJavaFile, validateJavaClassName } from './javaProject.js'
 import { SPRING_MAX_BYTES, validateSpringPath } from './springProject.js'
+import { NODE_MAX_BYTES, validateNodePath } from './nodeProject.js'
 
 export const READ_LIMIT = 16000
 export const OUTPUT_LIMIT = 8000
@@ -79,7 +80,7 @@ export const fileLanguage = (path) => (isJavaFile({ name: path }) ? 'java' : lan
 const SAFE_PATH = /^[A-Za-z0-9_][A-Za-z0-9_.-]*(\/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$/
 const WEB_EXTENSIONS = new Set(['html', 'css', 'js'])
 // Runners that only ever use one file, so a second one would silently do nothing.
-const SINGLE_FILE_LANGUAGES = new Set(['python'])
+const SINGLE_FILE_LANGUAGES = new Set(['python', 'node'])
 
 function generalPathProblem(path, files) {
   if (path.length > 120 || !SAFE_PATH.test(path) || /\.(\/|$)/.test(path)) return 'Use letters, numbers, _ and - in each folder and file name.'
@@ -96,12 +97,17 @@ const PATH_RULES = {
   python: () => 'Python programs here run from one file. Put this code in the existing file instead.',
   web: (path, files) => (WEB_EXTENSIONS.has(extensionOf(path)) ? generalPathProblem(path, files) : 'Web projects use .html, .css and .js files.'),
   spring: (path, files) => validateSpringPath(path, files),
+  node: () => 'Node.js programs here run from main.js. Put this code in main.js instead, or use the Express workspace for a project with several files.',
+  express: (path, files) => validateNodePath(path, files),
 }
 const pathProblem = (language, path, files) => (PATH_RULES[language] ?? generalPathProblem)(path, files)
 // The runner's own size limit; the others use the FastAPI one.
-const SIZE_LIMITS = { spring: SPRING_MAX_BYTES }
+const SIZE_LIMITS = { spring: SPRING_MAX_BYTES, express: NODE_MAX_BYTES }
 // Languages whose project is an API the assistant can send requests to.
-const API_LANGUAGES = new Set(['backend', 'spring'])
+const API_LANGUAGES = new Set(['backend', 'spring', 'express'])
+// Languages whose app is started on WebNest's server for each run or request, and whose log
+// is long: errors first, then the log's tail.
+const SERVER_APP_LANGUAGES = new Set(['spring', 'express'])
 
 // Each tool's plan: either a refusal, or the new file list and a description to show the
 // user for approval. Nothing changes until the caller applies it.
@@ -254,7 +260,7 @@ export async function runTool(name, args, env) {
     const files = env.getFiles()
     const language = env.language ?? 'backend'
     const backend = language === 'backend'
-    const spring = language === 'spring'
+    const spring = SERVER_APP_LANGUAGES.has(language)
     const safe = (text) => scrubSecrets(text, files, env.secrets?.())
 
     if (name === 'list_files') {
@@ -287,15 +293,15 @@ export async function runTool(name, args, env) {
         ? [errorsOf(result), String(result?.stdout ?? '').slice(-SPRING_LOG_TAIL)].filter(Boolean).join('\n')
         : [result?.stdout, errorsOf(result)].filter(Boolean).join('\n')
       const status = result?.status === 'success'
-        ? (spring ? 'The app compiled and started. It stops after each run; send_api_request starts it again for each request.' : backend ? 'The project is running.' : 'The program ran.')
-        : (spring ? 'The app failed to compile or start.' : backend ? 'The project failed to start.' : 'The run failed.')
+        ? (spring ? `The app ${language === 'spring' ? 'compiled and started' : 'started'}. It stops after each run; send_api_request starts it again for each request.` : backend ? 'The project is running.' : 'The program ran.')
+        : (spring ? `The app failed to ${language === 'spring' ? 'compile or start' : 'start'}.` : backend ? 'The project failed to start.' : 'The run failed.')
       return { content: cut(safe(`${status}\n${output}`), OUTPUT_LIMIT, '[Output cut short.]'), isError: result?.status !== 'success' }
     }
     if (name === 'get_errors') {
       return done(cut(safe(errorsOf(env.lastResult()) || 'none'), OUTPUT_LIMIT, '[Output cut short.]'))
     }
     if (name === 'send_api_request') {
-      if (!API_LANGUAGES.has(language)) return refused('Only FastAPI and Spring Boot projects have an API to call. Use run_project to run this code.')
+      if (!API_LANGUAGES.has(language)) return refused('Only FastAPI, Spring Boot and Express projects have an API to call. Use run_project to run this code.')
       if (env.debugPaused()) return refused('A request is paused at a breakpoint. Ask the user to resume or stop debugging.')
       if (!env.apiReady()) return refused('The API is not running. Use run_project first.')
       const path = String(args?.path ?? '')

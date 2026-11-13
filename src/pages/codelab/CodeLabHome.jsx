@@ -8,7 +8,7 @@ import CodeWindow from '../../components/CodeWindow'
 import { useSeo } from '../../hooks/useSeo'
 
 const links = [
-  { to: '/codelab/playground', icon: FiPlay, title: 'Browser coding playground', text: 'Write and run Java 17, Python, and web code in a focused workspace.' },
+  { to: '/codelab/playground', icon: FiPlay, title: 'Browser coding playground', text: 'Write and run Java, Python, web code, Node.js scripts, and Express APIs in one workspace.' },
   { to: '/codelab/problems', icon: FiCode, title: 'Guided coding problems', text: 'Work through practice tasks with requirements, examples, and difficulty levels.' },
   { to: '/learn', icon: FiBookOpen, title: 'Programming lessons', text: 'Follow structured courses, review concepts, and continue into hands-on practice.' },
   { to: '/codelab/dashboard', icon: FiGrid, title: 'Your learning dashboard', text: 'Sign in to review solved problems, XP, streaks, and recent activity.' },
@@ -39,7 +39,7 @@ const MODEL_OUTPUT = ['loading data ...', 'training model ...', 'accuracy: 0.94'
 export default function CodeLabHome() {
   useSeo({
     title: 'Webnest CodeLab: Browser Coding Playground and Practice',
-    description: 'Practice Java, Python, and web development in Webnest CodeLab. Run code in the browser, solve guided problems, and follow programming lessons.',
+    description: 'Practice Java, Python, web development, Node.js, and Express in Webnest CodeLab. Run code, build APIs, solve guided problems, and follow programming lessons.',
     path: '/codelab',
   })
 
@@ -64,7 +64,7 @@ export default function CodeLabHome() {
             </Reveal>
             <Reveal delay={0.2}>
               <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-200 lg:mx-0">
-                Learn programming by writing code, running examples, and working through practical exercises. Use one workspace for Java, Python, and web development.
+                Learn programming by writing code, running examples, and working through practical exercises. Use one workspace for Java, Python, web development, Node.js scripts, and Express APIs.
               </p>
             </Reveal>
             <Reveal delay={0.3}>

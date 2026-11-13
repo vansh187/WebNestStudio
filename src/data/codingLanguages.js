@@ -47,12 +47,37 @@ export const LANGUAGES = [
     runner: 'spring-cloud',
     defaultSnippet: null,
   },
+  {
+    // A Node.js script with stdin, run once on Cloud Run (useCodeRunner.js), like Java.
+    // Playground only for now: not saved to the account.
+    id: 'node',
+    label: 'Node.js Playground',
+    monacoId: 'javascript',
+    fileExtension: 'js',
+    mainFile: 'main.js',
+    runner: 'node-cloud',
+    defaultSnippet: null,
+  },
+  {
+    // A multi-file Express REST API, started on Cloud Run for each run or request
+    // (useExpressRuntime.js), like Spring Boot. Playground only for now.
+    id: 'express',
+    label: 'Node.js Backend (Express)',
+    monacoId: 'javascript',
+    fileExtension: 'js',
+    mainFile: 'server.js',
+    runner: 'express-cloud',
+    defaultSnippet: null,
+  },
 ]
+
+// Languages whose code runs on WebNest's server and which are not saved to the account yet.
+export const PLAYGROUND_ONLY_LANGUAGES = new Set(['spring', 'node', 'express'])
 
 // The languages a new or existing project can be switched to. FastAPI workspaces are saved
 // as projects too, but only from the playground's Save project, and stay FastAPI projects
-// (see ProjectWorkspace.jsx). Spring Boot projects are not saved to the account yet.
-export const PROJECT_LANGUAGES = LANGUAGES.filter((l) => l.id !== 'backend' && l.id !== 'spring')
+// (see ProjectWorkspace.jsx). Spring Boot and Node.js projects are not saved to the account yet.
+export const PROJECT_LANGUAGES = LANGUAGES.filter((l) => l.id !== 'backend' && !PLAYGROUND_ONLY_LANGUAGES.has(l.id))
 
 const BY_ID = Object.fromEntries(LANGUAGES.map((l) => [l.id, l]))
 
