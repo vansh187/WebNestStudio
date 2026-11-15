@@ -335,8 +335,286 @@ export const LESSON_VIDEOS = {
   },
 }
 
+// Additional Core Java companions from Webnest_YouTube_Videos.xlsx.
+// Keep these as lesson-scoped records so detail videos and Shorts can appear
+// together on the same topic page. Workbook entries do not include publish
+// dates, so they intentionally omit VideoObject date metadata.
+const CORE_JAVA_WORKBOOK_VIDEOS = {
+  lesson_java_core_oops_concepts_in_java: [
+    { youtubeId: 'VeHjoi5AdT0', title: '4 Pillars of OOP in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_interfaces_in_java: [
+    { youtubeId: 'ja_UDYi_j1I', title: 'Java Interfaces in 60 Seconds!', format: 'short' },
+  ],
+  lesson_java_core_abstraction_and_abstract_classes: [
+    { youtubeId: '6-AZVxA1qfk', title: 'Abstraction in Java Explained', format: 'short' },
+    { youtubeId: 'at__QPEeq_A', title: 'Interface vs Abstraction in Java Explained', format: 'short' },
+  ],
+  lesson_java_core_encapsulation: [
+    { youtubeId: '-kPbKytAvd0', title: 'Java Encapsulation: Hide Data Like a Pro!', format: 'short' },
+  ],
+  lesson_java_core_packages_and_access_modifiers: [
+    { youtubeId: 'XEak3O1RjJk', title: '4 Java Access Modifiers in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_object_class_and_its_methods: [
+    { youtubeId: 'aV0aaREeKKU', title: 'Java Object Class in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_object_cloning: [
+    { youtubeId: '5Qv9LCXWLXg', title: 'How Shallow Cloning Can Corrupt Java Objects', format: 'short' },
+  ],
+  lesson_java_core_wrapper_classes: [
+    { youtubeId: 'RW_dH_p70zA', title: 'int vs Integer in Java: Wrapper Classes Explained', format: 'short' },
+  ],
+  lesson_java_core_java_math_class_and_utility_methods: [
+    { youtubeId: 'FTQ8du5CbIM', title: 'Java Math Class in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_strictfp_keyword_in_java: [
+    { youtubeId: 'xOaK_Zoz8eo', title: 'Java strictfp Keyword Explained', format: 'short' },
+  ],
+  lesson_java_core_java_varargs: [
+    { youtubeId: 'Ege3oq_MD14', title: 'Java Varargs Explained in 5 Minutes' },
+    { youtubeId: 'ReC3kIy4LF8', title: 'Java Varargs Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_static_import: [
+    { youtubeId: 'F4cgS1X6Ieg', title: 'Java Static Import Explained in Detail' },
+    { youtubeId: 'bgXYsO8BGKA', title: 'Java Static Import Explained with Examples', format: 'short' },
+  ],
+  lesson_java_core_instanceof_and_downcasting: [
+    { youtubeId: 'AQKeP8zbKgc', title: 'Why Does Java Throw ClassCastException? Fix It with instanceof' },
+    { youtubeId: 'I05XqtFUsv4', title: 'Stop ClassCastException with instanceof!', format: 'short' },
+  ],
+  lesson_java_core_method_overriding: [
+    { youtubeId: 'nhW4Pt7SCAE', title: 'Method Overriding in Java', format: 'short' },
+  ],
+  lesson_java_core_runtime_polymorphism_and_dynamic_binding: [
+    { youtubeId: 'QQjvMRMBG9I', title: 'Dynamic Binding in Java Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_instance_initializer_block: [
+    { youtubeId: 'Mk1n1kpxT50', title: 'Instance Block in Java Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_abstract_class_vs_interface: [
+    { youtubeId: 'at__QPEeq_A', title: 'Interface vs Abstraction in Java Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_garbage_collection_in_java: [
+    { youtubeId: 'aVBPGYdN3f0', title: 'Java Garbage Collector Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_java_string: [
+    { youtubeId: 'xmwxmlzZcHQ', title: 'Java Strings in Detail | String Pool, Immutability, StringBuilder vs StringBuffer', description: 'A detailed walkthrough of Java strings, the string pool, immutability, and mutable alternatives.' },
+    { youtubeId: '_BpDMKVrYRY', title: 'Java Strings Explained in Detail', description: 'A detailed explanation of Java strings, the string pool, immutability, StringBuilder and StringBuffer.' },
+    { youtubeId: 'WYdZDZWuWIk', title: 'Why Are Java Strings Immutable? String Pool Explained', format: 'short' },
+    { youtubeId: 'DkdlW1QTnXU', title: 'Why Java Strings Are Immutable', format: 'short' },
+  ],
+  lesson_java_core_why_strings_are_immutable_in_java: [
+    { youtubeId: 'jBCfTth0w-M', title: 'String Immutability in Java Explained in Detail' },
+    { youtubeId: '5Rg2KhZ8uHY', title: 'Java Strings Mystery: Why == Fails but equals() Works', format: 'short' },
+    { youtubeId: 'O_0YJZhjbWY', title: 'Why String is Immutable in Java?', format: 'short' },
+    { youtubeId: 'ZEsXD1wKhYQ', title: 'How the Java String Pool Traps Beginners', format: 'short' },
+  ],
+  lesson_java_core_java_stringbuffer: [
+    { youtubeId: 'bWccRLhXDyw', title: 'StringBuffer in Java Explained in Detail' },
+    { youtubeId: 'hoFrg6zkQaI', title: 'Why StringBuffer is Thread-Safe?', format: 'short' },
+  ],
+  lesson_java_core_java_stringbuilder: [
+    { youtubeId: 'diGDu2BcEyQ', title: 'StringBuilder in Java – Complete Guide', description: 'A detailed guide to StringBuilder and how it compares with String and StringBuffer.' },
+    { youtubeId: '9D9ZfNIUp1w', title: 'StringBuilder vs String in Java', format: 'short' },
+  ],
+  lesson_java_core_string_vs_stringbuffer_vs_stringbuilder: [
+    { youtubeId: 'LhD-4_ikV0s', title: 'StringBuffer vs StringBuilder in Java: Key Differences' },
+    { youtubeId: 'NfqujCyo5VU', title: 'StringBuffer vs StringBuilder in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_string_comparison_and_the_string_pool: [
+    { youtubeId: '5Rg2KhZ8uHY', title: 'Java Strings Mystery: Why == Fails but equals() Works', format: 'short' },
+  ],
+  lesson_java_core_how_to_create_an_immutable_class_in_java: [
+    { youtubeId: '-jl3yctonkg', title: 'Immutable Classes in Java: How String Stays Immutable and How to Build Your Own' },
+  ],
+  lesson_java_core_stringtokenizer_class_in_java: [
+    { youtubeId: 'ggpIfuoutNg', title: 'Java StringTokenizer Tutorial' },
+    { youtubeId: 'TIUtJGxNTf4', title: 'StringTokenizer in Java Explained', format: 'short' },
+  ],
+  lesson_java_core_java_regular_expressions_regex: [
+    { youtubeId: 'gy1Mop7VGjc', title: 'Java Regex Full Tutorial: Pattern, Matcher and Regular Expressions' },
+    { youtubeId: 'TWdkOhCUPXY', title: 'Java Regex in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_method_overloading_vs_method_overriding_a_comparison: [
+    { youtubeId: 'M-y5u-p1wrc', title: 'Java OOP: Overloading vs Overriding' },
+    { youtubeId: 'tQwa8TPzz8k', title: 'Overloading vs Overriding in Java', format: 'short' },
+    { youtubeId: 'uxQr6sUHy6w', title: 'Overloading vs Overriding in Java', format: 'short' },
+  ],
+  lesson_java_core_nested_and_inner_classes: [
+    { youtubeId: 'mgAQ9_E1DDQ', title: 'Nested Classes in Java Explained' },
+    { youtubeId: 'OHf1zkVRJ3s', title: 'Java Nested Classes Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_nested_interfaces_in_java: [
+    { youtubeId: 'TrtCz-rH_-k', title: 'Nested Interfaces in Java Explained', format: 'short' },
+  ],
+  lesson_java_core_java_final_keyword: [
+    { youtubeId: '1Fhq7fyICxM', title: 'Java final Keyword in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_final_vs_finally_vs_finalize: [
+    { youtubeId: 'V2XOdEohMiA', title: 'final vs finally vs finalize in Java: Key Differences' },
+    { youtubeId: 'up4dY9lMJp8', title: 'final vs finally vs finalize() in Java', format: 'short' },
+  ],
+  lesson_java_core_exception_handling_basics: [
+    { youtubeId: 'JqdPfSt9Ubg', title: 'Master Exception Handling in Java: Try-Catch Explained' },
+    { youtubeId: 'HJdkeSDS_ko', title: 'Java Try Catch Finally Explained in Detail' },
+    { youtubeId: 'zN_z7U1uc9k', title: 'Why Your Java Program Crashes: try-catch Explained', format: 'short' },
+    { youtubeId: 'o4d4ydSM4UY', title: 'Java Try Catch Finally Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_try_catch_and_finally: [
+    { youtubeId: 'HJdkeSDS_ko', title: 'Java Try Catch Finally Explained in Detail' },
+    { youtubeId: 'o4d4ydSM4UY', title: 'Java Try Catch Finally Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_throw_and_throws: [
+    { youtubeId: 'Pt_x-Hw7V5k', title: 'throw vs throws in Java: Exception Handling Explained' },
+    { youtubeId: 'V5Tu5D9yMtU', title: 'Stop Confusing throw and throws in Java!', format: 'short' },
+  ],
+  lesson_java_core_exception_propagation_and_nested_try_blocks: [
+    { youtubeId: 'CdreC3MznSQ', title: 'Exception Propagation in Java Explained' },
+    { youtubeId: 'NaW4e7wHdh4', title: 'Where Does a Java Exception Go?', format: 'short' },
+  ],
+  lesson_java_core_exception_handling_rules_with_method_overriding: [
+    { youtubeId: '8gN51mOTYi8', title: 'Exception Handling in Method Overriding' },
+    { youtubeId: '2Rh29hwGBBY', title: 'Exception Rules in Method Overriding', format: 'short' },
+  ],
+  lesson_java_core_custom_exceptions: [
+    { youtubeId: 'M0r-Ex6Y3Ms', title: 'Custom Exceptions in Java: Create Your Own Checked and Unchecked Exceptions' },
+    { youtubeId: 'waa5znh7PaI', title: 'Custom Exceptions in Java', format: 'short' },
+  ],
+  lesson_java_core_multithreading_basics_and_thread_life_cycle: [
+    { youtubeId: '0IoV4sO8msU', title: 'Java Threads in Depth: Everything You Need to Know' },
+    { youtubeId: '2_5I5BsceA0', title: 'Java Multithreading Explained: Create Threads, Lifecycle and Synchronization' },
+    { youtubeId: 'SZHLXClJ2yU', title: 'Java Threads Explained: Lifecycle and States', format: 'short' },
+    { youtubeId: 'JAaH9ODIH9g', title: 'Threads in Java Explained', format: 'short' },
+  ],
+  lesson_java_core_creating_threads_thread_class_vs_runnable: [
+    { youtubeId: 'vwP_7lFCsns', title: 'Runnable vs Thread in Java: Why Runnable Wins', format: 'short' },
+  ],
+  lesson_java_core_thread_priority_and_sleep: [
+    { youtubeId: 'ba600dJ6qO8', title: 'Thread Priority and sleep() in Java Explained in Detail' },
+  ],
+  lesson_java_core_daemon_threads_thread_naming_and_start_vs_run: [
+    { youtubeId: 'xEfiAbSKxrQ', title: 'start() vs run() in Java: The Mistake Most Beginners Make' },
+    { youtubeId: 'R0cg8hGOWDE', title: 'Why run() Does Not Create a Thread in Java', format: 'short' },
+  ],
+  lesson_java_core_synchronization: [
+    { youtubeId: '45JObRFx4RY', title: 'Why Java Needs Synchronization: Race Condition Fixed with synchronized' },
+    { youtubeId: 'ISACF9lp1DI', title: 'Race Condition in Java? Fix It with synchronized!', format: 'short' },
+  ],
+  lesson_java_core_advanced_synchronization_reentrant_locks_and_interrupting_threads: [
+    { youtubeId: 'MAtRpDD7nek', title: 'Advanced Java Thread Synchronization' },
+    { youtubeId: 'Y0hz3BCIRyU', title: 'How Java ReentrantLock Prevents Self-Deadlock', format: 'short' },
+  ],
+  lesson_java_core_inter_thread_communication_wait_notify_notifyall: [
+    { youtubeId: 'GuVRR5DaEjM', title: 'Java Multithreading: Inter-Thread Communication Made Easy' },
+    { youtubeId: 'hZXD-mEU49Q', title: 'Inter-Thread Communication Explained Fast', format: 'short' },
+  ],
+  lesson_java_core_deadlock: [
+    { youtubeId: 'mYputDSamSk', title: 'Deadlock in Java Explained: Causes, Examples and Prevention' },
+    { youtubeId: 'U6fl_bIrmEs', title: 'How to Prevent Deadlocks in Java?', format: 'short' },
+  ],
+  lesson_java_core_thread_pool_and_the_executor_framework: [
+    { youtubeId: 'dgbzJ5GWz4A', title: 'Why Use a Thread Pool in Java?', format: 'short' },
+  ],
+  lesson_java_core_callable_future_and_completablefuture: [
+    { youtubeId: '-xt72-TiEFU', title: 'Evolution of Async in Java: Thread, Future, CompletableFuture Explained' },
+    { youtubeId: 'bo6QsNtVfTQ', title: 'How CompletableFuture Unblocks Java Tasks', format: 'short' },
+  ],
+  lesson_java_core_java_memory_management_stack_vs_heap: [
+    { youtubeId: 'CkqBWTrLI-U', title: 'Java Memory Management Explained: Heap, Stack, Metaspace and GC' },
+    { youtubeId: 'NJE7Tr1-WFE', title: 'Stack vs Heap Memory Explained Simply', format: 'short' },
+  ],
+  lesson_java_core_garbage_collection_in_java: [
+    { youtubeId: 'aVBPGYdN3f0', title: 'Java Garbage Collector Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_volatile_keyword_in_java: [
+    { youtubeId: 'Y2EtJvAJl-s', title: 'Java volatile Keyword Explained in Detail' },
+    { youtubeId: '4ut4QXDlv7g', title: 'volatile in Java Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_transient_keyword_in_java: [
+    { youtubeId: 'gdtDhO1qRBY', title: 'Transient Keyword in Java Explained' },
+    { youtubeId: 'WEg27O8y-1I', title: 'Java transient Keyword Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_exception_hierarchy: [
+    { youtubeId: 'QTYCuI9TXSM', title: 'Anatomy of a Java Crash: Read Any Stack Trace in 10 Minutes' },
+  ],
+  lesson_java_core_java_memory_management_stack_vs_heap: [
+    { youtubeId: 'M3KT6Nn0KHA', title: 'Stack vs Heap in 10 Minutes: Every Developer Must Know This' },
+  ],
+}
+
+const CORE_JAVA_WORKBOOK_SHORTS = {
+  lesson_java_core_java_inheritance: [{ youtubeId: 'GM4K5jYT7X4', title: 'How Java Inheritance Shares Code', format: 'short' }],
+  lesson_java_core_aggregation_in_java: [
+    { youtubeId: 'COzyy9AJFtw', title: 'How Java Aggregation Protects Objects', format: 'short' },
+    { youtubeId: '5kXvd_rXNMQ', title: 'Java Aggregation Protects Objects', format: 'short' },
+  ],
+  lesson_java_core_super_keyword: [{ youtubeId: 'Me0DUB7bUOA', title: 'Java super Keyword Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_nested_and_inner_classes: [{ youtubeId: 'OHf1zkVRJ3s', title: 'Java Nested Classes Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_nested_interfaces_in_java: [{ youtubeId: 'TrtCz-rH_-k', title: 'Nested Interfaces in Java Explained', format: 'short' }],
+  lesson_java_core_java_final_keyword: [{ youtubeId: '1Fhq7fyICxM', title: 'Java final Keyword in 60 Seconds', format: 'short' }],
+  lesson_java_core_method_overriding: [{ youtubeId: 'nhW4Pt7SCAE', title: 'Method Overriding in Java', format: 'short' }],
+  lesson_java_core_runtime_polymorphism_and_dynamic_binding: [{ youtubeId: 'QQjvMRMBG9I', title: 'Dynamic Binding in Java Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_instance_initializer_block: [{ youtubeId: 'Mk1n1kpxT50', title: 'Instance Block in Java Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_abstraction_and_abstract_classes: [
+    { youtubeId: '6-AZVxA1qfk', title: 'Abstraction in Java Explained', format: 'short' },
+    { youtubeId: 'at__QPEeq_A', title: 'Interface vs Abstraction in Java Explained', format: 'short' },
+  ],
+  lesson_java_core_interfaces_in_java: [{ youtubeId: 'ja_UDYi_j1I', title: 'Java Interfaces in 60 Seconds!', format: 'short' }],
+  lesson_java_core_abstract_class_vs_interface: [{ youtubeId: 'at__QPEeq_A', title: 'Interface vs Abstraction in Java Explained', format: 'short' }],
+  lesson_java_core_encapsulation: [{ youtubeId: '-kPbKytAvd0', title: 'Java Encapsulation: Hide Data Like a Pro!', format: 'short' }],
+  lesson_java_core_packages_and_access_modifiers: [{ youtubeId: 'XEak3O1RjJk', title: '4 Java Access Modifiers in 60 Seconds', format: 'short' }],
+  lesson_java_core_object_class_and_its_methods: [{ youtubeId: 'aV0aaREeKKU', title: 'Java Object Class in 60 Seconds', format: 'short' }],
+  lesson_java_core_object_cloning: [{ youtubeId: '5Qv9LCXWLXg', title: 'How Shallow Cloning Can Corrupt Java Objects', format: 'short' }],
+  lesson_java_core_wrapper_classes: [{ youtubeId: 'RW_dH_p70zA', title: 'int vs Integer in Java: Wrapper Classes Explained', format: 'short' }],
+  lesson_java_core_java_math_class_and_utility_methods: [{ youtubeId: 'FTQ8du5CbIM', title: 'Java Math Class in 60 Seconds', format: 'short' }],
+  lesson_java_core_strictfp_keyword_in_java: [{ youtubeId: 'xOaK_Zoz8eo', title: 'Java strictfp Keyword Explained', format: 'short' }],
+  lesson_java_core_java_varargs: [{ youtubeId: 'ReC3kIy4LF8', title: 'Java Varargs Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_static_import: [{ youtubeId: 'bgXYsO8BGKA', title: 'Java Static Import Explained with Examples', format: 'short' }],
+  lesson_java_core_instanceof_and_downcasting: [{ youtubeId: 'I05XqtFUsv4', title: 'Stop ClassCastException with instanceof!', format: 'short' }],
+  lesson_java_core_stringbuilder: [{ youtubeId: '9D9ZfNIUp1w', title: 'StringBuilder vs String in Java', format: 'short' }],
+  lesson_java_core_string_vs_stringbuffer_vs_stringbuilder: [{ youtubeId: 'hoFrg6zkQaI', title: 'Why StringBuffer is Thread-Safe?', format: 'short' }],
+  lesson_java_core_stringtokenizer_class_in_java: [{ youtubeId: 'TIUtJGxNTf4', title: 'StringTokenizer in Java Explained', format: 'short' }],
+  lesson_java_core_java_regular_expressions_regex: [{ youtubeId: 'TWdkOhCUPXY', title: 'Java Regex in 60 Seconds', format: 'short' }],
+  lesson_java_core_exception_handling_basics: [
+    { youtubeId: 'zN_z7U1uc9k', title: 'Why Your Java Program Crashes: try-catch Explained', format: 'short' },
+    { youtubeId: 'o4d4ydSM4UY', title: 'Java Try Catch Finally Explained in 60 Seconds', format: 'short' },
+  ],
+  lesson_java_core_throw_and_throws: [{ youtubeId: 'V5Tu5D9yMtU', title: 'Stop Confusing throw and throws in Java!', format: 'short' }],
+  lesson_java_core_exception_propagation_and_nested_try_blocks: [{ youtubeId: 'NaW4e7wHdh4', title: 'Where Does a Java Exception Go?', format: 'short' }],
+  lesson_java_core_final_vs_finally_vs_finalize: [{ youtubeId: 'up4dY9lMJp8', title: 'final vs finally vs finalize() in Java', format: 'short' }],
+  lesson_java_core_exception_handling_rules_with_method_overriding: [{ youtubeId: '2Rh29hwGBBY', title: 'Exception Rules in Method Overriding', format: 'short' }],
+  lesson_java_core_custom_exceptions: [{ youtubeId: 'waa5znh7PaI', title: 'Custom Exceptions in Java', format: 'short' }],
+  lesson_java_core_exception_hierarchy: [{ youtubeId: 'YOIa-rC0dmg', title: 'Read a Java Stack Trace in 30 Seconds', format: 'short' }],
+  lesson_java_core_multithreading_basics_and_thread_life_cycle: [
+    { youtubeId: 'qWKGXy3sZrI', title: 'Why Do We Need Threads in Java?', format: 'short' },
+    { youtubeId: 'sh-W6BQlzgU', title: 'Stop Making These Java Thread Mistakes!', format: 'short' },
+    { youtubeId: '7WHcFvw8k8o', title: 'Why Threads Are Lighter Than Processes', format: 'short' },
+    { youtubeId: 'tu1D-iuZ3UA', title: 'Why Threads in Java? Concurrency Explained Simply', format: 'short' },
+  ],
+  lesson_java_core_creating_threads_thread_class_vs_runnable: [{ youtubeId: 'vwP_7lFCsns', title: 'Runnable vs Thread in Java: Why Runnable Wins', format: 'short' }],
+  lesson_java_core_synchronization: [{ youtubeId: 'ISACF9lp1DI', title: 'Race Condition in Java? Fix It with synchronized!', format: 'short' }],
+  lesson_java_core_advanced_synchronization_reentrant_locks_and_interrupting_threads: [{ youtubeId: 'Y0hz3BCIRyU', title: 'How Java ReentrantLock Prevents Self-Deadlock', format: 'short' }],
+  lesson_java_core_inter_thread_communication_wait_notify_notifyall: [{ youtubeId: 'hZXD-mEU49Q', title: 'Inter-Thread Communication Explained Fast', format: 'short' }],
+  lesson_java_core_deadlock: [{ youtubeId: 'U6fl_bIrmEs', title: 'How to Prevent Deadlocks in Java?', format: 'short' }],
+  lesson_java_core_thread_pool_and_the_executor_framework: [{ youtubeId: 'dgbzJ5GWz4A', title: 'Why Use a Thread Pool in Java?', format: 'short' }],
+  lesson_java_core_callable_future_and_completablefuture: [{ youtubeId: 'bo6QsNtVfTQ', title: 'How CompletableFuture Unblocks Java Tasks', format: 'short' }],
+  lesson_java_core_java_memory_management_stack_vs_heap: [{ youtubeId: 'NJE7Tr1-WFE', title: 'Stack vs Heap Memory Explained Simply', format: 'short' }],
+  lesson_java_core_garbage_collection_in_java: [{ youtubeId: 'aVBPGYdN3f0', title: 'Java Garbage Collector Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_volatile_keyword_in_java: [{ youtubeId: '4ut4QXDlv7g', title: 'volatile in Java Explained in 60 Seconds', format: 'short' }],
+  lesson_java_core_transient_keyword_in_java: [{ youtubeId: 'WEg27O8y-1I', title: 'Java transient Keyword Explained in 60 Seconds', format: 'short' }],
+}
+
 export function getLessonVideo(lessonId) {
-  return LESSON_VIDEOS[lessonId] || null
+  const existing = LESSON_VIDEOS[lessonId]
+  const additions = [
+    ...(CORE_JAVA_WORKBOOK_VIDEOS[lessonId] || []),
+    ...(CORE_JAVA_WORKBOOK_SHORTS[lessonId] || []),
+  ]
+  if (!existing && !additions.length) return null
+  return [...[].concat(existing || []), ...additions].filter((video, index, all) =>
+    all.findIndex((candidate) => candidate.youtubeId === video.youtubeId) === index,
+  )
 }
 
 function isoDuration(totalSeconds) {

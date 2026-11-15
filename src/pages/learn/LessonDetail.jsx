@@ -115,21 +115,26 @@ export default function LessonDetail() {
 
   const progress = useMemo(() => getLessonProgress(courseProgress, progressId), [courseProgress, progressId])
 
-  // Split the lesson HTML so a video can sit between two sections. Falls back
-  // to showing the video below the lesson when the split marker isn't found.
+  // Place detail videos between lesson sections and keep Shorts in a separate
+  // horizontal rail so neither format is buried at the end of a long page.
   const videos = useMemo(() => {
     const entry = lesson ? getLessonVideo(lesson.id) : null
     return entry ? [].concat(entry) : []
   }, [lesson])
+  const detailVideos = useMemo(() => videos.filter((video) => video.format !== 'short'), [videos])
+  const shortVideos = useMemo(() => videos.filter((video) => video.format === 'short'), [videos])
   const videoSchemas = useMemo(() => videos.map(videoObjectSchema).filter(Boolean), [videos])
   const bodySegments = useMemo(() => {
     const body = lesson?.content.body || ''
+    const sections = [...body.matchAll(/<h2 id="section-(\d+)"/g)]
     const inline = []
     const trailing = []
-    videos.forEach((video) => {
-      const at = typeof video.afterSection === 'number'
-        ? body.indexOf(`<h2 id="section-${video.afterSection + 1}"`)
-        : -1
+    detailVideos.forEach((video, index) => {
+      const section = Math.min(
+        sections.length - 1,
+        Math.floor(sections.length * (0.25 + (0.5 * (index + 1)) / (detailVideos.length + 1))),
+      )
+      const at = sections.find((match) => Number(match[1]) === section + 1)?.index ?? -1
       if (at > 0) inline.push({ at, video })
       else trailing.push(video)
     })
@@ -142,7 +147,7 @@ export default function LessonDetail() {
     })
     segments.push({ html: body.slice(cursor), video: null })
     return { segments, trailing }
-  }, [lesson, videos])
+  }, [lesson, detailVideos])
 
   const lessonNavigation = useMemo(() => {
     if (!lesson) return null
@@ -498,6 +503,17 @@ export default function LessonDetail() {
             </p>
           )}
         </div>
+        {shortVideos.length > 0 && (
+          <section aria-label="Quick YouTube Shorts" className="rounded-lg border border-ink-200 bg-white p-4 dark:border-ink-800 dark:bg-ink-900/40">
+            <div className="mb-3">
+              <h2 className="text-base font-semibold">Quick Shorts</h2>
+              <p className="mt-1 text-xs text-ink-500 dark:text-ink-300">Short videos for this topic. Scroll sideways to browse.</p>
+            </div>
+            <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
+              {shortVideos.map((video) => <LessonVideo key={video.youtubeId} video={video} lessonId={lesson.id} compact />)}
+            </div>
+          </section>
+        )}
         {lesson.practice.map((item) => (
           <Link key={item.slug} to={`/codelab/problems/${item.slug}`} className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-ink-200 px-4 py-3 text-sm font-semibold text-ink-700 dark:border-ink-800 dark:text-ink-100">
             <FiCode className="h-4 w-4" /> Open in CodeLab
