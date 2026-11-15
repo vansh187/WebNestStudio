@@ -7,6 +7,7 @@ import { ErrorState, EmptyState } from '../../components/states/StateViews'
 import BackButton from '../../components/coding/BackButton'
 import AssistantPlanCard from '../../components/coding/AssistantPlanCard'
 import ErrorBoundary from '../../components/ErrorBoundary'
+import ConnectedDevices from '../../components/account/ConnectedDevices'
 import PrimeBadge from '../../components/PrimeBadge'
 import { usePrime } from '../../hooks/usePrime'
 import { localDate } from '../../lib/codelab/assistantCheckout'
@@ -246,6 +247,15 @@ export default function ClientPortal() {
             <CodingProjectsCard />
           </section>
         </div>
+
+        <section className="mt-10">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold-500">Your workspace</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-ink-900 dark:text-white">Connected devices</h2>
+            <p className="mt-1 text-sm text-ink-500 dark:text-ink-300">Manage editors that can access your WebNest CodeLab account.</p>
+          </div>
+          <ErrorBoundary><ConnectedDevices /></ErrorBoundary>
+        </section>
 
         <section className="mt-10">
           <h2 className="mb-4 font-display text-lg font-semibold text-ink-900 dark:text-white">WebNest AI</h2>

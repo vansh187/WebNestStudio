@@ -35,6 +35,7 @@ const Disclaimer = lazyWithReload(() => import('./pages/Disclaimer'))
 const DeleteAccount = lazyWithReload(() => import('./pages/DeleteAccount'))
 const AccountDeletion = lazyWithReload(() => import('./pages/AccountDeletion'))
 const DownloadApp = lazyWithReload(() => import('./pages/DownloadApp'))
+const VscodeConnect = lazyWithReload(() => import('./pages/VscodeConnect'))
 const Login = lazyWithReload(() => import('./pages/Login'))
 import NotFound from './pages/NotFound'
 
@@ -301,6 +302,16 @@ function App() {
                         <ProtectedRoute roles={['client', 'admin']}>
                           <ErrorBoundary>
                             <ClientPortal />
+                          </ErrorBoundary>
+                        </ProtectedRoute>
+                      )}
+                    />
+                    <Route
+                      path="vscode/connect"
+                      element={(
+                        <ProtectedRoute roles={['client', 'admin']}>
+                          <ErrorBoundary>
+                            <VscodeConnect />
                           </ErrorBoundary>
                         </ProtectedRoute>
                       )}

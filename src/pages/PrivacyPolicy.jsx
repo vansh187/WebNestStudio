@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'November 3, 2026'
+const EFFECTIVE_DATE = 'November 6, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -105,9 +105,17 @@ export default function PrivacyPolicy() {
             your audio to its own speech service to turn it into text; we do not receive the audio.
           </p>
           <p>
-            <strong className="text-ink-900 dark:text-white">h) Payments.</strong> Payments for WebNest AI are
-            handled by Razorpay. We do not receive or store your card, UPI, or bank details. We keep records of
-            your order, including the order and payment IDs, amount, status, and your plan&rsquo;s dates and usage.
+            <strong className="text-ink-900 dark:text-white">h) Payments.</strong> On our website, payments for
+            WebNest AI are handled by Razorpay. In our Android app, WebNest Prime is bought through Google Play
+            Billing. We do not receive or store your card, UPI, or bank details. We keep records of your order,
+            including the order and payment IDs (for Google Play purchases, the Google order ID and purchase
+            token, which our server checks with Google), amount, status, the time you accepted our terms, and
+            your plan&rsquo;s dates and usage.
+          </p>
+          <p>
+            <strong className="text-ink-900 dark:text-white">i) Reports about AI replies.</strong> If you report a
+            WebNest AI reply, we receive the reply, the question that led to it, and the reason you chose, linked
+            to your account, so we can review it and improve our safeguards.
           </p>
         </Section>
 
@@ -149,9 +157,17 @@ export default function PrivacyPolicy() {
               under their own terms and may process it outside India.
             </li>
             <li>
-              <strong className="text-ink-900 dark:text-white">Payment processor.</strong> When you pay for WebNest
-              AI, Razorpay receives your payment details directly, along with your name, email address, and the
-              time you accepted our terms, so it can process and record the payment.
+              <strong className="text-ink-900 dark:text-white">Payment processors.</strong> When you pay for WebNest
+              AI on our website, Razorpay receives your payment details directly, along with your name, email
+              address, and the time you accepted our terms, so it can process and record the payment. When you buy
+              WebNest Prime in our Android app, Google Play processes the payment under Google&rsquo;s own privacy
+              policy; we receive the purchase details described in Section 1 and an identifier for your WebNest
+              account, so we can confirm the purchase with Google and give you access.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Push notifications.</strong> If you allow
+              notifications in our Android app, Google Firebase Cloud Messaging receives a device token and
+              delivers notifications to your device.
             </li>
             <li>
               <strong className="text-ink-900 dark:text-white">Google AdSense.</strong> We are applying to Google
@@ -300,10 +316,45 @@ export default function PrivacyPolicy() {
 
         <Section id="android-app" title="10. Android Application">
           <p>
-            If you access WebNest Studio through our Android application, the application loads this same
-            website and is subject to this Privacy Policy in full. The application does not request access to
-            device permissions (such as camera, contacts, or location) beyond what is required to display web
-            content, and does not collect additional information beyond what is described in this policy.
+            Our Android application is a native app that connects to the same WebNest Studio account and
+            servers as the website, and is subject to this Privacy Policy in full. In addition to what is
+            described above, the app works as follows:
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong className="text-ink-900 dark:text-white">Camera and photos.</strong> The app asks for camera
+              access only when you choose to take a photo, for example to attach it to a message or set your
+              profile picture. Photos you pick or take are uploaded only when you send them. Your profile picture
+              is stored on your device.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Notifications.</strong> The app asks for permission
+              to show notifications. If you allow it, a device token is sent to Google Firebase Cloud Messaging
+              and to our server so we can notify you about replies to your messages and new blog posts. You can turn
+              notifications off in your device settings at any time.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Sign-in data.</strong> Your sign-in tokens are kept
+              in your device&rsquo;s secure storage (Android Keystore). If you turn on fingerprint or face unlock,
+              the check is done by your device; we never receive your biometric data.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">WebNest AI.</strong> Your WebNest AI chats are kept
+              on your device and removed when you sign out. Your messages are sent to our server and to third-party
+              AI services to generate replies, as described in Sections 1 and 3. Each reply has a Report option.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Purchases.</strong> WebNest Prime is bought through
+              Google Play Billing, as described in Section 1.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">No ads or tracking.</strong> The app does not show
+              ads, does not use advertising identifiers, and does not access your contacts or location.
+            </li>
+          </ul>
+          <p>
+            You can delete your account and its data from inside the app (Profile &rarr; Delete account) or as
+            described in Section 6.
           </p>
         </Section>
 
