@@ -3,7 +3,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'November 6, 2026'
+const EFFECTIVE_DATE = 'November 16, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
   useSeo({
     title: 'Privacy Policy',
     description:
-      'How WebNest Studio collects, uses, and protects your data across our website, client portal, CodeLab platform, and Android application.',
+      'How WebNest Studio collects, uses, and protects your data across our website, client portal, CodeLab platform, Android application, and VS Code extension.',
     path: '/privacy-policy',
   })
 
@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
         <p className="text-sm leading-relaxed text-ink-500 dark:text-ink-300">
           WebNest Studio (&ldquo;WebNest Studio&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) provides a
           website, client portal, and the WebNest CodeLab learning and coding platform, including any Android
-          application we publish that links to this policy (together, the &ldquo;Services&rdquo;). This Privacy Policy
+          application or code editor extension (such as WebNest AI for VS Code) we publish that links to this policy (together, the &ldquo;Services&rdquo;). This Privacy Policy
           explains what information we collect, how we use it, who we share it with, and the choices and rights
           you have. By using our Services, you agree to the collection and use of information described here.
         </p>
@@ -358,7 +358,65 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="international" title="11. International Data Transfers">
+        <Section id="vscode-extension" title="11. WebNest AI for VS Code">
+          <p>
+            WebNest AI for VS Code is an extension for Visual Studio Code and compatible editors (such as VSCodium
+            and Cursor). It uses your WebNest Studio account and is subject to this Privacy Policy in full. In
+            addition to what is described above, the extension works as follows:
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong className="text-ink-900 dark:text-white">Connecting your editor.</strong> You connect the
+              extension by approving it on our website while signed in; you never type your password into the
+              editor. When you connect, we store the device name (your computer&rsquo;s name and operating system,
+              which may include your name), the editor you use, the extension version, and when the device was
+              connected and last used. We show this only to you, under Connected devices in your account.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Sign-in tokens.</strong> The extension keeps its
+              sign-in tokens in your editor&rsquo;s secure storage, which uses your operating system&rsquo;s
+              keychain. We store login codes and refresh tokens only in a hashed form. A connection ends after 90
+              days at most, and you can disconnect any device at any time from your account. Resetting your
+              password also disconnects every device.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">What is sent.</strong> By default, only the message
+              you type is sent. You choose, for each message, whether to also share the current file, your selected
+              code, editor problems (errors and warnings), or the names of files in your workspace, and the
+              extension shows what will be shared before you send. The Explain, Refactor, and Fix commands include
+              the code you run them on. Protected files, such as .env files, private keys, SSH keys, cloud
+              credentials, and the .git folder, and files that look like they contain a secret, are never sent. You
+              can protect more files in the extension&rsquo;s settings.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">How it is processed.</strong> What you send goes to
+              our server and to third-party AI services to generate a reply, as described in Sections 1 and 3. Our
+              servers do not keep the text of your messages or your code; we keep usage records, such as token
+              counts, the model used, timing, and that the request came from the extension. Usage counts toward the
+              same WebNest AI and WebNest Prime limits as the website and Android app.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Chats and changes.</strong> Your chats are saved on
+              your computer, separately for each WebNest account, and you can delete them with the Clear Chat
+              History command. Code changes suggested by WebNest AI are applied to your files only after you
+              approve them.
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">Reports.</strong> If you report a reply from the
+              extension, we receive the details described in Section 1(i).
+            </li>
+            <li>
+              <strong className="text-ink-900 dark:text-white">No ads or tracking.</strong> The extension does not
+              show ads and does not send analytics or telemetry.
+            </li>
+          </ul>
+          <p>
+            Uninstalling the extension does not delete your account; disconnect the device from your account to
+            end its access, or delete your account as described in Section 6.
+          </p>
+        </Section>
+
+        <Section id="international" title="12. International Data Transfers">
           <p>
             We are based in India and primarily process data there. If you access our Services from outside
             India, your information may be transferred to, stored, and processed in India or other countries
@@ -367,7 +425,7 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="changes" title="12. Changes to This Policy">
+        <Section id="changes" title="13. Changes to This Policy">
           <p>
             We may update this Privacy Policy from time to time to reflect changes to our practices or for legal
             or regulatory reasons. We will update the &ldquo;Effective date&rdquo; above when we do, and material
@@ -375,7 +433,7 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section id="contact" title="13. Contact Us">
+        <Section id="contact" title="14. Contact Us">
           <p>If you have questions or concerns about this Privacy Policy or our data practices, contact us at:</p>
           <p className="font-semibold text-ink-900 dark:text-white">
             WebNest Studio
