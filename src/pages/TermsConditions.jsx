@@ -4,7 +4,7 @@ import { CONTACT } from '../data/site'
 import BackButton from '../components/coding/BackButton'
 import { useSeo } from '../hooks/useSeo'
 
-const EFFECTIVE_DATE = 'November 1, 2026'
+const EFFECTIVE_DATE = 'November 6, 2026'
 
 function Section({ id, title, children }) {
   return (
@@ -107,10 +107,12 @@ export default function TermsConditions() {
             It is for one person: you must not share your account or resell access.
           </p>
           <p>
-            <strong>Payment.</strong> Payments are processed by Razorpay. All WebNest AI payments are final and
+            <strong>Payment.</strong> On this website, payments are processed by Razorpay and are final and
             non-refundable, except as set out in our{' '}
             <Link to="/refund-policy" className="font-semibold text-gold-500 hover:underline">Refund Policy</Link>.
-            By paying, you ask for the service to start immediately.
+            In our Android app, WebNest Prime is bought through Google Play and paid to Google; WebNest does not
+            offer refunds for these purchases, and only Google Play&rsquo;s own refund policy applies. By paying,
+            you ask for the service to start immediately.
           </p>
           <p>
             <strong>Your code.</strong> To answer you, WebNest AI sends your messages and the relevant parts of

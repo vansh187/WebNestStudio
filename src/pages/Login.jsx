@@ -70,7 +70,12 @@ function LoginForm({ onSwitchToSignup, onNeedsVerification, onForgotPassword, pr
         return
       }
       // Came from the Prime page without ticking the box: back there, with nothing charged.
-      const from = joinPrime ? PRIME_PATH : location.state?.from?.pathname
+      const returnLocation = location.state?.from
+      const from = joinPrime
+        ? PRIME_PATH
+        : returnLocation?.pathname
+          ? `${returnLocation.pathname}${returnLocation.search || ''}${returnLocation.hash || ''}`
+          : null
       navigate(from || roleHome(result.user.role), { replace: true })
       return
     }
