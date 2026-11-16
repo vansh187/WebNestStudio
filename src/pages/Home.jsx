@@ -5,6 +5,7 @@ import {
   FiArrowRight, FiGlobe, FiCpu, FiLayers, FiDatabase, FiShare2, FiServer, FiCloud, FiCheck, FiStar,
   FiExternalLink, FiBookOpen, FiPlay, FiCode, FiSmartphone,
 } from 'react-icons/fi'
+import { VscVscode } from 'react-icons/vsc'
 import HeroVideo from '../components/HeroVideo'
 import NeuralBackdrop from '../components/NeuralBackdrop'
 import { ONGOING_PROJECTS } from '../data/ongoingProjects'
@@ -22,6 +23,7 @@ import { wakeServer } from '../lib/health'
 import { TECH_STACK, PROCESS, CONTACT } from '../data/site'
 import { TECH_CATEGORIES } from '../data/techStackDetails'
 import { ANDROID_APP } from '../data/androidApp'
+import { VSCODE_EXTENSION } from '../data/vscodeExtension'
 import AndroidDownloadButton from '../components/AndroidDownloadButton'
 import { DELIVERED_PROJECTS } from '../data/deliveredProjects'
 import { CLIENT_TESTIMONIALS } from '../data/clientTestimonials'
@@ -171,6 +173,14 @@ export default function Home() {
                 >
                   <FiSmartphone className="h-4 w-4 text-gold-500" /> Get the Android app
                 </Link>
+                <a
+                  href={VSCODE_EXTENSION.marketplaceHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-2 py-3.5 text-sm font-semibold text-ink-700 dark:text-ink-100 transition-colors hover:text-gold-500"
+                >
+                  <VscVscode className="h-4 w-4 text-[#3b9ae8]" aria-hidden="true" /> Get WebNest AI for VS Code
+                </a>
               </motion.div>
 
               <motion.div

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useInView, useReducedMotion } from 'framer-motion'
-import { FiArrowRight, FiCheck, FiCode, FiLoader, FiMessageCircle, FiZap } from 'react-icons/fi'
+import { FiArrowRight, FiArrowUpRight, FiCheck, FiCode, FiLoader, FiMessageCircle, FiZap } from 'react-icons/fi'
+import { VscVscode } from 'react-icons/vsc'
 import { FaCrown } from 'react-icons/fa'
 import { usePrime } from '../hooks/usePrime'
 import { PLAN_DAYS, PLAN_RUPEES } from '../lib/codelab/assistantCheckout'
+import { VSCODE_EXTENSION } from '../data/vscodeExtension'
 
 const EASE = [0.22, 1, 0.36, 1]
 
@@ -92,6 +94,74 @@ function AgentScene() {
   )
 }
 
+// WebNest AI in VS Code, beside the playground. The extension is Ask mode only, so this never
+// promises Agent mode: it answers, and the user chooses what to apply.
+function VsCodePanel({ isPrime }) {
+  return (
+    <div className="mx-auto mt-16 grid max-w-5xl items-center gap-10 overflow-hidden rounded-2xl border border-gold-400/30 bg-[#0d0c0a]/90 p-7 text-left sm:p-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
+      <div>
+        <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-gold-300">
+          <VscVscode className="h-4 w-4 text-[#3b9ae8]" aria-hidden="true" /> New · VS Code extension
+        </p>
+        <h3 className="mt-4 font-display text-3xl font-extrabold leading-tight text-white sm:text-4xl">
+          WebNest AI, <span className="launch-metal">now in VS Code</span>
+        </h3>
+        <p className="mt-4 max-w-lg text-base leading-relaxed text-ink-300">
+          Bring your AI coding partner into the editor you already use. Ask about your code, explain or refactor a selection,
+          and fix errors, in any language VS Code supports.
+        </p>
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          {VSCODE_EXTENSION.features.map(({ title, text }) => (
+            <li key={title} className="flex gap-2.5">
+              <FiCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden="true" />
+              <span className="text-sm leading-relaxed text-ink-300"><span className="font-semibold text-white">{title}.</span> {text}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8 flex flex-wrap items-center gap-4">
+          <a
+            href={VSCODE_EXTENSION.marketplaceHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="launch-cta group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-ink-950"
+          >
+            <VscVscode className="h-4 w-4" aria-hidden="true" /> Install free from the Marketplace
+            <FiArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </a>
+          <span className="text-xs leading-relaxed text-ink-400">
+            {isPrime ? 'Sign in with your Prime pass. Same pass, same tokens.' : 'Using it needs a Prime pass, the same one as the website and app.'}
+          </span>
+        </div>
+      </div>
+
+      {/* A still picture of the sidebar chat, drawn in markup. An illustration, not a real session. */}
+      <div aria-hidden="true" className="launch-frame overflow-hidden rounded-xl border border-white/10 bg-[#1e1e1e] font-mono text-[11.5px] shadow-[0_30px_80px_-30px_rgba(59,154,232,0.35)]">
+        <div className="flex items-center gap-2 border-b border-white/10 bg-[#252526] px-3 py-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+          <span className="ml-2 truncate text-[11px] text-ink-400">notes.py — my-project</span>
+        </div>
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+          <pre className="overflow-hidden border-r border-white/10 p-3 leading-5 text-ink-300">
+            <span className="block"><span className="text-[#c586c0]">def</span> <span className="text-[#dcdcaa]">avg</span>(xs):</span>
+            <span className="block">    <span className="text-[#c586c0]">return</span> sum(xs) / <span className="underline decoration-wavy decoration-red-400">len(x)</span></span>
+            <span className="mt-3 block rounded bg-gold-400/15 px-1.5 py-1 text-[10.5px] text-gold-200">💡 Fix with WebNest AI</span>
+          </pre>
+          <div className="space-y-2 p-3 font-sans">
+            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-gold-300">
+              <FiZap className="h-3 w-3" /> WebNest AI
+            </p>
+            <p className="ml-auto w-fit rounded-lg rounded-br-sm bg-gold-400/15 px-2 py-1 text-[11px] text-gold-100">Why does avg fail?</p>
+            <p className="text-[11px] leading-snug text-ink-300"><span className="font-mono text-gold-200">x</span> isn't defined. Use <span className="font-mono text-gold-200">len(xs)</span>, and guard against an empty list.</p>
+            <p className="inline-flex rounded border border-gold-400/50 px-2 py-0.5 text-[10.5px] font-semibold text-gold-200">Apply…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const rise = (delay = 0) => ({
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
@@ -129,7 +199,7 @@ export default function WebNestAiLaunch() {
           Describe it. Watch it build. Run it.
         </motion.p>
         <motion.p {...rise(0.35)} className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-300">
-          An AI coding partner inside your CodeLab playground, which writes, runs and fixes your project in your browser.
+          An AI coding partner inside your CodeLab playground, which writes, runs and fixes your project in your browser. Now in VS Code too.
         </motion.p>
 
         {showOffer && (
@@ -177,6 +247,10 @@ export default function WebNestAiLaunch() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div {...rise(0.1)}>
+          <VsCodePanel isPrime={isPrime} />
+        </motion.div>
       </div>
     </section>
   )
