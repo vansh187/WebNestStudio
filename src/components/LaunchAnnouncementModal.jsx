@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FaCrown } from 'react-icons/fa'
-import { FiArrowRight, FiX } from 'react-icons/fi'
+import { FiArrowRight, FiArrowUpRight, FiX } from 'react-icons/fi'
+import { VscVscode } from 'react-icons/vsc'
 import { usePrime } from '../hooks/usePrime'
 import { PLAN_DAYS, PLAN_RUPEES } from '../lib/codelab/assistantCheckout'
+import { VSCODE_EXTENSION } from '../data/vscodeExtension'
 
 // Shown once per tab, so it doesn't return every time someone comes back to the home page.
-const ANNOUNCEMENT_KEY = 'wns-webnest-ai-popup-seen-2026-11'
+const ANNOUNCEMENT_KEY = 'wns-webnest-ai-vscode-popup-seen-2026-11'
 // Phones get a small bar over the page's foot: Google can rank a page lower when a popup covers
 // it on a phone, and the content stays readable and scrollable behind a bar.
 const SMALL_SCREEN = '(max-width: 767px)'
@@ -37,7 +39,7 @@ function SmallBar({ isPrime, label, onClose }) {
     >
       <div className="min-w-0 flex-1">
         <h2 id="webnest-ai-popup" className="launch-metal font-display text-lg font-extrabold leading-tight">WebNest AI</h2>
-        <p className="truncate text-xs text-ink-200">{isPrime ? label : `₹${PLAN_RUPEES} per month`}</p>
+        <p className="truncate text-xs text-ink-200">{isPrime ? `${label} · now in VS Code` : `₹${PLAN_RUPEES}/month · now in VS Code`}</p>
       </div>
       <Link to={isPrime ? '/codelab/playground' : '/prime'} onClick={onClose} className="launch-cta shrink-0 rounded-full px-4 py-2 text-xs font-bold text-ink-950">
         {isPrime ? 'Open' : 'Become Prime'}
@@ -150,6 +152,27 @@ export default function LaunchAnnouncementModal() {
             </p>
             <h2 id="webnest-ai-popup" className="launch-metal mt-4 font-display text-5xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl">WebNest AI</h2>
             <p className="mt-3 font-display text-lg font-medium text-ink-100">Describe it. Watch it build. Run it.</p>
+
+            <a
+              href={VSCODE_EXTENSION.marketplaceHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={close}
+              className="group mt-5 flex items-center gap-3 rounded-2xl border border-gold-400/40 bg-white/[0.04] px-4 py-3 text-left transition-colors hover:border-gold-400 hover:bg-gold-400/10"
+            >
+              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1e1e1e] ring-1 ring-white/10">
+                <VscVscode className="h-5 w-5 text-[#3b9ae8]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2 text-sm font-bold text-white">
+                  Now in VS Code
+                  <span className="rounded-full bg-gold-400 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-ink-950">New</span>
+                </span>
+                <span className="block text-xs text-ink-300">Free to install. Your Prime pass works there too.</span>
+              </span>
+              <FiArrowUpRight className="h-4 w-4 shrink-0 text-gold-300 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <span className="sr-only">(opens the VS Code Marketplace in a new tab)</span>
+            </a>
 
             {isPrime ? (
               <>
